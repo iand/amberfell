@@ -171,8 +171,9 @@ func main() {
 
         }        
         if keys[sdl.K_SPACE] != 0 {
-            player.Rotate(9)
-
+            if !player.IsFalling() {
+                player.Accelerate(af.Vector{0, 8, 0})
+            }
         } 
         if keys[sdl.K_d] != 0 {
             player.Rotate(-9)
@@ -200,8 +201,16 @@ func main() {
             player.Setvx(8 * vx)
             player.Setvz(8 * vz)
         } else {
-            player.Setvx(player.Velocity()[af.XAXIS] / 1.5)
-            player.Setvz(player.Velocity()[af.ZAXIS] / 1.5)
+            if !player.IsFalling() {
+                player.Setvx(player.Velocity()[af.XAXIS] / 1.5)
+                player.Setvz(player.Velocity()[af.ZAXIS] / 1.5)
+            } else {
+                player.Setvx(player.Velocity()[af.XAXIS] / 1.01)
+                player.Setvz(player.Velocity()[af.ZAXIS] / 1.01)
+
+            }
+
+
         }
 
 

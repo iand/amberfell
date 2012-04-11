@@ -89,6 +89,9 @@ func (p *Player) Setvz(vz float64) {
     p.velocity[ZAXIS] = vz
 }
 
+func (p *Player) Setvy(vy float64) {
+    p.velocity[YAXIS] = vy
+}
 
 func (p *Player) BoundingBox() Bound {
     var b Bound
