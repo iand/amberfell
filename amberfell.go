@@ -170,6 +170,10 @@ func main() {
             player.Rotate(9)
 
         }        
+        if keys[sdl.K_SPACE] != 0 {
+            player.Rotate(9)
+
+        } 
         if keys[sdl.K_d] != 0 {
             player.Rotate(-9)
         }        
