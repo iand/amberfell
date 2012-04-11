@@ -3,7 +3,7 @@ package af
 import (
     "math"
     "math/rand"
-    "fmt"
+    // "fmt"   
 
 )
 
@@ -14,6 +14,14 @@ type World struct {
     H           int16
     GroundLevel int16
     Blocks      []byte
+}
+
+type Side struct {
+    x, x1, x2, z, z1, z2, dir, y float64
+}
+
+type Rect struct {
+    x, z, sizex, sizez float64
 }
 
 func (world *World) Init(w int16, d int16, h int16) {
@@ -114,91 +122,208 @@ func (world *World) AirNeighbours(x int16, z int16, y int16) (n, s, w, e, u, d b
     return
 }
 
+// lineRectCollide( line, rect )
+//
+// Checks if an axis-aligned line and a bounding box overlap.
+// line = { z, x1, x2 } or line = { x, z1, z2 }
+// rect = { x, z, size }
+
+func lineRectCollide( line Side, rect Rect ) (ret bool) {
+    if line.z != 0  {
+        ret = rect.z > line.z - rect.sizez/2 && rect.z < line.z + rect.sizez/2 && rect.x > line.x1 - rect.sizex/2 && rect.x < line.x2 + rect.sizex/2
+    } else {
+        ret = rect.x > line.x - rect.sizex/2 && rect.x < line.x + rect.sizex/2 && rect.z > line.z1 - rect.sizez/2 && rect.z < line.z2 + rect.sizez/2
+    }
+    return 
+}
+
+// rectRectCollide( r1, r2 )
+//
+// Checks if two rectangles (x1, y1, x2, y2) overlap.
+
+func rectRectCollide( r1 Side, r2 Side) bool {
+    if r2.x1 >= r1.x1 && r2.x1 <= r1.x2 && r2.z1 >= r1.z1 && r2.z1 <= r1.z2 {
+        return true
+    }
+    if r2.x2 >= r1.x1 && r2.x2 <= r1.x2 && r2.z1 >= r1.z1 && r2.z1 <= r1.z2 { 
+        return true
+    }
+    if r2.x2 >= r1.x1 && r2.x2 <= r1.x2 && r2.z2 >= r1.z1 && r2.z2 <= r1.z2 {
+        return true
+    }
+    if r2.x1 >= r1.x1 && r2.x1 <= r1.x2 && r2.z2 >= r1.z1 && r2.z2 <= r1.z2 {
+        return true
+    }
+    return false
+}
+
+
+
 func (world *World) ApplyForces(mob Mob, dt float64) {
-    mobBounds := mob.DesiredBoundingBox(dt)
-    mobx := int16(math.Floor(mobBounds.position[0] + 0.5))
-    moby := int16(math.Floor(mobBounds.position[1] + 0.5))
-    mobz := int16(math.Floor(mobBounds.position[2] + 0.5))
+    // mobBounds := mob.DesiredBoundingBox(dt)
+    mobx := int16(math.Floor(mob.Position()[XAXIS] + 0.5))
+    moby := int16(math.Floor(mob.Position()[YAXIS] + 0.5))
+    mobz := int16(math.Floor(mob.Position()[ZAXIS] + 0.5))
  
 
     // Gravity
-    mob.ApplyForce( Vector{0, -400, 0} )
+    if mob.IsFalling() {
+        mob.Accelerate( Vector{0, -0.5, 0} )
+    }
 
-    const frictionConstant = -5.5
-    friction := mob.Velocity().Scale(mob.Mass() * frictionConstant)
-    mob.ApplyForce( Vector{friction[0], 0, friction[2]} )
+    // var dx, dz, dy int16
+    var x, y, z int16
 
-    const c = -600.0
-    const k = -800.0
-    const b = -500.0   
-    const f = 3.0
 
-    var dx, dz, dy int16
-    for dx = -1; dx < 2; dx++ {
-        for dz = -1; dz < 2; dz++ {
-            for dy = -1; dy < 2; dy++ {
-                //if dy != 0 && dx != 00 && dz != 0 {
-                    if world.At(mobx+dx, moby+dy, mobz+dz) != 0 {
-                        block := BlockBound(mobx+dx, moby+dy, mobz+dz)
+    playerRect := Rect{ x: float64(mob.X()) + mob.Velocity()[XAXIS] * dt, z: float64(mob.Z()) + mob.Velocity()[ZAXIS] * dt, sizex: mob.W(), sizez: mob.D() };
 
-                        // normal := Vector{ -float64(dx), -float64(dy), -float64(dz)  }
-                        // //separation := block.Distance(mobBounds) - normal.Dot(mobBounds.extent) - normal.Dot(block.extent)
+    collisionCandidates := make([]Side, 0)
 
-                        // sepx := math.Abs(mobBounds.position[XAXIS] - block.position[XAXIS]) - mobBounds.extent[XAXIS] - block.extent[XAXIS]
-                        // sepy := math.Abs(mobBounds.position[YAXIS] - block.position[YAXIS]) - mobBounds.extent[YAXIS] - block.extent[YAXIS]
-                        // sepz := math.Abs(mobBounds.position[ZAXIS] - block.position[ZAXIS]) - mobBounds.extent[ZAXIS] - block.extent[ZAXIS]
-
-                        // if sepy < 0 {
-                        //     if sepx < 0 {
-                        //         mob.Reaction(Vector{float64(dx), 0, 0})
-                        //     }
-                        //     if sepz < 0 {
-                        //         mob.Reaction(Vector{0, 0, float64(dz)})
-                        //     }
-
-                        //     fmt.Printf("normal: %s\n", normal)
-                        //     fmt.Printf("sepx: %f\n", sepx)
-                        //     fmt.Printf("sepy: %f\n", sepy)
-                        //     fmt.Printf("sepz: %f\n", sepz)
-                                
-                        // }
-
-                        if block.Overlaps(mobBounds) {
-                            //fmt.Printf("block.y+0.5: %f, mob.y-0.5:%f\n", float64(moby+dy), mobBounds.position[1])
-
-                            // penetration := block.Distance(mobBounds) // an approximation
-                            normal := Vector{ float64(dx), float64(dy), float64(dz)  }
-                            fmt.Printf("normal: %s\n", normal)
-                            // relativeSpeed := normal.Dot(mob.Velocity())
-                            // /reaction := normal.Dot(mob.Forces())
-
-                            //reactionForce := normal.Scale(reaction * 5);
-                            //fmt.Printf("reactionForce: %f\n", reactionForce)
-                            //mob.ApplyForce(reactionForce)
-                            mob.Reaction(normal)
-                            
-                            // fmt.Printf("relativeSpeed: %f\n", relativeSpeed)
-                            // fmt.Printf("penetration: %f\n", penetration)
-
-                            // if relativeSpeed > 0 {
-                            //     collisionForce := normal.Scale(relativeSpeed * c);
-                            //     fmt.Printf("collisionForce: %f\n", collisionForce)
-                            //      mob.ApplyForce(collisionForce)
-                            // }
-
-                            // penaltyForce := normal.Scale(penetration * k);
-                            // fmt.Printf("penaltyForce: %f\n", penaltyForce)
-                            // mob.ApplyForce(penaltyForce)
-
-                            // dampingForce := normal.Scale(relativeSpeed * penetration * b);
-                            // fmt.Printf("dampingForce: %f\n", dampingForce)
-                            // mob.ApplyForce(dampingForce)
-                        }
+    // Collect XZ collision candidates
+    for x = mobx - 1; x <= mobx + 1; x++ {
+        for y = moby; y <= moby + 1; y++ {
+            for z = mobz - 1; z <= mobz + 1; z++ {
+                if world.At(x, y, z) != 0 {
+                    if world.At( x - 1, y, z ) == 0  {
+                        collisionCandidates = append(collisionCandidates, Side{ x: float64(x) - 0.5, dir: -1, z1: float64(z) - 0.5, z2: float64(z) + 0.5 } )
                     }
-                //}
+                    if world.At( x + 1, y, z ) == 0  {
+                        collisionCandidates = append(collisionCandidates, Side{ x: float64(x) + 0.5, dir: 1, z1: float64(z) - 0.5, z2: float64(z) + 0.5 } )
+                    }
+                    if world.At( x, y, z -1 ) == 0  {
+                        // fmt.Printf("float64(z) - 0.5: %f\n", float64(z) - 0.5)
+                        collisionCandidates = append(collisionCandidates, Side{ z: float64(z) - 0.5, dir: -1, x1: float64(x) - 0.5, x2: float64(x) + 0.5 } )
+                    }
+                    if world.At( x, y, z + 1 ) == 0  {
+                        collisionCandidates = append(collisionCandidates, Side{ z: float64(z) + 0.5, dir: 1, x1: float64(x) - 0.5, x2: float64(x) + 0.5 } )
+                    }                  
+                }
             }
         }
     }
+
+
+    // Solve XZ collisions
+    for _, side := range collisionCandidates {
+        if lineRectCollide(side, playerRect) {
+        // fmt.Printf("side.x: %f\n", side.x)
+            if side.x != 0 && mob.Velocity()[XAXIS] * side.dir < 0 {
+                // fmt.Printf("Snapping x\n")
+                mob.Snapx(side.x + (side.dir * playerRect.sizex/2), 0)
+            }
+            if side.z != 0 && mob.Velocity()[ZAXIS] * side.dir < 0  {
+                // fmt.Printf("Snapping z\n")
+                mob.Snapz(side.z + (side.dir * playerRect.sizez/2) , 0)
+            }
+        }
+     }
+
+
+
+    playerFace := Side{ x1: float64(mob.X()) + mob.Velocity()[XAXIS] * dt - 0.5, z1: float64(mob.Z()) + mob.Velocity()[ZAXIS] * dt - 0.5, x2: float64(mob.X()) + mob.Velocity()[XAXIS] * dt + 0.5, z2: float64(mob.Z()) + mob.Velocity()[ZAXIS] * dt + 0.5 }
+
+    // fmt.Printf("playerFace x1:%f, x2:%f, z1:%f, z2:%f\n", playerFace.x1, playerFace.x2, playerFace.z1, playerFace.z2)
+
+    newBZLower := moby - 1// int16(math.Floor( float64(mob.Y()) + mob.Velocity()[YAXIS] * dt ))
+    // newBZUpper := int16(math.Floor( float64(mob.Y()) + 1.7 + mob.Velocity()[YAXIS] * 1.1  * dt ))
+
+    //fmt.Printf("newBZLower: %d, newBZUpper: %d, mob.Y(): %f\n", newBZLower, newBZUpper,  mob.Y())
+    collisionCandidates = make([]Side, 0)
+
+    for x = mobx - 1; x <= mobx + 1; x++ {
+        for z = mobz - 1; z <= mobz + 1; z++ {
+
+            if world.At( x, newBZLower, z ) != 0 {
+                collisionCandidates =  append(collisionCandidates, Side{ y: float64(newBZLower) + 0.5, dir: 1, x1: float64(x) - 0.5, z1: float64(z) - 0.5, x2: float64(x) + 0.5, z2: float64(z) + 0.5 } )
+            }
+            // if world.At( x, newBZUpper, z ) != 0 {
+            //     collisionCandidates =  append(collisionCandidates, Side{ y: float64(newBZUpper),     dir: -1, x1: float64(x) - 0.5, z1: float64(z) - 0.5, x2: float64(x) + 0.5, z2: float64(z) + 0.5 } );
+            // }
+        }
+    }
+
+    // Solve Y collisions
+    mob.SetFalling(true)
+    for _, face := range collisionCandidates {
+
+        // fmt.Printf("face x1:%f, x2:%f, z1:%f, z2:%f\n", face.x1, face.x2, face.z1, face.z2)
+        if rectRectCollide( face, playerFace ) && mob.Velocity()[YAXIS] * face.dir < 0  {
+            if mob.Velocity()[YAXIS] < 0 {
+                mob.SetFalling(false)
+                mob.Snapy(face.y + 0.5, 0)
+            } else {
+                mob.Snapy(face.y + 0.5, 0)
+            }
+            break
+        }
+    }
+
+
+    // for dx = -1; dx < 2; dx++ {
+    //     for dz = -1; dz < 2; dz++ {
+    //         for dy = -1; dy < 2; dy++ {
+    //             //if dy != 0 && dx != 00 && dz != 0 {
+    //                 if world.At(mobx+dx, moby+dy, mobz+dz) != 0 {
+    //                     block := BlockBound(mobx+dx, moby+dy, mobz+dz)
+
+    //                     // normal := Vector{ -float64(dx), -float64(dy), -float64(dz)  }
+    //                     // //separation := block.Distance(mobBounds) - normal.Dot(mobBounds.extent) - normal.Dot(block.extent)
+
+    //                     // sepx := math.Abs(mobBounds.position[XAXIS] - block.position[XAXIS]) - mobBounds.extent[XAXIS] - block.extent[XAXIS]
+    //                     // sepy := math.Abs(mobBounds.position[YAXIS] - block.position[YAXIS]) - mobBounds.extent[YAXIS] - block.extent[YAXIS]
+    //                     // sepz := math.Abs(mobBounds.position[ZAXIS] - block.position[ZAXIS]) - mobBounds.extent[ZAXIS] - block.extent[ZAXIS]
+
+    //                     // if sepy < 0 {
+    //                     //     if sepx < 0 {
+    //                     //         mob.Reaction(Vector{float64(dx), 0, 0})
+    //                     //     }
+    //                     //     if sepz < 0 {
+    //                     //         mob.Reaction(Vector{0, 0, float64(dz)})
+    //                     //     }
+
+    //                     //     fmt.Printf("normal: %s\n", normal)
+    //                     //     fmt.Printf("sepx: %f\n", sepx)
+    //                     //     fmt.Printf("sepy: %f\n", sepy)
+    //                     //     fmt.Printf("sepz: %f\n", sepz)
+                                
+    //                     // }
+
+    //                     if block.Overlaps(mobBounds) {
+    //                         //fmt.Printf("block.y+0.5: %f, mob.y-0.5:%f\n", float64(moby+dy), mobBounds.position[1])
+
+    //                         // penetration := block.Distance(mobBounds) // an approximation
+    //                         normal := Vector{ float64(dx), float64(dy), float64(dz)  }
+    //                         fmt.Printf("normal: %s\n", normal)
+    //                         // relativeSpeed := normal.Dot(mob.Velocity())
+    //                         // /reaction := normal.Dot(mob.Forces())
+
+    //                         //reactionForce := normal.Scale(reaction * 5);
+    //                         //fmt.Printf("reactionForce: %f\n", reactionForce)
+    //                         //mob.ApplyForce(reactionForce)
+    //                         mob.Reaction(normal)
+
+    //                         // fmt.Printf("relativeSpeed: %f\n", relativeSpeed)
+    //                         // fmt.Printf("penetration: %f\n", penetration)
+
+    //                         // if relativeSpeed > 0 {
+    //                         //     collisionForce := normal.Scale(relativeSpeed * c);
+    //                         //     fmt.Printf("collisionForce: %f\n", collisionForce)
+    //                         //      mob.ApplyForce(collisionForce)
+    //                         // }
+
+    //                         // penaltyForce := normal.Scale(penetration * k);
+    //                         // fmt.Printf("penaltyForce: %f\n", penaltyForce)
+    //                         // mob.ApplyForce(penaltyForce)
+
+    //                         // dampingForce := normal.Scale(relativeSpeed * penetration * b);
+    //                         // fmt.Printf("dampingForce: %f\n", dampingForce)
+    //                         // mob.ApplyForce(dampingForce)
+    //                     }
+    //                 }
+    //             //}
+    //         }
+    //     }
+    // }
 }
 
 

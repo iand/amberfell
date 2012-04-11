@@ -95,7 +95,9 @@ func main() {
 
     done = false
     for !done {
-        controlForce := af.Vector{0, 0, 0}
+        // controlForce := af.Vector{0, 0, 0}
+
+        var vx, vz float64
 
         for e := sdl.PollEvent(); e != nil; e = sdl.PollEvent() {
             switch e.(type) {
@@ -140,39 +142,36 @@ func main() {
             view_roty -= 9
         }
         if keys[sdl.K_w] != 0 {
-            controlForce[0] += math.Cos(player.Heading() * math.Pi / 180) * 11000    
-            controlForce[2] -= math.Sin(player.Heading() * math.Pi / 180) * 11000   
+            if !player.IsFalling() {
+                vx = math.Cos(player.Heading() * math.Pi / 180)
+                vz = -math.Sin(player.Heading() * math.Pi / 180)
+                //player.Accelerate(af.Vector{math.Cos(player.Heading() * math.Pi / 180) * 4, 0, -math.Sin(player.Heading() * math.Pi / 180) * 4})
+            }
+            // controlForce[0] += math.Cos(player.Heading() * math.Pi / 180) * 11000    
+            // controlForce[2] -= math.Sin(player.Heading() * math.Pi / 180) * 11000   
              // player.ApplyForce(af.Vector{math.Cos(player.Heading() * math.Pi / 180) * 11000, 0, -math.Sin(player.Heading() * math.Pi / 180) * 11000})
             //player.ApplyForce(af.Vector{math.Sin(player.Heading() * math.Pi / 180) * 500, 0, math.Cos(player.Heading() * math.Pi / 180) * 500})
 
-            player.Bounce -= 10
-            if player.Bounce < 0 {
-                player.Bounce += 360
-            }
         }
         if keys[sdl.K_s] != 0 {
-            controlForce[0] -= math.Cos(player.Heading() * math.Pi / 180) * 7000    
-            controlForce[2] += math.Sin(player.Heading() * math.Pi / 180) * 7000   
+            if !player.IsFalling() {
+                vx = -math.Cos(player.Heading() * math.Pi / 180)
+                vz = math.Sin(player.Heading() * math.Pi / 180)
+                // player.Accelerate(af.Vector{-math.Cos(player.Heading() * math.Pi / 180) * 4, 0, math.Sin(player.Heading() * math.Pi / 180) * 4})
+            }
+            // controlForce[0] -= math.Cos(player.Heading() * math.Pi / 180) * 7000    
+            // controlForce[2] += math.Sin(player.Heading() * math.Pi / 180) * 7000   
 
             //player.ApplyForce(af.Vector{-, 0, })
             //player.ApplyForce(af.Vector{-math.Sin(player.Heading() * math.Pi / 180) * 50, 0, -math.Cos(player.Heading() * math.Pi / 180) * 50})
-            player.Bounce += 10
-            if player.Bounce > 360 {
-                player.Bounce -= 360
-            }        
+     
         }
         if keys[sdl.K_a] != 0 {
             player.Rotate(9)
-            // /fmt.Printf("Heading: %f\n", player.Heading())
-
-            extentx := math.Abs(player.W() * math.Cos(player.Heading() * math.Pi / 180) / 2) + math.Abs(player.D() * math.Sin(player.Heading() * math.Pi / 180) / 2)
-            extentz := math.Abs(player.W() * math.Sin(player.Heading() * math.Pi / 180) / 2) + math.Abs(player.D() * math.Cos(player.Heading() * math.Pi / 180) / 2)
-            fmt.Printf("extentx: %f, extentz: %f\n", extentx, extentz)
 
         }        
         if keys[sdl.K_d] != 0 {
             player.Rotate(-9)
-            fmt.Printf("Heading: %f\n", player.Heading())
         }        
         if keys[sdl.K_z] != 0 {
             if (sdl.GetModState() & sdl.KMOD_RSHIFT) != 0 {
@@ -193,6 +192,15 @@ func main() {
             fmt.Printf("x:%f, z:%f\n", player.X(), player.Z())
         }
 
+        if vx != 0 || vz != 0 {
+            player.Setvx(8 * vx)
+            player.Setvz(8 * vz)
+        } else {
+            player.Setvx(player.Velocity()[af.XAXIS] / 1.5)
+            player.Setvz(player.Velocity()[af.ZAXIS] / 1.5)
+        }
+
+
 
         newTime := time.Now().UnixNano()
         deltaTime := newTime - currentTime
@@ -205,8 +213,8 @@ func main() {
 
         for accumulator > dt {
             accumulator -= dt
-            player.ZeroForces()
-            player.ApplyForce(controlForce)
+            // player.ZeroForces()
+            // player.ApplyForce(controlForce)
             world.ApplyForces(player, float64(dt) / 1e9)
             player.Update(float64(dt) / 1e9)
 
@@ -413,7 +421,7 @@ func drawPlayer() {
 
 
     h = float32(player.H()) * blockSize / 2
-    gl.Translatef(0.0, h ,0.0)
+    gl.Translatef(0.0, h - blockSize / 2 ,0.0)
     w = float32(player.W()) * blockSize / 2
     d = float32(player.D()) * blockSize / 2
     //gl.Translatef(0.0,-h,0.0)
