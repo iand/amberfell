@@ -161,9 +161,11 @@ func rectRectCollide( r1 Side, r2 Side) bool {
 
 func (world *World) ApplyForces(mob Mob, dt float64) {
     // mobBounds := mob.DesiredBoundingBox(dt)
-    mobx := int16(math.Floor(mob.Position()[XAXIS] + 0.5))
-    moby := int16(math.Floor(mob.Position()[YAXIS] + 0.5))
-    mobz := int16(math.Floor(mob.Position()[ZAXIS] + 0.5))
+    ip := mob.IntPosition()
+
+    mobx := ip[XAXIS]
+    moby := ip[YAXIS]
+    mobz := ip[ZAXIS]
  
 
     // Gravity

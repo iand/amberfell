@@ -51,6 +51,9 @@ var (
     mapTextures [12]gl.Texture
     world af.World
     DebugMode bool
+    screenWidth, screenHeight int
+    tileWidth = 32
+    screenScale int = 3 * tileWidth
 )
 
 
@@ -64,7 +67,7 @@ func main() {
     var keys []uint8
     player = new(af.Player)
     player.Init(0, 10, 10, af.GroundLevel+1)
-    world.Init(30,30,10)
+    world.Init(56,56,10)
     
     sdl.Init(sdl.INIT_VIDEO)
 
@@ -111,6 +114,21 @@ func main() {
                     panic("we couldn't set the new video mode??")
                 }
                 break
+
+            case *sdl.MouseButtonEvent:
+                draw2(true)
+                re := e.(*sdl.MouseButtonEvent)
+                println("Click:", re.X, re.Y)
+                xv, yv := int(re.X), screenHeight - int(re.Y)
+                println("View:", xv, yv)
+
+                data := [4]uint8{0, 0, 0, 0}
+
+                gl.ReadPixels(xv, yv, 1, 1, gl.RGBA, &data[0])
+
+                fmt.Printf("pixel data: %d, %d, %d, %d\n", data[0], data[1], data[2], data[3])
+                draw2(false)
+
 
             case *sdl.QuitEvent:
                 done = true
@@ -172,7 +190,7 @@ func main() {
         }        
         if keys[sdl.K_SPACE] != 0 {
             if !player.IsFalling() {
-                player.Accelerate(af.Vector{0, 8, 0})
+                player.Accelerate(af.Vector{0, 7, 0})
             }
         } 
         if keys[sdl.K_d] != 0 {
@@ -198,15 +216,15 @@ func main() {
         }
 
         if vx != 0 || vz != 0 {
-            player.Setvx(8 * vx)
-            player.Setvz(8 * vz)
+            player.Setvx(10 * vx)
+            player.Setvz(10 * vz)
         } else {
             if !player.IsFalling() {
-                player.Setvx(player.Velocity()[af.XAXIS] / 1.5)
-                player.Setvz(player.Velocity()[af.ZAXIS] / 1.5)
+                player.Setvx(player.Velocity()[af.XAXIS] / 1.8)
+                player.Setvz(player.Velocity()[af.ZAXIS] / 1.8)
             } else {
-                player.Setvx(player.Velocity()[af.XAXIS] / 1.01)
-                player.Setvz(player.Velocity()[af.ZAXIS] / 1.01)
+                player.Setvx(player.Velocity()[af.XAXIS] / 1.02)
+                player.Setvz(player.Velocity()[af.ZAXIS] / 1.02)
 
             }
 
@@ -237,7 +255,7 @@ func main() {
 
         //interpolate(previous, current, accumulator/dt)
 
-        draw2()
+        draw2(false)
         drawFrame++
 
         if update.GetTicks() > 1e9/2 {
@@ -254,39 +272,64 @@ func main() {
 
 }
 
+func screenToView(xs uint16, ys uint16) (xv float64, yv float64) {
+    // xs = 0 => -float64(screenWidth) / screenScale
+    // xs = screenWidth => float64(screenWidth) / screenScale
+
+    viewWidth := 2 * float64(screenWidth) / float64(screenScale)
+    xv = (-viewWidth / 2 + viewWidth * float64(xs) / float64(screenWidth))
+
+    viewHeight := 2 * float64(screenHeight) / float64(screenScale)
+    yv = (-viewHeight / 2 + viewHeight * float64(ys) / float64(screenHeight))
+
+    return
+}
+
 /* new window size or exposure */
 func reshape(width int, height int) {
-    var scale float64 = 100
+    screenWidth = width
+    screenHeight = height
+
     gl.Viewport(0, 0, width, height)
     gl.MatrixMode(gl.PROJECTION)
     gl.LoadIdentity()
-    gl.Ortho(-float64(width) /scale, float64(width) /scale, -float64(height) /scale, float64(height) /scale, -100, 100)
+    //gl.Frustum(-2, 2, 1, 3, 1.5, 200.0)
+    
+    //gl.Frustum(-float64(width) /scale, float64(width) /scale, -float64(height) /scale, float64(height) /scale, -1, 100)
+    // var scale float64 = 100
+    // gl.Ortho(-float64(width) /scale, float64(width) /scale, -float64(height) /scale, float64(height) /scale, -100, 100)
+    
+    xmin, ymin := screenToView(0, 0)
+    xmax, ymax := screenToView(uint16(width), uint16(height))
+    
+    gl.Ortho(float64(xmin), float64(xmax), float64(ymin), float64(ymax), -100, 100)
     gl.MatrixMode(gl.MODELVIEW)
     gl.LoadIdentity()
-    glu.LookAt(0.0, 0.0, float64(height) /5, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0)
+    glu.LookAt(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0)
 }
 
 
 func init2() {
-
     gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 //    gl.ShadeModel(gl.SMOOTH)    
     gl.Enable(gl.LIGHTING)
     gl.Enable(gl.LIGHT0)
-    gl.Lightfv(0, gl.AMBIENT, []float32{0,0,0,1})
+    gl.Lightfv(0, gl.AMBIENT, []float32{0.5,0.5,0.5,1})
     gl.Lightfv(0, gl.DIFFUSE, []float32{1,1,1,1})
     gl.Lightfv(0, gl.SPECULAR, []float32{1,1,1,0.5})
-    gl.Lightfv(0, gl.POSITION, []float32{0, 0, 2, 1})
+    gl.Lightfv(0, gl.POSITION, []float32{-5.0, 5.0, 10.0, 0})
     gl.ColorMaterial ( gl.FRONT_AND_BACK, gl.EMISSION )
     gl.ColorMaterial ( gl.FRONT_AND_BACK, gl.AMBIENT_AND_DIFFUSE )
     gl.Enable ( gl.COLOR_MATERIAL )
+
+
 
     gl.MatrixMode(gl.PROJECTION)
     gl.LoadIdentity()
     gl.Ortho(-12.0, 12.0, -12.0, 12.0, -10, 10.0)
     gl.MatrixMode(gl.MODELVIEW)
     gl.LoadIdentity()
-    glu.LookAt(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+    glu.LookAt(0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0)
 
 
     gl.ClearDepth(1.0)                         // Depth Buffer Setup
@@ -304,13 +347,30 @@ func init2() {
 }
 
 
-func draw2() {
+func draw2(selectMode bool) {
     gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT)
+    if selectMode {
+        gl.Disable(gl.TEXTURE_2D)
+        gl.Disable(gl.FOG)
+        gl.Disable(gl.LIGHTING)
+        gl.Disable(gl.LIGHT0)
+        gl.Disable ( gl.COLOR_MATERIAL )
+    } else {
+        gl.Color4ub(255, 255, 255, 255)
+        gl.Enable(gl.TEXTURE_2D)
+        //gl.Enable(gl.FOG)
+        gl.Enable(gl.LIGHTING)
+        gl.Enable(gl.LIGHT0)
+        gl.Enable ( gl.COLOR_MATERIAL )
+    }
+
+
+
     gl.LoadIdentity()
     gl.PushMatrix()
 
     gl.Rotated(view_rotx, 1.0, 0.0, 0.0)
-    gl.Rotated(view_roty, 0.0, 1.0, 0.0)
+    gl.Rotated(-player.Heading() - view_roty, 0.0, 1.0, 0.0)
     gl.Rotated(0, 0.0, 0.0, 1.0)
 
 
@@ -318,25 +378,29 @@ func draw2() {
     gl.PushMatrix()
     //stepHeight := float32(math.Sin(player.Bounce * piover180)/10.0)
     gl.Rotated(player.Heading(), 0.0, 1.0, 0.0)
-    drawPlayer()
+    drawPlayer(selectMode)
     gl.PopMatrix()
 
     gl.Translatef(-player.X() * blockSize, -player.Y() * blockSize, -player.Z() * blockSize)
 
 
-    var i, j, k int16
-    for i =0; i < world.W; i++ {
+    var x, y, z int16
+    for x =0; x < world.W; x++ {
         //gl.Translatef(3.0,0.0,-30.0)
 
-        for j=0; j < world.D; j++ {
-            for k=0; k < world.H; k++ {
-                var terrain byte = world.At(i, k, j)
+        for z=0; z < world.D; z++ {
+            for y=0; y < world.H; y++ {
+                var terrain byte = world.At(x, y, z)
                 if terrain != 0 {
-                    var n, s, w, e, u, d bool = world.AirNeighbours(i, j, k)
+                    var n, s, w, e, u, d bool = world.AirNeighbours(x, z, y)
+                    var id uint16 = 0
+                    if z >= int16(player.Z() - 2.5) && z <= int16(player.Z() + 2.5) {
+                        id = 10
+                    }
                     gl.PushMatrix()
-                    gl.Translatef(float32(i) * blockSize,float32(k) * blockSize,float32(j) * blockSize)
+                    gl.Translatef(float32(x) * blockSize,float32(y) * blockSize,float32(z) * blockSize)
                     //print ("i:", i, "j:", j, "b:", world.At(i, j, groundLevel))
-                    cube(n, s, w, e, u, d, terrain)
+                    cube(n, s, w, e, u, d, terrain, id, selectMode)
                     gl.PopMatrix()
                 }
             }
@@ -344,13 +408,16 @@ func draw2() {
     }
 
     gl.PopMatrix()
-    sdl.GL_SwapBuffers()
-    gl.Finish()
+    if !selectMode {
+        sdl.GL_SwapBuffers()
+        gl.Finish()
+    }
+
 
 }
 
 
-func drawPlayer() {
+func drawPlayer(selectMode bool) {
 
     var w,h,d float32 = blockSize, blockSize, blockSize
 
@@ -518,12 +585,15 @@ func drawPlayer() {
 }
 
 
-func cube( n bool, s bool, w bool, e bool, u bool, d bool, texture byte) {
-    // /gl.Enable(gl.TEXTURE_2D)
+func cube( n bool, s bool, w bool, e bool, u bool, d bool, texture byte, id uint16, selectMode bool) {
     mapTextures[texture].Bind(gl.TEXTURE_2D)
+    
     gl.Begin(gl.QUADS)                  // Start Drawing Quads
 
         if n {
+            if selectMode {
+                gl.Color4ub(uint8(id & 0x00FF), uint8(id & 0xFF00 >> 8), 0, 0)
+            } 
             // Front Face
             gl.Normal3f( 0.0, 0.0, 1.0)
             gl.TexCoord2f(0.0, 0.0)
@@ -538,6 +608,9 @@ func cube( n bool, s bool, w bool, e bool, u bool, d bool, texture byte) {
 
         if s {
             // Back Face
+            if selectMode {
+                gl.Color4ub(uint8(id & 0x00FF), uint8(id & 0xFF00 >> 8), 1, 0)
+            }
             gl.Normal3f( 0.0, 0.0, -1.0)
             gl.TexCoord2f(1.0, 0.0)        
             gl.Vertex3f(-blockSize/2, -blockSize/2, -blockSize/2)  // Bottom Right Of The Texture and Quad
@@ -552,6 +625,9 @@ func cube( n bool, s bool, w bool, e bool, u bool, d bool, texture byte) {
         //gl.Color3f(0.3,0.3,0.6)
         if w {
             // Right face
+            if selectMode {
+                gl.Color4ub(uint8(id & 0x00FF), uint8(id & 0xFF00 >> 8), 2, 0)
+            }
             gl.Normal3f( 1.0, 0.0, 0.0)
             gl.TexCoord2f(1.0, 0.0)
             gl.Vertex3f( blockSize/2, -blockSize/2, -blockSize/2)  // Bottom Right Of The Texture and Quad
@@ -565,6 +641,9 @@ func cube( n bool, s bool, w bool, e bool, u bool, d bool, texture byte) {
 
         if e {
             // Left Face
+            if selectMode {
+                gl.Color4ub(uint8(id & 0x00FF), uint8(id & 0xFF00 >> 8), 3, 0)
+            }
             gl.Normal3f( -1.0, 0.0, 0.0)
             gl.TexCoord2f(0.0, 0.0)
             gl.Vertex3f(-blockSize/2, -blockSize/2, -blockSize/2)  // Bottom Left Of The Texture and Quad
@@ -582,6 +661,9 @@ func cube( n bool, s bool, w bool, e bool, u bool, d bool, texture byte) {
         //gl.Color3f(0.3,1.0,0.3)
         if u {
             // Top Face
+            if selectMode {
+                gl.Color4ub(uint8(id & 0x00FF), uint8(id & 0xFF00 >> 8), 4, 0)
+            }
             gl.Normal3f( 0.0, 1.0, 0.0)
             gl.TexCoord2f(0.0, 1.0)
             gl.Vertex3f(-blockSize/2,  blockSize/2, -blockSize/2)  // Top Left Of The Texture and Quad
@@ -594,6 +676,9 @@ func cube( n bool, s bool, w bool, e bool, u bool, d bool, texture byte) {
            }
      
         if d {
+            if selectMode {
+                gl.Color4ub(uint8(id & 0x00FF), uint8(id & 0xFF00 >> 8), 5, 0)
+            }
             // Bottom Face
             gl.Normal3f( 0.0, -1.0, 0.0)
             gl.TexCoord2f(1.0, 1.0)

@@ -11,6 +11,7 @@ type Mob interface {
     IsFalling() bool
     Velocity() Vector
     Position() Vector
+    IntPosition() IntVector
     Snapx(x float64, vx float64)
     Snapy(y float64, vy float64)
     Snapz(z float64, vz float64)

@@ -4,6 +4,7 @@ import (
     "math"
 )
 
+type IntVector [3]int16
 type Vector [3]float64
 
 func (a Vector) Minus(b Vector) Vector {
