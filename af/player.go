@@ -42,6 +42,34 @@ func (p *Player) IntPosition() IntVector {
                       int16(math.Floor(p.position[ZAXIS] + 0.5))}
 }
 
+func (p *Player) FrontBlock() IntVector { 
+    ip := p.IntPosition()
+    if p.heading > 337.5 || p.heading <= 22.5 {
+        ip[XAXIS]++
+    } else if p.heading > 22.5 && p.heading <= 67.5 {
+        ip[XAXIS]++
+        ip[ZAXIS]--
+    } else if p.heading > 67.5 && p.heading <= 112.5 {
+        ip[ZAXIS]--
+    } else if p.heading > 112.5 && p.heading <= 157.5 {
+        ip[XAXIS]--
+        ip[ZAXIS]--
+    } else if p.heading > 157.5 && p.heading <= 202.5 {
+        ip[XAXIS]--
+    } else if p.heading > 202.5 && p.heading <= 247.5 {
+        ip[XAXIS]--
+        ip[ZAXIS]++
+    } else if p.heading > 247.5 && p.heading <= 292.5 {
+        ip[ZAXIS]++
+    } else if p.heading > 292.5 && p.heading <= 337.5 {
+        ip[XAXIS]++
+        ip[ZAXIS]++
+    }
+
+    return ip
+}
+
+
 func (p *Player) SetFalling(b bool) { p.falling = b }
 
 func (p *Player) Rotate(angle float64) {

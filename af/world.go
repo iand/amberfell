@@ -33,10 +33,10 @@ func (world *World) Init(w int16, d int16, h int16) {
     for iw = 0; iw < w; iw++ {
         for id = 0; id < d; id++ {
             for ih = 0; ih <= GroundLevel; ih++ {
-                world.Set(iw, id, ih, 2) // dirt
+                world.Set(iw, ih, id, 2) // dirt
             }
             for ih = GroundLevel + 1; ih < h; ih++ {
-                world.Set(iw, id, ih, 0) // air
+                world.Set(iw, ih, id, 0) // air
             }
         }
     }
@@ -45,13 +45,13 @@ func (world *World) Init(w int16, d int16, h int16) {
     for i := 0; i < numFeatures; i++ {
         iw, id = world.RandomSquare()
 
-        world.Set(iw, id, GroundLevel, 1) // stone
-        world.Grow(iw, id, GroundLevel, 40, 40, 40, 40, 10, 30, 1)
+        world.Set(iw, GroundLevel, id, 1) // stone
+        world.Grow(iw, GroundLevel, id, 40, 40, 40, 40, 10, 30, 1)
     }
     iw, id = world.RandomSquare()
 
-    world.Set(iw, id, GroundLevel, 0) // air
-    world.Grow(iw, id, GroundLevel, 30, 30, 30, 30, 0, 30, 0)
+    world.Set(iw, GroundLevel, id, 0) // air
+    world.Grow(iw, GroundLevel, id, 30, 30, 30, 30, 0, 30, 0)
 
 }
 
@@ -62,7 +62,7 @@ func (world *World) At(x int16, y int16, z int16) byte {
     return world.Blocks[world.W*world.D*y+world.D*x+z]
 }
 
-func (world *World) Set(x int16, z int16, y int16, b byte) {
+func (world *World) Set(x int16, y int16, z int16, b byte) {
     world.Blocks[world.W*world.D*y+world.D*x+z] = b
 }
 
@@ -76,30 +76,30 @@ func (world *World) RandomSquare() (x int16, z int16) {
 // east/west = +/- x
 // up/down = +/- y
 
-func (world *World) Grow(x int16, z int16, y int16, n int, s int, w int, e int, u int, d int, texture byte) {
+func (world *World) Grow(x int16, y int16, z int16, n int, s int, w int, e int, u int, d int, texture byte) {
     if x < world.W-1 && world.At(x+1, y-1, z) != 0 && rand.Intn(100) < e {
-        world.Set(x+1, z, y, texture)
-        world.Grow(x+1, z, y, n, s, 0, e, u, d, texture)
+        world.Set(x+1, y, z, texture)
+        world.Grow(x+1, y, z, n, s, 0, e, u, d, texture)
     }
     if x > 0 && world.At(x-1, y-1, z) != 0 && rand.Intn(100) < w {
-        world.Set(x-1, z, y, texture)
-        world.Grow(x-1, z, y, n, s, w, 0, u, d, texture)
+        world.Set(x-1, y, z, texture)
+        world.Grow(x-1, y, z, n, s, w, 0, u, d, texture)
     }
     if y < world.D-1 && world.At(x, y-1, z+1) != 0 && rand.Intn(100) < s {
-        world.Set(x, z+1, y, texture)
-        world.Grow(x, z+1, y, n, 0, w, e, u, d, texture)
+        world.Set(x, y, z+1, texture)
+        world.Grow(x, y, z+1, n, 0, w, e, u, d, texture)
     }
     if y > 0 && world.At(x, y-1, z-1) != 0 && rand.Intn(100) < n {
-        world.Set(x, z-1, y, texture)
-        world.Grow(x, z-1, y, 0, s, w, e, u, d, texture)
+        world.Set(x, y, z-1, texture)
+        world.Grow(x, y, z-1, 0, s, w, e, u, d, texture)
     }
     if y < world.H-1 && rand.Intn(100) < u {
-        world.Set(x, z, y+1, texture)
-        world.Grow(x, z, y+1, n, s, w, e, u, 0, texture)
+        world.Set(x, y+1, z, texture)
+        world.Grow(x, y+1, z, n, s, w, e, u, 0, texture)
     }
     if y > 0 && rand.Intn(100) < d {
-        world.Set(x, z, y-1, texture)
-        world.Grow(x, z, y-1, n, s, w, e, 0, d, texture)
+        world.Set(x, y-1, z, texture)
+        world.Grow(x, y-1, z, n, s, w, e, 0, d, texture)
     }
 }
 

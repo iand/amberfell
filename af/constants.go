@@ -1,3 +1,3 @@
 package af
 
-const GroundLevel = 6
+const GroundLevel = 4

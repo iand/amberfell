@@ -37,7 +37,7 @@ var Frames uint32 = 0
 
 
 var view_rotx float64 = 50.0
-var view_roty float64 = -50.0
+var view_roty float64 = 50.0
 var view_rotz float64 = 0.0
 var gear1, gear2, gear3 uint
 var angle float64 = 0.0
@@ -113,18 +113,49 @@ func main() {
                 break
 
             case *sdl.MouseButtonEvent:
-                draw2(true)
                 re := e.(*sdl.MouseButtonEvent)
-                println("Click:", re.X, re.Y)
-                xv, yv := int(re.X), screenHeight - int(re.Y)
-                println("View:", xv, yv)
+                if re.Button == 1 && re.State == 1 { // LEFT, DOWN
+                    // println("Click:", re.X, re.Y, re.State, re.Button, re.Which)
 
-                data := [4]uint8{0, 0, 0, 0}
+                    // MOUSEBUTTONDOWNMASK
+                    xv, yv := int(re.X), screenHeight - int(re.Y)
+                    data := [4]uint8{0, 0, 0, 0}
 
-                gl.ReadPixels(xv, yv, 1, 1, gl.RGBA, &data[0])
+                    draw2(true)
+                    gl.ReadPixels(xv, yv, 1, 1, gl.RGBA, &data[0])
+                    draw2(false)
 
-                fmt.Printf("pixel data: %d, %d, %d, %d\n", data[0], data[1], data[2], data[3])
-                draw2(false)
+                    fmt.Printf("pixel data: %d, %d, %d, %d\n", data[0], data[1], data[2], data[3])
+
+                    id := uint16(data[0]) + uint16(data[1]) * 256
+                    if id != 0 {
+                        face := data[2]
+                        dx, dy, dz := blockIdToRelativeCoordinate(id)
+                        fmt.Printf("id: %d, dx: %d, dy: %d, dz: %d, face: %d\n", id, dx, dy, dz, face)
+                        if ! (dx == 0 && dy == 0 && dz == 0) {
+                            pos := player.IntPosition()
+                            pos[af.XAXIS] += dx
+                            pos[af.YAXIS] += dy
+                            pos[af.ZAXIS] += dz
+                            if face == 4 { // top
+                                pos[af.YAXIS]++
+                            } else if face == 5 { // bottom
+                                pos[af.YAXIS]--
+                            } else if face == 0 { // front
+                                pos[af.ZAXIS]++
+                            } else if face == 1 { // back
+                                pos[af.ZAXIS]--
+                            } else if face == 2 { // left
+                                pos[af.XAXIS]++
+                            } else if face == 3 { // right
+                                pos[af.XAXIS]--
+                            }
+                            world.Set(pos[af.XAXIS], pos[af.YAXIS], pos[af.ZAXIS], 2)
+                        }
+                    }
+                }
+
+
 
 
             case *sdl.QuitEvent:
@@ -160,25 +191,14 @@ func main() {
             if !player.IsFalling() {
                 vx = math.Cos(player.Heading() * math.Pi / 180)
                 vz = -math.Sin(player.Heading() * math.Pi / 180)
-                //player.Accelerate(af.Vector{math.Cos(player.Heading() * math.Pi / 180) * 4, 0, -math.Sin(player.Heading() * math.Pi / 180) * 4})
             }
-            // controlForce[0] += math.Cos(player.Heading() * math.Pi / 180) * 11000    
-            // controlForce[2] -= math.Sin(player.Heading() * math.Pi / 180) * 11000   
-             // player.ApplyForce(af.Vector{math.Cos(player.Heading() * math.Pi / 180) * 11000, 0, -math.Sin(player.Heading() * math.Pi / 180) * 11000})
-            //player.ApplyForce(af.Vector{math.Sin(player.Heading() * math.Pi / 180) * 500, 0, math.Cos(player.Heading() * math.Pi / 180) * 500})
 
         }
         if keys[sdl.K_s] != 0 {
             if !player.IsFalling() {
                 vx = -math.Cos(player.Heading() * math.Pi / 180)
                 vz = math.Sin(player.Heading() * math.Pi / 180)
-                // player.Accelerate(af.Vector{-math.Cos(player.Heading() * math.Pi / 180) * 4, 0, math.Sin(player.Heading() * math.Pi / 180) * 4})
             }
-            // controlForce[0] -= math.Cos(player.Heading() * math.Pi / 180) * 7000    
-            // controlForce[2] += math.Sin(player.Heading() * math.Pi / 180) * 7000   
-
-            //player.ApplyForce(af.Vector{-, 0, })
-            //player.ApplyForce(af.Vector{-math.Sin(player.Heading() * math.Pi / 180) * 50, 0, -math.Cos(player.Heading() * math.Pi / 180) * 50})
      
         }
         if keys[sdl.K_a] != 0 {
@@ -217,11 +237,11 @@ func main() {
             player.Setvz(10 * vz)
         } else {
             if !player.IsFalling() {
-                player.Setvx(player.Velocity()[af.XAXIS] / 1.8)
-                player.Setvz(player.Velocity()[af.ZAXIS] / 1.8)
+                player.Setvx(player.Velocity()[af.XAXIS] / 2.5)
+                player.Setvz(player.Velocity()[af.ZAXIS] / 2.5)
             } else {
-                player.Setvx(player.Velocity()[af.XAXIS] / 1.02)
-                player.Setvz(player.Velocity()[af.ZAXIS] / 1.02)
+                player.Setvx(player.Velocity()[af.XAXIS] / 1.04)
+                player.Setvz(player.Velocity()[af.ZAXIS] / 1.04)
 
             }
 
@@ -290,11 +310,6 @@ func reshape(width int, height int) {
     gl.Viewport(0, 0, width, height)
     gl.MatrixMode(gl.PROJECTION)
     gl.LoadIdentity()
-    //gl.Frustum(-2, 2, 1, 3, 1.5, 200.0)
-    
-    //gl.Frustum(-float64(width) /scale, float64(width) /scale, -float64(height) /scale, float64(height) /scale, -1, 100)
-    // var scale float64 = 100
-    // gl.Ortho(-float64(width) /scale, float64(width) /scale, -float64(height) /scale, float64(height) /scale, -100, 100)
     
     xmin, ymin := screenToView(0, 0)
     xmax, ymax := screenToView(uint16(width), uint16(height))
@@ -331,7 +346,6 @@ func init2() {
 
     gl.ClearDepth(1.0)                         // Depth Buffer Setup
     gl.Enable(gl.DEPTH_TEST)                        // Enables Depth Testing
-    //gl.DepthFunc(gl.LEQUAL)
     gl.Hint(gl.PERSPECTIVE_CORRECTION_HINT, gl.NICEST)
 
     gl.Enable(gl.TEXTURE_2D)
@@ -364,7 +378,7 @@ func draw2(selectMode bool) {
     gl.PushMatrix()
 
     gl.Rotated(view_rotx, 1.0, 0.0, 0.0)
-    gl.Rotated(-player.Heading() - view_roty, 0.0, 1.0, 0.0)
+    gl.Rotated(-player.Heading() + view_roty, 0.0, 1.0, 0.0)
     gl.Rotated(0, 0.0, 0.0, 1.0)
 
 
@@ -378,6 +392,7 @@ func draw2(selectMode bool) {
     gl.Translatef(-player.X() * blockSize, -player.Y() * blockSize, -player.Z() * blockSize)
 
 
+    ip := player.IntPosition()
     var x, y, z int16
     for x =0; x < world.W; x++ {
         //gl.Translatef(3.0,0.0,-30.0)
@@ -388,8 +403,12 @@ func draw2(selectMode bool) {
                 if terrain != 0 {
                     var n, s, w, e, u, d bool = world.AirNeighbours(x, z, y)
                     var id uint16 = 0
-                    if z >= int16(player.Z() - 2.5) && z <= int16(player.Z() + 2.5) {
-                        id = 10
+
+                    dx := x - ip[af.XAXIS]
+                    dy := y - ip[af.YAXIS]
+                    dz := z - ip[af.ZAXIS]
+                    if dx >= -2 && dx <= 2 && dy >= -2 && dy <= 2 && dz >= -2 && dz <= 2 {
+                        id = relativeCoordinateToBlockId(dx, dy, dz)
                     }
                     gl.PushMatrix()
                     gl.Translatef(float32(x) * blockSize,float32(y) * blockSize,float32(z) * blockSize)
@@ -729,3 +748,18 @@ func loadMapTextures() {
     }
 }
 
+// relative coordinates range from -3 to +3
+func relativeCoordinateToBlockId(dx int16, dy int16, dz int16) (id uint16) {
+    id =  0
+    id |= uint16(dx + 3)
+    id |= uint16(dy + 3) << 3
+    id |= uint16(dz + 3) << 6
+    return 
+}   
+
+func blockIdToRelativeCoordinate(id uint16) (dx int16, dy int16, dz int16) {
+    dx = int16(id & 0x0007 - 3)
+    dy = int16((id & 0x0038) >> 3 - 3)
+    dz = int16((id & 0x01C0) >> 6 - 3)
+    return
+}
