@@ -44,16 +44,13 @@ var angle float64 = 0.0
 
 
 var (
-    dirtTexture gl.Texture
-    topTexture gl.Texture
-    sideTexture gl.Texture
     player *af.Player
-    mapTextures [12]gl.Texture
+    mapTextures [16*10]gl.Texture
     world af.World
     DebugMode bool
     screenWidth, screenHeight int
-    tileWidth = 32
-    screenScale int = 3 * tileWidth
+    tileWidth = 48
+    screenScale int = 5 * tileWidth / 2
 )
 
 
@@ -339,9 +336,6 @@ func init2() {
 
     gl.Enable(gl.TEXTURE_2D)
     loadMapTextures()
-    dirtTexture = loadTexture("dirt.png")
-    sideTexture = loadTexture("side.png")
-    topTexture = loadTexture("top.png")
 
 
 }
@@ -505,7 +499,8 @@ func drawPlayer(selectMode bool) {
     w = float32(player.W()) * blockSize / 2
     d = float32(player.D()) * blockSize / 2
     //gl.Translatef(0.0,-h,0.0)
-    topTexture.Bind(gl.TEXTURE_2D)
+    mapTextures[33].Bind(gl.TEXTURE_2D)
+    //topTexture.Bind(gl.TEXTURE_2D)
     gl.Begin(gl.QUADS)                  // Start Drawing Quads
         //gl.Color3f(0.3,0.3,0.6)
         // Front face
@@ -520,7 +515,10 @@ func drawPlayer(selectMode bool) {
         gl.Vertex3f( w, -h,  d)  // Bottom Left Of The Texture and Quad
 
     gl.End()
-    dirtTexture.Bind(gl.TEXTURE_2D)
+
+    mapTextures[32].Bind(gl.TEXTURE_2D)
+
+    // dirtTexture.Bind(gl.TEXTURE_2D)
     gl.Begin(gl.QUADS)                  // Start Drawing Quads
         // Left Face
         gl.Normal3f( 0.0, 0.0, -1.0)
@@ -696,6 +694,8 @@ func cube( n bool, s bool, w bool, e bool, u bool, d bool, texture byte, id uint
 }
 
 func loadMapTextures() {
+    const pixels = 48
+
     var file, err = os.Open("tiles.png")
     var img image.Image
     if err != nil { 
@@ -706,51 +706,26 @@ func loadMapTextures() {
         panic(err) 
     }
 
-    for i:=0; i < 4; i++ {
-        for j:=0; j < 3; j++ {
-            rgba := image.NewRGBA(image.Rect(0, 0, 32, 32))
-            for x := 0; x < 32; x++ { 
-                for y := 0; y < 32; y++ { 
-                    rgba.Set(x, y, img.At(32 * j + x, 32 * i + y)) 
+    for i:=0; i < 10; i++ {
+        for j:=0; j < 16; j++ {
+            rgba := image.NewRGBA(image.Rect(0, 0, pixels, pixels))
+            for x := 0; x < pixels; x++ { 
+                for y := 0; y < pixels; y++ { 
+                    rgba.Set(x, y, img.At(pixels * j + x, pixels * i + y)) 
                 } 
             }
 
-            textureIndex := i*3 + j
+            textureIndex := i*16 + j
             mapTextures[textureIndex] = gl.GenTexture()
             mapTextures[textureIndex].Bind(gl.TEXTURE_2D)
             gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
             gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
             gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
             gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-            gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 32, 32, 0, gl.RGBA, gl.UNSIGNED_BYTE, &rgba.Pix[0])
+            gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, pixels, pixels, 0, gl.RGBA, gl.UNSIGNED_BYTE, &rgba.Pix[0])
             mapTextures[textureIndex].Unbind(gl.TEXTURE_2D)
 
         }
     }
 }
 
-
-func loadTexture(filename string) gl.Texture {
-    t := gl.GenTexture()
-    t.Bind(gl.TEXTURE_2D)
-    gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-    gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-    gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-    gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-    glFillTextureFromImageFile(filename)
-    return t
-}
-
-
-func glFillTextureFromImageFile (filePath string) {
-    var file, err = os.Open(filePath)
-    var img image.Image
-    if err != nil { panic(err) }
-    defer file.Close()
-    if img, _, err = image.Decode(file); err != nil { panic(err) }
-    w, h := img.Bounds().Dx(), img.Bounds().Dy()
-    rgba := image.NewRGBA(image.Rect(0, 0, w, h))
-    for x := 0; x < w; x++ { for y := 0; y < h; y++ { rgba.Set(x, y, img.At(x, y)) } }
-
-    gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, int(w), int(h), 0, gl.RGBA, gl.UNSIGNED_BYTE, &rgba.Pix[0])
-}
