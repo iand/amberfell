@@ -394,19 +394,18 @@ func draw2(selectMode bool) {
 
     ip := player.IntPosition()
     var x, y, z int16
-    for x =0; x < world.W; x++ {
-        //gl.Translatef(3.0,0.0,-30.0)
-
-        for z=0; z < world.D; z++ {
+    for x = ip[af.XAXIS] - 30; x < ip[af.XAXIS] + 30; x++ {
+        for z=ip[af.ZAXIS] - 30; z < ip[af.ZAXIS] + 30; z++ {
             for y=0; y < world.H; y++ {
+                dx := x - ip[af.XAXIS]
+                dy := y - ip[af.YAXIS]
+                dz := z - ip[af.ZAXIS]
+
                 var terrain byte = world.At(x, y, z)
                 if terrain != 0 {
                     var n, s, w, e, u, d bool = world.AirNeighbours(x, z, y)
                     var id uint16 = 0
 
-                    dx := x - ip[af.XAXIS]
-                    dy := y - ip[af.YAXIS]
-                    dz := z - ip[af.ZAXIS]
                     if dx >= -2 && dx <= 2 && dy >= -2 && dy <= 2 && dz >= -2 && dz <= 2 {
                         id = relativeCoordinateToBlockId(dx, dy, dz)
                     }

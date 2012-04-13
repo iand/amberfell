@@ -56,7 +56,11 @@ func (world *World) Init(w int16, d int16, h int16) {
 }
 
 func (world *World) At(x int16, y int16, z int16) byte {
-    if x < 0 || x > world.W-1 || z < 0 || z > world.D-1 || y < 0 || y > world.H-1 {
+    x = x % world.W
+    if x < 0 { x += world.W }
+    z = z % world.D
+    if z < 0 { z += world.D }
+    if y < 0 || y > world.H-1 {
         return 0
     }
     return world.Blocks[world.W*world.D*y+world.D*x+z]
@@ -104,19 +108,19 @@ func (world *World) Grow(x int16, y int16, z int16, n int, s int, w int, e int, 
 }
 
 func (world *World) AirNeighbours(x int16, z int16, y int16) (n, s, w, e, u, d bool) {
-    if x > 0 && world.At(x-1, y, z) == 0 {
+    if /* x > 0 && */world.At(x-1, y, z) == 0 {
         e = true
     }
-    if x < world.W-1 && world.At(x+1, y, z) == 0 {
+    if /*x < world.W-1 &&*/ world.At(x+1, y, z) == 0 {
         w = true
     }
-    if z > 0 && world.At(x, y, z-1) == 0 {
+    if /*z > 0 &&*/ world.At(x, y, z-1) == 0 {
         s = true
     }
-    if z < world.D-1 && world.At(x, y, z+1) == 0 {
+    if /*z < world.D-1 &&*/ world.At(x, y, z+1) == 0 {
         n = true
     }
-    if y < world.H-1 && world.At(x, y+1, z) == 0 {
+    if /*y < world.H-1 &&*/ world.At(x, y+1, z) == 0 {
         u = true
     }
     return
