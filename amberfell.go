@@ -20,7 +20,7 @@ import (
     "math/rand"  
     "flag"
     "fmt"
-    "amberfell/af"
+    "github.com/iand/amberfell/af"
     "time"
     
 )    
