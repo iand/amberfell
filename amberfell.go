@@ -1,21 +1,9 @@
 package main
 
-
-/*
-
-    this is go version based on SDL version
-
-    this version uses Go-SDL: https://github.com/banthar/Go-SDL
-
-*/
-
 import (
     "github.com/banthar/Go-SDL/sdl"
     "github.com/banthar/gl"
     "github.com/banthar/glu"
-    "image"
-    _ "image/png"
-    "os"
     "math"
     "math/rand"  
     "flag"
@@ -26,7 +14,6 @@ import (
 )    
 
 const piover180 = 0.0174532925
-const blockSize = 1.0
 
 
 
@@ -43,19 +30,16 @@ var gear1, gear2, gear3 uint
 var angle float64 = 0.0
 
 
+
 var (
     player *af.Player
-    mapTextures [16*10]gl.Texture
+    wolf *af.Wolf
     world af.World
     DebugMode bool
     screenWidth, screenHeight int
     tileWidth = 48
     screenScale int = 5 * tileWidth / 2
 )
-
-
-    
-
 
 func main() {
     flag.Parse()
@@ -64,6 +48,11 @@ func main() {
     var keys []uint8
     player = new(af.Player)
     player.Init(0, 10, 10, af.GroundLevel+1)
+
+    wolf = new(af.Wolf)
+    wolf.Init(0, 14, 14, af.GroundLevel+1)
+
+
     world.Init(56,56,10)
     
     sdl.Init(sdl.INIT_VIDEO)
@@ -121,16 +110,16 @@ func main() {
                     xv, yv := int(re.X), screenHeight - int(re.Y)
                     data := [4]uint8{0, 0, 0, 0}
 
-                    draw2(true)
+                    Draw(true)
                     gl.ReadPixels(xv, yv, 1, 1, gl.RGBA, &data[0])
-                    draw2(false)
+                    Draw(false)
 
                     fmt.Printf("pixel data: %d, %d, %d, %d\n", data[0], data[1], data[2], data[3])
 
                     id := uint16(data[0]) + uint16(data[1]) * 256
                     if id != 0 {
                         face := data[2]
-                        dx, dy, dz := blockIdToRelativeCoordinate(id)
+                        dx, dy, dz := af.BlockIdToRelativeCoordinate(id)
                         fmt.Printf("id: %d, dx: %d, dy: %d, dz: %d, face: %d\n", id, dx, dy, dz, face)
                         if ! (dx == 0 && dy == 0 && dz == 0) {
                             pos := player.IntPosition()
@@ -264,7 +253,9 @@ func main() {
             // player.ZeroForces()
             // player.ApplyForce(controlForce)
             world.ApplyForces(player, float64(dt) / 1e9)
+            
             player.Update(float64(dt) / 1e9)
+            world.Simulate(float64(dt) / 1e9)
 
             computeFrame++
             t += dt
@@ -272,7 +263,8 @@ func main() {
 
         //interpolate(previous, current, accumulator/dt)
 
-        draw2(false)
+
+        Draw(false)
         drawFrame++
 
         if update.GetTicks() > 1e9/2 {
@@ -349,13 +341,22 @@ func init2() {
     gl.Hint(gl.PERSPECTIVE_CORRECTION_HINT, gl.NICEST)
 
     gl.Enable(gl.TEXTURE_2D)
-    loadMapTextures()
+    af.LoadMapTextures()
 
 
 }
 
 
-func draw2(selectMode bool) {
+
+
+
+
+
+
+
+
+
+func Draw(selectMode bool) {
     gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT)
     if selectMode {
         gl.Disable(gl.TEXTURE_2D)
@@ -375,390 +376,18 @@ func draw2(selectMode bool) {
 
 
     gl.LoadIdentity()
-    gl.PushMatrix()
 
     gl.Rotated(view_rotx, 1.0, 0.0, 0.0)
     gl.Rotated(-player.Heading() + view_roty, 0.0, 1.0, 0.0)
     gl.Rotated(0, 0.0, 0.0, 1.0)
 
 
+    pos := player.Position()
+    player.Draw(pos, selectMode)
+    world.Draw(pos, selectMode)
 
-    gl.PushMatrix()
-    //stepHeight := float32(math.Sin(player.Bounce * piover180)/10.0)
-    gl.Rotated(player.Heading(), 0.0, 1.0, 0.0)
-    drawPlayer(selectMode)
-    gl.PopMatrix()
-
-    gl.Translatef(-player.X() * blockSize, -player.Y() * blockSize, -player.Z() * blockSize)
-
-
-    ip := player.IntPosition()
-    var x, y, z int16
-    for x = ip[af.XAXIS] - 30; x < ip[af.XAXIS] + 30; x++ {
-        for z=ip[af.ZAXIS] - 30; z < ip[af.ZAXIS] + 30; z++ {
-            for y=0; y < world.H; y++ {
-                dx := x - ip[af.XAXIS]
-                dy := y - ip[af.YAXIS]
-                dz := z - ip[af.ZAXIS]
-
-                var terrain byte = world.At(x, y, z)
-                if terrain != 0 {
-                    var n, s, w, e, u, d bool = world.AirNeighbours(x, z, y)
-                    var id uint16 = 0
-
-                    if dx >= -2 && dx <= 2 && dy >= -2 && dy <= 2 && dz >= -2 && dz <= 2 {
-                        id = relativeCoordinateToBlockId(dx, dy, dz)
-                    }
-                    gl.PushMatrix()
-                    gl.Translatef(float32(x) * blockSize,float32(y) * blockSize,float32(z) * blockSize)
-                    //print ("i:", i, "j:", j, "b:", world.At(i, j, groundLevel))
-                    cube(n, s, w, e, u, d, terrain, id, selectMode)
-                    gl.PopMatrix()
-                }
-            }
-        }
-    }
-
-    gl.PopMatrix()
     if !selectMode {
         sdl.GL_SwapBuffers()
         gl.Finish()
-    }
-
-
-}
-
-
-func drawPlayer(selectMode bool) {
-
-    var w,h,d float32 = blockSize, blockSize, blockSize
-
-    // topTexture.Bind(gl.TEXTURE_2D)
-    // gl.Begin(gl.QUADS)                  // Start Drawing Quads
-
-    //     // Front Face
-    //     //gl.Color3f(0.5,0.5,1.0)              // Set The Color To Blue One Time Only
-    //     gl.Normal3f( 0.0, 0.0, 1.0)
-    //     gl.TexCoord2f(0.0, 0.0)
-    //     gl.Vertex3f( -w, -h,  d)  // Bottom Left Of The Texture and Quad
-    //     gl.TexCoord2f(1.0, 0.0)
-    //     gl.Vertex3f(  w, -h,  d)  // Bottom Right Of The Texture and Quad
-    //     gl.TexCoord2f(1.0, 1.0)
-    //     gl.Vertex3f(  w,  h,  d)  // Top Right Of The Texture and Quad
-    //     gl.TexCoord2f(0.0, 1.0)
-    //     gl.Vertex3f( -w,  h,  d)  // Top Left Of The Texture and Quad
-
-    // gl.End();   
-    
-    // dirtTexture.Bind(gl.TEXTURE_2D)
-    // gl.Begin(gl.QUADS)                  // Start Drawing Quads
-    //        // Back Face
-    //     gl.Normal3f( 0.0, 0.0, -1.0)
-    //     gl.TexCoord2f(1.0, 0.0)        
-    //     gl.Vertex3f(-w, -h, -d)  // Bottom Right Of The Texture and Quad
-    //     gl.TexCoord2f(1.0, 1.0)
-    //     gl.Vertex3f(-w,  h, -d)  // Top Right Of The Texture and Quad
-    //     gl.TexCoord2f(0.0, 1.0)
-    //     gl.Vertex3f( w,  h, -d)  // Top Left Of The Texture and Quad
-    //     gl.TexCoord2f(0.0, 0.0)
-    //     gl.Vertex3f( w, -h, -d)  // Bottom Left Of The Texture and Quad
-
-    //     //gl.Color3f(0.3,0.3,0.6)
-    //     // Right face
-    //     gl.Normal3f( 1.0, 0.0, 0.0)
-    //     gl.TexCoord2f(1.0, 0.0)
-    //     gl.Vertex3f( w, -h, -d)  // Bottom Right Of The Texture and Quad
-    //     gl.TexCoord2f(1.0, 1.0)
-    //     gl.Vertex3f( w,  h, -d)  // Top Right Of The Texture and Quad
-    //     gl.TexCoord2f(0.0, 1.0)
-    //     gl.Vertex3f( w,  h,  d)  // Top Left Of The Texture and Quad
-    //     gl.TexCoord2f(0.0, 0.0)
-    //     gl.Vertex3f( w, -h,  d)  // Bottom Left Of The Texture and Quad
-
-    //     // Left Face
-    //     gl.Normal3f( -1.0, 0.0, 0.0)
-    //     gl.TexCoord2f(0.0, 0.0)
-    //     gl.Vertex3f(-w, -h, -d)  // Bottom Left Of The Texture and Quad
-    //     gl.TexCoord2f(1.0, 0.0)
-    //     gl.Vertex3f(-w, -h,  d)  // Bottom Right Of The Texture and Quad
-    //     gl.TexCoord2f(1.0, 1.0)
-    //     gl.Vertex3f(-w,  h,  d)  // Top Right Of The Texture and Quad
-    //     gl.TexCoord2f(0.0, 1.0)
-    //     gl.Vertex3f(-w,  h, -d)  // Top Left Of The Texture and Quad
-
-    //  //gl.Color3f(0.3,1.0,0.3)
-    //     // Top Face
-    //     gl.Normal3f( 0.0, 1.0, 0.0)
-    //     gl.TexCoord2f(0.0, 1.0)
-    //     gl.Vertex3f(-w,  h, -d)  // Top Left Of The Texture and Quad
-    //     gl.TexCoord2f(0.0, 0.0)
-    //     gl.Vertex3f(-w,  h,  d)  // Bottom Left Of The Texture and Quad
-    //     gl.TexCoord2f(1.0, 0.0)
-    //     gl.Vertex3f( w,  h,  d)  // Bottom Right Of The Texture and Quad
-    //     gl.TexCoord2f(1.0, 1.0)
-    //     gl.Vertex3f( w,  h, -d)  // Top Right Of The Texture and Quad
-
-    //     // Bottom Face
-    //     gl.Normal3f( 0.0, -1.0, 0.0)
-    //     gl.TexCoord2f(1.0, 1.0)
-    //     gl.Vertex3f(-w, -h, -d)  // Top Right Of The Texture and Quad
-    //     gl.TexCoord2f(0.0, 1.0)
-    //     gl.Vertex3f( w, -h, -d)  // Top Left Of The Texture and Quad
-    //     gl.TexCoord2f(0.0, 0.0)
-    //     gl.Vertex3f( w, -h,  d)  // Bottom Left Of The Texture and Quad
-    //     gl.TexCoord2f(1.0, 0.0)
-    //     gl.Vertex3f(-w, -h,  d)  // Bottom Right Of The Texture and Quad
-
-    // gl.End();   
-
-
-    h = float32(player.H()) * blockSize / 2
-    gl.Translatef(0.0, h - blockSize / 2 ,0.0)
-    w = float32(player.W()) * blockSize / 2
-    d = float32(player.D()) * blockSize / 2
-    //gl.Translatef(0.0,-h,0.0)
-    mapTextures[33].Bind(gl.TEXTURE_2D)
-    //topTexture.Bind(gl.TEXTURE_2D)
-    gl.Begin(gl.QUADS)                  // Start Drawing Quads
-        //gl.Color3f(0.3,0.3,0.6)
-        // Front face
-        gl.Normal3f( 1.0, 0.0, 0.0)
-        gl.TexCoord2f(1.0, 0.0)
-        gl.Vertex3f( w, -h, -d)  // Bottom Right Of The Texture and Quad
-        gl.TexCoord2f(1.0, 1.0)
-        gl.Vertex3f( w,  h, -d)  // Top Right Of The Texture and Quad
-        gl.TexCoord2f(0.0, 1.0)
-        gl.Vertex3f( w,  h,  d)  // Top Left Of The Texture and Quad
-        gl.TexCoord2f(0.0, 0.0)
-        gl.Vertex3f( w, -h,  d)  // Bottom Left Of The Texture and Quad
-
-    gl.End()
-
-    mapTextures[32].Bind(gl.TEXTURE_2D)
-
-    // dirtTexture.Bind(gl.TEXTURE_2D)
-    gl.Begin(gl.QUADS)                  // Start Drawing Quads
-        // Left Face
-        gl.Normal3f( 0.0, 0.0, -1.0)
-        gl.TexCoord2f(1.0, 0.0)        
-        gl.Vertex3f(-w, -h, -d)  // Bottom Right Of The Texture and Quad
-        gl.TexCoord2f(1.0, 1.0)
-        gl.Vertex3f(-w,  h, -d)  // Top Right Of The Texture and Quad
-        gl.TexCoord2f(0.0, 1.0)
-        gl.Vertex3f( w,  h, -d)  // Top Left Of The Texture and Quad
-        gl.TexCoord2f(0.0, 0.0)
-        gl.Vertex3f( w, -h, -d)  // Bottom Left Of The Texture and Quad
-
-
-        // Right Face
-        //gl.Color3f(0.5,0.5,1.0)              // Set The Color To Blue One Time Only
-        gl.Normal3f( 0.0, 0.0, 1.0)
-        gl.TexCoord2f(0.0, 0.0)
-        gl.Vertex3f( -w, -h,  d)  // Bottom Left Of The Texture and Quad
-        gl.TexCoord2f(1.0, 0.0)
-        gl.Vertex3f(  w, -h,  d)  // Bottom Right Of The Texture and Quad
-        gl.TexCoord2f(1.0, 1.0)
-        gl.Vertex3f(  w,  h,  d)  // Top Right Of The Texture and Quad
-        gl.TexCoord2f(0.0, 1.0)
-        gl.Vertex3f( -w,  h,  d)  // Top Left Of The Texture and Quad
-
-
-        // Back Face
-        gl.Normal3f( -1.0, 0.0, 0.0)
-        gl.TexCoord2f(0.0, 0.0)
-        gl.Vertex3f(-w, -h, -d)  // Bottom Left Of The Texture and Quad
-        gl.TexCoord2f(1.0, 0.0)
-        gl.Vertex3f(-w, -h,  d)  // Bottom Right Of The Texture and Quad
-        gl.TexCoord2f(1.0, 1.0)
-        gl.Vertex3f(-w,  h,  d)  // Top Right Of The Texture and Quad
-        gl.TexCoord2f(0.0, 1.0)
-        gl.Vertex3f(-w,  h, -d)  // Top Left Of The Texture and Quad
-
-     //gl.Color3f(0.3,1.0,0.3)
-        // Top Face
-        gl.Normal3f( 0.0, 1.0, 0.0)
-        gl.TexCoord2f(0.0, 1.0)
-        gl.Vertex3f(-w,  h, -d)  // Top Left Of The Texture and Quad
-        gl.TexCoord2f(0.0, 0.0)
-        gl.Vertex3f(-w,  h,  d)  // Bottom Left Of The Texture and Quad
-        gl.TexCoord2f(1.0, 0.0)
-        gl.Vertex3f( w,  h,  d)  // Bottom Right Of The Texture and Quad
-        gl.TexCoord2f(1.0, 1.0)
-        gl.Vertex3f( w,  h, -d)  // Top Right Of The Texture and Quad
-
-        // Bottom Face
-        gl.Normal3f( 0.0, -1.0, 0.0)
-        gl.TexCoord2f(1.0, 1.0)
-        gl.Vertex3f(-w, -h, -d)  // Top Right Of The Texture and Quad
-        gl.TexCoord2f(0.0, 1.0)
-        gl.Vertex3f( w, -h, -d)  // Top Left Of The Texture and Quad
-        gl.TexCoord2f(0.0, 0.0)
-        gl.Vertex3f( w, -h,  d)  // Bottom Left Of The Texture and Quad
-        gl.TexCoord2f(1.0, 0.0)
-        gl.Vertex3f(-w, -h,  d)  // Bottom Right Of The Texture and Quad
-
-    gl.End();   
-}
-
-
-func cube( n bool, s bool, w bool, e bool, u bool, d bool, texture byte, id uint16, selectMode bool) {
-    mapTextures[texture].Bind(gl.TEXTURE_2D)
-    
-    gl.Begin(gl.QUADS)                  // Start Drawing Quads
-
-        if n {
-            if selectMode {
-                gl.Color4ub(uint8(id & 0x00FF), uint8(id & 0xFF00 >> 8), 0, 0)
-            } 
-            // Front Face
-            gl.Normal3f( 0.0, 0.0, 1.0)
-            gl.TexCoord2f(0.0, 0.0)
-            gl.Vertex3f(-blockSize/2, -blockSize/2,  blockSize/2)  // Bottom Left Of The Texture and Quad
-            gl.TexCoord2f(1.0, 0.0)
-            gl.Vertex3f( blockSize/2, -blockSize/2,  blockSize/2)  // Bottom Right Of The Texture and Quad
-            gl.TexCoord2f(1.0, 1.0)
-            gl.Vertex3f( blockSize/2,  blockSize/2,  blockSize/2)  // Top Right Of The Texture and Quad
-            gl.TexCoord2f(0.0, 1.0)
-            gl.Vertex3f(-blockSize/2,  blockSize/2,  blockSize/2)  // Top Left Of The Texture and Quad
-        }
-
-        if s {
-            // Back Face
-            if selectMode {
-                gl.Color4ub(uint8(id & 0x00FF), uint8(id & 0xFF00 >> 8), 1, 0)
-            }
-            gl.Normal3f( 0.0, 0.0, -1.0)
-            gl.TexCoord2f(1.0, 0.0)        
-            gl.Vertex3f(-blockSize/2, -blockSize/2, -blockSize/2)  // Bottom Right Of The Texture and Quad
-            gl.TexCoord2f(1.0, 1.0)
-            gl.Vertex3f(-blockSize/2,  blockSize/2, -blockSize/2)  // Top Right Of The Texture and Quad
-            gl.TexCoord2f(0.0, 1.0)
-            gl.Vertex3f( blockSize/2,  blockSize/2, -blockSize/2)  // Top Left Of The Texture and Quad
-            gl.TexCoord2f(0.0, 0.0)
-            gl.Vertex3f( blockSize/2, -blockSize/2, -blockSize/2)  // Bottom Left Of The Texture and Quad
-        }
-
-        //gl.Color3f(0.3,0.3,0.6)
-        if w {
-            // Right face
-            if selectMode {
-                gl.Color4ub(uint8(id & 0x00FF), uint8(id & 0xFF00 >> 8), 2, 0)
-            }
-            gl.Normal3f( 1.0, 0.0, 0.0)
-            gl.TexCoord2f(1.0, 0.0)
-            gl.Vertex3f( blockSize/2, -blockSize/2, -blockSize/2)  // Bottom Right Of The Texture and Quad
-            gl.TexCoord2f(1.0, 1.0)
-            gl.Vertex3f( blockSize/2,  blockSize/2, -blockSize/2)  // Top Right Of The Texture and Quad
-            gl.TexCoord2f(0.0, 1.0)
-            gl.Vertex3f( blockSize/2,  blockSize/2,  blockSize/2)  // Top Left Of The Texture and Quad
-            gl.TexCoord2f(0.0, 0.0)
-            gl.Vertex3f( blockSize/2, -blockSize/2,  blockSize/2)  // Bottom Left Of The Texture and Quad
-        }
-
-        if e {
-            // Left Face
-            if selectMode {
-                gl.Color4ub(uint8(id & 0x00FF), uint8(id & 0xFF00 >> 8), 3, 0)
-            }
-            gl.Normal3f( -1.0, 0.0, 0.0)
-            gl.TexCoord2f(0.0, 0.0)
-            gl.Vertex3f(-blockSize/2, -blockSize/2, -blockSize/2)  // Bottom Left Of The Texture and Quad
-            gl.TexCoord2f(1.0, 0.0)
-            gl.Vertex3f(-blockSize/2, -blockSize/2,  blockSize/2)  // Bottom Right Of The Texture and Quad
-            gl.TexCoord2f(1.0, 1.0)
-            gl.Vertex3f(-blockSize/2,  blockSize/2,  blockSize/2)  // Top Right Of The Texture and Quad
-            gl.TexCoord2f(0.0, 1.0)
-            gl.Vertex3f(-blockSize/2,  blockSize/2, -blockSize/2)  // Top Left Of The Texture and Quad
-        }
-    gl.End();   
-    
-    mapTextures[texture].Bind(gl.TEXTURE_2D)
-    gl.Begin(gl.QUADS)                  // Start Drawing Quads
-        //gl.Color3f(0.3,1.0,0.3)
-        if u {
-            // Top Face
-            if selectMode {
-                gl.Color4ub(uint8(id & 0x00FF), uint8(id & 0xFF00 >> 8), 4, 0)
-            }
-            gl.Normal3f( 0.0, 1.0, 0.0)
-            gl.TexCoord2f(0.0, 1.0)
-            gl.Vertex3f(-blockSize/2,  blockSize/2, -blockSize/2)  // Top Left Of The Texture and Quad
-            gl.TexCoord2f(0.0, 0.0)
-            gl.Vertex3f(-blockSize/2,  blockSize/2,  blockSize/2)  // Bottom Left Of The Texture and Quad
-            gl.TexCoord2f(1.0, 0.0)
-            gl.Vertex3f( blockSize/2,  blockSize/2,  blockSize/2)  // Bottom Right Of The Texture and Quad
-            gl.TexCoord2f(1.0, 1.0)
-            gl.Vertex3f( blockSize/2,  blockSize/2, -blockSize/2)  // Top Right Of The Texture and Quad
-           }
-     
-        if d {
-            if selectMode {
-                gl.Color4ub(uint8(id & 0x00FF), uint8(id & 0xFF00 >> 8), 5, 0)
-            }
-            // Bottom Face
-            gl.Normal3f( 0.0, -1.0, 0.0)
-            gl.TexCoord2f(1.0, 1.0)
-            gl.Vertex3f(-blockSize/2, -blockSize/2, -blockSize/2)  // Top Right Of The Texture and Quad
-            gl.TexCoord2f(0.0, 1.0)
-            gl.Vertex3f( blockSize/2, -blockSize/2, -blockSize/2)  // Top Left Of The Texture and Quad
-            gl.TexCoord2f(0.0, 0.0)
-            gl.Vertex3f( blockSize/2, -blockSize/2,  blockSize/2)  // Bottom Left Of The Texture and Quad
-            gl.TexCoord2f(1.0, 0.0)
-            gl.Vertex3f(-blockSize/2, -blockSize/2,  blockSize/2)  // Bottom Right Of The Texture and Quad
-        }
-
-    gl.End();   
-
-}
-
-func loadMapTextures() {
-    const pixels = 48
-
-    var file, err = os.Open("tiles.png")
-    var img image.Image
-    if err != nil { 
-        panic(err) 
-    }
-    defer file.Close()
-    if img, _, err = image.Decode(file); err != nil { 
-        panic(err) 
-    }
-
-    for i:=0; i < 10; i++ {
-        for j:=0; j < 16; j++ {
-            rgba := image.NewRGBA(image.Rect(0, 0, pixels, pixels))
-            for x := 0; x < pixels; x++ { 
-                for y := 0; y < pixels; y++ { 
-                    rgba.Set(x, y, img.At(pixels * j + x, pixels * i + y)) 
-                } 
-            }
-
-            textureIndex := i*16 + j
-            mapTextures[textureIndex] = gl.GenTexture()
-            mapTextures[textureIndex].Bind(gl.TEXTURE_2D)
-            gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-            gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-            gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-            gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-            gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, pixels, pixels, 0, gl.RGBA, gl.UNSIGNED_BYTE, &rgba.Pix[0])
-            mapTextures[textureIndex].Unbind(gl.TEXTURE_2D)
-
-        }
-    }
-}
-
-// relative coordinates range from -3 to +3
-func relativeCoordinateToBlockId(dx int16, dy int16, dz int16) (id uint16) {
-    id =  0
-    id |= uint16(dx + 3)
-    id |= uint16(dy + 3) << 3
-    id |= uint16(dz + 3) << 6
-    return 
-}   
-
-func blockIdToRelativeCoordinate(id uint16) (dx int16, dy int16, dz int16) {
-    dx = int16(id & 0x0007 - 3)
-    dy = int16((id & 0x0038) >> 3 - 3)
-    dz = int16((id & 0x01C0) >> 6 - 3)
-    return
+    }    
 }

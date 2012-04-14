@@ -1,0 +1,427 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"draw",
+				"drawPlayer"
+			],
+			[
+				"dirt",
+				"dirtTexture"
+			],
+			[
+				"tile",
+				"tile_size"
+			],
+			[
+				"started",
+				"IsStarted"
+			],
+			[
+				"Get",
+				"GetTicks"
+			],
+			[
+				"start",
+				"startTicks"
+			],
+			[
+				"paused",
+				"pausedTicks"
+			],
+			[
+				"screen",
+				"screen_flags"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "af/world.go",
+			"settings":
+			{
+				"buffer_size": 17051,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "amberfell.go",
+			"settings":
+			{
+				"buffer_size": 25846,
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "",
+	"command_palette":
+	{
+		"height": 297.0,
+		"selected_items":
+		[
+			[
+				"Package Control: ",
+				"Package Control: Remove Package"
+			]
+		],
+		"width": 435.0
+	},
+	"console":
+	{
+		"height": 139.0
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/home/iand/wip/amberfell/amberfell.go",
+		"/home/iand/wip/amberfell/amberfell.sublime-project",
+		"/home/iand/wip/gofirst/sdltest.go",
+		"/home/iand/wip/gofirst/test.go",
+		"/home/iand/wip/gofirst/gltest.go",
+		"/home/iand/wip/gofirst/draw.go",
+		"/home/iand/wip/gofirst/glcube.go",
+		"/home/iand/gocode/src/amberfell/amberfell.go",
+		"/home/iand/gocode/src/amberfell/README.md",
+		"/home/iand/gocode/src/amberfell/af/mob.go",
+		"/home/iand/gocode/src/amberfell/af/scene.go",
+		"/home/iand/gocode/src/amberfell/af/world.go",
+		"/home/iand/gocode/src/github.com/iand/amberfell/amberfell.go",
+		"/home/iand/gocode/src/amberfell/af/player.go",
+		"/home/iand/.cache/.fr-tMTa0R/Zen of Networked Physics/Source/Cube.h",
+		"/home/iand/gocode/src/amberfell/af/vector.go",
+		"/home/iand/gocode/src/amberfell/af/timer.go",
+		"/home/iand/.config/sublime-text-2/Packages/User/GoSublime.sublime-settings",
+		"/home/iand/.config/sublime-text-2/Packages/GoSublime/GoSublime.sublime-settings",
+		"/home/iand/gocode/src/amberfell/af/constants.go",
+		"/home/iand/.config/sublime-text-2/Packages/Default/Default (Linux).sublime-keymap",
+		"/home/iand/.config/sublime-text-2/Packages/User/Default (Linux).sublime-keymap",
+		"/home/iand/gocode/src/amberfell/world.go",
+		"/home/iand/.config/sublime-text-2/Packages/Default/Preferences.sublime-settings",
+		"/home/iand/.config/sublime-text-2/Packages/User/Preferences.sublime-settings",
+		"/home/iand/bin/go/src/pkg/code.google.com/p/graphics-go/graphics/rotate.go",
+		"/home/iand/bin/go/src/pkg/code.google.com/p/graphics-go/graphics/affine.go",
+		"/home/iand/wip/gofirst/graphicstest.go",
+		"/home/iand/wip/gofirst/gomandel.go",
+		"/home/iand/.profile",
+		"/home/iand/wip/go/hello.go",
+		"/home/iand/bin/minecraft/start",
+		"/home/iand/fixgnome.sh",
+		"/home/iand/wip/mandel/mandel.go",
+		"/home/iand/wip/forms/index.php",
+		"/home/iand/wip/mdjson/form.html",
+		"/home/iand/wip/myron/myron",
+		"/home/iand/wip/cohodo/index.html",
+		"/home/iand/wip/factpump/hello.py",
+		"/home/iand/wip/sparql-templates/demo.php",
+		"/home/iand/wip/sameas/sameas.php",
+		"/home/iand/wip/widgets/tablemaker.php",
+		"/home/iand/Documents/blogging/ia-20120316.txt",
+		"/home/iand/wip/playn-samples/README.md",
+		"/home/iand/web/iandavis.com/wiki/htdocs/genealogy/wiki.d/Main.1876BirthOfLouisaEmmings",
+		"/home/iand/web/iandavis.com/wiki/htdocs/genealogy/wiki.d/Main.RG13-1359-26-20",
+		"/home/iand/Documents/minecraft-server/plugins.txt",
+		"/home/iand/bin/craftbukkit/plugins/FishPeople/config.yml",
+		"/home/iand/bin/craftbukkit/plugins/WalkTheWalk/config.yml",
+		"/home/iand/bin/craftbukkit/plugins/TreeAssist/config.yml",
+		"/home/iand/bin/craftbukkit/plugins/CreativeGates/conf.json",
+		"/home/iand/bin/craftbukkit/plugins/TempleCraft/temples.yml",
+		"/home/iand/bin/craftbukkit/plugins/SmoothFlight/config.yml",
+		"/home/iand/bin/craftbukkit/plugins/qQuests/quests.yml",
+		"/home/iand/bin/craftbukkit/plugins/EasyRules/rules.txt",
+		"/home/iand/.minecraft/config/mod_ReiMinimap.cfg",
+		"/home/iand/.minecraft/mods/rei_minimap/option.txt",
+		"/home/iand/bin/craftbukkit/plugins/TobiMotd/config.yml",
+		"/home/iand/bin/craftbukkit/plugins/WelcomeRulezz/WelcomeMessage.yml",
+		"/home/iand/bin/craftbukkit/plugins/WelcomeRulezz/Commands.yml",
+		"/home/iand/bin/craftbukkit/plugins/Safe Creeper/config.yml",
+		"/home/iand/bin/craftbukkit/plugins/Safe Creeper/global.yml",
+		"/home/iand/bin/craftbukkit/plugins/PermissionsBukkit/config.yml",
+		"/home/iand/bin/craftbukkit/plugins/DeathTpPlus/config.yml",
+		"/home/iand/bin/craftbukkit/config.yml",
+		"/home/iand/bin/craftbukkit/server.properties",
+		"/home/iand/bin/craftbukkit/bukkit.yml",
+		"/home/iand/bin/craftbukkit/ops.txt",
+		"/home/iand/bin/craftbukkit-1.1/server.properties",
+		"/home/iand/bin/craftbukkit/craftbukkit.sh",
+		"/home/iand/bin/craftbukkit/plugins/BOSEconomy/settings.txt",
+		"/home/iand/bin/craftbukkit/plugins/BOSEconomy/brackets.txt",
+		"/home/iand/bin/craftbukkit/plugins/BOSEconomy/accounts.txt",
+		"/home/iand/.mozilla/firefox/mwad0hks.default/itsalltext/mail.google.com.2c2f1l3d1e.txt",
+		"/home/iand/bin/craftbukkit/plugins/TempleCraft/config.yml",
+		"/home/iand/bin/craftbukkit/plugins/SecureChests/config.yml",
+		"/home/iand/bin/craftbukkit/plugins/EpicQuest/quests.yml",
+		"/home/iand/bin/craftbukkit/plugins/OtherDrops/includes/od-random_examples.yml",
+		"/home/iand/bin/craftbukkit/plugins/OtherDrops/includes/overhaul-catballs.yml",
+		"/home/iand/bin/craftbukkit/plugins/OtherDrops/includes/overhaul-zarius.yml",
+		"/home/iand/bin/craftbukkit/plugins/OtherDrops/includes/od-undead_chaos.yml",
+		"/home/iand/bin/craftbukkit/plugins/OtherDrops/includes/od-fix_undroppables.yml",
+		"/home/iand/bin/craftbukkit/plugins/OtherDrops/includes/od-ore_extraction.yml",
+		"/home/iand/bin/craftbukkit/plugins/OtherDrops/includes/od-goldtools-smelt.yml",
+		"/home/iand/bin/craftbukkit/plugins/OtherDrops/includes/od-goldtools-basic.yml",
+		"/home/iand/bin/craftbukkit/plugins/OtherDrops/otherdrops-drops.yml",
+		"/home/iand/bin/craftbukkit/plugins/OtherDrops/includes/od-dyewool.yml",
+		"/home/iand/bin/craftbukkit/plugins/OtherDrops/includes/od-stop_mob_farms.yml",
+		"/home/iand/bin/craftbukkit/plugins/SignShop/config.yml",
+		"/home/iand/bin/craftbukkit/plugins/bPermissions/world/users.yml",
+		"/home/iand/bin/craftbukkit/plugins/bPermissions/world/groups.yml",
+		"/home/iand/bin/craftbukkit/plugins/bPermissions/config.yml",
+		"/home/iand/bin/craftbukkit/plugins/bPermissions/users.yml",
+		"/home/iand/bin/craftbukkit/plugins/bPermissions/groups.yml",
+		"/home/iand/bin/craftbukkit/plugins/SignShop/sellers.yml",
+		"/home/iand/bin/craftbukkit/plugins/SimpleSpawn/config.yml",
+		"/home/iand/bin/craftbukkit/plugins/GriefPreventionData/config.yml",
+		"/home/iand/bin/craftbukkit/plugins/MyHome/config.yml"
+	],
+	"find":
+	{
+		"height": 41.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+			""
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"At(",
+			"Set(",
+			".Set",
+			"enable",
+			"draw",
+			"screenTo",
+			"frus",
+			".current",
+			"rotate",
+			"TODO",
+			"Derivative",
+			"pene",
+			"integrate",
+			"force",
+			"recalc",
+			"momentum =",
+			"fmt",
+			"SetVx",
+			"box",
+			"enable",
+			".At",
+			"fabs",
+			"float32",
+			"debugMode",
+			"player",
+			"world.blocks",
+			"world.d",
+			"world.h",
+			"world.w",
+			"af.GroundLevel",
+			"GroundLevel",
+			"groundLevel",
+			"World",
+			"3",
+			"3.0",
+			"1.5",
+			"6",
+			"auto",
+			"orth",
+			"1.5",
+			"uploadT",
+			"glTexCoord2f(0.0f, 1.0f); ",
+			"glTexCoord2f(1.0f, 1.0f); ",
+			"glTexCoord2f(1.0f, 0.0f); ",
+			"glTexCoord2f(0.0f, 0.0f); ",
+			"\n        srcb := src.Bounds()\n        dst := image.NewRGBA(image.Rect(0, 0, srcb.Dx(), srcb.Dy()))\n        Rotate(dst, src, &RotateOptions{math.Pi / 3.0})",
+			"select",
+			"highl",
+			"kasabi",
+			"kasabo",
+			"kasabi	",
+			"kasabi",
+			"</p>",
+			"<p>",
+			"egg",
+			"book",
+			"kill",
+			"coll",
+			"kill",
+			"-50",
+			"saplin",
+			"zombie",
+			"ctrl+d",
+			"Buy",
+			"- "
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"",
+			"math.Abs",
+			"float64",
+			"DebugMode",
+			"mob",
+			"world.Blocks",
+			"world.D",
+			"world.H",
+			"world.W",
+			"GroundLevel",
+			"af.GroundLevel",
+			"GroundLevel",
+			"blockSize/2",
+			"blockSize",
+			"0.75",
+			"",
+			"-10",
+			"  "
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 1,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "af/world.go",
+					"settings":
+					{
+						"buffer_size": 17051,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "amberfell.go",
+					"settings":
+					{
+						"buffer_size": 25846,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 0.0
+	},
+	"input":
+	{
+		"height": 30.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"replace":
+	{
+		"height": 62.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 500.0,
+		"selected_items":
+		[
+			[
+				"",
+				"/home/iand/wip/iandavis.com/iandavis.com.sublime-project"
+			]
+		],
+		"width": 380.0
+	},
+	"show_minimap": true,
+	"show_open_files": true,
+	"show_tabs": false,
+	"side_bar_visible": true,
+	"side_bar_width": 203.0,
+	"status_bar_visible": true
+}

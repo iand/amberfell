@@ -25,4 +25,7 @@ type Mob interface {
     // Speed() float64
     // BoundingBox() Bound
     // DesiredBoundingBox(dt float64) Bound
+    Act(dt float64)
+    Draw(pos Vector, selectMode bool)
+    Update(dt float64)
 }
