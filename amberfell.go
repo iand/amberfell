@@ -4,12 +4,12 @@ import (
     "github.com/banthar/Go-SDL/sdl"
     "github.com/banthar/gl"
     "github.com/banthar/glu"
-    "math"
     "math/rand"  
     "flag"
     "fmt"
     "github.com/iand/amberfell/af"
     "time"
+    "math"
     
 )    
 
@@ -35,10 +35,13 @@ var (
     player *af.Player
     wolf *af.Wolf
     world af.World
-    DebugMode bool
     screenWidth, screenHeight int
     tileWidth = 48
-    screenScale int = 5 * tileWidth / 2
+    screenScale int = int(5 * float64(tileWidth) / 2)
+
+    lightpos af.Vector
+
+
 )
 
 func main() {
@@ -49,13 +52,17 @@ func main() {
     player = new(af.Player)
     player.Init(0, 10, 10, af.GroundLevel+1)
 
-    wolf = new(af.Wolf)
-    wolf.Init(0, 14, 14, af.GroundLevel+1)
 
 
-    world.Init(56,56,10)
+
+    world.Init(20,20,30)
     
     sdl.Init(sdl.INIT_VIDEO)
+
+    lightpos[af.XAXIS] = -0.5
+    lightpos[af.YAXIS] = -0.5
+    lightpos[af.ZAXIS] = -0.5
+
 
     var screen = sdl.SetVideoMode(800, 600, 32, sdl.OPENGL|sdl.RESIZABLE)
 
@@ -86,7 +93,6 @@ func main() {
     for !done {
         // controlForce := af.Vector{0, 0, 0}
 
-        var vx, vz float64
 
         for e := sdl.PollEvent(); e != nil; e = sdl.PollEvent() {
             switch e.(type) {
@@ -122,21 +128,21 @@ func main() {
                         dx, dy, dz := af.BlockIdToRelativeCoordinate(id)
                         fmt.Printf("id: %d, dx: %d, dy: %d, dz: %d, face: %d\n", id, dx, dy, dz, face)
                         if ! (dx == 0 && dy == 0 && dz == 0) {
-                            pos := player.IntPosition()
+                            pos := af.IntPosition(player.Position())
                             pos[af.XAXIS] += dx
                             pos[af.YAXIS] += dy
                             pos[af.ZAXIS] += dz
-                            if face == 4 { // top
+                            if face == af.TOP_FACE { // top
                                 pos[af.YAXIS]++
-                            } else if face == 5 { // bottom
+                            } else if face == af.BOTTOM_FACE { // bottom
                                 pos[af.YAXIS]--
-                            } else if face == 0 { // front
+                            } else if face == af.FRONT_FACE { // front
                                 pos[af.ZAXIS]++
-                            } else if face == 1 { // back
+                            } else if face == af.BACK_FACE { // back
                                 pos[af.ZAXIS]--
-                            } else if face == 2 { // left
+                            } else if face == af.LEFT_FACE { // left
                                 pos[af.XAXIS]++
-                            } else if face == 3 { // right
+                            } else if face == af.RIGHT_FACE { // right
                                 pos[af.XAXIS]--
                             }
                             world.Set(pos[af.XAXIS], pos[af.YAXIS], pos[af.ZAXIS], 2)
@@ -176,68 +182,20 @@ func main() {
         if keys[sdl.K_RIGHT] != 0 {
             view_roty -= 9
         }
-        if keys[sdl.K_w] != 0 {
-            if !player.IsFalling() {
-                vx = math.Cos(player.Heading() * math.Pi / 180)
-                vz = -math.Sin(player.Heading() * math.Pi / 180)
-            }
 
-        }
-        if keys[sdl.K_s] != 0 {
-            if !player.IsFalling() {
-                vx = -math.Cos(player.Heading() * math.Pi / 180)
-                vz = math.Sin(player.Heading() * math.Pi / 180)
-            }
-     
-        }
-        if keys[sdl.K_a] != 0 {
-            player.Rotate(9)
+        player.HandleKeys(keys)
 
-        }        
-        if keys[sdl.K_SPACE] != 0 {
-            if !player.IsFalling() {
-                player.Accelerate(af.Vector{0, 7, 0})
-            }
-        } 
-        if keys[sdl.K_d] != 0 {
-            player.Rotate(-9)
-        }        
-        if keys[sdl.K_z] != 0 {
-            if (sdl.GetModState() & sdl.KMOD_RSHIFT) != 0 {
-                view_rotz -= 5.0
-            } else {
-                view_rotz += 5.0
-            }
-        }
         if keys[sdl.K_F3] != 0 {
-            if DebugMode == true {
-                DebugMode = false
+            if af.DebugMode == true {
+                af.DebugMode = false
             } else {
-                DebugMode = true
+                af.DebugMode = true
             }
         }               
 
-        if DebugMode {
+        if af.DebugMode {
             fmt.Printf("x:%f, z:%f\n", player.X(), player.Z())
         }
-
-        if vx != 0 || vz != 0 {
-            player.Setvx(10 * vx)
-            player.Setvz(10 * vz)
-        } else {
-            if !player.IsFalling() {
-                player.Setvx(player.Velocity()[af.XAXIS] / 2.5)
-                player.Setvz(player.Velocity()[af.ZAXIS] / 2.5)
-            } else {
-                player.Setvx(player.Velocity()[af.XAXIS] / 1.04)
-                player.Setvz(player.Velocity()[af.ZAXIS] / 1.04)
-
-            }
-
-
-        }
-
-
 
         newTime := time.Now().UnixNano()
         deltaTime := newTime - currentTime
@@ -315,13 +273,9 @@ func reshape(width int, height int) {
 
 func init2() {
     gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-//    gl.ShadeModel(gl.SMOOTH)    
+    gl.ShadeModel(gl.SMOOTH)    
     gl.Enable(gl.LIGHTING)
     gl.Enable(gl.LIGHT0)
-    gl.Lightfv(0, gl.AMBIENT, []float32{0.5,0.5,0.5,1})
-    gl.Lightfv(0, gl.DIFFUSE, []float32{1,1,1,1})
-    gl.Lightfv(0, gl.SPECULAR, []float32{1,1,1,0.5})
-    gl.Lightfv(0, gl.POSITION, []float32{-5.0, 5.0, 10.0, 0})
     gl.ColorMaterial ( gl.FRONT_AND_BACK, gl.EMISSION )
     gl.ColorMaterial ( gl.FRONT_AND_BACK, gl.AMBIENT_AND_DIFFUSE )
     gl.Enable ( gl.COLOR_MATERIAL )
@@ -358,6 +312,8 @@ func init2() {
 
 func Draw(selectMode bool) {
     gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT)
+
+
     if selectMode {
         gl.Disable(gl.TEXTURE_2D)
         gl.Disable(gl.FOG)
@@ -374,17 +330,33 @@ func Draw(selectMode bool) {
     }
 
 
-
     gl.LoadIdentity()
+    center := player.Position()
 
+
+    //gl.Translatef( 0.0, 0.0, -40.0 )
     gl.Rotated(view_rotx, 1.0, 0.0, 0.0)
     gl.Rotated(-player.Heading() + view_roty, 0.0, 1.0, 0.0)
     gl.Rotated(0, 0.0, 0.0, 1.0)
 
+    ambient := float32(0.6)
+    specular := float32(1)
+    diffuse := float32(1)
 
-    pos := player.Position()
-    player.Draw(pos, selectMode)
-    world.Draw(pos, selectMode)
+    gl.Lightfv(gl.LIGHT0, gl.POSITION, []float32{0,1,0, 1})
+    gl.Lightfv(gl.LIGHT0, gl.AMBIENT, []float32{ambient, ambient, ambient,1})
+    gl.Lightfv(gl.LIGHT0, gl.SPECULAR, []float32{specular,specular,specular,1})
+    gl.Lightfv(gl.LIGHT0, gl.DIFFUSE, []float32{diffuse,diffuse,diffuse,1})
+    gl.Lightf(gl.LIGHT0, gl.CONSTANT_ATTENUATION, 1.5)
+    gl.Lightf(gl.LIGHT0, gl.LINEAR_ATTENUATION, 0.5)
+    gl.Lightf(gl.LIGHT0, gl.QUADRATIC_ATTENUATION, 0.02)
+    gl.Lightf(gl.LIGHT0, gl.SPOT_CUTOFF, 35)
+    gl.Lightf(gl.LIGHT0, gl.SPOT_EXPONENT, 2.0)
+    gl.Lightfv(gl.LIGHT0, gl.SPOT_DIRECTION, []float32{float32(math.Cos(player.Heading() * math.Pi/180)),float32(-0.8), -float32(math.Sin(player.Heading() * math.Pi/180))})
+
+
+    player.Draw(center, selectMode)
+    world.Draw(center, selectMode)
 
     if !selectMode {
         sdl.GL_SwapBuffers()

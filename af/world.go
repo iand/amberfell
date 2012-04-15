@@ -3,6 +3,7 @@ package af
 import (
     "math/rand"
     "github.com/banthar/gl"
+    // "math"
     // "fmt"   
 
 )
@@ -21,9 +22,7 @@ type Side struct {
     x, x1, x2, z, z1, z2, dir, y float64
 }
 
-type Rect struct {
-    x, z, sizex, sizez float64
-}
+
 
 func (world *World) Init(w int16, d int16, h int16) {
     world.W = w
@@ -47,16 +46,16 @@ func (world *World) Init(w int16, d int16, h int16) {
         iw, id = world.RandomSquare()
 
         world.Set(iw, GroundLevel, id, 1) // stone
-        world.Grow(iw, GroundLevel, id, 40, 40, 40, 40, 10, 30, 1)
+        world.Grow(iw, GroundLevel, id, 40, 40, 40, 40, 40, 30, 1)
     }
     iw, id = world.RandomSquare()
 
     world.Set(iw, GroundLevel, id, 0) // air
-    world.Grow(iw, GroundLevel, id, 30, 30, 30, 30, 0, 30, 0)
+    world.Grow(iw, GroundLevel, id, 60, 60, 60, 60, 0, 50, 0)
 
 
     wolf := new(Wolf)
-    wolf.Init(120, 14, 14, GroundLevel+1)
+    wolf.Init(120, 17, 19, GroundLevel+1)
     world.mobs = append(world.mobs, wolf)
 
 
@@ -72,6 +71,12 @@ func (world *World) At(x int16, y int16, z int16) byte {
     }
     return world.Blocks[world.W*world.D*y+world.D*x+z]
 }
+
+func (world *World) Atv(v IntVector) byte {
+    return world.At( v[XAXIS], v[YAXIS], v[ZAXIS]) 
+}
+
+
 
 func (world *World) Set(x int16, y int16, z int16, b byte) {
     world.Blocks[world.W*world.D*y+world.D*x+z] = b
@@ -172,104 +177,93 @@ func rectRectCollide( r1 Side, r2 Side) bool {
 
 func (world *World) ApplyForces(mob Mob, dt float64) {
     // mobBounds := mob.DesiredBoundingBox(dt)
-    ip := mob.IntPosition()
+    ip := IntPosition(mob.Position())
 
-    mobx := ip[XAXIS]
-    moby := ip[YAXIS]
-    mobz := ip[ZAXIS]
+    // mobx := ip[XAXIS]
+    // moby := ip[YAXIS]
+    // mobz := ip[ZAXIS]
  
 
     // Gravity
     if mob.IsFalling() {
-        mob.Accelerate( Vector{0, -0.5, 0} )
+        println("is falling")
+        mob.Setvx(mob.Velocity()[XAXIS] / 1.001)
+        mob.Setvy(mob.Velocity()[YAXIS] - 15 * dt)
+        mob.Setvz(mob.Velocity()[ZAXIS] / 1.001)
+    } else {
+        mob.Setvx(mob.Velocity()[XAXIS] / 1.2)
+        //mob.Setvy(0)
+        mob.Setvz(mob.Velocity()[ZAXIS] / 1.2)
     }
 
     // var dx, dz, dy int16
-    var x, y, z int16
+    // var x,  z int16
 
 
     playerRect := Rect{ x: float64(mob.X()) + mob.Velocity()[XAXIS] * dt, z: float64(mob.Z()) + mob.Velocity()[ZAXIS] * dt, sizex: mob.W(), sizez: mob.D() };
 
-    collisionCandidates := make([]Side, 0)
+    // collisionCandidates := make([]Side, 0)
 
-    // Collect XZ collision candidates
-    for x = mobx - 1; x <= mobx + 1; x++ {
-        for y = moby; y <= moby + 1; y++ {
-            for z = mobz - 1; z <= mobz + 1; z++ {
-                if world.At(x, y, z) != 0 {
-                    if world.At( x - 1, y, z ) == 0  {
-                        collisionCandidates = append(collisionCandidates, Side{ x: float64(x) - 0.5, dir: -1, z1: float64(z) - 0.5, z2: float64(z) + 0.5 } )
-                    }
-                    if world.At( x + 1, y, z ) == 0  {
-                        collisionCandidates = append(collisionCandidates, Side{ x: float64(x) + 0.5, dir: 1, z1: float64(z) - 0.5, z2: float64(z) + 0.5 } )
-                    }
-                    if world.At( x, y, z -1 ) == 0  {
-                        // fmt.Printf("float64(z) - 0.5: %f\n", float64(z) - 0.5)
-                        collisionCandidates = append(collisionCandidates, Side{ z: float64(z) - 0.5, dir: -1, x1: float64(x) - 0.5, x2: float64(x) + 0.5 } )
-                    }
-                    if world.At( x, y, z + 1 ) == 0  {
-                        collisionCandidates = append(collisionCandidates, Side{ z: float64(z) + 0.5, dir: 1, x1: float64(x) - 0.5, x2: float64(x) + 0.5 } )
-                    }                  
-                }
-            }
+    if world.Atv(ip.North()) != BLOCK_AIR {
+        if mob.Velocity()[ZAXIS] < 0 && ip.North().HRect().Intersects(playerRect) {
+            mob.Snapz(float64(ip.North()[ZAXIS]) + 0.5 + playerRect.sizez/2 , 0)
         }
     }
 
-
-    // Solve XZ collisions
-    for _, side := range collisionCandidates {
-        if lineRectCollide(side, playerRect) {
-        // fmt.Printf("side.x: %f\n", side.x)
-            if side.x != 0 && mob.Velocity()[XAXIS] * side.dir < 0 {
-                // fmt.Printf("Snapping x\n")
-                mob.Snapx(side.x + (side.dir * playerRect.sizex/2), 0)
-            }
-            if side.z != 0 && mob.Velocity()[ZAXIS] * side.dir < 0  {
-                // fmt.Printf("Snapping z\n")
-                mob.Snapz(side.z + (side.dir * playerRect.sizez/2) , 0)
-            }
-        }
-     }
-
-
-
-    playerFace := Side{ x1: float64(mob.X()) + mob.Velocity()[XAXIS] * dt - 0.5, z1: float64(mob.Z()) + mob.Velocity()[ZAXIS] * dt - 0.5, x2: float64(mob.X()) + mob.Velocity()[XAXIS] * dt + 0.5, z2: float64(mob.Z()) + mob.Velocity()[ZAXIS] * dt + 0.5 }
-
-    // fmt.Printf("playerFace x1:%f, x2:%f, z1:%f, z2:%f\n", playerFace.x1, playerFace.x2, playerFace.z1, playerFace.z2)
-
-    newBZLower := moby - 1// int16(math.Floor( float64(mob.Y()) + mob.Velocity()[YAXIS] * dt ))
-    // newBZUpper := int16(math.Floor( float64(mob.Y()) + 1.7 + mob.Velocity()[YAXIS] * 1.1  * dt ))
-
-    //fmt.Printf("newBZLower: %d, newBZUpper: %d, mob.Y(): %f\n", newBZLower, newBZUpper,  mob.Y())
-    collisionCandidates = make([]Side, 0)
-
-    for x = mobx - 1; x <= mobx + 1; x++ {
-        for z = mobz - 1; z <= mobz + 1; z++ {
-
-            if world.At( x, newBZLower, z ) != 0 {
-                collisionCandidates =  append(collisionCandidates, Side{ y: float64(newBZLower) + 0.5, dir: 1, x1: float64(x) - 0.5, z1: float64(z) - 0.5, x2: float64(x) + 0.5, z2: float64(z) + 0.5 } )
-            }
-            // if world.At( x, newBZUpper, z ) != 0 {
-            //     collisionCandidates =  append(collisionCandidates, Side{ y: float64(newBZUpper),     dir: -1, x1: float64(x) - 0.5, z1: float64(z) - 0.5, x2: float64(x) + 0.5, z2: float64(z) + 0.5 } );
-            // }
+    if world.Atv(ip.South()) != BLOCK_AIR {
+        if mob.Velocity()[ZAXIS] > 0 && ip.South().HRect().Intersects(playerRect) {
+            mob.Snapz(float64(ip.South()[ZAXIS]) - 0.5 - playerRect.sizez/2 , 0)
         }
     }
 
-    // Solve Y collisions
+    if world.Atv(ip.East()) != BLOCK_AIR {
+        if mob.Velocity()[XAXIS] > 0 && ip.East().HRect().Intersects(playerRect) {
+            mob.Snapx(float64(ip.East()[XAXIS]) - 0.5 - playerRect.sizex/2 , 0)
+        }
+    }
+
+    if world.Atv(ip.West()) != BLOCK_AIR {
+        if mob.Velocity()[XAXIS] < 0 && ip.West().HRect().Intersects(playerRect) {
+            mob.Snapx(float64(ip.West()[XAXIS]) + 0.5 + playerRect.sizex/2 , 0)
+        }
+    }
+
     mob.SetFalling(true)
-    for _, face := range collisionCandidates {
-
-        // fmt.Printf("face x1:%f, x2:%f, z1:%f, z2:%f\n", face.x1, face.x2, face.z1, face.z2)
-        if rectRectCollide( face, playerFace ) && mob.Velocity()[YAXIS] * face.dir < 0  {
-            if mob.Velocity()[YAXIS] < 0 {
+    if world.Atv(ip.Down()) != BLOCK_AIR {
+        mob.SetFalling(false)
+        if mob.Velocity()[YAXIS] < 0 {       
+            mob.Snapy(float64(ip.Down()[YAXIS]) + 1 , 0)
+        }
+    } else {
+        if world.Atv(ip.Down().North()) != BLOCK_AIR {
+            if ip.Down().North().HRect().Intersects(playerRect) {
+                mob.Snapy(float64(ip.Down()[YAXIS]) + 1 , 0)
                 mob.SetFalling(false)
-                mob.Snapy(face.y + 0.5, 0)
-            } else {
-                mob.Snapy(face.y + 0.5, 0)
             }
-            break
+        }
+
+        if world.Atv(ip.Down().South()) != BLOCK_AIR {
+            if ip.Down().South().HRect().Intersects(playerRect) {
+                mob.Snapy(float64(ip.Down()[YAXIS]) + 1 , 0)
+                mob.SetFalling(false)
+            }
+        }
+
+        if world.Atv(ip.Down().East()) != BLOCK_AIR {
+            if ip.Down().East().HRect().Intersects(playerRect) {
+                mob.Snapy(float64(ip.Down()[YAXIS]) + 1 , 0)
+                mob.SetFalling(false)
+            }
+        }
+
+        if world.Atv(ip.Down().West()) != BLOCK_AIR {
+            if ip.Down().West().HRect().Intersects(playerRect) {
+                mob.Snapy(float64(ip.Down()[YAXIS]) + 1 , 0)
+                mob.SetFalling(false)
+            }
         }
     }
+
 
 }
 
@@ -286,14 +280,16 @@ func (w *World) Simulate(dt float64) {
 }
 
 
-func (world *World) Draw(pos Vector, selectMode bool) {
+func (world *World) Draw(center Vector, selectMode bool) {
     for _, v := range world.mobs {
-        v.Draw(pos, selectMode)
+        v.Draw(center, selectMode)
     }    
 
-    gl.Translatef(-float32(pos[XAXIS]), -float32(pos[YAXIS]), -float32(pos[ZAXIS]))
+    gl.Translatef(-float32(center[XAXIS]), -float32(center[YAXIS]), -float32(center[ZAXIS]))
 
-    var px, py, pz = int16(pos[XAXIS]), int16(pos[YAXIS]), int16(pos[ZAXIS])
+    var px, py, pz = int16(center[XAXIS]), int16(center[YAXIS]), int16(center[ZAXIS])
+
+
     var x, y, z int16
 
     for x = px - 30; x < px + 30; x++ {
@@ -314,7 +310,7 @@ func (world *World) Draw(pos Vector, selectMode bool) {
                     gl.PushMatrix()
                     gl.Translatef(float32(x),float32(y),float32(z))
                     //print ("i:", i, "j:", j, "b:", world.At(i, j, groundLevel))
-                    Cube(n, s, w, e, u, d, terrain, id, selectMode)
+                    TerrainCube(n, s, w, e, u, d, terrain, id, selectMode)
                     gl.PopMatrix()
                 }
             }

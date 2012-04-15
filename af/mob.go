@@ -11,20 +11,15 @@ type Mob interface {
     IsFalling() bool
     Velocity() Vector
     Position() Vector
-    IntPosition() IntVector
     Snapx(x float64, vx float64)
     Snapy(y float64, vy float64)
     Snapz(z float64, vz float64)
+    Setvx(vx float64) 
+    Setvy(vy float64) 
+    Setvz(vz float64) 
     SetFalling(b bool)
-    // Forces() Vector
-    // Mass() float64
     Accelerate(v Vector)
-    // ApplyForce(f Vector)
-    // Reaction(f Vector)
     Rotate(angle float64)
-    // Speed() float64
-    // BoundingBox() Bound
-    // DesiredBoundingBox(dt float64) Bound
     Act(dt float64)
     Draw(pos Vector, selectMode bool)
     Update(dt float64)

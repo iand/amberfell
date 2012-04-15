@@ -10,6 +10,7 @@ type Wolf struct {
     position Vector
     velocity Vector
     falling bool
+    bounce float64
 }
 
 func (w *Wolf) Init(heading float64, x float32, z float32, y float32) {
@@ -19,9 +20,9 @@ func (w *Wolf) Init(heading float64, x float32, z float32, y float32) {
     w.position[ZAXIS] = float64(z)
 }
 
-func (w *Wolf) W() float64 { return 0.4 }
-func (w *Wolf) H() float64 { return 0.8 }
-func (w *Wolf) D() float64 { return 1.4 }
+func (w *Wolf) W() float64 { return 1 }
+func (w *Wolf) H() float64 { return 2 }
+func (w *Wolf) D() float64 { return 3 }
 
 func (w *Wolf) Heading() float64 { return w.heading }
 func (w *Wolf) X() float32 { return float32(w.position[XAXIS]) }
@@ -125,108 +126,24 @@ func (w *Wolf) Forward(v float64) {
 }
 
 
+
 func (w *Wolf) Act(dt float64) {
     w.Rotate( rand.Float64() * 9 - 4.5 )
     w.Forward( rand.Float64() * 4 - 1)
+    w.bounce += 360 * dt
+    w.velocity[YAXIS] = 0.8 * math.Abs(math.Sin(w.bounce * math.Pi / 180))
 }
 
 
 
-func (wolf *Wolf) Draw(pos Vector, selectMode bool) {
+func (wolf *Wolf) Draw(center Vector, selectMode bool) {
     gl.PushMatrix()
-    gl.Translatef(float32(wolf.X() - float32(pos[XAXIS])),float32(wolf.Y() - float32(pos[YAXIS])),float32(wolf.Z() - float32(pos[ZAXIS])))
+    gl.Translatef(float32(wolf.X() - float32(center[XAXIS])),float32(wolf.Y() - float32(center[YAXIS])),float32(wolf.Z() - float32(center[ZAXIS])))
     gl.Rotated(wolf.Heading(), 0.0, 1.0, 0.0)
-    
-
-    h := float32(wolf.H()) / 2
-    w := float32(wolf.W()) / 2
-    d := float32(wolf.D()) / 2
-
-    gl.Translatef(0.0, h / 2 ,0.0)
-
-    //gl.Translatef(0.0,-h,0.0)
-    MapTextures[33].Bind(gl.TEXTURE_2D)
-    //topTexture.Bind(gl.TEXTURE_2D)
-    gl.Begin(gl.QUADS)                  // Start Drawing Quads
-        //gl.Color3f(0.3,0.3,0.6)
-        // Front face
-        gl.Normal3f( 1.0, 0.0, 0.0)
-        gl.TexCoord2f(1.0, 0.0)
-        gl.Vertex3f( d, -h, -w)  // Bottom Right Of The Texture and Quad
-        gl.TexCoord2f(1.0, 1.0)
-        gl.Vertex3f( d,  h, -w)  // Top Right Of The Texture and Quad
-        gl.TexCoord2f(0.0, 1.0)
-        gl.Vertex3f( d,  h,  w)  // Top Left Of The Texture and Quad
-        gl.TexCoord2f(0.0, 0.0)
-        gl.Vertex3f( d, -h,  w)  // Bottom Left Of The Texture and Quad
-
-    gl.End()
-
-    MapTextures[32].Bind(gl.TEXTURE_2D)
-
-    // dirtTexture.Bind(gl.TEXTURE_2D)
-    gl.Begin(gl.QUADS)                  // Start Drawing Quads
-        // Left Face
-        gl.Normal3f( 0.0, 0.0, -1.0)
-        gl.TexCoord2f(1.0, 0.0)        
-        gl.Vertex3f(-d, -h, -w)  // Bottom Right Of The Texture and Quad
-        gl.TexCoord2f(1.0, 1.0)
-        gl.Vertex3f(-d,  h, -w)  // Top Right Of The Texture and Quad
-        gl.TexCoord2f(0.0, 1.0)
-        gl.Vertex3f( d,  h, -w)  // Top Left Of The Texture and Quad
-        gl.TexCoord2f(0.0, 0.0)
-        gl.Vertex3f( d, -h, -w)  // Bottom Left Of The Texture and Quad
-
-
-        // Right Face
-        //gl.Color3f(0.5,0.5,1.0)              // Set The Color To Blue One Time Only
-        gl.Normal3f( 0.0, 0.0, 1.0)
-        gl.TexCoord2f(0.0, 0.0)
-        gl.Vertex3f( -d, -h,  w)  // Bottom Left Of The Texture and Quad
-        gl.TexCoord2f(1.0, 0.0)
-        gl.Vertex3f(  d, -h,  w)  // Bottom Right Of The Texture and Quad
-        gl.TexCoord2f(1.0, 1.0)
-        gl.Vertex3f(  d,  h,  w)  // Top Right Of The Texture and Quad
-        gl.TexCoord2f(0.0, 1.0)
-        gl.Vertex3f( -d,  h,  w)  // Top Left Of The Texture and Quad
-
-
-        // Back Face
-        gl.Normal3f( -1.0, 0.0, 0.0)
-        gl.TexCoord2f(0.0, 0.0)
-        gl.Vertex3f(-d, -h, -w)  // Bottom Left Of The Texture and Quad
-        gl.TexCoord2f(1.0, 0.0)
-        gl.Vertex3f(-d, -h,  w)  // Bottom Right Of The Texture and Quad
-        gl.TexCoord2f(1.0, 1.0)
-        gl.Vertex3f(-d,  h,  w)  // Top Right Of The Texture and Quad
-        gl.TexCoord2f(0.0, 1.0)
-        gl.Vertex3f(-d,  h, -w)  // Top Left Of The Texture and Quad
-
-     //gl.Color3f(0.3,1.0,0.3)
-        // Top Face
-        gl.Normal3f( 0.0, 1.0, 0.0)
-        gl.TexCoord2f(0.0, 1.0)
-        gl.Vertex3f(-d,  h, -w)  // Top Left Of The Texture and Quad
-        gl.TexCoord2f(0.0, 0.0)
-        gl.Vertex3f(-d,  h,  w)  // Bottom Left Of The Texture and Quad
-        gl.TexCoord2f(1.0, 0.0)
-        gl.Vertex3f( d,  h,  w)  // Bottom Right Of The Texture and Quad
-        gl.TexCoord2f(1.0, 1.0)
-        gl.Vertex3f( d,  h, -w)  // Top Right Of The Texture and Quad
-
-        // Bottom Face
-        gl.Normal3f( 0.0, -1.0, 0.0)
-        gl.TexCoord2f(1.0, 1.0)
-        gl.Vertex3f(-d, -h, -w)  // Top Right Of The Texture and Quad
-        gl.TexCoord2f(0.0, 1.0)
-        gl.Vertex3f( d, -h, -w)  // Top Left Of The Texture and Quad
-        gl.TexCoord2f(0.0, 0.0)
-        gl.Vertex3f( d, -h,  w)  // Bottom Left Of The Texture and Quad
-        gl.TexCoord2f(1.0, 0.0)
-        gl.Vertex3f(-d, -h,  w)  // Bottom Right Of The Texture and Quad
-
-
-    gl.End();   
-   gl.PopMatrix()
-
+    //Cuboid(wolf.W(), wolf.H(), wolf.D(), 33, 32, 32, 32, 32, 32, 0, selectMode)
+    Cuboid(0.3, 0.5, 1.2, 33, 32, 32, 32, 32, 32, 0, selectMode)
+    gl.Translatef(0.8,0.3, 0)
+    gl.Rotated(-10, 0.0, 0.0, 1.0)
+    Cuboid(0.3, 0.3, 0.4, 33, 32, 32, 32, 32, 32, 0, selectMode)
+    gl.PopMatrix()
 }

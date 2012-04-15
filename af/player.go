@@ -1,8 +1,9 @@
 package af
 
 import (    
-    "math"
+    "github.com/banthar/Go-SDL/sdl"
     "github.com/banthar/gl"
+    "math"
    // "fmt"
 )
 
@@ -14,6 +15,8 @@ type Player struct {
     position Vector
     velocity Vector
     falling bool
+    currentTool uint16
+    walkingSpeed float64
 }
 
 func (p *Player) Init(heading float64, x float32, z float32, y float32) {
@@ -21,10 +24,11 @@ func (p *Player) Init(heading float64, x float32, z float32, y float32) {
     p.position[XAXIS] = float64(x)
     p.position[YAXIS] = float64(y)
     p.position[ZAXIS] = float64(z)
+    p.walkingSpeed = 12
 }
 
 func (p *Player) W() float64 { return 0.8 }
-func (p *Player) H() float64 { return 1.9 }
+func (p *Player) H() float64 { return 2.0 }
 func (p *Player) D() float64 { return 0.6 }
 
 func (p *Player) Heading() float64 { return p.heading }
@@ -33,14 +37,9 @@ func (p *Player) Y() float32 { return float32(p.position[YAXIS]) }
 func (p *Player) Z() float32 { return float32(p.position[ZAXIS]) }
 func (p *Player) Velocity() Vector { return p.velocity }
 func (p *Player) Position() Vector { return p.position }
-func (p *Player) IntPosition() IntVector { 
-    return IntVector{ int16(math.Floor(p.position[XAXIS] + 0.5)),
-                      int16(math.Floor(p.position[YAXIS] + 0.5)),
-                      int16(math.Floor(p.position[ZAXIS] + 0.5))}
-}
 
 func (p *Player) FrontBlock() IntVector { 
-    ip := p.IntPosition()
+    ip := IntPosition(p.position)
     if p.heading > 337.5 || p.heading <= 22.5 {
         ip[XAXIS]++
     } else if p.heading > 22.5 && p.heading <= 67.5 {
@@ -84,6 +83,11 @@ func (p *Player) Update(dt float64) {
     p.position[YAXIS] += p.velocity[YAXIS] * dt
     p.position[ZAXIS] += p.velocity[ZAXIS] * dt
     // fmt.Printf("position: %s\n", p.position)
+    // if math.Abs(p.velocity[XAXIS]) < 0.1 { p.velocity[XAXIS] = 0 }
+    // if math.Abs(p.velocity[YAXIS]) < 0.1 { p.velocity[YAXIS] = 0 }
+    // if math.Abs(p.velocity[ZAXIS]) < 0.1 { p.velocity[ZAXIS] = 0 }
+
+    //if p.velocity[YAXIS] == 0 { p.falling = false }
 }
 
 func (p *Player) Accelerate(v Vector) {
@@ -128,97 +132,68 @@ func (p *Player) Act(dt float64) {
 }
 
 
-func (player *Player) Draw(pos Vector, selectMode bool) {
+func (player *Player) Draw(center Vector, selectMode bool) {
 
     gl.PushMatrix()
+
     //stepHeight := float32(math.Sin(player.Bounce * piover180)/10.0)
     gl.Rotated(player.Heading(), 0.0, 1.0, 0.0)
 
-    h := float32(player.H()) / 2
-    gl.Translatef(0.0, h / 2 ,0.0)
-    w := float32(player.W()) / 2
-    d := float32(player.D()) / 2
-    //gl.Translatef(0.0,-h,0.0)
-    MapTextures[33].Bind(gl.TEXTURE_2D)
-    //topTexture.Bind(gl.TEXTURE_2D)
-    gl.Begin(gl.QUADS)                  // Start Drawing Quads
-        //gl.Color3f(0.3,0.3,0.6)
-        // Front face
-        gl.Normal3f( 1.0, 0.0, 0.0)
-        gl.TexCoord2f(1.0, 0.0)
-        gl.Vertex3f( d, -h, -w)  // Bottom Right Of The Texture and Quad
-        gl.TexCoord2f(1.0, 1.0)
-        gl.Vertex3f( d,  h, -w)  // Top Right Of The Texture and Quad
-        gl.TexCoord2f(0.0, 1.0)
-        gl.Vertex3f( d,  h,  w)  // Top Left Of The Texture and Quad
-        gl.TexCoord2f(0.0, 0.0)
-        gl.Vertex3f( d, -h,  w)  // Bottom Left Of The Texture and Quad
+    gl.Translatef(0.0, float32(player.H() / 2) - 0.5 ,0.0)
+    Cuboid(player.W(), player.H(), player.D(), 33, 32, 32, 32, 32, 32, 0, selectMode)
 
-    gl.End()
-
-    MapTextures[32].Bind(gl.TEXTURE_2D)
-
-    // dirtTexture.Bind(gl.TEXTURE_2D)
-    gl.Begin(gl.QUADS)                  // Start Drawing Quads
-        // Left Face
-        gl.Normal3f( 0.0, 0.0, -1.0)
-        gl.TexCoord2f(1.0, 0.0)        
-        gl.Vertex3f(-d, -h, -w)  // Bottom Right Of The Texture and Quad
-        gl.TexCoord2f(1.0, 1.0)
-        gl.Vertex3f(-d,  h, -w)  // Top Right Of The Texture and Quad
-        gl.TexCoord2f(0.0, 1.0)
-        gl.Vertex3f( d,  h, -w)  // Top Left Of The Texture and Quad
-        gl.TexCoord2f(0.0, 0.0)
-        gl.Vertex3f( d, -h, -w)  // Bottom Left Of The Texture and Quad
-
-
-        // Right Face
-        //gl.Color3f(0.5,0.5,1.0)              // Set The Color To Blue One Time Only
-        gl.Normal3f( 0.0, 0.0, 1.0)
-        gl.TexCoord2f(0.0, 0.0)
-        gl.Vertex3f( -d, -h,  w)  // Bottom Left Of The Texture and Quad
-        gl.TexCoord2f(1.0, 0.0)
-        gl.Vertex3f(  d, -h,  w)  // Bottom Right Of The Texture and Quad
-        gl.TexCoord2f(1.0, 1.0)
-        gl.Vertex3f(  d,  h,  w)  // Top Right Of The Texture and Quad
-        gl.TexCoord2f(0.0, 1.0)
-        gl.Vertex3f( -d,  h,  w)  // Top Left Of The Texture and Quad
-
-
-        // Back Face
-        gl.Normal3f( -1.0, 0.0, 0.0)
-        gl.TexCoord2f(0.0, 0.0)
-        gl.Vertex3f(-d, -h, -w)  // Bottom Left Of The Texture and Quad
-        gl.TexCoord2f(1.0, 0.0)
-        gl.Vertex3f(-d, -h,  w)  // Bottom Right Of The Texture and Quad
-        gl.TexCoord2f(1.0, 1.0)
-        gl.Vertex3f(-d,  h,  w)  // Top Right Of The Texture and Quad
-        gl.TexCoord2f(0.0, 1.0)
-        gl.Vertex3f(-d,  h, -w)  // Top Left Of The Texture and Quad
-
-     //gl.Color3f(0.3,1.0,0.3)
-        // Top Face
-        gl.Normal3f( 0.0, 1.0, 0.0)
-        gl.TexCoord2f(0.0, 1.0)
-        gl.Vertex3f(-d,  h, -w)  // Top Left Of The Texture and Quad
-        gl.TexCoord2f(0.0, 0.0)
-        gl.Vertex3f(-d,  h,  w)  // Bottom Left Of The Texture and Quad
-        gl.TexCoord2f(1.0, 0.0)
-        gl.Vertex3f( d,  h,  w)  // Bottom Right Of The Texture and Quad
-        gl.TexCoord2f(1.0, 1.0)
-        gl.Vertex3f( d,  h, -w)  // Top Right Of The Texture and Quad
-
-        // Bottom Face
-        gl.Normal3f( 0.0, -1.0, 0.0)
-        gl.TexCoord2f(1.0, 1.0)
-        gl.Vertex3f(-d, -h, -w)  // Top Right Of The Texture and Quad
-        gl.TexCoord2f(0.0, 1.0)
-        gl.Vertex3f( d, -h, -w)  // Top Left Of The Texture and Quad
-        gl.TexCoord2f(0.0, 0.0)
-        gl.Vertex3f( d, -h,  w)  // Bottom Left Of The Texture and Quad
-        gl.TexCoord2f(1.0, 0.0)
-        gl.Vertex3f(-d, -h,  w)  // Bottom Right Of The Texture and Quad
-
-    gl.End();   
     gl.PopMatrix()
 }
+
+func (p *Player) HandleKeys(keys []uint8) {
+    if keys[sdl.K_1] != 0 {
+        p.currentTool = TOOL_HAND
+    }
+    if keys[sdl.K_2] != 0 {
+        p.currentTool = TOOL_DIG
+    }
+    if keys[sdl.K_3] != 0 {
+        p.currentTool = BLOCK_DIRT
+    }
+
+
+    if keys[sdl.K_w] != 0 {
+        if !p.IsFalling() {
+            p.velocity[XAXIS] = math.Cos(p.Heading() * math.Pi / 180) * p.walkingSpeed
+            p.velocity[ZAXIS] = -math.Sin(p.Heading() * math.Pi / 180) * p.walkingSpeed
+        } else {
+            p.velocity[XAXIS] = math.Cos(p.Heading() * math.Pi / 180) * p.walkingSpeed / 3
+            p.velocity[ZAXIS] = -math.Sin(p.Heading() * math.Pi / 180) * p.walkingSpeed / 3
+        }
+
+    }
+    if keys[sdl.K_s] != 0 {
+        if !p.IsFalling() {
+            p.velocity[XAXIS] = -math.Cos(p.Heading() * math.Pi / 180) * p.walkingSpeed
+            p.velocity[ZAXIS] = math.Sin(p.Heading() * math.Pi / 180) * p.walkingSpeed
+        } else {
+            p.velocity[XAXIS] = -math.Cos(p.Heading() * math.Pi / 180) * p.walkingSpeed / 3
+            p.velocity[ZAXIS] = math.Sin(p.Heading() * math.Pi / 180) * p.walkingSpeed / 3
+        }
+ 
+    }
+    if keys[sdl.K_a] != 0 {
+        p.Rotate(9)
+
+    }    
+
+    if keys[sdl.K_d] != 0 {
+        p.Rotate(-9)
+    }        
+
+
+    if keys[sdl.K_SPACE] != 0 {
+        if !p.IsFalling() {
+            println("jump")
+            p.velocity[YAXIS] += 3
+        }
+    } 
+
+}
+
+    
