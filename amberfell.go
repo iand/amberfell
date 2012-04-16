@@ -39,6 +39,9 @@ var (
     tileWidth = 48
     screenScale int = int(5 * float64(tileWidth) / 2)
 
+
+    timeOfDay float32 = 19
+
     lightpos af.Vector
 
 
@@ -164,15 +167,14 @@ func main() {
             done = true
         }
         if keys[sdl.K_UP] != 0 {
-            view_rotx += 5.0
-            if view_rotx > 80 {
-                view_rotx = 80
+            
+            if view_rotx < 75 {
+                view_rotx += 5.0
             }
         }
         if keys[sdl.K_DOWN] != 0 {
-            view_rotx -= 5.0
-            if view_rotx < 15 {
-                view_rotx = 10
+            if view_rotx > 15.0 {
+                view_rotx -= 5.0
             }
         }
         if keys[sdl.K_LEFT] != 0 {
@@ -192,6 +194,19 @@ func main() {
                 af.DebugMode = true
             }
         }               
+
+        if keys[sdl.K_o] != 0 {
+            timeOfDay += 0.1
+            if timeOfDay > 24 {
+                timeOfDay -= 24
+            }
+        }
+        if keys[sdl.K_l] != 0 {
+            timeOfDay -= 0.1
+            if timeOfDay < 0 {
+                timeOfDay += 24
+            }
+        }
 
         if af.DebugMode {
             fmt.Printf("x:%f, z:%f\n", player.X(), player.Z())
@@ -228,6 +243,12 @@ func main() {
         if update.GetTicks() > 1e9/2 {
             //fmt.Printf("draw fps: %f\n", float64(drawFrame) / (float64(update.GetTicks()) / float64(1e9)) )
             //fmt.Printf("compute fps: %f\n", float64(computeFrame) / (float64(update.GetTicks()) / float64(1e9)) )
+
+            timeOfDay += 0.02
+            if timeOfDay > 24 {
+                timeOfDay -= 24
+            }
+            fmt.Printf("Time of day: %2.2f\n", timeOfDay)
             drawFrame, computeFrame = 0, 0
             update.Start()
         }
@@ -276,6 +297,9 @@ func init2() {
     gl.ShadeModel(gl.SMOOTH)    
     gl.Enable(gl.LIGHTING)
     gl.Enable(gl.LIGHT0)
+    gl.Enable(gl.LIGHT1)
+
+
     gl.ColorMaterial ( gl.FRONT_AND_BACK, gl.EMISSION )
     gl.ColorMaterial ( gl.FRONT_AND_BACK, gl.AMBIENT_AND_DIFFUSE )
     gl.Enable ( gl.COLOR_MATERIAL )
@@ -319,6 +343,7 @@ func Draw(selectMode bool) {
         gl.Disable(gl.FOG)
         gl.Disable(gl.LIGHTING)
         gl.Disable(gl.LIGHT0)
+        gl.Disable(gl.LIGHT1)
         gl.Disable ( gl.COLOR_MATERIAL )
     } else {
         gl.Color4ub(255, 255, 255, 255)
@@ -327,36 +352,70 @@ func Draw(selectMode bool) {
         gl.Enable(gl.LIGHTING)
         gl.Enable(gl.LIGHT0)
         gl.Enable ( gl.COLOR_MATERIAL )
+
+        if timeOfDay < 5.3 || timeOfDay > 20.7 {
+            gl.Enable(gl.LIGHT1)
+        } else {
+            gl.Disable(gl.LIGHT1)
+        }
+
+
     }
 
 
     gl.LoadIdentity()
-    center := player.Position()
-
-
-    //gl.Translatef( 0.0, 0.0, -40.0 )
     gl.Rotated(view_rotx, 1.0, 0.0, 0.0)
     gl.Rotated(-player.Heading() + view_roty, 0.0, 1.0, 0.0)
     gl.Rotated(0, 0.0, 0.0, 1.0)
 
+
+    center := player.Position()
+
+
+
+
+    // Sun
+    var daylightIntensity float32 = 0.4
+    if timeOfDay < 5 || timeOfDay > 21 {
+        daylightIntensity = 0.00
+        gl.LightModelfv(gl.LIGHT_MODEL_AMBIENT, []float32{0.1, 0.1, 0.1,1})
+    } else if timeOfDay < 6 {
+        daylightIntensity = 0.4 * (timeOfDay - 5)
+    } else if timeOfDay > 20 {
+        daylightIntensity = 0.4 * (21 - timeOfDay)
+    }
+
+
+
+    gl.Lightfv(gl.LIGHT0, gl.POSITION, []float32{0.5, 1, 1, 0})
+    gl.Lightfv(gl.LIGHT0, gl.AMBIENT, []float32{daylightIntensity, daylightIntensity, daylightIntensity,1})
+    // gl.Lightfv(gl.LIGHT0, gl.DIFFUSE, []float32{daylightIntensity, daylightIntensity, daylightIntensity,1})
+    // gl.Lightfv(gl.LIGHT0, gl.SPECULAR, []float32{daylightIntensity, daylightIntensity, daylightIntensity,1})
+    gl.Lightfv(gl.LIGHT0, gl.DIFFUSE, []float32{daylightIntensity, daylightIntensity, daylightIntensity,1})
+    gl.Lightfv(gl.LIGHT0, gl.SPECULAR, []float32{daylightIntensity, daylightIntensity, daylightIntensity,1})
+
+    // Torch
     ambient := float32(0.6)
-    specular := float32(1)
+    specular := float32(0.6)
     diffuse := float32(1)
 
-    gl.Lightfv(gl.LIGHT0, gl.POSITION, []float32{0,1,0, 1})
-    gl.Lightfv(gl.LIGHT0, gl.AMBIENT, []float32{ambient, ambient, ambient,1})
-    gl.Lightfv(gl.LIGHT0, gl.SPECULAR, []float32{specular,specular,specular,1})
-    gl.Lightfv(gl.LIGHT0, gl.DIFFUSE, []float32{diffuse,diffuse,diffuse,1})
-    gl.Lightf(gl.LIGHT0, gl.CONSTANT_ATTENUATION, 1.5)
-    gl.Lightf(gl.LIGHT0, gl.LINEAR_ATTENUATION, 0.5)
-    gl.Lightf(gl.LIGHT0, gl.QUADRATIC_ATTENUATION, 0.02)
-    gl.Lightf(gl.LIGHT0, gl.SPOT_CUTOFF, 35)
-    gl.Lightf(gl.LIGHT0, gl.SPOT_EXPONENT, 2.0)
-    gl.Lightfv(gl.LIGHT0, gl.SPOT_DIRECTION, []float32{float32(math.Cos(player.Heading() * math.Pi/180)),float32(-0.8), -float32(math.Sin(player.Heading() * math.Pi/180))})
+
+    gl.Lightfv(gl.LIGHT1, gl.POSITION, []float32{0,1,0, 1})
+    gl.Lightfv(gl.LIGHT1, gl.AMBIENT, []float32{ambient, ambient, ambient,1})
+    gl.Lightfv(gl.LIGHT1, gl.SPECULAR, []float32{specular,specular,specular,1})
+    gl.Lightfv(gl.LIGHT1, gl.DIFFUSE, []float32{diffuse,diffuse,diffuse,1})
+    gl.Lightf(gl.LIGHT1, gl.CONSTANT_ATTENUATION, 1.5)
+    gl.Lightf(gl.LIGHT1, gl.LINEAR_ATTENUATION, 0.5)
+    gl.Lightf(gl.LIGHT1, gl.QUADRATIC_ATTENUATION, 0.01)
+    gl.Lightf(gl.LIGHT1, gl.SPOT_CUTOFF, 35)
+    gl.Lightf(gl.LIGHT1, gl.SPOT_EXPONENT, 2.0)
+    gl.Lightfv(gl.LIGHT1, gl.SPOT_DIRECTION, []float32{float32(math.Cos(player.Heading() * math.Pi/180)),float32(-0.7), -float32(math.Sin(player.Heading() * math.Pi/180))})
 
 
     player.Draw(center, selectMode)
     world.Draw(center, selectMode)
+
+    //gl.Translatef( 0.0, -20.0, -5.0 )
 
     if !selectMode {
         sdl.GL_SwapBuffers()

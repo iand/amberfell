@@ -10,13 +10,19 @@ import (
 
 
 type World struct {
-    W           int16
-    D           int16
-    H           int16
+    //W           int16
+    //D           int16
+    //H           int16
     GroundLevel int16
-    Blocks      []byte
+    //Blocks      []byte
     mobs        []Mob
+    chunks      map[int16] *Chunk
 }
+
+type Chunk struct {
+    Blocks      []byte
+}
+
 
 type Side struct {
     x, x1, x2, z, z1, z2, dir, y float64
@@ -25,23 +31,38 @@ type Side struct {
 
 
 func (world *World) Init(w int16, d int16, h int16) {
-    world.W = w
-    world.D = d
-    world.H = h
-    world.Blocks = make([]byte, w*d*h)
-    var iw, id, ih int16
-    for iw = 0; iw < w; iw++ {
-        for id = 0; id < d; id++ {
-            for ih = 0; ih <= GroundLevel; ih++ {
-                world.Set(iw, ih, id, 2) // dirt
-            }
-            for ih = GroundLevel + 1; ih < h; ih++ {
-                world.Set(iw, ih, id, 0) // air
-            }
-        }
-    }
 
-    numFeatures := rand.Intn(int(world.W))
+
+    //world.W = w
+    //world.D = d
+    //world.H = 48
+    //world.Blocks = make([]byte, w*d*h)
+    world.chunks = make(map[int16]*Chunk)
+
+    world.GenerateChunk(0, 0, 0)
+    world.GenerateChunk(0, 0, 1)
+    world.GenerateChunk(0, 0, -1)
+    world.GenerateChunk(-1, 0, 0)
+    world.GenerateChunk(-1, 0, 1)
+    world.GenerateChunk(-1, 0, -1)
+    world.GenerateChunk(1, 0, 0)
+    world.GenerateChunk(1, 0, 1)
+    world.GenerateChunk(1, 0, -1)
+
+
+    var iw, id int16
+    // for iw = 0; iw < ChunkWidth; iw++ {
+    //     for id = 0; id < ChunkWidth; id++ {
+    //         for ih = 0; ih <= GroundLevel; ih++ {
+    //             world.Set(iw, ih, id, 2) // dirt
+    //         }
+    //         for ih = GroundLevel + 1; ih < ChunkHeight; ih++ {
+    //             world.Set(iw, ih, id, 0) // air
+    //         }
+    //     }
+    // }
+
+    numFeatures := rand.Intn(20)
     for i := 0; i < numFeatures; i++ {
         iw, id = world.RandomSquare()
 
@@ -51,7 +72,7 @@ func (world *World) Init(w int16, d int16, h int16) {
     iw, id = world.RandomSquare()
 
     world.Set(iw, GroundLevel, id, 0) // air
-    world.Grow(iw, GroundLevel, id, 60, 60, 60, 60, 0, 50, 0)
+    world.Grow(iw, GroundLevel, id, 20, 20, 20, 20, 0, 30, 0)
 
 
     wolf := new(Wolf)
@@ -61,16 +82,63 @@ func (world *World) Init(w int16, d int16, h int16) {
 
 }
 
-func (world *World) At(x int16, y int16, z int16) byte {
-    x = x % world.W
-    if x < 0 { x += world.W }
-    z = z % world.D
-    if z < 0 { z += world.D }
-    if y < 0 || y > world.H-1 {
-        return 0
+// A chunk is a 24 x 24 x 48 set of blocks
+// x is east/west offset from World Origin
+// z is south/north offset from World Origin
+func (world *World) GenerateChunk(x int16, y int16, z int16) *Chunk {
+    var chunk Chunk
+    println("Generating chunk at x:", x, " y:", y, " z:", z)
+    var iw, id, ih int16
+    chunk.Blocks = make([]byte, CHUNK_WIDTH*CHUNK_WIDTH*CHUNK_HEIGHT)
+    for iw = 0; iw < CHUNK_WIDTH; iw++ {
+        for id = 0; id < CHUNK_WIDTH; id++ {
+            for ih = 0; ih <= GroundLevel; ih++ {
+                chunk.Set(iw, ih, id, 2) // dirt
+            }
+            for ih = GroundLevel + 1; ih < CHUNK_HEIGHT; ih++ {
+                chunk.Set(iw, ih, id, 0) // air
+            }
+        }
     }
-    return world.Blocks[world.W*world.D*y+world.D*x+z]
+
+    world.chunks[chunkIndex(x, y, z)] = &chunk
+    return &chunk
+
 }
+
+// Gets the chunk for a given x/z block coordinate
+// x = 0, z = 0 is in the top left of the home chunk
+func (world *World) GetChunkForBlock(x int16, y int16, z int16) (*Chunk, int16, int16, int16) {
+    cx := x / CHUNK_WIDTH
+    cy := y / CHUNK_HEIGHT
+    cz := z / CHUNK_WIDTH
+    //println("cx:", cx, "cz:", cz)
+
+    chunk, ok := world.chunks[chunkIndex(cx, cy, cz)]
+    if !ok {
+        chunk = world.GenerateChunk(cx, cy, cz)
+    }
+    
+    ox := x - cx * CHUNK_WIDTH
+    if ox < 0 { ox += CHUNK_WIDTH }
+
+    oy := y - cy * CHUNK_HEIGHT
+    if oy < 0 { oy += CHUNK_HEIGHT }
+
+    oz := z - cz * CHUNK_WIDTH
+    if oz < 0 { oz += CHUNK_WIDTH }
+
+    return chunk, ox, oy, oz
+
+}
+
+func (world *World) At(x int16, y int16, z int16) byte {
+    //println("x:", x, " y:", y, "z:", z)
+    chunk, ox, oy, oz := world.GetChunkForBlock(x, y, z)
+    //println("ox:", ox, " y:", y, "oz:", oz)
+    return chunk.At(ox, oy, oz)
+}
+
 
 func (world *World) Atv(v IntVector) byte {
     return world.At( v[XAXIS], v[YAXIS], v[ZAXIS]) 
@@ -79,12 +147,13 @@ func (world *World) Atv(v IntVector) byte {
 
 
 func (world *World) Set(x int16, y int16, z int16, b byte) {
-    world.Blocks[world.W*world.D*y+world.D*x+z] = b
+    chunk, ox, oy, oz := world.GetChunkForBlock(x, y, z)
+    chunk.Set(ox, oy, oz, b)
 }
 
 func (world *World) RandomSquare() (x int16, z int16) {
-    x = int16(rand.Intn(int(world.W)))
-    z = int16(rand.Intn(int(world.D)))
+    x = int16(rand.Intn(40) - 20)
+    z = int16(rand.Intn(40) - 20)
     return
 }
 
@@ -93,23 +162,23 @@ func (world *World) RandomSquare() (x int16, z int16) {
 // up/down = +/- y
 
 func (world *World) Grow(x int16, y int16, z int16, n int, s int, w int, e int, u int, d int, texture byte) {
-    if x < world.W-1 && world.At(x+1, y-1, z) != 0 && rand.Intn(100) < e {
+    if (y == 0 || world.At(x+1, y-1, z) != 0) && rand.Intn(100) < e {
         world.Set(x+1, y, z, texture)
         world.Grow(x+1, y, z, n, s, 0, e, u, d, texture)
     }
-    if x > 0 && world.At(x-1, y-1, z) != 0 && rand.Intn(100) < w {
+    if (y == 0 || world.At(x-1, y-1, z) != 0) && rand.Intn(100) < w {
         world.Set(x-1, y, z, texture)
         world.Grow(x-1, y, z, n, s, w, 0, u, d, texture)
     }
-    if y < world.D-1 && world.At(x, y-1, z+1) != 0 && rand.Intn(100) < s {
+    if (y == 0 || world.At(x, y-1, z+1) != 0) && rand.Intn(100) < s {
         world.Set(x, y, z+1, texture)
         world.Grow(x, y, z+1, n, 0, w, e, u, d, texture)
     }
-    if y > 0 && world.At(x, y-1, z-1) != 0 && rand.Intn(100) < n {
+    if (y == 0 || world.At(x, y-1, z-1) != 0) && rand.Intn(100) < n {
         world.Set(x, y, z-1, texture)
         world.Grow(x, y, z-1, 0, s, w, e, u, d, texture)
     }
-    if y < world.H-1 && rand.Intn(100) < u {
+    if y < CHUNK_HEIGHT-1 && rand.Intn(100) < u {
         world.Set(x, y+1, z, texture)
         world.Grow(x, y+1, z, n, s, w, e, u, 0, texture)
     }
@@ -289,33 +358,52 @@ func (world *World) Draw(center Vector, selectMode bool) {
 
     var px, py, pz = int16(center[XAXIS]), int16(center[YAXIS]), int16(center[ZAXIS])
 
-
     var x, y, z int16
 
     for x = px - 30; x < px + 30; x++ {
-        for z=pz - 30; z < pz + 30; z++ {
-            for y=0; y < world.H; y++ {
-                dx := x - px
-                dy := y - py
-                dz := z - pz
+        for z = pz - 30; z < pz + 30; z++ {
+            if x + z - px - pz <= 50 && x + z - px - pz >= -50 {
+                for y = py - 5; y < py +16; y++ {
+                    dx := x - px
+                    dy := y - py
+                    dz := z - pz
 
-                var terrain byte = world.At(x, y, z)
-                if terrain != 0 {
-                    var n, s, w, e, u, d bool = world.AirNeighbours(x, z, y)
-                    var id uint16 = 0
+                    var terrain byte = world.At(x, y, z)
+                    if terrain != 0 {
+                        var n, s, w, e, u, d bool = world.AirNeighbours(x, z, y)
+                        var id uint16 = 0
 
-                    if dx >= -2 && dx <= 2 && dy >= -2 && dy <= 2 && dz >= -2 && dz <= 2 {
-                        id = RelativeCoordinateToBlockId(dx, dy, dz)
+                        if dx >= -2 && dx <= 2 && dy >= -2 && dy <= 2 && dz >= -2 && dz <= 2 {
+                            id = RelativeCoordinateToBlockId(dx, dy, dz)
+                        }
+                        gl.PushMatrix()
+                        gl.Translatef(float32(x),float32(y),float32(z))
+                        //print ("i:", i, "j:", j, "b:", world.At(i, j, groundLevel))
+                        TerrainCube(n, s, w, e, u, d, terrain, id, selectMode)
+                        gl.PopMatrix()
                     }
-                    gl.PushMatrix()
-                    gl.Translatef(float32(x),float32(y),float32(z))
-                    //print ("i:", i, "j:", j, "b:", world.At(i, j, groundLevel))
-                    TerrainCube(n, s, w, e, u, d, terrain, id, selectMode)
-                    gl.PopMatrix()
                 }
             }
         }
     }
 
 }
+
+
+func chunkIndex(x int16, y int16, z int16) int16 {
+    return z * CHUNK_WIDTH * CHUNK_WIDTH + x * CHUNK_WIDTH + y
+}
+
+func blockIndex(x int16, y int16, z int16) int16 {
+    return CHUNK_WIDTH*CHUNK_WIDTH*y+CHUNK_WIDTH*x+z
+}
+
+func (chunk *Chunk) At(x int16, y int16, z int16) byte {
+    return chunk.Blocks[blockIndex(x, y, z)]
+}
+
+func (chunk *Chunk) Set(x int16, y int16, z int16, b byte) {
+    chunk.Blocks[blockIndex(x, y, z)] = b
+}
+
 

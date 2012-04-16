@@ -24,7 +24,7 @@ func (p *Player) Init(heading float64, x float32, z float32, y float32) {
     p.position[XAXIS] = float64(x)
     p.position[YAXIS] = float64(y)
     p.position[ZAXIS] = float64(z)
-    p.walkingSpeed = 12
+    p.walkingSpeed = 16
 }
 
 func (p *Player) W() float64 { return 0.8 }
@@ -136,6 +136,7 @@ func (player *Player) Draw(center Vector, selectMode bool) {
 
     gl.PushMatrix()
 
+    gl.Translatef(float32(player.X() - float32(center[XAXIS])),float32(player.Y() - float32(center[YAXIS])),float32(player.Z() - float32(center[ZAXIS])))
     //stepHeight := float32(math.Sin(player.Bounce * piover180)/10.0)
     gl.Rotated(player.Heading(), 0.0, 1.0, 0.0)
 
@@ -163,7 +164,7 @@ func (p *Player) HandleKeys(keys []uint8) {
             p.velocity[ZAXIS] = -math.Sin(p.Heading() * math.Pi / 180) * p.walkingSpeed
         } else {
             p.velocity[XAXIS] = math.Cos(p.Heading() * math.Pi / 180) * p.walkingSpeed / 3
-            p.velocity[ZAXIS] = -math.Sin(p.Heading() * math.Pi / 180) * p.walkingSpeed / 3
+            p.velocity[ZAXIS] = -math.Sin(p.Heading() * math.Pi / 180) * p.walkingSpeed / 32
         }
 
     }

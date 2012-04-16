@@ -3,6 +3,9 @@ package af
 const (
     GroundLevel = 4
 
+    CHUNK_WIDTH = 32
+    CHUNK_HEIGHT = 24
+
     XAXIS = 0
     YAXIS = 1
     ZAXIS = 2
