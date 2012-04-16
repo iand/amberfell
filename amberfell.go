@@ -38,7 +38,7 @@ var (
     screenWidth, screenHeight int
     tileWidth = 48
     screenScale int = int(5 * float64(tileWidth) / 2)
-
+    ShowOverlay bool
 
     timeOfDay float32 = 19
 
@@ -94,8 +94,6 @@ func main() {
 
     done = false
     for !done {
-        // controlForce := af.Vector{0, 0, 0}
-
 
         for e := sdl.PollEvent(); e != nil; e = sdl.PollEvent() {
             switch e.(type) {
@@ -164,7 +162,11 @@ func main() {
         keys = sdl.GetKeyState()
 
         if keys[sdl.K_ESCAPE] != 0 {
-            done = true
+            ShowOverlay = !ShowOverlay
+
+            // Overlay
+
+        
         }
         if keys[sdl.K_UP] != 0 {
             
@@ -208,6 +210,19 @@ func main() {
             }
         }
 
+        if keys[sdl.K_i] != 0 {
+            if af.ViewRadius < 90 {
+                af.ViewRadius++
+                println("ViewRadius: ", af.ViewRadius)
+            }
+        }
+        if keys[sdl.K_k] != 0 {
+            if af.ViewRadius > 10 {
+                af.ViewRadius--
+                println("ViewRadius: ", af.ViewRadius)
+            }
+        }
+
         if af.DebugMode {
             fmt.Printf("x:%f, z:%f\n", player.X(), player.Z())
         }
@@ -223,8 +238,7 @@ func main() {
 
         for accumulator > dt {
             accumulator -= dt
-            // player.ZeroForces()
-            // player.ApplyForce(controlForce)
+
             world.ApplyForces(player, float64(dt) / 1e9)
             
             player.Update(float64(dt) / 1e9)
@@ -241,19 +255,18 @@ func main() {
         drawFrame++
 
         if update.GetTicks() > 1e9/2 {
-            //fmt.Printf("draw fps: %f\n", float64(drawFrame) / (float64(update.GetTicks()) / float64(1e9)) )
-            //fmt.Printf("compute fps: %f\n", float64(computeFrame) / (float64(update.GetTicks()) / float64(1e9)) )
+            fmt.Printf("draw fps: %f\n", float64(drawFrame) / (float64(update.GetTicks()) / float64(1e9)) )
+            fmt.Printf("compute fps: %f\n", float64(computeFrame) / (float64(update.GetTicks()) / float64(1e9)) )
 
             timeOfDay += 0.02
             if timeOfDay > 24 {
                 timeOfDay -= 24
             }
-            fmt.Printf("Time of day: %2.2f\n", timeOfDay)
+
             drawFrame, computeFrame = 0, 0
             update.Start()
         }
 
-        //sdl.Delay( 1000 )
     }
     sdl.Quit()
     return
@@ -285,7 +298,7 @@ func reshape(width int, height int) {
     xmin, ymin := screenToView(0, 0)
     xmax, ymax := screenToView(uint16(width), uint16(height))
     
-    gl.Ortho(float64(xmin), float64(xmax), float64(ymin), float64(ymax), -100, 100)
+    gl.Ortho(float64(xmin), float64(xmax), float64(ymin), float64(ymax), -40, 40)
     gl.MatrixMode(gl.MODELVIEW)
     gl.LoadIdentity()
     glu.LookAt(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0)
@@ -294,15 +307,16 @@ func reshape(width int, height int) {
 
 func init2() {
     gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+    // gl.ShadeModel(gl.FLAT)    
     gl.ShadeModel(gl.SMOOTH)    
     gl.Enable(gl.LIGHTING)
     gl.Enable(gl.LIGHT0)
     gl.Enable(gl.LIGHT1)
 
 
-    gl.ColorMaterial ( gl.FRONT_AND_BACK, gl.EMISSION )
-    gl.ColorMaterial ( gl.FRONT_AND_BACK, gl.AMBIENT_AND_DIFFUSE )
-    gl.Enable ( gl.COLOR_MATERIAL )
+    // gl.ColorMaterial ( gl.FRONT_AND_BACK, gl.EMISSION )
+    // gl.ColorMaterial ( gl.FRONT_AND_BACK, gl.AMBIENT_AND_DIFFUSE )
+    // gl.Enable ( gl.COLOR_MATERIAL )
 
 
 
@@ -316,10 +330,11 @@ func init2() {
 
     gl.ClearDepth(1.0)                         // Depth Buffer Setup
     gl.Enable(gl.DEPTH_TEST)                        // Enables Depth Testing
-    gl.Hint(gl.PERSPECTIVE_CORRECTION_HINT, gl.NICEST)
+    gl.Hint(gl.PERSPECTIVE_CORRECTION_HINT, gl.FASTEST)
 
     gl.Enable(gl.TEXTURE_2D)
     af.LoadMapTextures()
+    af.LoadTerrainCubes()
 
 
 }
@@ -363,6 +378,7 @@ func Draw(selectMode bool) {
     }
 
 
+    af.CheckGLError()
     gl.LoadIdentity()
     gl.Rotated(view_rotx, 1.0, 0.0, 0.0)
     gl.Rotated(-player.Heading() + view_roty, 0.0, 1.0, 0.0)
@@ -411,14 +427,40 @@ func Draw(selectMode bool) {
     gl.Lightf(gl.LIGHT1, gl.SPOT_EXPONENT, 2.0)
     gl.Lightfv(gl.LIGHT1, gl.SPOT_DIRECTION, []float32{float32(math.Cos(player.Heading() * math.Pi/180)),float32(-0.7), -float32(math.Sin(player.Heading() * math.Pi/180))})
 
+    af.CheckGLError()
 
     player.Draw(center, selectMode)
+    af.CheckGLError()
+
     world.Draw(center, selectMode)
+    af.CheckGLError()
+
+    // // var mousex, mousey int
+    // // mouseState := sdl.GetMouseState(&mousex, &mousey)
+    // gl.PushMatrix()
+    // gl.Translatef(float32(center[af.XAXIS]),float32(center[af.YAXIS])-1,float32(center[af.ZAXIS]))
+    // //print ("i:", i, "j:", j, "b:", world.At(i, j, groundLevel))
+    // af.HighlightCuboidFace(1, 1, 1, af.TOP_FACE)
+    // gl.PopMatrix()
 
     //gl.Translatef( 0.0, -20.0, -5.0 )
 
+    if ShowOverlay {
+        gl.PushMatrix();
+        gl.LoadIdentity();
+        gl.Color4f(0, 0, 0, 0.25);
+        gl.Begin(gl.QUADS);
+        gl.Vertex2f(0, 0);
+        gl.Vertex2f(float32(screenWidth), 0);
+        gl.Vertex2f(float32(screenWidth), float32(screenHeight));
+        gl.Vertex2f(0, float32(screenHeight));
+        gl.End();
+        gl.PopMatrix();
+    }
+
     if !selectMode {
+        // gl.Finish()
+        // gl.Flush()
         sdl.GL_SwapBuffers()
-        gl.Finish()
     }    
 }

@@ -43,7 +43,15 @@
 			"file": "af/world.go",
 			"settings":
 			{
-				"buffer_size": 17051,
+				"buffer_size": 12309,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "\n\ntype Pipe struct {\n    quantity float64 \n    capacity float64\n    output Component\n}\n\ntype Component interface {\n    Capacity() float64\n    ConnectOutput(c *Component)\n    MaxOutputs\n}\n\n\n\nfunc (c *Component) Transfer() {\n    if c.quantity > 0 && c.output != Nil {\n        if c.output.capacity > s.output.quantity {\n            s.output.quantity += math.Max(s.quantity, 1)\n            s.quantity -= math.Max(s.quantity, 1)\n        }\n\n    }\n}\n\n\ntype Source struct {\n    output Component\n}\n\n\n\nfunc (s *Source) Run() {\n    if s.output.capacity > s.output.quantity {\n        s.output.quantity++\n    }\n}\n\n\nfunc (s *Pipe) Run() {\n    if s.quantity > 0 {\n        if s.output.capacity > s.output.quantity {\n            s.output.quantity += math.Max(s.quantity, 1)\n            s.quantity -= math.Max(s.quantity, 1)\n        }\n\n    }\n}\n\nfunc (s *Cumulator) Run() {\n    if s.quantity > 0 {\n        if s.output.capacity > s.output.quantity {\n            s.output.quantity += math.Max(s.quantity, 1)\n            s.quantity -= math.Max(s.quantity, 1)\n        }\n\n    }\n}\n\n\nfunc main() {\n    \n\n    p1, p2 Pipe\n    s Source\n\n    s.ConnectOutput(p1)\n    p1.ConnectOutput(p2)\n\n    s.Run()\n    p1.Run()\n    p2.Run()\n\n\n\n\n\n\n}\n",
+			"settings":
+			{
+				"buffer_size": 1204,
 				"line_ending": "Unix"
 			}
 		},
@@ -51,7 +59,74 @@
 			"file": "amberfell.go",
 			"settings":
 			{
-				"buffer_size": 25846,
+				"buffer_size": 12775,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "af/wolf.go",
+			"settings":
+			{
+				"buffer_size": 4006,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "af/globals.go",
+			"settings":
+			{
+				"buffer_size": 73,
+				"line_ending": "Unix",
+				"name": "package af"
+			}
+		},
+		{
+			"file": "af/functions.go",
+			"settings":
+			{
+				"buffer_size": 691,
+				"line_ending": "Unix",
+				"name": "package af"
+			}
+		},
+		{
+			"file": "af/shapes.go",
+			"settings":
+			{
+				"buffer_size": 19345,
+				"line_ending": "Unix",
+				"name": "package af"
+			}
+		},
+		{
+			"file": "af/player.go",
+			"settings":
+			{
+				"buffer_size": 5228,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "af/constants.go",
+			"settings":
+			{
+				"buffer_size": 337,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "af/mob.go",
+			"settings":
+			{
+				"buffer_size": 541,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "af/vector.go",
+			"settings":
+			{
+				"buffer_size": 1949,
 				"line_ending": "Unix"
 			}
 		}
@@ -84,6 +159,8 @@
 	},
 	"file_history":
 	[
+		"/home/iand/Documents/minecraft-server/plugins.txt",
+		"/home/iand/Dropbox/documents/minecraft-server/plugins.txt",
 		"/home/iand/wip/amberfell/amberfell.go",
 		"/home/iand/wip/amberfell/amberfell.sublime-project",
 		"/home/iand/wip/gofirst/sdltest.go",
@@ -130,7 +207,6 @@
 		"/home/iand/wip/playn-samples/README.md",
 		"/home/iand/web/iandavis.com/wiki/htdocs/genealogy/wiki.d/Main.1876BirthOfLouisaEmmings",
 		"/home/iand/web/iandavis.com/wiki/htdocs/genealogy/wiki.d/Main.RG13-1359-26-20",
-		"/home/iand/Documents/minecraft-server/plugins.txt",
 		"/home/iand/bin/craftbukkit/plugins/FishPeople/config.yml",
 		"/home/iand/bin/craftbukkit/plugins/WalkTheWalk/config.yml",
 		"/home/iand/bin/craftbukkit/plugins/TreeAssist/config.yml",
@@ -200,6 +276,28 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"bind",
+			"ind",
+			"bind",
+			"unbin",
+			"ortho",
+			"is falling",
+			"Load",
+			"chunks[",
+			"48",
+			"24",
+			"Blocks",
+			"face",
+			"Overlaps",
+			"mapTextures",
+			"scale/2",
+			"blockSize",
+			"af.",
+			"player",
+			"update",
+			"player",
+			"p.",
+			"p *Player",
 			"At(",
 			"Set(",
 			".Set",
@@ -272,6 +370,12 @@
 		"regex": false,
 		"replace_history":
 		[
+			"MapTextures",
+			"width",
+			"scale",
+			"",
+			"w.",
+			"w *Wolf",
 			"",
 			"math.Abs",
 			"float64",
@@ -300,7 +404,7 @@
 	"groups":
 	[
 		{
-			"selected": 1,
+			"selected": 2,
 			"sheets":
 			[
 				{
@@ -308,15 +412,261 @@
 					"file": "af/world.go",
 					"settings":
 					{
-						"buffer_size": 17051,
+						"buffer_size": 12309,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								7194,
+								7194
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 3616.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"settings":
+					{
+						"buffer_size": 1204,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								184,
+								184
+							]
+						],
+						"settings":
+						{
+							"auto_name": "",
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "amberfell.go",
+					"settings":
+					{
+						"buffer_size": 12775,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								12358,
+								12358
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 6376.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "af/wolf.go",
+					"settings":
+					{
+						"buffer_size": 4006,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								3514,
+								3662
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1591.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "af/globals.go",
+					"settings":
+					{
+						"buffer_size": 73,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								49,
+								59
+							]
+						],
+						"settings":
+						{
+							"auto_name": "package af",
+							"syntax": "Packages/Go/Go.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "af/functions.go",
+					"settings":
+					{
+						"buffer_size": 691,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								535,
+								570
+							]
+						],
+						"settings":
+						{
+							"auto_name": "package af",
+							"syntax": "Packages/Go/Go.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "af/shapes.go",
+					"settings":
+					{
+						"buffer_size": 19345,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								991,
+								991
+							]
+						],
+						"settings":
+						{
+							"auto_name": "package af",
+							"syntax": "Packages/Go/Go.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 600.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "af/player.go",
+					"settings":
+					{
+						"buffer_size": 5228,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								5044,
+								5045
+							]
+						],
+						"settings":
+						{
+							"spell_check": false,
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 2386.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 8,
+					"file": "af/constants.go",
+					"settings":
+					{
+						"buffer_size": 337,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								132,
+								142
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Go/Go.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 9,
+					"file": "af/mob.go",
+					"settings":
+					{
+						"buffer_size": 541,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								373,
+								373
 							]
 						],
 						"settings":
@@ -332,29 +682,27 @@
 					"type": "text"
 				},
 				{
-					"buffer": 1,
-					"file": "amberfell.go",
+					"buffer": 10,
+					"file": "af/vector.go",
 					"settings":
 					{
-						"buffer_size": 25846,
+						"buffer_size": 1949,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								780,
+								780
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/Go/Go.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
+							"syntax": "Packages/Go/Go.tmLanguage"
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 286.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"

@@ -20,6 +20,7 @@ type World struct {
 }
 
 type Chunk struct {
+    x, y, z     int16
     Blocks      []byte
 }
 
@@ -51,16 +52,7 @@ func (world *World) Init(w int16, d int16, h int16) {
 
 
     var iw, id int16
-    // for iw = 0; iw < ChunkWidth; iw++ {
-    //     for id = 0; id < ChunkWidth; id++ {
-    //         for ih = 0; ih <= GroundLevel; ih++ {
-    //             world.Set(iw, ih, id, 2) // dirt
-    //         }
-    //         for ih = GroundLevel + 1; ih < ChunkHeight; ih++ {
-    //             world.Set(iw, ih, id, 0) // air
-    //         }
-    //     }
-    // }
+
 
     numFeatures := rand.Intn(20)
     for i := 0; i < numFeatures; i++ {
@@ -87,9 +79,9 @@ func (world *World) Init(w int16, d int16, h int16) {
 // z is south/north offset from World Origin
 func (world *World) GenerateChunk(x int16, y int16, z int16) *Chunk {
     var chunk Chunk
+    chunk.Init(x, y, z)
     println("Generating chunk at x:", x, " y:", y, " z:", z)
     var iw, id, ih int16
-    chunk.Blocks = make([]byte, CHUNK_WIDTH*CHUNK_WIDTH*CHUNK_HEIGHT)
     for iw = 0; iw < CHUNK_WIDTH; iw++ {
         for id = 0; id < CHUNK_WIDTH; id++ {
             for ih = 0; ih <= GroundLevel; ih++ {
@@ -189,19 +181,20 @@ func (world *World) Grow(x int16, y int16, z int16, n int, s int, w int, e int, 
 }
 
 func (world *World) AirNeighbours(x int16, z int16, y int16) (n, s, w, e, u, d bool) {
-    if /* x > 0 && */world.At(x-1, y, z) == 0 {
+
+    if world.ChunkLoadedFor(x-1, y, z) && world.At(x-1, y, z) == BLOCK_AIR {
         e = true
     }
-    if /*x < world.W-1 &&*/ world.At(x+1, y, z) == 0 {
+    if world.ChunkLoadedFor(x+1, y, z) && world.At(x+1, y, z) == BLOCK_AIR {
         w = true
     }
-    if /*z > 0 &&*/ world.At(x, y, z-1) == 0 {
+    if world.ChunkLoadedFor(x, y, z-1) && world.At(x, y, z-1) == BLOCK_AIR {
         s = true
     }
-    if /*z < world.D-1 &&*/ world.At(x, y, z+1) == 0 {
+    if world.ChunkLoadedFor(x, y, z+1) && world.At(x, y, z+1) == BLOCK_AIR {
         n = true
     }
-    if /*y < world.H-1 &&*/ world.At(x, y+1, z) == 0 {
+    if world.ChunkLoadedFor(x, y+1, z) && world.At(x, y+1, z) == BLOCK_AIR {
         u = true
     }
     return
@@ -255,7 +248,7 @@ func (world *World) ApplyForces(mob Mob, dt float64) {
 
     // Gravity
     if mob.IsFalling() {
-        println("is falling")
+        // println("is falling")
         mob.Setvx(mob.Velocity()[XAXIS] / 1.001)
         mob.Setvy(mob.Velocity()[YAXIS] - 15 * dt)
         mob.Setvz(mob.Velocity()[ZAXIS] / 1.001)
@@ -340,12 +333,25 @@ func (world *World) ApplyForces(mob Mob, dt float64) {
 
 
 
-func (w *World) Simulate(dt float64) {
-    for _, v := range w.mobs {
+func (world *World) Simulate(dt float64) {
+    for _, v := range world.mobs {
         v.Act(dt)
-        w.ApplyForces(v, dt)
+        world.ApplyForces(v, dt)
         v.Update(dt)
     }
+
+
+}
+
+
+
+func (world World) ChunkLoadedFor(x int16, y int16, z int16) bool {
+    cx := x / CHUNK_WIDTH
+    cy := y / CHUNK_HEIGHT
+    cz := z / CHUNK_WIDTH
+
+    _, ok := world.chunks[chunkIndex(cx, cy, cz)]
+    return ok
 }
 
 
@@ -360,9 +366,10 @@ func (world *World) Draw(center Vector, selectMode bool) {
 
     var x, y, z int16
 
+    count := 0
     for x = px - 30; x < px + 30; x++ {
         for z = pz - 30; z < pz + 30; z++ {
-            if x + z - px - pz <= 50 && x + z - px - pz >= -50 {
+            if x + z - px - pz <= ViewRadius && x + z - px - pz >= -ViewRadius {
                 for y = py - 5; y < py +16; y++ {
                     dx := x - px
                     dy := y - py
@@ -371,23 +378,30 @@ func (world *World) Draw(center Vector, selectMode bool) {
                     var terrain byte = world.At(x, y, z)
                     if terrain != 0 {
                         var n, s, w, e, u, d bool = world.AirNeighbours(x, z, y)
-                        var id uint16 = 0
+                        if n || s || w || e || u || d {
 
-                        if dx >= -2 && dx <= 2 && dy >= -2 && dy <= 2 && dz >= -2 && dz <= 2 {
-                            id = RelativeCoordinateToBlockId(dx, dy, dz)
+                            var id uint16 = 0
+
+                            if dx >= -2 && dx <= 2 && dy >= -2 && dy <= 2 && dz >= -2 && dz <= 2 {
+                                id = RelativeCoordinateToBlockId(dx, dy, dz)
+                            }
+                            gl.PushMatrix()
+                            gl.Translatef(float32(x),float32(y),float32(z))
+                            TerrainCube(n, s, w, e, u, d, terrain, id, selectMode)
+                            count++
+                            CheckGLError()
+                            gl.PopMatrix()
                         }
-                        gl.PushMatrix()
-                        gl.Translatef(float32(x),float32(y),float32(z))
-                        //print ("i:", i, "j:", j, "b:", world.At(i, j, groundLevel))
-                        TerrainCube(n, s, w, e, u, d, terrain, id, selectMode)
-                        gl.PopMatrix()
                     }
                 }
             }
         }
     }
+    //println("Drew ", count, " cubes")
+
 
 }
+
 
 
 func chunkIndex(x int16, y int16, z int16) int16 {
@@ -396,6 +410,24 @@ func chunkIndex(x int16, y int16, z int16) int16 {
 
 func blockIndex(x int16, y int16, z int16) int16 {
     return CHUNK_WIDTH*CHUNK_WIDTH*y+CHUNK_WIDTH*x+z
+}
+
+// **************************************************************
+// CHUNKS
+// **************************************************************
+
+func (c Chunk) WorldCoords(x int16, y int16, z int16) (xw int16, yw int16, zw int16) {
+    xw = c.x * CHUNK_WIDTH + x
+    zw = c.z * CHUNK_WIDTH + z
+    yw = c.y * CHUNK_HEIGHT + y
+    return
+}
+
+func (chunk *Chunk) Init(x int16, y int16, z int16) {
+    chunk.x = x
+    chunk.y = y
+    chunk.z = z
+    chunk.Blocks = make([]byte, CHUNK_WIDTH*CHUNK_WIDTH*CHUNK_HEIGHT)
 }
 
 func (chunk *Chunk) At(x int16, y int16, z int16) byte {

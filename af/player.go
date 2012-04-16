@@ -164,33 +164,32 @@ func (p *Player) HandleKeys(keys []uint8) {
             p.velocity[ZAXIS] = -math.Sin(p.Heading() * math.Pi / 180) * p.walkingSpeed
         } else {
             p.velocity[XAXIS] = math.Cos(p.Heading() * math.Pi / 180) * p.walkingSpeed / 3
-            p.velocity[ZAXIS] = -math.Sin(p.Heading() * math.Pi / 180) * p.walkingSpeed / 32
+            p.velocity[ZAXIS] = -math.Sin(p.Heading() * math.Pi / 180) * p.walkingSpeed / 3
         }
 
     }
     if keys[sdl.K_s] != 0 {
         if !p.IsFalling() {
-            p.velocity[XAXIS] = -math.Cos(p.Heading() * math.Pi / 180) * p.walkingSpeed
-            p.velocity[ZAXIS] = math.Sin(p.Heading() * math.Pi / 180) * p.walkingSpeed
+            p.velocity[XAXIS] = -math.Cos(p.Heading() * math.Pi / 180) * p.walkingSpeed / 2
+            p.velocity[ZAXIS] = math.Sin(p.Heading() * math.Pi / 180) * p.walkingSpeed / 2
         } else {
-            p.velocity[XAXIS] = -math.Cos(p.Heading() * math.Pi / 180) * p.walkingSpeed / 3
-            p.velocity[ZAXIS] = math.Sin(p.Heading() * math.Pi / 180) * p.walkingSpeed / 3
+            p.velocity[XAXIS] = -math.Cos(p.Heading() * math.Pi / 180) * p.walkingSpeed / 4
+            p.velocity[ZAXIS] = math.Sin(p.Heading() * math.Pi / 180) * p.walkingSpeed / 4
         }
  
     }
     if keys[sdl.K_a] != 0 {
-        p.Rotate(9)
+        p.Rotate(22.5)
 
     }    
 
     if keys[sdl.K_d] != 0 {
-        p.Rotate(-9)
+        p.Rotate(-22.5)
     }        
 
 
     if keys[sdl.K_SPACE] != 0 {
         if !p.IsFalling() {
-            println("jump")
             p.velocity[YAXIS] += 3
         }
     } 
