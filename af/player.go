@@ -1,3 +1,8 @@
+/*
+  To the extent possible under law, Ian Davis has waived all copyright
+  and related or neighboring rights to this Amberfell Source Code file.
+  This work is published from the United Kingdom. 
+*/
 package af
 
 import (    
@@ -15,8 +20,11 @@ type Player struct {
     position Vector
     velocity Vector
     falling bool
-    currentTool uint16
+    currentAction uint8
+    currentItem uint16
     walkingSpeed float64
+    equippedItems [7]uint16
+    backpack [255]uint16
 }
 
 func (p *Player) Init(heading float64, x float32, z float32, y float32) {
@@ -25,6 +33,17 @@ func (p *Player) Init(heading float64, x float32, z float32, y float32) {
     p.position[YAXIS] = float64(y)
     p.position[ZAXIS] = float64(z)
     p.walkingSpeed = 16
+    p.currentAction = ACTION_HAND
+    p.currentItem = ITEM_NONE
+
+    p.equippedItems[0] = BLOCK_DIRT
+    p.equippedItems[1] = BLOCK_STONE
+    p.equippedItems[2] = ITEM_NONE
+    p.equippedItems[3] = ITEM_NONE
+    p.equippedItems[4] = ITEM_NONE
+    p.equippedItems[5] = ITEM_NONE
+    p.equippedItems[6] = ITEM_NONE
+
 }
 
 func (p *Player) W() float64 { return 0.8 }
@@ -148,13 +167,38 @@ func (player *Player) Draw(center Vector, selectMode bool) {
 
 func (p *Player) HandleKeys(keys []uint8) {
     if keys[sdl.K_1] != 0 {
-        p.currentTool = TOOL_HAND
+        p.currentAction = ACTION_HAND
     }
     if keys[sdl.K_2] != 0 {
-        p.currentTool = TOOL_DIG
+        p.currentAction = ACTION_BREAK
     }
     if keys[sdl.K_3] != 0 {
-        p.currentTool = BLOCK_DIRT
+        p.currentAction = ACTION_ITEM
+        p.currentItem = p.equippedItems[0]
+    }
+    if keys[sdl.K_4] != 0 {
+        p.currentAction = ACTION_ITEM
+        p.currentItem = p.equippedItems[1]
+    }
+    if keys[sdl.K_5] != 0 {
+        p.currentAction = ACTION_ITEM
+        p.currentItem = p.equippedItems[2]
+    }
+    if keys[sdl.K_6] != 0 {
+        p.currentAction = ACTION_ITEM
+        p.currentItem = p.equippedItems[3]
+    }
+    if keys[sdl.K_7] != 0 {
+        p.currentAction = ACTION_ITEM
+        p.currentItem = p.equippedItems[4]
+    }
+    if keys[sdl.K_8] != 0 {
+        p.currentAction = ACTION_ITEM
+        p.currentItem = p.equippedItems[5]
+    }
+    if keys[sdl.K_9] != 0 {
+        p.currentAction = ACTION_ITEM
+        p.currentItem = p.equippedItems[6]
     }
 
 
@@ -196,4 +240,13 @@ func (p *Player) HandleKeys(keys []uint8) {
 
 }
 
-    
+func (p Player) CanInteract() bool {
+    if p.currentAction == ACTION_BREAK || (p.currentAction == ACTION_ITEM && p.currentItem != ITEM_NONE) {
+        return true
+    }
+    return false
+}
+
+func (p *Player) Interact(x int16, y int16, z int16, face uint8) {
+    TheWorld.Set(x, y, z, 2)
+}

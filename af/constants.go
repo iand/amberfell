@@ -1,3 +1,8 @@
+/*
+  To the extent possible under law, Ian Davis has waived all copyright
+  and related or neighboring rights to this Amberfell Source Code file.
+  This work is published from the United Kingdom. 
+*/
 package af
 
 const (
@@ -17,13 +22,16 @@ const (
     TOP_FACE = 4
     BOTTOM_FACE = 5
 
-    TOOL_HAND = 4096
-    TOOL_DIG = 4097
-
 
     BLOCK_AIR=0
     BLOCK_STONE=1
     BLOCK_DIRT=2
 
+
+    ACTION_HAND = 0
+    ACTION_BREAK = 1
+    ACTION_ITEM = 2
+
+    ITEM_NONE = 4096
 
 )
