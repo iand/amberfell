@@ -5,41 +5,25 @@
 */
 package main
 
-
 import (
-    "math/rand"  
-    "flag"
-    "github.com/iand/amberfell/af"
-)    
-
+	"flag"
+	"github.com/iand/amberfell/af"
+	"math/rand"
+)
 
 var printInfo = flag.Bool("info", false, "print GL implementation information")
 
 func main() {
-    flag.Parse()
-    rand.Seed(71)   
+	flag.Parse()
+	rand.Seed(71)
 
+	defer af.QuitGame()
+	defer af.QuitGraphics()
 
-    defer af.QuitGame()
-    defer af.QuitGraphics()
+	af.InitGame()
+	af.InitGraphics()
+	af.GameLoop()
 
-    af.InitGame()
-    af.InitGraphics()
-    af.GameLoop()
-    
-    return
+	return
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
