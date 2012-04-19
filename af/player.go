@@ -22,10 +22,10 @@ type Player struct {
 	currentItem   uint16
 	walkingSpeed  float64
 	equippedItems [7]uint16
-	backpack      [255]uint16
+	inventory     [255]uint16
 }
 
-func (p *Player) Init(heading float64, x float32, z float32, y float32) {
+func (p *Player) Init(heading float64, x int16, z int16, y int16) {
 	p.heading = heading
 	p.position[XAXIS] = float64(x)
 	p.position[YAXIS] = float64(y)
@@ -156,7 +156,7 @@ func (player *Player) Draw(center Vector, selectMode bool) {
 	gl.Rotated(player.Heading(), 0.0, 1.0, 0.0)
 
 	gl.Translatef(0.0, float32(player.H()/2)-0.5, 0.0)
-	Cuboid(player.W(), player.H(), player.D(), 33, 32, 32, 32, 32, 32, 0, selectMode)
+	Cuboid(player.W(), player.H(), player.D(), &MapTextures[33], &MapTextures[32], &MapTextures[32], &MapTextures[32], &MapTextures[32], &MapTextures[32], 0, selectMode)
 
 	gl.PopMatrix()
 }
@@ -168,33 +168,32 @@ func (p *Player) HandleKeys(keys []uint8) {
 	if keys[sdl.K_2] != 0 {
 		p.currentAction = ACTION_BREAK
 	}
-	if keys[sdl.K_3] != 0 {
+    if keys[sdl.K_3] != 0 {
+        p.currentAction = ACTION_WEAPON
+    }
+    if keys[sdl.K_4] != 0 {
 		p.currentAction = ACTION_ITEM
 		p.currentItem = p.equippedItems[0]
 	}
-	if keys[sdl.K_4] != 0 {
+	if keys[sdl.K_5] != 0 {
 		p.currentAction = ACTION_ITEM
 		p.currentItem = p.equippedItems[1]
 	}
-	if keys[sdl.K_5] != 0 {
+	if keys[sdl.K_6] != 0 {
 		p.currentAction = ACTION_ITEM
 		p.currentItem = p.equippedItems[2]
 	}
-	if keys[sdl.K_6] != 0 {
+	if keys[sdl.K_7] != 0 {
 		p.currentAction = ACTION_ITEM
 		p.currentItem = p.equippedItems[3]
 	}
-	if keys[sdl.K_7] != 0 {
+	if keys[sdl.K_8] != 0 {
 		p.currentAction = ACTION_ITEM
 		p.currentItem = p.equippedItems[4]
 	}
-	if keys[sdl.K_8] != 0 {
-		p.currentAction = ACTION_ITEM
-		p.currentItem = p.equippedItems[5]
-	}
 	if keys[sdl.K_9] != 0 {
 		p.currentAction = ACTION_ITEM
-		p.currentItem = p.equippedItems[6]
+		p.currentItem = p.equippedItems[5]
 	}
 
 	if keys[sdl.K_w] != 0 {
@@ -212,35 +211,72 @@ func (p *Player) HandleKeys(keys []uint8) {
 			p.velocity[XAXIS] = -math.Cos(p.Heading()*math.Pi/180) * p.walkingSpeed / 2
 			p.velocity[ZAXIS] = math.Sin(p.Heading()*math.Pi/180) * p.walkingSpeed / 2
 		} else {
-			p.velocity[XAXIS] = -math.Cos(p.Heading()*math.Pi/180) * p.walkingSpeed / 4
-			p.velocity[ZAXIS] = math.Sin(p.Heading()*math.Pi/180) * p.walkingSpeed / 4
+			p.velocity[XAXIS] = -math.Cos(p.Heading()*math.Pi/180) * p.walkingSpeed / 6
+			p.velocity[ZAXIS] = math.Sin(p.Heading()*math.Pi/180) * p.walkingSpeed / 6
 		}
 
 	}
 	if keys[sdl.K_a] != 0 {
-		p.Rotate(22.5)
+		p.Rotate(22.5 / 2)
 
 	}
 
 	if keys[sdl.K_d] != 0 {
-		p.Rotate(-22.5)
+		p.Rotate(-22.5 / 2)
 	}
 
 	if keys[sdl.K_SPACE] != 0 {
 		if !p.IsFalling() {
-			p.velocity[YAXIS] += 3
+			p.velocity[YAXIS] = 4
 		}
 	}
 
 }
 
-func (p Player) CanInteract() bool {
+func (p *Player) CanInteract() bool {
 	if p.currentAction == ACTION_BREAK || (p.currentAction == ACTION_ITEM && p.currentItem != ITEM_NONE) {
 		return true
 	}
 	return false
 }
 
-func (p *Player) Interact(x int16, y int16, z int16, face uint8) {
-	TheWorld.Set(x, y, z, 2)
+func (self *Player) Interact(pos IntVector, face uint8) {
+    if !self.CanInteract() {
+        return
+    }
+
+
+
+    println("Interacting at ", pos.String())
+    switch self.currentAction {
+    case ACTION_BREAK:
+        block := TheWorld.Atv(pos)
+        if block != BLOCK_AIR {
+            println("Breaking at ", pos.String())
+            TheWorld.Setv(pos, BLOCK_AIR)
+            self.inventory[block]++
+        }
+    case ACTION_ITEM:
+        if face == UP_FACE { // top
+            pos[YAXIS]++
+        } else if face == DOWN_FACE { // bottom
+            pos[YAXIS]--
+        } else if face == SOUTH_FACE { // front
+            pos[ZAXIS]++
+        } else if face == NORTH_FACE { // back
+            pos[ZAXIS]--
+        } else if face == EAST_FACE { // left
+            pos[XAXIS]++
+        } else if face == WEST_FACE { // right
+            pos[XAXIS]--
+        }
+        if TheWorld.Atv(pos) == BLOCK_AIR {
+            println("Setting at ", pos.String())
+            TheWorld.Setv(pos, byte(self.currentItem))
+        }
+    }
+
+    
+
+
 }

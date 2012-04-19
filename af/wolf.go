@@ -142,9 +142,9 @@ func (wolf *Wolf) Draw(center Vector, selectMode bool) {
 	gl.Translatef(float32(wolf.X()-float32(center[XAXIS])), float32(wolf.Y()-float32(center[YAXIS])), float32(wolf.Z()-float32(center[ZAXIS])))
 	gl.Rotated(wolf.Heading(), 0.0, 1.0, 0.0)
 	//Cuboid(wolf.W(), wolf.H(), wolf.D(), 33, 32, 32, 32, 32, 32, 0, selectMode)
-	Cuboid(0.3, 0.5, 1.2, 33, 32, 32, 32, 32, 32, 0, selectMode)
-	gl.Translatef(0.8, 0.3, 0)
-	gl.Rotated(-10, 0.0, 0.0, 1.0)
-	Cuboid(0.3, 0.3, 0.4, 33, 32, 32, 32, 32, 32, 0, selectMode)
+	Cuboid(0.3, 0.5, 1.2, &MapTextures[33], &MapTextures[32], &MapTextures[32], &MapTextures[32], &MapTextures[32], &MapTextures[32], 0, selectMode)
+	// gl.Translatef(0.8, 0.3, 0)
+	// gl.Rotated(-10, 0.0, 0.0, 1.0)
+	// Cuboid(0.3, 0.3, 0.4, 33, 32, 32, 32, 32, 32, 0, selectMode)
 	gl.PopMatrix()
 }

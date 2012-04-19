@@ -13,11 +13,16 @@ import (
 )
 
 func InitGame() {
-	ThePlayer = new(Player)
-	ThePlayer.Init(0, 10, 10, GroundLevel+1)
-
 	TheWorld = new(World)
 	TheWorld.Init()
+
+
+    ThePlayer = new(Player)
+    ThePlayer.Init(0, 10, 10, FindSurface(10,10))
+
+
+
+
 }
 
 func QuitGame() {
@@ -50,9 +55,16 @@ func GameLoop() {
 				}
 				break
 
-			case *sdl.MouseButtonEvent:
+            case *sdl.MouseButtonEvent:
 				re := e.(*sdl.MouseButtonEvent)
 				if re.Button == 1 && re.State == 1 { // LEFT, DOWN
+
+                    println("Click:", re.X, re.Y, re.State, re.Button, re.Which)
+                    println("feedbackBuffer.size:", feedbackBuffer.size)
+                    feedbackBuffer.Dump()
+
+
+
 
 					if ThePlayer.CanInteract() {
 
@@ -75,28 +87,29 @@ func GameLoop() {
 							fmt.Printf("id: %d, dx: %d, dy: %d, dz: %d, face: %d\n", id, dx, dy, dz, face)
 							if !(dx == 0 && dy == 0 && dz == 0) {
 								pos := IntPosition(ThePlayer.Position())
-								pos[XAXIS] += dx
-								pos[YAXIS] += dy
-								pos[ZAXIS] += dz
-								if face == TOP_FACE { // top
-									pos[YAXIS]++
-								} else if face == BOTTOM_FACE { // bottom
-									pos[YAXIS]--
-								} else if face == FRONT_FACE { // front
-									pos[ZAXIS]++
-								} else if face == BACK_FACE { // back
-									pos[ZAXIS]--
-								} else if face == LEFT_FACE { // left
-									pos[XAXIS]++
-								} else if face == RIGHT_FACE { // right
-									pos[XAXIS]--
-								}
-								ThePlayer.Interact(pos[XAXIS], pos[YAXIS], pos[ZAXIS], face)
+								pos.Adjust(dx, dy, dz)
+								ThePlayer.Interact(pos, face)
 
 							}
 						}
 					}
 				}
+            case *sdl.MouseMotionEvent:
+                //re := e.(*sdl.MouseMotionEvent)
+                if ThePlayer.CanInteract() {
+
+                    // println("Move:", re.X, re.Y, re.Xrel, re.Yrel)
+
+                    // // MOUSEBUTTONDOWNMASK
+                    // xv, yv := int(re.X), screenHeight-int(re.Y)
+                    // data := [4]uint8{0, 0, 0, 0}
+
+                    // Draw(true)
+                    // gl.ReadPixels(xv, yv, 1, 1, gl.RGBA, &data[0])
+                    // Draw(false)
+
+                    // fmt.Printf("pixel data: %d, %d, %d, %d\n", data[0], data[1], data[2], data[3])
+                }
 
 			case *sdl.QuitEvent:
 				done = true
@@ -193,7 +206,8 @@ func GameLoop() {
 
 		//interpolate(previous, current, accumulator/dt)
 
-		Draw(false)
+
+        Draw(false)
 		drawFrame++
 
 		if update.GetTicks() > 1e9/2 {

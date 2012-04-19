@@ -37,7 +37,7 @@ func Reshape(width int, height int) {
 	xmin, ymin := screenToView(0, 0)
 	xmax, ymax := screenToView(uint16(width), uint16(height))
 
-	gl.Ortho(float64(xmin), float64(xmax), float64(ymin), float64(ymax), -40, 40)
+	gl.Ortho(float64(xmin), float64(xmax), float64(ymin), float64(ymax), -20, 20)
 	gl.MatrixMode(gl.MODELVIEW)
 	gl.LoadIdentity()
 	glu.LookAt(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0)
@@ -84,7 +84,8 @@ func InitGraphics() {
 
 	gl.Enable(gl.TEXTURE_2D)
 	LoadMapTextures()
-	LoadTerrainCubes()
+	//LoadTerrainCubes()
+    InitTerrainBlocks()
 
 	Reshape(int(screen.W), int(screen.H))
 }
@@ -99,10 +100,10 @@ func Draw(selectMode bool) {
 	if selectMode {
 		gl.Disable(gl.TEXTURE_2D)
 		gl.Disable(gl.FOG)
-		gl.Disable(gl.LIGHTING)
-		gl.Disable(gl.LIGHT0)
+		//gl.Disable(gl.LIGHTING)
+		//gl.Disable(gl.LIGHT0)
 		gl.Disable(gl.LIGHT1)
-		gl.Disable(gl.COLOR_MATERIAL)
+		//gl.Disable(gl.COLOR_MATERIAL)
 	} else {
 		gl.Color4ub(255, 255, 255, 255)
 		gl.Enable(gl.TEXTURE_2D)
@@ -119,19 +120,22 @@ func Draw(selectMode bool) {
 
 	}
 
-	CheckGLError()
+
+    offset := float32(2)
+	// CheckGLError()
 	gl.LoadIdentity()
-	gl.Rotated(view_rotx, 1.0, 0.0, 0.0)
-	gl.Rotated(-ThePlayer.Heading()+view_roty, 0.0, 1.0, 0.0)
 	gl.Rotated(0, 0.0, 0.0, 1.0)
+    gl.Rotated(view_rotx, 1.0, 0.0, 0.0)
+    gl.Rotated(view_roty-ThePlayer.Heading(), 0.0, 1.0, 0.0)
+    gl.Translatef(0,-offset, 0)
 
 	center := ThePlayer.Position()
 
 	// Sun
+    gl.LightModelfv(gl.LIGHT_MODEL_AMBIENT, []float32{0.1, 0.1, 0.1, 1})
 	var daylightIntensity float32 = 0.4
 	if timeOfDay < 5 || timeOfDay > 21 {
 		daylightIntensity = 0.00
-		gl.LightModelfv(gl.LIGHT_MODEL_AMBIENT, []float32{0.1, 0.1, 0.1, 1})
 	} else if timeOfDay < 6 {
 		daylightIntensity = 0.4 * (timeOfDay - 5)
 	} else if timeOfDay > 20 {
@@ -161,23 +165,22 @@ func Draw(selectMode bool) {
 	gl.Lightf(gl.LIGHT1, gl.SPOT_EXPONENT, 2.0)
 	gl.Lightfv(gl.LIGHT1, gl.SPOT_DIRECTION, []float32{float32(math.Cos(ThePlayer.Heading() * math.Pi / 180)), float32(-0.7), -float32(math.Sin(ThePlayer.Heading() * math.Pi / 180))})
 
-	CheckGLError()
+	// CheckGLError()
+    gl.RenderMode(gl.RENDER)
+	ThePlayer.Draw(center, false)
+	// CheckGLError()
 
-	ThePlayer.Draw(center, selectMode)
-	CheckGLError()
-
-	TheWorld.Draw(center, selectMode)
-	CheckGLError()
+	TheWorld.Draw(center, false)
+	// CheckGLError()
 
 	// // var mousex, mousey int
 	// // mouseState := sdl.GetMouseState(&mousex, &mousey)
 	// gl.PushMatrix()
-	// gl.Translatef(float32(center[XAXIS]),float32(center[YAXIS])-1,float32(center[ZAXIS]))
+    // gl.Translatef(float32(center[XAXIS]),float32(center[YAXIS])-1,float32(center[ZAXIS]))
 	// //print ("i:", i, "j:", j, "b:", World.At(i, j, groundLevel))
 	// HighlightCuboidFace(1, 1, 1, TOP_FACE)
 	// gl.PopMatrix()
 
-	//gl.Translatef( 0.0, -20.0, -5.0 )
 
 	if ShowOverlay {
 		gl.PushMatrix()
@@ -192,9 +195,18 @@ func Draw(selectMode bool) {
 		gl.PopMatrix()
 	}
 
+
+    // gl.FeedbackBuffer(4096, gl.GL_3D_COLOR_TEXTURE, &feedbackBuffer.buffer[0])
+    // gl.RenderMode(gl.FEEDBACK)
+    // //ThePlayer.Draw(center, true)
+    // TheWorld.Draw(center, true)
+    // feedbackBuffer.size = gl.RenderMode(gl.RENDER)
+
+    gl.Translatef(0,offset, 0)
+
 	if !selectMode {
-		// gl.Finish()
-		// gl.Flush()
+		gl.Finish()
+		gl.Flush()
 		sdl.GL_SwapBuffers()
 	}
 }

@@ -30,3 +30,21 @@ func IntPosition(pos Vector) IntVector {
 		int16(math.Floor(pos[YAXIS] + 0.5)),
 		int16(math.Floor(pos[ZAXIS] + 0.5))}
 }
+
+// Finds the surface level for a given x, z coordinate
+func FindSurface(x int16, z int16) (y int16) {
+  y = GroundLevel
+  if TheWorld.At(x, y, z) == BLOCK_AIR {
+    for y > 0 && TheWorld.At(x, y, z) == BLOCK_AIR {
+      y--
+    }    
+  } else {
+    for TheWorld.At(x, y, z) != BLOCK_AIR {
+      y++
+    }    
+  }
+
+
+
+  return
+}

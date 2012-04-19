@@ -15,12 +15,12 @@ const (
 	YAXIS = 1
 	ZAXIS = 2
 
-	FRONT_FACE  = 0
-	BACK_FACE   = 1
-	LEFT_FACE   = 2
-	RIGHT_FACE  = 3
-	TOP_FACE    = 4
-	BOTTOM_FACE = 5
+	EAST_FACE  = 0
+	WEST_FACE   = 1
+	NORTH_FACE   = 2
+	SOUTH_FACE  = 3
+	UP_FACE    = 4
+	DOWN_FACE = 5
 
 	BLOCK_AIR   = 0
 	BLOCK_STONE = 1
@@ -28,7 +28,8 @@ const (
 
 	ACTION_HAND  = 0
 	ACTION_BREAK = 1
-	ACTION_ITEM  = 2
+    ACTION_WEAPON  = 2
+	ACTION_ITEM  = 3
 
 	ITEM_NONE = 4096
 )

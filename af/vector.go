@@ -49,6 +49,16 @@ func (wp IntVector) HRect() Rect {
 	return Rect{float64(wp[XAXIS]) - 0.5, float64(wp[ZAXIS]) - 0.5, 1, 1}
 }
 
+func (self *IntVector) Adjust(dx int16, dy int16, dz int16) { 
+    self[XAXIS] += dx
+    self[YAXIS] += dy
+    self[ZAXIS] += dz
+}
+
+func (self *IntVector) String() string { 
+    return fmt.Sprintf("[x:%d, y:%d, z:%d]", self[XAXIS], self[YAXIS], self[ZAXIS])
+}
+
 func (r1 Rect) Intersects(r2 Rect) bool {
 	if r2.x >= r1.x && r2.x <= r1.x+r1.sizex && r2.z >= r1.z && r2.z <= r1.z+r1.sizez {
 		return true

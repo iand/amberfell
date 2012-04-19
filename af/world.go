@@ -49,7 +49,7 @@ func (world *World) Init() {
 		iw, id = world.RandomSquare()
 
 		world.Set(iw, GroundLevel, id, 1) // stone
-		world.Grow(iw, GroundLevel, id, 40, 40, 40, 40, 40, 30, 1)
+		world.Grow(iw, GroundLevel, id, 45, 45, 45, 52, 10, 10, 1)
 	}
 	iw, id = world.RandomSquare()
 
@@ -134,6 +134,12 @@ func (world *World) Set(x int16, y int16, z int16, b byte) {
 	chunk.Set(ox, oy, oz, b)
 }
 
+func (world *World) Setv(v IntVector, b byte) {
+    chunk, ox, oy, oz := world.GetChunkForBlock(v[XAXIS], v[YAXIS], v[ZAXIS])
+    chunk.Set(ox, oy, oz, b)
+}
+
+
 func (world *World) RandomSquare() (x int16, z int16) {
 	x = int16(rand.Intn(40) - 20)
 	z = int16(rand.Intn(40) - 20)
@@ -155,11 +161,11 @@ func (world *World) Grow(x int16, y int16, z int16, n int, s int, w int, e int, 
 	}
 	if (y == 0 || world.At(x, y-1, z+1) != 0) && rand.Intn(100) < s {
 		world.Set(x, y, z+1, texture)
-		world.Grow(x, y, z+1, n, 0, w, e, u, d, texture)
+		world.Grow(x, y, z+1, 0, s, w, e, u, d, texture)
 	}
 	if (y == 0 || world.At(x, y-1, z-1) != 0) && rand.Intn(100) < n {
 		world.Set(x, y, z-1, texture)
-		world.Grow(x, y, z-1, 0, s, w, e, u, d, texture)
+		world.Grow(x, y, z-1, n, 0, w, e, u, d, texture)
 	}
 	if y < CHUNK_HEIGHT-1 && rand.Intn(100) < u {
 		world.Set(x, y+1, z, texture)
@@ -174,16 +180,16 @@ func (world *World) Grow(x int16, y int16, z int16, n int, s int, w int, e int, 
 func (world *World) AirNeighbours(x int16, z int16, y int16) (n, s, w, e, u, d bool) {
 
 	if world.ChunkLoadedFor(x-1, y, z) && world.At(x-1, y, z) == BLOCK_AIR {
-		e = true
-	}
-	if world.ChunkLoadedFor(x+1, y, z) && world.At(x+1, y, z) == BLOCK_AIR {
 		w = true
 	}
+	if world.ChunkLoadedFor(x+1, y, z) && world.At(x+1, y, z) == BLOCK_AIR {
+		e = true
+	}
 	if world.ChunkLoadedFor(x, y, z-1) && world.At(x, y, z-1) == BLOCK_AIR {
-		s = true
+		n = true
 	}
 	if world.ChunkLoadedFor(x, y, z+1) && world.At(x, y, z+1) == BLOCK_AIR {
-		n = true
+		s = true
 	}
 	if world.ChunkLoadedFor(x, y+1, z) && world.At(x, y+1, z) == BLOCK_AIR {
 		u = true
@@ -353,8 +359,8 @@ func (world *World) Draw(center Vector, selectMode bool) {
 					dy := y - py
 					dz := z - pz
 
-					var terrain byte = world.At(x, y, z)
-					if terrain != 0 {
+					var blockid byte = world.At(x, y, z)
+					if blockid != 0 {
 						var n, s, w, e, u, d bool = world.AirNeighbours(x, z, y)
 						if n || s || w || e || u || d {
 
@@ -363,12 +369,13 @@ func (world *World) Draw(center Vector, selectMode bool) {
 							if dx >= -2 && dx <= 2 && dy >= -2 && dy <= 2 && dz >= -2 && dz <= 2 {
 								id = RelativeCoordinateToBlockId(dx, dy, dz)
 							}
-							gl.PushMatrix()
-							gl.Translatef(float32(x), float32(y), float32(z))
-							TerrainCube(n, s, w, e, u, d, terrain, id, selectMode)
-							count++
-							CheckGLError()
-							gl.PopMatrix()
+                            if !selectMode || id != 0 {
+    							gl.PushMatrix()
+    							gl.Translatef(float32(x), float32(y), float32(z))
+    							TerrainCube(n, s, w, e, u, d, blockid, id, selectMode)
+    							count++
+    							gl.PopMatrix()
+                            }
 						}
 					}
 				}

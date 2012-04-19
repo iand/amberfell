@@ -17,8 +17,8 @@ const piover180 = 0.0174532925
 var T0 uint32 = 0
 var Frames uint32 = 0
 
-var view_rotx float64 = 50.0
-var view_roty float64 = 50.0
+var view_rotx float64 = 25.0
+var view_roty float64 = 70.0
 var view_rotz float64 = 0.0
 var gear1, gear2, gear3 uint
 var angle float64 = 0.0
@@ -29,7 +29,10 @@ var (
 	screenScale               int = int(5 * float64(tileWidth) / 2)
 	ShowOverlay               bool
 
-	timeOfDay float32 = 19
+	timeOfDay float32 = 8
 
 	lightpos Vector
+
+
+  feedbackBuffer FeedbackBuffer
 )

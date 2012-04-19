@@ -9,12 +9,26 @@ import (
 	"flag"
 	"github.com/iand/amberfell/af"
 	"math/rand"
+  "os"
+  "runtime/pprof"
+  "fmt"
 )
 
-var printInfo = flag.Bool("info", false, "print GL implementation information")
+var flag_profile *bool = flag.Bool("profile", false, "Output profiling information to amberfell.prof")
 
 func main() {
-	flag.Parse()
+  flag.Parse()
+
+  if *flag_profile {
+    pfile, err := os.Create("amberfell.prof")
+
+    if err != nil {
+      panic(fmt.Sprintf("Could not create amberfell.prof:", err))
+    }
+
+    pprof.StartCPUProfile(pfile)
+  }
+
 	rand.Seed(71)
 
 	defer af.QuitGame()
@@ -22,6 +36,7 @@ func main() {
 
 	af.InitGame()
 	af.InitGraphics()
+  
 	af.GameLoop()
 
 	return
