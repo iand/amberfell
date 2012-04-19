@@ -3,7 +3,7 @@
   and related or neighboring rights to this Amberfell Source Code file.
   This work is published from the United Kingdom. 
 */
-package af
+package main
 
 import (
 	"github.com/banthar/gl"
@@ -125,7 +125,7 @@ func (world *World) At(x int16, y int16, z int16) byte {
 	return chunk.At(ox, oy, oz)
 }
 
-func (world *World) Atv(v IntVector) byte {
+func (world *World) Atv(v Vectori) byte {
 	return world.At(v[XAXIS], v[YAXIS], v[ZAXIS])
 }
 
@@ -134,7 +134,7 @@ func (world *World) Set(x int16, y int16, z int16, b byte) {
 	chunk.Set(ox, oy, oz, b)
 }
 
-func (world *World) Setv(v IntVector, b byte) {
+func (world *World) Setv(v Vectori, b byte) {
     chunk, ox, oy, oz := world.GetChunkForBlock(v[XAXIS], v[YAXIS], v[ZAXIS])
     chunk.Set(ox, oy, oz, b)
 }
@@ -339,7 +339,7 @@ func (world World) ChunkLoadedFor(x int16, y int16, z int16) bool {
 	return ok
 }
 
-func (world *World) Draw(center Vector, selectMode bool) {
+func (world *World) Draw(center Vectorf, selectMode bool) {
 	for _, v := range world.mobs {
 		v.Draw(center, selectMode)
 	}

@@ -40,14 +40,6 @@
 	"buffers":
 	[
 		{
-			"file": "af/world.go",
-			"settings":
-			{
-				"buffer_size": 12309,
-				"line_ending": "Unix"
-			}
-		},
-		{
 			"contents": "\n\ntype Pipe struct {\n    quantity float64 \n    capacity float64\n    output Component\n}\n\ntype Component interface {\n    Capacity() float64\n    ConnectOutput(c *Component)\n    MaxOutputs\n}\n\n\n\nfunc (c *Component) Transfer() {\n    if c.quantity > 0 && c.output != Nil {\n        if c.output.capacity > s.output.quantity {\n            s.output.quantity += math.Max(s.quantity, 1)\n            s.quantity -= math.Max(s.quantity, 1)\n        }\n\n    }\n}\n\n\ntype Source struct {\n    output Component\n}\n\n\n\nfunc (s *Source) Run() {\n    if s.output.capacity > s.output.quantity {\n        s.output.quantity++\n    }\n}\n\n\nfunc (s *Pipe) Run() {\n    if s.quantity > 0 {\n        if s.output.capacity > s.output.quantity {\n            s.output.quantity += math.Max(s.quantity, 1)\n            s.quantity -= math.Max(s.quantity, 1)\n        }\n\n    }\n}\n\nfunc (s *Cumulator) Run() {\n    if s.quantity > 0 {\n        if s.output.capacity > s.output.quantity {\n            s.output.quantity += math.Max(s.quantity, 1)\n            s.quantity -= math.Max(s.quantity, 1)\n        }\n\n    }\n}\n\n\nfunc main() {\n    \n\n    p1, p2 Pipe\n    s Source\n\n    s.ConnectOutput(p1)\n    p1.ConnectOutput(p2)\n\n    s.Run()\n    p1.Run()\n    p2.Run()\n\n\n\n\n\n\n}\n",
 			"settings":
 			{
@@ -56,53 +48,26 @@
 			}
 		},
 		{
+			"file": "/home/iand/.config/sublime-text-2/Packages/Default/Preferences.sublime-settings",
+			"settings":
+			{
+				"buffer_size": 12108,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/iand/.config/sublime-text-2/Packages/User/Preferences.sublime-settings",
+			"settings":
+			{
+				"buffer_size": 263,
+				"line_ending": "Unix"
+			}
+		},
+		{
 			"file": "amberfell.go",
 			"settings":
 			{
-				"buffer_size": 12775,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "af/wolf.go",
-			"settings":
-			{
-				"buffer_size": 4006,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "af/globals.go",
-			"settings":
-			{
-				"buffer_size": 73,
-				"line_ending": "Unix",
-				"name": "package af"
-			}
-		},
-		{
-			"file": "af/functions.go",
-			"settings":
-			{
-				"buffer_size": 691,
-				"line_ending": "Unix",
-				"name": "package af"
-			}
-		},
-		{
-			"file": "af/shapes.go",
-			"settings":
-			{
-				"buffer_size": 19345,
-				"line_ending": "Unix",
-				"name": "package af"
-			}
-		},
-		{
-			"file": "af/player.go",
-			"settings":
-			{
-				"buffer_size": 5228,
+				"buffer_size": 772,
 				"line_ending": "Unix"
 			}
 		},
@@ -110,23 +75,136 @@
 			"file": "af/constants.go",
 			"settings":
 			{
-				"buffer_size": 337,
+				"buffer_size": 561,
 				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "af/functions.go",
+			"settings":
+			{
+				"buffer_size": 1123,
+				"line_ending": "Unix",
+				"name": "package af"
+			}
+		},
+		{
+			"file": "af/gameloop.go",
+			"settings":
+			{
+				"buffer_size": 4864,
+				"line_ending": "Unix",
+				"name": "package af"
+			}
+		},
+		{
+			"file": "af/globals.go",
+			"settings":
+			{
+				"buffer_size": 771,
+				"line_ending": "Unix",
+				"name": "package af"
 			}
 		},
 		{
 			"file": "af/mob.go",
 			"settings":
 			{
-				"buffer_size": 541,
+				"buffer_size": 676,
 				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "af/player.go",
+			"settings":
+			{
+				"buffer_size": 7215,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "af/shapes.go",
+			"settings":
+			{
+				"buffer_size": 18848,
+				"line_ending": "Unix",
+				"name": "package af"
 			}
 		},
 		{
 			"file": "af/vector.go",
 			"settings":
 			{
-				"buffer_size": 1949,
+				"buffer_size": 4399,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "af/vector_test.go",
+			"settings":
+			{
+				"buffer_size": 436,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "af/window.go",
+			"settings":
+			{
+				"buffer_size": 6112,
+				"line_ending": "Unix",
+				"name": "package af"
+			}
+		},
+		{
+			"file": "af/wolf.go",
+			"settings":
+			{
+				"buffer_size": 3993,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "/*\n  To the extent possible under law, Ian Davis has waived all copyright\n  and related or neighboring rights to this Amberfell Source Code file.\n  This work is published from the United Kingdom. \n*/\npackage af\n\nimport (\n	\"github.com/banthar/gl\"\n	\"math/rand\"\n	// \"math\"\n	// \"fmt\"   \n\n)\n\ntype World struct {\n	GroundLevel int16\n	mobs   []Mob\n	chunks map[int16]*Chunk\n}\n\ntype Chunk struct {\n	x, y, z int16\n	Blocks  []byte\n}\n\ntype Side struct {\n	x, x1, x2, z, z1, z2, dir, y float64\n}\n\nfunc (world *World) Init() {\n\n	world.chunks = make(map[int16]*Chunk)\n\n	world.GenerateChunk(0, 0, 0)\n	world.GenerateChunk(0, 0, 1)\n	world.GenerateChunk(0, 0, -1)\n	world.GenerateChunk(-1, 0, 0)\n	world.GenerateChunk(-1, 0, 1)\n	world.GenerateChunk(-1, 0, -1)\n	world.GenerateChunk(1, 0, 0)\n	world.GenerateChunk(1, 0, 1)\n	world.GenerateChunk(1, 0, -1)\n\n	var iw, id int16\n\n	numFeatures := rand.Intn(20)\n	for i := 0; i < numFeatures; i++ {\n		iw, id = world.RandomSquare()\n\n		world.Set(iw, GroundLevel, id, 1) // stone\n		world.Grow(iw, GroundLevel, id, 45, 45, 45, 52, 10, 10, 1)\n	}\n	iw, id = world.RandomSquare()\n\n	world.Set(iw, GroundLevel, id, 0) // air\n	world.Grow(iw, GroundLevel, id, 20, 20, 20, 20, 0, 30, 0)\n\n	wolf := new(Wolf)\n	wolf.Init(120, 17, 19, GroundLevel+1)\n	world.mobs = append(world.mobs, wolf)\n\n}\n\n// A chunk is a 24 x 24 x 48 set of blocks\n// x is east/west offset from World Origin\n// z is south/north offset from World Origin\nfunc (world *World) GenerateChunk(x int16, y int16, z int16) *Chunk {\n	var chunk Chunk\n	chunk.Init(x, y, z)\n	println(\"Generating chunk at x:\", x, \" y:\", y, \" z:\", z)\n	var iw, id, ih int16\n	for iw = 0; iw < CHUNK_WIDTH; iw++ {\n		for id = 0; id < CHUNK_WIDTH; id++ {\n			for ih = 0; ih <= GroundLevel; ih++ {\n				chunk.Set(iw, ih, id, 2) // dirt\n			}\n			for ih = GroundLevel + 1; ih < CHUNK_HEIGHT; ih++ {\n				chunk.Set(iw, ih, id, 0) // air\n			}\n		}\n	}\n\n	world.chunks[chunkIndex(x, y, z)] = &chunk\n	return &chunk\n\n}\n\n// Gets the chunk for a given x/z block coordinate\n// x = 0, z = 0 is in the top left of the home chunk\nfunc (world *World) GetChunkForBlock(x int16, y int16, z int16) (*Chunk, int16, int16, int16) {\n	cx := x / CHUNK_WIDTH\n	cy := y / CHUNK_HEIGHT\n	cz := z / CHUNK_WIDTH\n	//println(\"cx:\", cx, \"cz:\", cz)\n\n	chunk, ok := world.chunks[chunkIndex(cx, cy, cz)]\n	if !ok {\n		chunk = world.GenerateChunk(cx, cy, cz)\n	}\n\n	ox := x - cx*CHUNK_WIDTH\n	if ox < 0 {\n		ox += CHUNK_WIDTH\n	}\n\n	oy := y - cy*CHUNK_HEIGHT\n	if oy < 0 {\n		oy += CHUNK_HEIGHT\n	}\n\n	oz := z - cz*CHUNK_WIDTH\n	if oz < 0 {\n		oz += CHUNK_WIDTH\n	}\n\n	return chunk, ox, oy, oz\n\n}\n\nfunc (world *World) At(x int16, y int16, z int16) byte {\n	//println(\"x:\", x, \" y:\", y, \"z:\", z)\n	chunk, ox, oy, oz := world.GetChunkForBlock(x, y, z)\n	//println(\"ox:\", ox, \" y:\", y, \"oz:\", oz)\n	return chunk.At(ox, oy, oz)\n}\n\nfunc (world *World) Atv(v Vectori) byte {\n	return world.At(v[XAXIS], v[YAXIS], v[ZAXIS])\n}\n\nfunc (world *World) Set(x int16, y int16, z int16, b byte) {\n	chunk, ox, oy, oz := world.GetChunkForBlock(x, y, z)\n	chunk.Set(ox, oy, oz, b)\n}\n\nfunc (world *World) Setv(v Vectori, b byte) {\n    chunk, ox, oy, oz := world.GetChunkForBlock(v[XAXIS], v[YAXIS], v[ZAXIS])\n    chunk.Set(ox, oy, oz, b)\n}\n\n\nfunc (world *World) RandomSquare() (x int16, z int16) {\n	x = int16(rand.Intn(40) - 20)\n	z = int16(rand.Intn(40) - 20)\n	return\n}\n\n// north/south = -/+ z\n// east/west = +/- x\n// up/down = +/- y\n\nfunc (world *World) Grow(x int16, y int16, z int16, n int, s int, w int, e int, u int, d int, texture byte) {\n	if (y == 0 || world.At(x+1, y-1, z) != 0) && rand.Intn(100) < e {\n		world.Set(x+1, y, z, texture)\n		world.Grow(x+1, y, z, n, s, 0, e, u, d, texture)\n	}\n	if (y == 0 || world.At(x-1, y-1, z) != 0) && rand.Intn(100) < w {\n		world.Set(x-1, y, z, texture)\n		world.Grow(x-1, y, z, n, s, w, 0, u, d, texture)\n	}\n	if (y == 0 || world.At(x, y-1, z+1) != 0) && rand.Intn(100) < s {\n		world.Set(x, y, z+1, texture)\n		world.Grow(x, y, z+1, 0, s, w, e, u, d, texture)\n	}\n	if (y == 0 || world.At(x, y-1, z-1) != 0) && rand.Intn(100) < n {\n		world.Set(x, y, z-1, texture)\n		world.Grow(x, y, z-1, n, 0, w, e, u, d, texture)\n	}\n	if y < CHUNK_HEIGHT-1 && rand.Intn(100) < u {\n		world.Set(x, y+1, z, texture)\n		world.Grow(x, y+1, z, n, s, w, e, u, 0, texture)\n	}\n	if y > 0 && rand.Intn(100) < d {\n		world.Set(x, y-1, z, texture)\n		world.Grow(x, y-1, z, n, s, w, e, 0, d, texture)\n	}\n}\n\nfunc (world *World) AirNeighbours(x int16, z int16, y int16) (n, s, w, e, u, d bool) {\n\n	if world.ChunkLoadedFor(x-1, y, z) && world.At(x-1, y, z) == BLOCK_AIR {\n		w = true\n	}\n	if world.ChunkLoadedFor(x+1, y, z) && world.At(x+1, y, z) == BLOCK_AIR {\n		e = true\n	}\n	if world.ChunkLoadedFor(x, y, z-1) && world.At(x, y, z-1) == BLOCK_AIR {\n		n = true\n	}\n	if world.ChunkLoadedFor(x, y, z+1) && world.At(x, y, z+1) == BLOCK_AIR {\n		s = true\n	}\n	if world.ChunkLoadedFor(x, y+1, z) && world.At(x, y+1, z) == BLOCK_AIR {\n		u = true\n	}\n	return\n}\n\n// lineRectCollide( line, rect )\n//\n// Checks if an axis-aligned line and a bounding box overlap.\n// line = { z, x1, x2 } or line = { x, z1, z2 }\n// rect = { x, z, size }\n\nfunc lineRectCollide(line Side, rect Rect) (ret bool) {\n	if line.z != 0 {\n		ret = rect.z > line.z-rect.sizez/2 && rect.z < line.z+rect.sizez/2 && rect.x > line.x1-rect.sizex/2 && rect.x < line.x2+rect.sizex/2\n	} else {\n		ret = rect.x > line.x-rect.sizex/2 && rect.x < line.x+rect.sizex/2 && rect.z > line.z1-rect.sizez/2 && rect.z < line.z2+rect.sizez/2\n	}\n	return\n}\n\n// rectRectCollide( r1, r2 )\n//\n// Checks if two rectangles (x1, y1, x2, y2) overlap.\n\nfunc rectRectCollide(r1 Side, r2 Side) bool {\n	if r2.x1 >= r1.x1 && r2.x1 <= r1.x2 && r2.z1 >= r1.z1 && r2.z1 <= r1.z2 {\n		return true\n	}\n	if r2.x2 >= r1.x1 && r2.x2 <= r1.x2 && r2.z1 >= r1.z1 && r2.z1 <= r1.z2 {\n		return true\n	}\n	if r2.x2 >= r1.x1 && r2.x2 <= r1.x2 && r2.z2 >= r1.z1 && r2.z2 <= r1.z2 {\n		return true\n	}\n	if r2.x1 >= r1.x1 && r2.x1 <= r1.x2 && r2.z2 >= r1.z1 && r2.z2 <= r1.z2 {\n		return true\n	}\n	return false\n}\n\nfunc (world *World) ApplyForces(mob Mob, dt float64) {\n	// mobBounds := mob.DesiredBoundingBox(dt)\n	ip := IntPosition(mob.Position())\n\n	// mobx := ip[XAXIS]\n	// moby := ip[YAXIS]\n	// mobz := ip[ZAXIS]\n\n	// Gravity\n	if mob.IsFalling() {\n		// println(\"is falling\")\n		mob.Setvx(mob.Velocity()[XAXIS] / 1.001)\n		mob.Setvy(mob.Velocity()[YAXIS] - 15*dt)\n		mob.Setvz(mob.Velocity()[ZAXIS] / 1.001)\n	} else {\n		mob.Setvx(mob.Velocity()[XAXIS] / 1.2)\n		//mob.Setvy(0)\n		mob.Setvz(mob.Velocity()[ZAXIS] / 1.2)\n	}\n\n	// var dx, dz, dy int16\n	// var x,  z int16\n\n	playerRect := Rect{x: float64(mob.X()) + mob.Velocity()[XAXIS]*dt, z: float64(mob.Z()) + mob.Velocity()[ZAXIS]*dt, sizex: mob.W(), sizez: mob.D()}\n\n	// collisionCandidates := make([]Side, 0)\n\n	if world.Atv(ip.North()) != BLOCK_AIR {\n		if mob.Velocity()[ZAXIS] < 0 && ip.North().HRect().Intersects(playerRect) {\n			mob.Snapz(float64(ip.North()[ZAXIS])+0.5+playerRect.sizez/2, 0)\n		}\n	}\n\n	if world.Atv(ip.South()) != BLOCK_AIR {\n		if mob.Velocity()[ZAXIS] > 0 && ip.South().HRect().Intersects(playerRect) {\n			mob.Snapz(float64(ip.South()[ZAXIS])-0.5-playerRect.sizez/2, 0)\n		}\n	}\n\n	if world.Atv(ip.East()) != BLOCK_AIR {\n		if mob.Velocity()[XAXIS] > 0 && ip.East().HRect().Intersects(playerRect) {\n			mob.Snapx(float64(ip.East()[XAXIS])-0.5-playerRect.sizex/2, 0)\n		}\n	}\n\n	if world.Atv(ip.West()) != BLOCK_AIR {\n		if mob.Velocity()[XAXIS] < 0 && ip.West().HRect().Intersects(playerRect) {\n			mob.Snapx(float64(ip.West()[XAXIS])+0.5+playerRect.sizex/2, 0)\n		}\n	}\n\n	mob.SetFalling(true)\n	if world.Atv(ip.Down()) != BLOCK_AIR {\n		mob.SetFalling(false)\n		if mob.Velocity()[YAXIS] < 0 {\n			mob.Snapy(float64(ip.Down()[YAXIS])+1, 0)\n		}\n	} else {\n		if world.Atv(ip.Down().North()) != BLOCK_AIR {\n			if ip.Down().North().HRect().Intersects(playerRect) {\n				mob.Snapy(float64(ip.Down()[YAXIS])+1, 0)\n				mob.SetFalling(false)\n			}\n		}\n\n		if world.Atv(ip.Down().South()) != BLOCK_AIR {\n			if ip.Down().South().HRect().Intersects(playerRect) {\n				mob.Snapy(float64(ip.Down()[YAXIS])+1, 0)\n				mob.SetFalling(false)\n			}\n		}\n\n		if world.Atv(ip.Down().East()) != BLOCK_AIR {\n			if ip.Down().East().HRect().Intersects(playerRect) {\n				mob.Snapy(float64(ip.Down()[YAXIS])+1, 0)\n				mob.SetFalling(false)\n			}\n		}\n\n		if world.Atv(ip.Down().West()) != BLOCK_AIR {\n			if ip.Down().West().HRect().Intersects(playerRect) {\n				mob.Snapy(float64(ip.Down()[YAXIS])+1, 0)\n				mob.SetFalling(false)\n			}\n		}\n	}\n\n}\n\nfunc (world *World) Simulate(dt float64) {\n	for _, v := range world.mobs {\n		v.Act(dt)\n		world.ApplyForces(v, dt)\n		v.Update(dt)\n	}\n\n}\n\nfunc (world World) ChunkLoadedFor(x int16, y int16, z int16) bool {\n	cx := x / CHUNK_WIDTH\n	cy := y / CHUNK_HEIGHT\n	cz := z / CHUNK_WIDTH\n\n	_, ok := world.chunks[chunkIndex(cx, cy, cz)]\n	return ok\n}\n\nfunc (world *World) Draw(center Vectorf , selectMode bool) {\n	for _, v := range world.mobs {\n		v.Draw(center, selectMode)\n	}\n\n	gl.Translatef(-float32(center[XAXIS]), -float32(center[YAXIS]), -float32(center[ZAXIS]))\n\n	var px, py, pz = int16(center[XAXIS]), int16(center[YAXIS]), int16(center[ZAXIS])\n\n	var x, y, z int16\n\n	count := 0\n	for x = px - 30; x < px+30; x++ {\n		for z = pz - 30; z < pz+30; z++ {\n			if x+z-px-pz <= ViewRadius && x+z-px-pz >= -ViewRadius {\n				for y = py - 5; y < py+16; y++ {\n					dx := x - px\n					dy := y - py\n					dz := z - pz\n\n					var blockid byte = world.At(x, y, z)\n					if blockid != 0 {\n						var n, s, w, e, u, d bool = world.AirNeighbours(x, z, y)\n						if n || s || w || e || u || d {\n\n							var id uint16 = 0\n\n							if dx >= -2 && dx <= 2 && dy >= -2 && dy <= 2 && dz >= -2 && dz <= 2 {\n								id = RelativeCoordinateToBlockId(dx, dy, dz)\n							}\n                            if !selectMode || id != 0 {\n    							gl.PushMatrix()\n    							gl.Translatef(float32(x), float32(y), float32(z))\n    							TerrainCube(n, s, w, e, u, d, blockid, id, selectMode)\n    							count++\n    							gl.PopMatrix()\n                            }\n						}\n					}\n				}\n			}\n		}\n	}\n	//println(\"Drew \", count, \" cubes\")\n\n}\n\nfunc chunkIndex(x int16, y int16, z int16) int16 {\n	return z*CHUNK_WIDTH*CHUNK_WIDTH + x*CHUNK_WIDTH + y\n}\n\nfunc blockIndex(x int16, y int16, z int16) int16 {\n	return CHUNK_WIDTH*CHUNK_WIDTH*y + CHUNK_WIDTH*x + z\n}\n\n// **************************************************************\n// CHUNKS\n// **************************************************************\n\nfunc (c Chunk) WorldCoords(x int16, y int16, z int16) (xw int16, yw int16, zw int16) {\n	xw = c.x*CHUNK_WIDTH + x\n	zw = c.z*CHUNK_WIDTH + z\n	yw = c.y*CHUNK_HEIGHT + y\n	return\n}\n\nfunc (chunk *Chunk) Init(x int16, y int16, z int16) {\n	chunk.x = x\n	chunk.y = y\n	chunk.z = z\n	chunk.Blocks = make([]byte, CHUNK_WIDTH*CHUNK_WIDTH*CHUNK_HEIGHT)\n}\n\nfunc (chunk *Chunk) At(x int16, y int16, z int16) byte {\n	return chunk.Blocks[blockIndex(x, y, z)]\n}\n\nfunc (chunk *Chunk) Set(x int16, y int16, z int16, b byte) {\n	chunk.Blocks[blockIndex(x, y, z)] = b\n}\n",
+			"file": "af/world.go",
+			"file_size": 10887,
+			"file_write_time": 1334824700000000,
+			"settings":
+			{
+				"buffer_size": 10888,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "{\n	\"cmd\": [\"make\"]\n}\n",
+			"settings":
+			{
+				"buffer_size": 21,
+				"line_ending": "Unix",
+				"name": "untitled.sublime-build"
+			}
+		},
+		{
+			"file": "amberfell.sublime-project",
+			"settings":
+			{
+				"buffer_size": 68,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "af/timer.go",
+			"settings":
+			{
+				"buffer_size": 1206,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "README.md",
+			"settings":
+			{
+				"buffer_size": 176,
 				"line_ending": "Unix"
 			}
 		}
@@ -159,6 +237,8 @@
 	},
 	"file_history":
 	[
+		"/home/iand/wip/amberfell/af/blocks.go",
+		"/home/iand/.config/sublime-text-2/Packages/User/Go.sublime-settings",
 		"/home/iand/Documents/minecraft-server/plugins.txt",
 		"/home/iand/Dropbox/documents/minecraft-server/plugins.txt",
 		"/home/iand/wip/amberfell/amberfell.go",
@@ -276,6 +356,23 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"r",
+			"c",
+			"IntVector",
+			"selectMode",
+			"cuboi",
+			"checkgl",
+			"case: BLOCK_DIRT",
+			"case: BLOCK_STONE",
+			"Set(",
+			"af.",
+			"tree",
+			"collap",
+			"af.",
+			"player",
+			"af.world",
+			"af.af.world",
+			"world",
 			"bind",
 			"ind",
 			"bind",
@@ -365,11 +462,20 @@
 			"- "
 		],
 		"highlight": true,
-		"in_selection": false,
+		"in_selection": true,
 		"preserve_case": false,
 		"regex": false,
 		"replace_history":
 		[
+			"i",
+			"j",
+			"Vectori",
+			"case BLOCK_DIRT:",
+			"case BLOCK_STONE:",
+			"",
+			"af.ThePlayer",
+			"af.World",
+			"af.world",
 			"MapTextures",
 			"width",
 			"scale",
@@ -404,39 +510,11 @@
 	"groups":
 	[
 		{
-			"selected": 2,
+			"selected": 12,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "af/world.go",
-					"settings":
-					{
-						"buffer_size": 12309,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								7194,
-								7194
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Go/Go.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 3616.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 1,
 					"settings":
 					{
 						"buffer_size": 1204,
@@ -453,7 +531,9 @@
 						"settings":
 						{
 							"auto_name": "",
-							"syntax": "Packages/Text/Plain text.tmLanguage"
+							"syntax": "Packages/Text/Plain text.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
@@ -462,47 +542,101 @@
 					"type": "text"
 				},
 				{
-					"buffer": 2,
-					"file": "amberfell.go",
+					"buffer": 1,
+					"file": "/home/iand/.config/sublime-text-2/Packages/Default/Preferences.sublime-settings",
 					"settings":
 					{
-						"buffer_size": 12775,
+						"buffer_size": 12108,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								12358,
-								12358
+								2877,
+								2877
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/Go/Go.tmLanguage",
+							"syntax": "Packages/JavaScript/JSON.tmLanguage",
 							"tab_size": 4,
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 6376.0,
+						"translation.y": 526.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "/home/iand/.config/sublime-text-2/Packages/User/Preferences.sublime-settings",
+					"settings":
+					{
+						"buffer_size": 263,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								260,
+								260
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JSON.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
 					"buffer": 3,
-					"file": "af/wolf.go",
+					"file": "amberfell.go",
 					"settings":
 					{
-						"buffer_size": 4006,
+						"buffer_size": 772,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								3514,
-								3662
+								772,
+								772
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 41.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "af/constants.go",
+					"settings":
+					{
+						"buffer_size": 561,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								368,
+								368
 							]
 						],
 						"settings":
@@ -510,33 +644,6 @@
 							"syntax": "Packages/Go/Go.tmLanguage",
 							"tab_size": 4,
 							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 1591.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 4,
-					"file": "af/globals.go",
-					"settings":
-					{
-						"buffer_size": 73,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								49,
-								59
-							]
-						],
-						"settings":
-						{
-							"auto_name": "package af",
-							"syntax": "Packages/Go/Go.tmLanguage"
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
@@ -549,21 +656,81 @@
 					"file": "af/functions.go",
 					"settings":
 					{
-						"buffer_size": 691,
+						"buffer_size": 1123,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								535,
-								570
+								651,
+								651
 							]
 						],
 						"settings":
 						{
 							"auto_name": "package af",
-							"syntax": "Packages/Go/Go.tmLanguage"
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 45.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "af/gameloop.go",
+					"settings":
+					{
+						"buffer_size": 4864,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								4864,
+								4864
+							]
+						],
+						"settings":
+						{
+							"auto_name": "package af",
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 2786.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "af/globals.go",
+					"settings":
+					{
+						"buffer_size": 771,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								734,
+								734
+							]
+						],
+						"settings":
+						{
+							"auto_name": "package af",
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
@@ -572,46 +739,47 @@
 					"type": "text"
 				},
 				{
-					"buffer": 6,
-					"file": "af/shapes.go",
+					"buffer": 8,
+					"file": "af/mob.go",
 					"settings":
 					{
-						"buffer_size": 19345,
+						"buffer_size": 676,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								991,
-								991
+								635,
+								635
 							]
 						],
 						"settings":
 						{
-							"auto_name": "package af",
-							"syntax": "Packages/Go/Go.tmLanguage"
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 600.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
-					"buffer": 7,
+					"buffer": 9,
 					"file": "af/player.go",
 					"settings":
 					{
-						"buffer_size": 5228,
+						"buffer_size": 7215,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								5044,
-								5045
+								4788,
+								4788
 							]
 						],
 						"settings":
@@ -622,29 +790,87 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 2386.0,
+						"translation.y": 2202.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
-					"buffer": 8,
-					"file": "af/constants.go",
+					"buffer": 10,
+					"file": "af/shapes.go",
 					"settings":
 					{
-						"buffer_size": 337,
+						"buffer_size": 18848,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								132,
-								142
+								6384,
+								6384
 							]
 						],
 						"settings":
 						{
+							"auto_name": "package af",
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 2862.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 11,
+					"file": "af/vector.go",
+					"settings":
+					{
+						"buffer_size": 4399,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								3015,
+								3015
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1428.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 12,
+					"file": "af/vector_test.go",
+					"settings":
+					{
+						"buffer_size": 436,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								428,
+								428
+							]
+						],
+						"settings":
+						{
+							"auto_name": "",
 							"syntax": "Packages/Go/Go.tmLanguage"
 						},
 						"translation.x": 0.0,
@@ -654,19 +880,48 @@
 					"type": "text"
 				},
 				{
-					"buffer": 9,
-					"file": "af/mob.go",
+					"buffer": 13,
+					"file": "af/window.go",
 					"settings":
 					{
-						"buffer_size": 541,
+						"buffer_size": 6112,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								373,
-								373
+								6038,
+								6038
+							]
+						],
+						"settings":
+						{
+							"auto_name": "package af",
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 2592.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 14,
+					"file": "af/wolf.go",
+					"settings":
+					{
+						"buffer_size": 3993,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								691,
+								691
 							]
 						],
 						"settings":
@@ -682,27 +937,135 @@
 					"type": "text"
 				},
 				{
-					"buffer": 10,
-					"file": "af/vector.go",
+					"buffer": 15,
+					"file": "af/world.go",
 					"settings":
 					{
-						"buffer_size": 1949,
+						"buffer_size": 10888,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								780,
-								780
+								8777,
+								8777
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/Go/Go.tmLanguage"
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 286.0,
+						"translation.y": 5097.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 16,
+					"settings":
+					{
+						"buffer_size": 21,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								12,
+								16
+							]
+						],
+						"settings":
+						{
+							"default_dir": "/home/iand/.config/sublime-text-2/Packages/User",
+							"syntax": "Packages/JavaScript/JSON.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 17,
+					"file": "amberfell.sublime-project",
+					"settings":
+					{
+						"buffer_size": 68,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JSON.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 18,
+					"file": "af/timer.go",
+					"settings":
+					{
+						"buffer_size": 1206,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								200,
+								200
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 19,
+					"file": "README.md",
+					"settings":
+					{
+						"buffer_size": 176,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								176,
+								176
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Markdown/Markdown.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"

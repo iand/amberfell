@@ -3,7 +3,7 @@
   and related or neighboring rights to this Amberfell Source Code file.
   This work is published from the United Kingdom. 
 */
-package af
+package main
 
 import (
 	"github.com/banthar/Go-SDL/sdl"
@@ -15,8 +15,8 @@ import (
 type Player struct {
 	Bounce        float64
 	heading       float64
-	position      Vector
-	velocity      Vector
+	position      Vectorf
+	velocity      Vectorf
 	falling       bool
 	currentAction uint8
 	currentItem   uint16
@@ -52,10 +52,10 @@ func (p *Player) Heading() float64 { return p.heading }
 func (p *Player) X() float32       { return float32(p.position[XAXIS]) }
 func (p *Player) Y() float32       { return float32(p.position[YAXIS]) }
 func (p *Player) Z() float32       { return float32(p.position[ZAXIS]) }
-func (p *Player) Velocity() Vector { return p.velocity }
-func (p *Player) Position() Vector { return p.position }
+func (p *Player) Velocity() Vectorf { return p.velocity }
+func (p *Player) Position() Vectorf { return p.position }
 
-func (p *Player) FrontBlock() IntVector {
+func (p *Player) FrontBlock() Vectori {
 	ip := IntPosition(p.position)
 	if p.heading > 337.5 || p.heading <= 22.5 {
 		ip[XAXIS]++
@@ -106,7 +106,7 @@ func (p *Player) Update(dt float64) {
 	//if p.velocity[YAXIS] == 0 { p.falling = false }
 }
 
-func (p *Player) Accelerate(v Vector) {
+func (p *Player) Accelerate(v Vectorf) {
 	p.velocity[XAXIS] += v[XAXIS]
 	p.velocity[YAXIS] += v[YAXIS]
 	p.velocity[ZAXIS] += v[ZAXIS]
@@ -147,7 +147,7 @@ func (p *Player) Act(dt float64) {
 	// noop
 }
 
-func (player *Player) Draw(center Vector, selectMode bool) {
+func (player *Player) Draw(center Vectorf, selectMode bool) {
 
 	gl.PushMatrix()
 
@@ -240,7 +240,7 @@ func (p *Player) CanInteract() bool {
 	return false
 }
 
-func (self *Player) Interact(pos IntVector, face uint8) {
+func (self *Player) Interact(pos Vectori, face uint8) {
     if !self.CanInteract() {
         return
     }

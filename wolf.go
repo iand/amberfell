@@ -3,7 +3,7 @@
   and related or neighboring rights to this Amberfell Source Code file.
   This work is published from the United Kingdom. 
 */
-package af
+package main
 
 import (
 	"github.com/banthar/gl"
@@ -13,8 +13,8 @@ import (
 
 type Wolf struct {
 	heading  float64
-	position Vector
-	velocity Vector
+	position Vectorf
+	velocity Vectorf
 	falling  bool
 	bounce   float64
 }
@@ -34,15 +34,15 @@ func (w *Wolf) Heading() float64 { return w.heading }
 func (w *Wolf) X() float32       { return float32(w.position[XAXIS]) }
 func (w *Wolf) Y() float32       { return float32(w.position[YAXIS]) }
 func (w *Wolf) Z() float32       { return float32(w.position[ZAXIS]) }
-func (w *Wolf) Velocity() Vector { return w.velocity }
-func (w *Wolf) Position() Vector { return w.position }
-func (w *Wolf) IntPosition() IntVector {
-	return IntVector{int16(math.Floor(w.position[XAXIS] + 0.5)),
+func (w *Wolf) Velocity() Vectorf { return w.velocity }
+func (w *Wolf) Position() Vectorf { return w.position }
+func (w *Wolf) IntPosition() Vectori {
+	return Vectori{int16(math.Floor(w.position[XAXIS] + 0.5)),
 		int16(math.Floor(w.position[YAXIS] + 0.5)),
 		int16(math.Floor(w.position[ZAXIS] + 0.5))}
 }
 
-func (w *Wolf) FrontBlock() IntVector {
+func (w *Wolf) FrontBlock() Vectori {
 	ip := w.IntPosition()
 	if w.heading > 337.5 || w.heading <= 22.5 {
 		ip[XAXIS]++
@@ -88,7 +88,7 @@ func (w *Wolf) Update(dt float64) {
 	// fmt.Printf("position: %s\n", w.position)
 }
 
-func (w *Wolf) Accelerate(v Vector) {
+func (w *Wolf) Accelerate(v Vectorf) {
 	w.velocity[XAXIS] += v[XAXIS]
 	w.velocity[YAXIS] += v[YAXIS]
 	w.velocity[ZAXIS] += v[ZAXIS]
@@ -137,7 +137,7 @@ func (w *Wolf) Act(dt float64) {
 	w.velocity[YAXIS] = 0.8 * math.Abs(math.Sin(w.bounce*math.Pi/180))
 }
 
-func (wolf *Wolf) Draw(center Vector, selectMode bool) {
+func (wolf *Wolf) Draw(center Vectorf, selectMode bool) {
 	gl.PushMatrix()
 	gl.Translatef(float32(wolf.X()-float32(center[XAXIS])), float32(wolf.Y()-float32(center[YAXIS])), float32(wolf.Z()-float32(center[ZAXIS])))
 	gl.Rotated(wolf.Heading(), 0.0, 1.0, 0.0)

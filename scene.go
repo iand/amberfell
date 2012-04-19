@@ -1,4 +1,4 @@
-package af
+package main
 
 type Scene struct {
 }

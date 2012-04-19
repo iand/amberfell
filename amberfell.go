@@ -7,7 +7,6 @@ package main
 
 import (
 	"flag"
-	"github.com/iand/amberfell/af"
 	"math/rand"
   "os"
   "runtime/pprof"
@@ -31,13 +30,13 @@ func main() {
 
 	rand.Seed(71)
 
-	defer af.QuitGame()
-	defer af.QuitGraphics()
+	defer QuitGame()
+	defer QuitGraphics()
 
-	af.InitGame()
-	af.InitGraphics()
+	InitGame()
+	InitGraphics()
   
-	af.GameLoop()
+	GameLoop()
 
 	return
 

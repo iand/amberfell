@@ -3,7 +3,7 @@
   and related or neighboring rights to this Amberfell Source Code file.
   This work is published from the United Kingdom. 
 */
-package af
+package main
 
 import (
 	"github.com/banthar/Go-SDL/sdl"

@@ -3,7 +3,7 @@
   and related or neighboring rights to this Amberfell Source Code file.
   This work is published from the United Kingdom. 
 */
-package af
+package main
 
 type Mob interface {
 	Heading() float64
@@ -14,8 +14,8 @@ type Mob interface {
 	Y() float32
 	Z() float32
 	IsFalling() bool
-	Velocity() Vector
-	Position() Vector
+	Velocity() Vectorf
+	Position() Vectorf
 	Snapx(x float64, vx float64)
 	Snapy(y float64, vy float64)
 	Snapz(z float64, vz float64)
@@ -23,9 +23,9 @@ type Mob interface {
 	Setvy(vy float64)
 	Setvz(vz float64)
 	SetFalling(b bool)
-	Accelerate(v Vector)
+	Accelerate(v Vectorf)
 	Rotate(angle float64)
 	Act(dt float64)
-	Draw(pos Vector, selectMode bool)
+	Draw(pos Vectorf, selectMode bool)
 	Update(dt float64)
 }

@@ -3,7 +3,7 @@
   and related or neighboring rights to this Amberfell Source Code file.
   This work is published from the United Kingdom. 
 */
-package af
+package main
 
 import (
 	"math"
@@ -25,8 +25,8 @@ func BlockIdToRelativeCoordinate(id uint16) (dx int16, dy int16, dz int16) {
 	return
 }
 
-func IntPosition(pos Vector) IntVector {
-	return IntVector{int16(math.Floor(pos[XAXIS] + 0.5)),
+func IntPosition(pos Vectorf) Vectori {
+	return Vectori{int16(math.Floor(pos[XAXIS] + 0.5)),
 		int16(math.Floor(pos[YAXIS] + 0.5)),
 		int16(math.Floor(pos[ZAXIS] + 0.5))}
 }

@@ -3,7 +3,7 @@
   and related or neighboring rights to this Amberfell Source Code file.
   This work is published from the United Kingdom. 
 */
-package af
+package main
 
 var (
 	DebugMode  bool  = false
@@ -31,7 +31,7 @@ var (
 
 	timeOfDay float32 = 8
 
-	lightpos Vector
+	lightpos Vectorf
 
 
   feedbackBuffer FeedbackBuffer
