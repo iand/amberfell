@@ -28,7 +28,7 @@ func BlockIdToRelativeCoordinate(id uint16) (dx int16, dy int16, dz int16) {
 func IntPosition(pos Vectorf) Vectori {
 	return Vectori{int16(Round(pos[XAXIS], 0)),
 		int16(Round(pos[YAXIS], 0)),
-		int16(Round(pos[ZAXIS]  , 0))}
+		int16(Round(pos[ZAXIS], 0))}
 }
 
 // Finds the surface level for a given x, z coordinate
@@ -50,14 +50,14 @@ func FindSurface(x int16, z int16) (y int16) {
 // Round a float to given precision
 func Round(val float64, prec int) float64 {
 
-    var rounder float64
-    intermed := val * math.Pow(10, float64(prec))
+	var rounder float64
+	intermed := val * math.Pow(10, float64(prec))
 
-    if intermed > 0 {
-        rounder = math.Floor(intermed + 0.5)
-    } else {
-        rounder = math.Ceil(intermed - 0.5)
-    }
+	if intermed > 0 {
+		rounder = math.Floor(intermed + 0.5)
+	} else {
+		rounder = math.Ceil(intermed - 0.5)
+	}
 
-    return rounder / math.Pow(10, float64(prec))
+	return rounder / math.Pow(10, float64(prec))
 }
