@@ -33,6 +33,5 @@ var (
 
 	lightpos Vectorf
 
-
-  feedbackBuffer FeedbackBuffer
+	feedbackBuffer FeedbackBuffer
 )

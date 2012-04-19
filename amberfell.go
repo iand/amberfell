@@ -7,26 +7,26 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"math/rand"
-  "os"
-  "runtime/pprof"
-  "fmt"
+	"os"
+	"runtime/pprof"
 )
 
 var flag_profile *bool = flag.Bool("profile", false, "Output profiling information to amberfell.prof")
 
 func main() {
-  flag.Parse()
+	flag.Parse()
 
-  if *flag_profile {
-    pfile, err := os.Create("amberfell.prof")
+	if *flag_profile {
+		pfile, err := os.Create("amberfell.prof")
 
-    if err != nil {
-      panic(fmt.Sprintf("Could not create amberfell.prof:", err))
-    }
+		if err != nil {
+			panic(fmt.Sprintf("Could not create amberfell.prof:", err))
+		}
 
-    pprof.StartCPUProfile(pfile)
-  }
+		pprof.StartCPUProfile(pfile)
+	}
 
 	rand.Seed(71)
 
@@ -35,7 +35,7 @@ func main() {
 
 	InitGame()
 	InitGraphics()
-  
+
 	GameLoop()
 
 	return

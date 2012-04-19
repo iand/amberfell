@@ -85,7 +85,7 @@ func InitGraphics() {
 	gl.Enable(gl.TEXTURE_2D)
 	LoadMapTextures()
 	//LoadTerrainCubes()
-    InitTerrainBlocks()
+	InitTerrainBlocks()
 
 	Reshape(int(screen.W), int(screen.H))
 }
@@ -120,19 +120,18 @@ func Draw(selectMode bool) {
 
 	}
 
-
-    offset := float32(2)
+	offset := float32(2)
 	// CheckGLError()
 	gl.LoadIdentity()
 	gl.Rotated(0, 0.0, 0.0, 1.0)
-    gl.Rotated(view_rotx, 1.0, 0.0, 0.0)
-    gl.Rotated(view_roty-ThePlayer.Heading(), 0.0, 1.0, 0.0)
-    gl.Translatef(0,-offset, 0)
+	gl.Rotated(view_rotx, 1.0, 0.0, 0.0)
+	gl.Rotated(view_roty-ThePlayer.Heading(), 0.0, 1.0, 0.0)
+	gl.Translatef(0, -offset, 0)
 
 	center := ThePlayer.Position()
 
 	// Sun
-    gl.LightModelfv(gl.LIGHT_MODEL_AMBIENT, []float32{0.1, 0.1, 0.1, 1})
+	gl.LightModelfv(gl.LIGHT_MODEL_AMBIENT, []float32{0.1, 0.1, 0.1, 1})
 	var daylightIntensity float32 = 0.4
 	if timeOfDay < 5 || timeOfDay > 21 {
 		daylightIntensity = 0.00
@@ -166,7 +165,7 @@ func Draw(selectMode bool) {
 	gl.Lightfv(gl.LIGHT1, gl.SPOT_DIRECTION, []float32{float32(math.Cos(ThePlayer.Heading() * math.Pi / 180)), float32(-0.7), -float32(math.Sin(ThePlayer.Heading() * math.Pi / 180))})
 
 	// CheckGLError()
-    gl.RenderMode(gl.RENDER)
+	gl.RenderMode(gl.RENDER)
 	ThePlayer.Draw(center, false)
 	// CheckGLError()
 
@@ -176,11 +175,10 @@ func Draw(selectMode bool) {
 	// // var mousex, mousey int
 	// // mouseState := sdl.GetMouseState(&mousex, &mousey)
 	// gl.PushMatrix()
-    // gl.Translatef(float32(center[XAXIS]),float32(center[YAXIS])-1,float32(center[ZAXIS]))
+	// gl.Translatef(float32(center[XAXIS]),float32(center[YAXIS])-1,float32(center[ZAXIS]))
 	// //print ("i:", i, "j:", j, "b:", World.At(i, j, groundLevel))
 	// HighlightCuboidFace(1, 1, 1, TOP_FACE)
 	// gl.PopMatrix()
-
 
 	if ShowOverlay {
 		gl.PushMatrix()
@@ -195,14 +193,13 @@ func Draw(selectMode bool) {
 		gl.PopMatrix()
 	}
 
+	// gl.FeedbackBuffer(4096, gl.GL_3D_COLOR_TEXTURE, &feedbackBuffer.buffer[0])
+	// gl.RenderMode(gl.FEEDBACK)
+	// //ThePlayer.Draw(center, true)
+	// TheWorld.Draw(center, true)
+	// feedbackBuffer.size = gl.RenderMode(gl.RENDER)
 
-    // gl.FeedbackBuffer(4096, gl.GL_3D_COLOR_TEXTURE, &feedbackBuffer.buffer[0])
-    // gl.RenderMode(gl.FEEDBACK)
-    // //ThePlayer.Draw(center, true)
-    // TheWorld.Draw(center, true)
-    // feedbackBuffer.size = gl.RenderMode(gl.RENDER)
-
-    gl.Translatef(0,offset, 0)
+	gl.Translatef(0, offset, 0)
 
 	if !selectMode {
 		gl.Finish()

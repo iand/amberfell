@@ -48,10 +48,10 @@ func (p *Player) W() float64 { return 0.8 }
 func (p *Player) H() float64 { return 2.0 }
 func (p *Player) D() float64 { return 0.6 }
 
-func (p *Player) Heading() float64 { return p.heading }
-func (p *Player) X() float32       { return float32(p.position[XAXIS]) }
-func (p *Player) Y() float32       { return float32(p.position[YAXIS]) }
-func (p *Player) Z() float32       { return float32(p.position[ZAXIS]) }
+func (p *Player) Heading() float64  { return p.heading }
+func (p *Player) X() float32        { return float32(p.position[XAXIS]) }
+func (p *Player) Y() float32        { return float32(p.position[YAXIS]) }
+func (p *Player) Z() float32        { return float32(p.position[ZAXIS]) }
 func (p *Player) Velocity() Vectorf { return p.velocity }
 func (p *Player) Position() Vectorf { return p.position }
 
@@ -168,10 +168,10 @@ func (p *Player) HandleKeys(keys []uint8) {
 	if keys[sdl.K_2] != 0 {
 		p.currentAction = ACTION_BREAK
 	}
-    if keys[sdl.K_3] != 0 {
-        p.currentAction = ACTION_WEAPON
-    }
-    if keys[sdl.K_4] != 0 {
+	if keys[sdl.K_3] != 0 {
+		p.currentAction = ACTION_WEAPON
+	}
+	if keys[sdl.K_4] != 0 {
 		p.currentAction = ACTION_ITEM
 		p.currentItem = p.equippedItems[0]
 	}
@@ -241,42 +241,37 @@ func (p *Player) CanInteract() bool {
 }
 
 func (self *Player) Interact(pos Vectori, face uint8) {
-    if !self.CanInteract() {
-        return
-    }
+	if !self.CanInteract() {
+		return
+	}
 
-
-
-    println("Interacting at ", pos.String())
-    switch self.currentAction {
-    case ACTION_BREAK:
-        block := TheWorld.Atv(pos)
-        if block != BLOCK_AIR {
-            println("Breaking at ", pos.String())
-            TheWorld.Setv(pos, BLOCK_AIR)
-            self.inventory[block]++
-        }
-    case ACTION_ITEM:
-        if face == UP_FACE { // top
-            pos[YAXIS]++
-        } else if face == DOWN_FACE { // bottom
-            pos[YAXIS]--
-        } else if face == SOUTH_FACE { // front
-            pos[ZAXIS]++
-        } else if face == NORTH_FACE { // back
-            pos[ZAXIS]--
-        } else if face == EAST_FACE { // left
-            pos[XAXIS]++
-        } else if face == WEST_FACE { // right
-            pos[XAXIS]--
-        }
-        if TheWorld.Atv(pos) == BLOCK_AIR {
-            println("Setting at ", pos.String())
-            TheWorld.Setv(pos, byte(self.currentItem))
-        }
-    }
-
-    
-
+	println("Interacting at ", pos.String())
+	switch self.currentAction {
+	case ACTION_BREAK:
+		block := TheWorld.Atv(pos)
+		if block != BLOCK_AIR {
+			println("Breaking at ", pos.String())
+			TheWorld.Setv(pos, BLOCK_AIR)
+			self.inventory[block]++
+		}
+	case ACTION_ITEM:
+		if face == UP_FACE { // top
+			pos[YAXIS]++
+		} else if face == DOWN_FACE { // bottom
+			pos[YAXIS]--
+		} else if face == SOUTH_FACE { // front
+			pos[ZAXIS]++
+		} else if face == NORTH_FACE { // back
+			pos[ZAXIS]--
+		} else if face == EAST_FACE { // left
+			pos[XAXIS]++
+		} else if face == WEST_FACE { // right
+			pos[XAXIS]--
+		}
+		if TheWorld.Atv(pos) == BLOCK_AIR {
+			println("Setting at ", pos.String())
+			TheWorld.Setv(pos, byte(self.currentItem))
+		}
+	}
 
 }

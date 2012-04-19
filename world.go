@@ -15,8 +15,8 @@ import (
 
 type World struct {
 	GroundLevel int16
-	mobs   []Mob
-	chunks map[int16]*Chunk
+	mobs        []Mob
+	chunks      map[int16]*Chunk
 }
 
 type Chunk struct {
@@ -135,10 +135,9 @@ func (world *World) Set(x int16, y int16, z int16, b byte) {
 }
 
 func (world *World) Setv(v Vectori, b byte) {
-    chunk, ox, oy, oz := world.GetChunkForBlock(v[XAXIS], v[YAXIS], v[ZAXIS])
-    chunk.Set(ox, oy, oz, b)
+	chunk, ox, oy, oz := world.GetChunkForBlock(v[XAXIS], v[YAXIS], v[ZAXIS])
+	chunk.Set(ox, oy, oz, b)
 }
-
 
 func (world *World) RandomSquare() (x int16, z int16) {
 	x = int16(rand.Intn(40) - 20)
@@ -369,13 +368,13 @@ func (world *World) Draw(center Vectorf, selectMode bool) {
 							if dx >= -2 && dx <= 2 && dy >= -2 && dy <= 2 && dz >= -2 && dz <= 2 {
 								id = RelativeCoordinateToBlockId(dx, dy, dz)
 							}
-                            if !selectMode || id != 0 {
-    							gl.PushMatrix()
-    							gl.Translatef(float32(x), float32(y), float32(z))
-    							TerrainCube(n, s, w, e, u, d, blockid, id, selectMode)
-    							count++
-    							gl.PopMatrix()
-                            }
+							if !selectMode || id != 0 {
+								gl.PushMatrix()
+								gl.Translatef(float32(x), float32(y), float32(z))
+								TerrainCube(n, s, w, e, u, d, blockid, id, selectMode)
+								count++
+								gl.PopMatrix()
+							}
 						}
 					}
 				}

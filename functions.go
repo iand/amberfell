@@ -33,18 +33,16 @@ func IntPosition(pos Vectorf) Vectori {
 
 // Finds the surface level for a given x, z coordinate
 func FindSurface(x int16, z int16) (y int16) {
-  y = GroundLevel
-  if TheWorld.At(x, y, z) == BLOCK_AIR {
-    for y > 0 && TheWorld.At(x, y, z) == BLOCK_AIR {
-      y--
-    }    
-  } else {
-    for TheWorld.At(x, y, z) != BLOCK_AIR {
-      y++
-    }    
-  }
+	y = GroundLevel
+	if TheWorld.At(x, y, z) == BLOCK_AIR {
+		for y > 0 && TheWorld.At(x, y, z) == BLOCK_AIR {
+			y--
+		}
+	} else {
+		for TheWorld.At(x, y, z) != BLOCK_AIR {
+			y++
+		}
+	}
 
-
-
-  return
+	return
 }

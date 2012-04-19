@@ -30,10 +30,10 @@ func (w *Wolf) W() float64 { return 1 }
 func (w *Wolf) H() float64 { return 2 }
 func (w *Wolf) D() float64 { return 3 }
 
-func (w *Wolf) Heading() float64 { return w.heading }
-func (w *Wolf) X() float32       { return float32(w.position[XAXIS]) }
-func (w *Wolf) Y() float32       { return float32(w.position[YAXIS]) }
-func (w *Wolf) Z() float32       { return float32(w.position[ZAXIS]) }
+func (w *Wolf) Heading() float64  { return w.heading }
+func (w *Wolf) X() float32        { return float32(w.position[XAXIS]) }
+func (w *Wolf) Y() float32        { return float32(w.position[YAXIS]) }
+func (w *Wolf) Z() float32        { return float32(w.position[ZAXIS]) }
 func (w *Wolf) Velocity() Vectorf { return w.velocity }
 func (w *Wolf) Position() Vectorf { return w.position }
 func (w *Wolf) IntPosition() Vectori {
