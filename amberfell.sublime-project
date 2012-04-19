@@ -1,8 +1,11 @@
 {
-	"folders":
-	[
-		{
-			"path": "/home/iand/wip/amberfell"
-		}
-	]
+    "folders": [
+        {
+            "path": "/home/iand/wip/amberfell"
+        }
+    ], 
+    "settings": {
+        "go_project": true, 
+        "name": "amberfell"
+    }
 }

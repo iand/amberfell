@@ -36,14 +36,9 @@ func (w *Wolf) Y() float32        { return float32(w.position[YAXIS]) }
 func (w *Wolf) Z() float32        { return float32(w.position[ZAXIS]) }
 func (w *Wolf) Velocity() Vectorf { return w.velocity }
 func (w *Wolf) Position() Vectorf { return w.position }
-func (w *Wolf) IntPosition() Vectori {
-	return Vectori{int16(math.Floor(w.position[XAXIS] + 0.5)),
-		int16(math.Floor(w.position[YAXIS] + 0.5)),
-		int16(math.Floor(w.position[ZAXIS] + 0.5))}
-}
 
 func (w *Wolf) FrontBlock() Vectori {
-	ip := w.IntPosition()
+	ip := IntPosition(w.Position())
 	if w.heading > 337.5 || w.heading <= 22.5 {
 		ip[XAXIS]++
 	} else if w.heading > 22.5 && w.heading <= 67.5 {
