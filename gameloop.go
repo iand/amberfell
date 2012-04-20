@@ -55,6 +55,27 @@ func GameLoop() {
 				re := e.(*sdl.MouseButtonEvent)
 				if re.Button == 1 && re.State == 1 { // LEFT, DOWN
 
+					pos := IntPosition(ThePlayer.position)
+
+					box := Box{
+							&Vectorf{float64(pos[XAXIS])-0.5, float64(pos[YAXIS])-1.5,float64(pos[ZAXIS])-0.5}, 
+							&Vectorf{float64(pos[XAXIS])+0.5, float64(pos[YAXIS])+1.5,float64(pos[ZAXIS])+0.5} }
+
+					inverseMatrix, _ := viewport.matrix.Inverse()
+					
+					ray := Ray{
+							inverseMatrix.Transform(&Vectorf{float64(re.X), 0, float64(screenHeight)-float64(re.Y)}, 1),
+							inverseMatrix.Transform(&Vectorf{0, -1, 0}, 0).Normalize() }
+
+
+					fmt.Printf("Ray origin: %f, %f, %f", ray.origin[0], ray.origin[1], ray.origin[2])
+					if ray.HitsBox(&box) {
+						println("Hits box")
+					} else {
+						println("Does not hit box")
+
+					}
+
 
 					if ThePlayer.CanInteract() {
 

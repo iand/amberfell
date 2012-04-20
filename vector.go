@@ -32,9 +32,9 @@ func (a Vectorf) Magnitude() float64 {
 	return math.Sqrt(math.Pow(a[0], 2) + math.Pow(a[1], 2) + math.Pow(a[2], 2))
 }
 
-func (a Vectorf) Normalize() Vectorf {
+func (a *Vectorf) Normalize() *Vectorf {
 	mag := a.Magnitude()
-	return Vectorf{a[0] / mag, a[1] / mag, a[2] / mag}
+	return &Vectorf{a[0] / mag, a[1] / mag, a[2] / mag}
 }
 
 func (a Vectorf) String() string {
@@ -274,4 +274,12 @@ func (a *Matrix4) Rotatez(angle float64) *Matrix4 {
 
 func (a *Matrix4) Scale(scale float64) *Matrix4 {
 	return a.Multiply( &Matrix4{ scale, 0, 0, 0,   0, scale, 0, 0,   0, 0, scale, 0,   0, 0, 0, 1} )
+}
+
+func (a *Matrix4) Transform(v *Vectorf, w float64) *Vectorf {
+	return &Vectorf{ 
+
+		v[0]*a[0] + v[1]*a[4] + v[2]*a[8]  + w*a[12],
+		v[0]*a[1] + v[1]*a[5] + v[2]*a[9]  + w*a[13],
+		v[0]*a[2] + v[1]*a[6] + v[2]*a[10] + w*a[14]}
 }
