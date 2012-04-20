@@ -14,14 +14,9 @@ var (
 
 const piover180 = 0.0174532925
 
-var T0 uint32 = 0
-var Frames uint32 = 0
+var viewport Viewport
 
-var view_rotx float64 = 25.0
-var view_roty float64 = 70.0
-var view_rotz float64 = 0.0
-var gear1, gear2, gear3 uint
-var angle float64 = 0.0
+
 
 var (
 	screenWidth, screenHeight int
@@ -33,5 +28,4 @@ var (
 
 	lightpos Vectorf
 
-	feedbackBuffer FeedbackBuffer
 )

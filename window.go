@@ -45,6 +45,10 @@ func Reshape(width int, height int) {
 
 func InitGraphics() {
 
+	viewport.Zoomstd()
+	viewport.Rotx(25)
+	viewport.Roty(70)
+
 	sdl.Init(sdl.INIT_VIDEO)
 
 	screen := sdl.SetVideoMode(800, 600, 32, sdl.OPENGL|sdl.RESIZABLE)
@@ -120,15 +124,20 @@ func Draw(selectMode bool) {
 
 	}
 
+
+
 	offset := float32(2)
 	// CheckGLError()
 	gl.LoadIdentity()
-	gl.Rotated(0, 0.0, 0.0, 1.0)
-	gl.Rotated(view_rotx, 1.0, 0.0, 0.0)
-	gl.Rotated(view_roty-ThePlayer.Heading(), 0.0, 1.0, 0.0)
-	gl.Translatef(0, -offset, 0)
+	// gl.Rotated(0, 0.0, 0.0, 1.0)
+	// gl.Rotated(view_rotx, 1.0, 0.0, 0.0)
+	// gl.Rotated(view_roty-ThePlayer.Heading(), 0.0, 1.0, 0.0)
 
 	center := ThePlayer.Position()
+
+	matrix := *viewport.matrix.Float32()
+	gl.MultMatrixf( &matrix[0] )
+	gl.Translatef(0, -offset, 0)
 
 	// Sun
 	gl.LightModelfv(gl.LIGHT_MODEL_AMBIENT, []float32{0.1, 0.1, 0.1, 1})

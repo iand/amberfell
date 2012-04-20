@@ -55,9 +55,6 @@ func GameLoop() {
 				re := e.(*sdl.MouseButtonEvent)
 				if re.Button == 1 && re.State == 1 { // LEFT, DOWN
 
-					println("Click:", re.X, re.Y, re.State, re.Button, re.Which)
-					println("feedbackBuffer.size:", feedbackBuffer.size)
-					feedbackBuffer.Dump()
 
 					if ThePlayer.CanInteract() {
 
@@ -118,22 +115,17 @@ func GameLoop() {
 
 		}
 		if keys[sdl.K_UP] != 0 {
-
-			if view_rotx < 75 {
-				view_rotx += 5.0
-			}
+			viewport.Rotx(5)
 		}
 		if keys[sdl.K_DOWN] != 0 {
-			if view_rotx > 15.0 {
-				view_rotx -= 5.0
-			}
+			viewport.Rotx(-5)
 		}
 		if keys[sdl.K_LEFT] != 0 {
-			view_roty += 9
+			viewport.Roty(9)
 			//println("view_roty:", view_roty)
 		}
 		if keys[sdl.K_RIGHT] != 0 {
-			view_roty -= 9
+			viewport.Roty(-9)
 		}
 
 		ThePlayer.HandleKeys(keys)
@@ -170,6 +162,14 @@ func GameLoop() {
 				ViewRadius--
 				println("ViewRadius: ", ViewRadius)
 			}
+		}
+
+		if keys[sdl.K_u] != 0 {
+			viewport.Zoomin()
+
+		}
+		if keys[sdl.K_j] != 0 {
+			viewport.Zoomout()
 		}
 
 		if DebugMode {

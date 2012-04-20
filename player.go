@@ -30,7 +30,7 @@ func (p *Player) Init(heading float64, x int16, z int16, y int16) {
 	p.position[XAXIS] = float64(x)
 	p.position[YAXIS] = float64(y)
 	p.position[ZAXIS] = float64(z)
-	p.walkingSpeed = 16
+	p.walkingSpeed = 20
 	p.currentAction = ACTION_HAND
 	p.currentItem = ITEM_NONE
 
@@ -218,11 +218,12 @@ func (p *Player) HandleKeys(keys []uint8) {
 	}
 	if keys[sdl.K_a] != 0 {
 		p.Rotate(22.5 / 2)
-
+		viewport.Roty(-22.5 / 2)
 	}
 
 	if keys[sdl.K_d] != 0 {
 		p.Rotate(-22.5 / 2)
+		viewport.Roty(22.5 / 2)
 	}
 
 	if keys[sdl.K_SPACE] != 0 {

@@ -253,3 +253,25 @@ func (a *Matrix4) Inverse() (*Matrix4, error) {
 
 	return &b, nil
 }
+
+func (a *Matrix4) Rotatex(angle float64) *Matrix4 {
+	s := math.Sin(angle * math.Pi / 180)
+	c := math.Cos(angle * math.Pi / 180)
+	return a.Multiply( &Matrix4{ 1, 0, 0, 0,   0, c, s, 0,   0, -s, c, 0,   0, 0, 0, 1} )
+}
+
+func (a *Matrix4) Rotatey(angle float64) *Matrix4 {
+	s := math.Sin(angle * math.Pi / 180)
+	c := math.Cos(angle * math.Pi / 180)
+	return a.Multiply( &Matrix4{ c, 0, -s, 0,   0, 1, 0, 0,   s, 0, c, 0,   0, 0, 0, 1} )
+}
+
+func (a *Matrix4) Rotatez(angle float64) *Matrix4 {
+	s := math.Sin(angle * math.Pi / 180)
+	c := math.Cos(angle * math.Pi / 180)
+	return a.Multiply( &Matrix4{ c, s, 0, 0,   -s, c, 0, 0,   0, 0, 1, 0,   0, 0, 0, 1} )
+}
+
+func (a *Matrix4) Scale(scale float64) *Matrix4 {
+	return a.Multiply( &Matrix4{ scale, 0, 0, 0,   0, scale, 0, 0,   0, 0, scale, 0,   0, 0, 0, 1} )
+}

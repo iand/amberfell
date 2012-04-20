@@ -6,7 +6,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/banthar/gl"
 	"image"
 	_ "image/png"
@@ -30,41 +29,6 @@ type TerrainBlock struct {
 	wtexture *gl.Texture
 }
 
-type FeedbackBuffer struct {
-	buffer [4096]float32
-	size   int
-}
-
-func (self *FeedbackBuffer) Dump() {
-
-	for i := 0; i < self.size; i++ {
-		if self.buffer[i] == gl.PASS_THROUGH_TOKEN {
-			fmt.Printf("GL_PASS_THROUGH_TOKEN\n")
-			i++
-			fmt.Printf("  %4.2f\n", self.buffer[i])
-		} else if self.buffer[i] == gl.POINT_TOKEN {
-			fmt.Printf("GL_POINT_TOKEN\n")
-			i++
-			i += 11
-		} else if self.buffer[i] == gl.LINE_TOKEN {
-			fmt.Printf("GL_LINE_TOKEN\n")
-			i++
-			i += 11
-		} else if self.buffer[i] == gl.LINE_RESET_TOKEN {
-			fmt.Printf("GL_LINE_RESET_TOKEN\n")
-			i++
-			i += 11
-		} else if self.buffer[i] == gl.POLYGON_TOKEN {
-			fmt.Printf("GL_POLYGON_TOKEN\n")
-			i++
-			fmt.Printf("  x: %4.2f y: %4.2f z: %4.2f\n", self.buffer[i+1], self.buffer[i+2], self.buffer[i+3])
-			i += 11
-
-		} else {
-			fmt.Printf("  %4.2f\n", self.buffer[i])
-		}
-	}
-}
 
 func LoadMapTextures() {
 	const pixels = 48
