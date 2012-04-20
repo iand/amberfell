@@ -343,7 +343,7 @@ func (world *World) Draw(center Vectorf, selectMode bool) {
 		v.Draw(center, selectMode)
 	}
 
-	gl.Translatef(-float32(center[XAXIS]), -float32(center[YAXIS]), -float32(center[ZAXIS]))
+	//gl.Translatef(-float32(center[XAXIS]), -float32(center[YAXIS]), -float32(center[ZAXIS]))
 
 	var px, py, pz = int16(center[XAXIS]), int16(center[YAXIS]), int16(center[ZAXIS])
 
@@ -362,6 +362,7 @@ func (world *World) Draw(center Vectorf, selectMode bool) {
 					if blockid != 0 {
 						var n, s, w, e, u, d bool = world.AirNeighbours(x, z, y)
 						if n || s || w || e || u || d {
+
 
 							var id uint16 = 0
 

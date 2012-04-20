@@ -8,7 +8,7 @@ package main
 import (
 	"github.com/banthar/Go-SDL/sdl"
 	"github.com/banthar/gl"
-	"github.com/banthar/glu"
+	// "github.com/banthar/glu"
 	"math"
 )
 
@@ -40,7 +40,7 @@ func Reshape(width int, height int) {
 	gl.Ortho(float64(xmin), float64(xmax), float64(ymin), float64(ymax), -20, 20)
 	gl.MatrixMode(gl.MODELVIEW)
 	gl.LoadIdentity()
-	glu.LookAt(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0)
+	// glu.LookAt(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0)
 }
 
 func InitGraphics() {
@@ -48,6 +48,9 @@ func InitGraphics() {
 	viewport.Zoomstd()
 	viewport.Rotx(25)
 	viewport.Roty(70)
+	viewport.Transx(-float64(ThePlayer.X()))
+	viewport.Transy(-float64(ThePlayer.Y()))
+	viewport.Transz(-float64(ThePlayer.Z()))
 
 	sdl.Init(sdl.INIT_VIDEO)
 
@@ -80,7 +83,7 @@ func InitGraphics() {
 	gl.Ortho(-12.0, 12.0, -12.0, 12.0, -10, 10.0)
 	gl.MatrixMode(gl.MODELVIEW)
 	gl.LoadIdentity()
-	glu.LookAt(0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0)
+	// glu.LookAt(0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0)
 
 	gl.ClearDepth(1.0)       // Depth Buffer Setup
 	gl.Enable(gl.DEPTH_TEST) // Enables Depth Testing
@@ -126,18 +129,18 @@ func Draw(selectMode bool) {
 
 
 
-	offset := float32(2)
 	// CheckGLError()
 	gl.LoadIdentity()
 	// gl.Rotated(0, 0.0, 0.0, 1.0)
-	// gl.Rotated(view_rotx, 1.0, 0.0, 0.0)
-	// gl.Rotated(view_roty-ThePlayer.Heading(), 0.0, 1.0, 0.0)
+	// gl.Rotated(viewport.rotx, 1.0, 0.0, 0.0)
+	// gl.Rotated(viewport.roty, 0.0, 1.0, 0.0)
+	// gl.Translatef(float32(viewport.transx), float32(viewport.transy), float32(viewport.transz))
 
 	center := ThePlayer.Position()
 
 	matrix := *viewport.matrix.Float32()
 	gl.MultMatrixf( &matrix[0] )
-	gl.Translatef(0, -offset, 0)
+	//gl.Translatef(-float32(center[XAXIS]), -float32(center[YAXIS]), -float32(center[ZAXIS]))
 
 	// Sun
 	gl.LightModelfv(gl.LIGHT_MODEL_AMBIENT, []float32{0.1, 0.1, 0.1, 1})
@@ -208,7 +211,6 @@ func Draw(selectMode bool) {
 	// TheWorld.Draw(center, true)
 	// feedbackBuffer.size = gl.RenderMode(gl.RENDER)
 
-	gl.Translatef(0, offset, 0)
 
 	if !selectMode {
 		gl.Finish()

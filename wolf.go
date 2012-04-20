@@ -134,7 +134,7 @@ func (w *Wolf) Act(dt float64) {
 
 func (wolf *Wolf) Draw(center Vectorf, selectMode bool) {
 	gl.PushMatrix()
-	gl.Translatef(float32(wolf.X()-float32(center[XAXIS])), float32(wolf.Y()-float32(center[YAXIS])), float32(wolf.Z()-float32(center[ZAXIS])))
+	gl.Translatef(float32(wolf.X()), float32(wolf.Y()), float32(wolf.Z()))
 	gl.Rotated(wolf.Heading(), 0.0, 1.0, 0.0)
 	//Cuboid(wolf.W(), wolf.H(), wolf.D(), 33, 32, 32, 32, 32, 32, 0, selectMode)
 	Cuboid(0.3, 0.5, 1.2, &MapTextures[33], &MapTextures[32], &MapTextures[32], &MapTextures[32], &MapTextures[32], &MapTextures[32], 0, selectMode)

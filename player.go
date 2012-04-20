@@ -98,6 +98,11 @@ func (p *Player) Update(dt float64) {
 	p.position[XAXIS] += p.velocity[XAXIS] * dt
 	p.position[YAXIS] += p.velocity[YAXIS] * dt
 	p.position[ZAXIS] += p.velocity[ZAXIS] * dt
+
+	viewport.Transx(-p.velocity[XAXIS] * dt)
+	viewport.Transy(-p.velocity[YAXIS] * dt)
+	viewport.Transz(-p.velocity[ZAXIS] * dt)
+
 	// fmt.Printf("position: %s\n", p.position)
 	// if math.Abs(p.velocity[XAXIS]) < 0.1 { p.velocity[XAXIS] = 0 }
 	// if math.Abs(p.velocity[YAXIS]) < 0.1 { p.velocity[YAXIS] = 0 }
@@ -118,7 +123,7 @@ func (p *Player) IsFalling() bool {
 
 func (p *Player) Snapx(x float64, vx float64) {
 	p.position[XAXIS] = x
-	p.velocity[XAXIS] = vx
+	p.velocity[XAXIS] = vx	
 }
 
 func (p *Player) Snapz(z float64, vz float64) {
@@ -151,7 +156,7 @@ func (player *Player) Draw(center Vectorf, selectMode bool) {
 
 	gl.PushMatrix()
 
-	gl.Translatef(float32(player.X()-float32(center[XAXIS])), float32(player.Y()-float32(center[YAXIS])), float32(player.Z()-float32(center[ZAXIS])))
+	gl.Translatef(float32(player.X()), float32(player.Y()), float32(player.Z()))
 	//stepHeight := float32(math.Sin(player.Bounce * piover180)/10.0)
 	gl.Rotated(player.Heading(), 0.0, 1.0, 0.0)
 
