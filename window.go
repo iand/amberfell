@@ -10,6 +10,7 @@ import (
 	"github.com/banthar/gl"
 	// "github.com/banthar/glu"
 	"math"
+	// "fmt"
 )
 
 func screenToView(xs uint16, ys uint16) (xv float64, yv float64) {
@@ -48,9 +49,9 @@ func InitGraphics() {
 	viewport.Zoomstd()
 	viewport.Rotx(25)
 	viewport.Roty(70)
-	viewport.Transx(-float64(ThePlayer.X()))
-	viewport.Transy(-float64(ThePlayer.Y()))
-	viewport.Transz(-float64(ThePlayer.Z()))
+	// viewport.Transx(-float64(ThePlayer.X()))
+	// viewport.Transy(-float64(ThePlayer.Y()))
+	// viewport.Transz(-float64(ThePlayer.Z()))
 
 	sdl.Init(sdl.INIT_VIDEO)
 
@@ -138,7 +139,8 @@ func Draw(selectMode bool) {
 
 	center := ThePlayer.Position()
 
-	matrix := *viewport.matrix.Float32()
+	// matrix := *viewport.matrix.Float32()
+	matrix := ModelMatrix().Float32()
 	gl.MultMatrixf( &matrix[0] )
 	//gl.Translatef(-float32(center[XAXIS]), -float32(center[YAXIS]), -float32(center[ZAXIS]))
 
@@ -192,18 +194,82 @@ func Draw(selectMode bool) {
 	// HighlightCuboidFace(1, 1, 1, TOP_FACE)
 	// gl.PopMatrix()
 
-	if ShowOverlay {
-		gl.PushMatrix()
-		gl.LoadIdentity()
-		gl.Color4f(0, 0, 0, 0.25)
-		gl.Begin(gl.QUADS)
-		gl.Vertex2f(0, 0)
-		gl.Vertex2f(float32(screenWidth), 0)
-		gl.Vertex2f(float32(screenWidth), float32(screenHeight))
-		gl.Vertex2f(0, float32(screenHeight))
-		gl.End()
-		gl.PopMatrix()
+	// if ShowOverlay {
+	// 	gl.PushMatrix()
+	// 	gl.LoadIdentity()
+	// 	gl.Color4f(0, 0, 0, 0.25)
+	// 	gl.Begin(gl.QUADS)
+	// 	gl.Vertex2f(0, 0)
+	// 	gl.Vertex2f(float32(screenWidth), 0)
+	// 	gl.Vertex2f(float32(screenWidth), float32(screenHeight))
+	// 	gl.Vertex2f(0, float32(screenHeight))
+	// 	gl.End()
+	// 	gl.PopMatrix()
+	// }
+
+
+	// var pm32 []float32 = make([]float32, 16)
+	// gl.GetFloatv(gl.PROJECTION_MATRIX, pm32)
+	// var projectionMatrix64 *Matrix4 = NewMatrix(float64(pm32[0]),float64(pm32[1]),float64(pm32[2]),float64(pm32[3]),float64(pm32[4]),float64(pm32[5]),float64(pm32[6]),float64(pm32[7]),float64(pm32[8]),float64(pm32[9]),float64(pm32[10]),float64(pm32[11]),float64(pm32[12]),float64(pm32[13]),float64(pm32[14]),float64(pm32[15]))
+
+	// inverseMatrix, _ := projectionMatrix64.Multiply(ModelMatrix()).Inverse()
+	
+	// x := (float64(mousex)-float64(screenWidth)/2) / ( float64(screenWidth)/2 )
+	// z := (float64(screenHeight)/2 - float64(mousey)) / ( float64(screenHeight)/2 )
+
+	// origin := inverseMatrix.Transform(&Vectorf{x, z, 1}, 1)
+	// norm := inverseMatrix.Transform(&Vectorf{0, 0, -1}, 0).Normalize()
+
+
+	// fmt.Printf("Ray origin: %f, %f, %f\n", origin[0], origin[1], origin[2])
+	// fmt.Printf("Ray norm: %f, %f, %f\n", norm[0], norm[1], norm[2])
+
+	if origin != nil && norm != nil {
+		ray := Ray{ origin, norm }
+
+		// // See http://www.dyn-lab.com/articles/pick-selection.html
+		pos := IntPosition(ThePlayer.position)
+		hit := false
+		for dx := int16(-5); dx < 6; dx++ {
+			for dy := int16(-5); dy < 6; dy++ {
+				for dz := int16(5); dz > -6; dz-- {
+					if TheWorld.At(pos[XAXIS]+dx, pos[YAXIS]+dy, pos[ZAXIS]+dz) != BLOCK_AIR {
+						box := Box{
+								&Vectorf{float64(pos[XAXIS]+dx)-0.5, float64(pos[YAXIS]+dy)-0.5,float64(pos[ZAXIS]+dz)-0.5}, 
+								&Vectorf{float64(pos[XAXIS]+dx)+0.5, float64(pos[YAXIS]+dy)+0.5,float64(pos[ZAXIS]+dz)+0.5} }
+				
+						if ray.HitsBox(&box) {
+							println("Hit: ", pos[XAXIS]+dx, pos[YAXIS]+dy, pos[ZAXIS]+dz)
+							gl.PushMatrix()
+							gl.LineWidth(4)
+							gl.Color4ub(255, 0, 0, 0)
+						    gl.Begin(gl.LINE_STRIP)
+						    gl.Vertex3f( float32(box.min[XAXIS]), float32(box.max[YAXIS]), float32(box.min[ZAXIS]))
+						    gl.Vertex3f( float32(box.max[XAXIS]), float32(box.max[YAXIS]), float32(box.min[ZAXIS]))
+						    gl.Vertex3f( float32(box.max[XAXIS]), float32(box.max[YAXIS]), float32(box.max[ZAXIS]))
+						    gl.Vertex3f( float32(box.min[XAXIS]), float32(box.max[YAXIS]), float32(box.max[ZAXIS]))
+						    gl.End()
+							gl.PopMatrix()
+							hit = true
+							break
+						} 
+					}
+				}
+				if hit {
+					break
+				}
+			}
+			if hit {
+				break
+			}
+		}
+
+
+
 	}
+
+
+
 
 	// gl.FeedbackBuffer(4096, gl.GL_3D_COLOR_TEXTURE, &feedbackBuffer.buffer[0])
 	// gl.RenderMode(gl.FEEDBACK)

@@ -48,7 +48,7 @@ func (self *Ray) HitsBox(box *Box) bool {
 
 	// Calculate T distances to candidate planes
 	for i := 0; i < 3; i++ {
-		if quadrant[i] != MIDDLE && self.dir[i] == 0 {
+		if quadrant[i] != MIDDLE && self.dir[i] != 0 {
 			maxT[i] = (candidatePlane[i]-self.origin[i]) / self.dir[i]
 		} else {
 			maxT[i] = -1.0
@@ -64,14 +64,18 @@ func (self *Ray) HitsBox(box *Box) bool {
 		}
 	}
 
+	// println("whichPlane", whichPlane)
+	// println("maxT[whichPlane]", maxT[whichPlane])
+
 	// Check final candidate actually inside box
-	if maxT[whichPlane] < 0 {
-	 return false
-	}
+	// if maxT[whichPlane] < 0 {
+	// 	return false
+	// }
 
 	for i := 0; i < 3; i++ {
 		if whichPlane != i {
 			coord[i] = self.origin[i] + maxT[whichPlane] * self.dir[i]
+			// println("coord[", i, "]=", coord[i])
 			if coord[i] < box.min[i] || coord[i] > box.max[i] {
 				return false
 			}

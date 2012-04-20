@@ -16,9 +16,9 @@ type Viewport struct {
 	matrix *Matrix4
 }
 
-func (self *Viewport) Recalc() {
-	self.matrix = NewIdentity().Rotatex(self.rotx).Rotatey(self.roty).Rotatez(self.rotz).Translation(self.transx, self.transy, self.transz)
-}
+// func (self *Viewport) Recalc() {
+// 	self.matrix = NewIdentity().Rotatex(self.rotx).Rotatey(self.roty).Rotatez(self.rotz).Translation(self.transx, self.transy, self.transz)
+// }
 
 
 func (self *Viewport) Rotx(angle float64) {
@@ -28,37 +28,37 @@ func (self *Viewport) Rotx(angle float64) {
 	} else if self.rotx < 15 {
 		self.rotx = 15
 	}
-	self.Recalc()
+	// self.Recalc()
 }
 func (self *Viewport) Roty(angle float64) {
 	self.roty += angle
-	self.Recalc()
+	// self.Recalc()
 }
 
-func (self *Viewport) Transx(d float64) {
-	self.transx += d
-	self.Recalc()
-}
+// func (self *Viewport) Transx(d float64) {
+// 	self.transx += d
+// 	// self.Recalc()
+// }
 
 func (self *Viewport) Rotz(angle float64) {
 	self.rotz += angle
-	self.Recalc()
+	// self.Recalc()
 }
 
 
-func (self *Viewport) Transy(d float64) {
-	self.transy += d
-	self.Recalc()
-}
+// func (self *Viewport) Transy(d float64) {
+// 	self.transy += d
+// 	self.Recalc()
+// }
 
-func (self *Viewport) Transz(d float64) {
-	self.transz += d
-	self.Recalc()
-}
+// func (self *Viewport) Transz(d float64) {
+// 	self.transz += d
+// 	self.Recalc()
+// }
 
 func (self *Viewport) Zoomstd() {
 	self.scale = 0.75
-	self.Recalc()
+	// self.Recalc()
 }
 
 func (self *Viewport) Zoomin() {
@@ -66,7 +66,7 @@ func (self *Viewport) Zoomin() {
 	if self.scale > 3 {
 		self.scale = 3
 	}
-	self.Recalc()
+	// self.Recalc()
 }
 
 func (self *Viewport) Zoomout() {
@@ -74,5 +74,10 @@ func (self *Viewport) Zoomout() {
 	if self.scale < 0.2 {
 		self.scale = 0.2
 	}
-	self.Recalc()
+	// self.Recalc()
 }
+
+func ModelMatrix() *Matrix4 {
+	return NewIdentity().Rotatex(viewport.rotx).Rotatey(viewport.roty-ThePlayer.Heading()).Rotatez(viewport.rotz).Translation(-ThePlayer.position[XAXIS],-ThePlayer.position[YAXIS], -ThePlayer.position[ZAXIS])
+}
+

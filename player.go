@@ -99,9 +99,9 @@ func (p *Player) Update(dt float64) {
 	p.position[YAXIS] += p.velocity[YAXIS] * dt
 	p.position[ZAXIS] += p.velocity[ZAXIS] * dt
 
-	viewport.Transx(-p.velocity[XAXIS] * dt)
-	viewport.Transy(-p.velocity[YAXIS] * dt)
-	viewport.Transz(-p.velocity[ZAXIS] * dt)
+	// viewport.Transx(-p.velocity[XAXIS] * dt)
+	// viewport.Transy(-p.velocity[YAXIS] * dt)
+	// viewport.Transz(-p.velocity[ZAXIS] * dt)
 
 	// fmt.Printf("position: %s\n", p.position)
 	// if math.Abs(p.velocity[XAXIS]) < 0.1 { p.velocity[XAXIS] = 0 }
@@ -223,12 +223,12 @@ func (p *Player) HandleKeys(keys []uint8) {
 	}
 	if keys[sdl.K_a] != 0 {
 		p.Rotate(22.5 / 2)
-		viewport.Roty(-22.5 / 2)
+		// viewport.Roty(-22.5 / 2)
 	}
 
 	if keys[sdl.K_d] != 0 {
 		p.Rotate(-22.5 / 2)
-		viewport.Roty(22.5 / 2)
+		// viewport.Roty(22.5 / 2)
 	}
 
 	if keys[sdl.K_SPACE] != 0 {
