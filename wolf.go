@@ -40,9 +40,9 @@ func (w *Wolf) Init(heading float64, x float32, z float32, y float32) {
 	w.position[ZAXIS] = float64(z)
 }
 
-func (w *Wolf) W() float64 { return 1 }
+func (w *Wolf) W() float64 { return 2 }
 func (w *Wolf) H() float64 { return 2 }
-func (w *Wolf) D() float64 { return 3 }
+func (w *Wolf) D() float64 { return 1 }
 
 func (w *Wolf) Heading() float64  { return w.heading }
 func (w *Wolf) X() float32        { return float32(w.position[XAXIS]) }
@@ -143,7 +143,7 @@ func (w *Wolf) Act(dt float64) {
 	w.Rotate(rand.Float64()*9 - 4.5)
 	w.Forward(rand.Float64()*4 - 1)
 	w.bounce += 360 * dt
-	w.velocity[YAXIS] = 0.8 * math.Abs(math.Sin(w.bounce*math.Pi/180))
+	//w.velocity[YAXIS] = 0.8 * math.Abs(math.Sin(w.bounce*math.Pi/180))
 }
 
 func (wolf *Wolf) Draw(center Vectorf) {

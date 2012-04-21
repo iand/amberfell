@@ -60,7 +60,7 @@ func (world *World) Init() {
 	world.Grow(iw, GroundLevel, id, 20, 20, 20, 20, 0, 30, 0)
 
 	wolf := new(Wolf)
-	wolf.Init(120, 17, 19, GroundLevel+1)
+	wolf.Init(200, 25, 19, float32(FindSurface(25, 19)))
 	world.mobs = append(world.mobs, wolf)
 
 }
