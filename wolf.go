@@ -6,10 +6,24 @@
 package main
 
 import (
+	"fmt"
 	"github.com/banthar/gl"
+	"github.com/kierdavis/go/amberfell/mm3dmodel"
 	"math"
 	"math/rand"
+	"os"
 )
+
+var WolfModel *mm3dmodel.Model
+func init() {
+	fmt.Printf("Loading res/wold.mm3d\n")
+	f, err := os.Open("res/wolf.mm3d")
+	if err != nil {panic(err)}
+	defer f.Close()
+	
+	WolfModel, err = mm3dmodel.Read(f)
+	if err != nil {panic(err)}
+}
 
 type Wolf struct {
 	heading  float64
@@ -137,7 +151,8 @@ func (wolf *Wolf) Draw(center Vectorf) {
 	gl.Translatef(float32(wolf.X()), float32(wolf.Y()), float32(wolf.Z()))
 	gl.Rotated(wolf.Heading(), 0.0, 1.0, 0.0)
 	//Cuboid(wolf.W(), wolf.H(), wolf.D(), 33, 32, 32, 32, 32, 32, 0, selectMode)
-	Cuboid(0.3, 0.5, 1.2, &MapTextures[33], &MapTextures[32], &MapTextures[32], &MapTextures[32], &MapTextures[32], &MapTextures[32])
+//	Cuboid(0.3, 0.5, 1.2, &MapTextures[33], &MapTextures[32], &MapTextures[32], &MapTextures[32], &MapTextures[32], &MapTextures[32])
+	WolfModel.GLDraw()
 	// gl.Translatef(0.8, 0.3, 0)
 	// gl.Rotated(-10, 0.0, 0.0, 1.0)
 	// Cuboid(0.3, 0.3, 0.4, 33, 32, 32, 32, 32, 32, 0, selectMode)
