@@ -87,14 +87,12 @@ func TestMatrixInverse(t *testing.T) {
 	}
 }
 
-
-
 func TestMatrixRotatex(t *testing.T) {
 	cases := map[float64]*Matrix4{
-		0:       NewMatrix(1, 0, 0, 0,   0, 1, 0, 0,   0, 0, 1, 0,   0, 0, 0, 1),
-		90:      NewMatrix(1, 0, 0, 0,   0, 0, 1, 0,   0, -1, 0, 0,   0, 0, 0, 1),
-		180:     NewMatrix(1, 0, 0, 0,   0, -1, 0, 0,   0, 0, -1, 0,   0, 0, 0, 1),
-		270:     NewMatrix(1, 0, 0, 0,   0, 0, -1, 0,   0, 1, 0, 0,   0, 0, 0, 1)}
+		0:   NewMatrix(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1),
+		90:  NewMatrix(1, 0, 0, 0, 0, 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1),
+		180: NewMatrix(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1),
+		270: NewMatrix(1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1)}
 
 	for angle, expected := range cases {
 		actual := NewIdentity().Rotatex(angle)
@@ -107,10 +105,10 @@ func TestMatrixRotatex(t *testing.T) {
 
 func TestMatrixRotatey(t *testing.T) {
 	cases := map[float64]*Matrix4{
-		0:       NewMatrix(1, 0, 0, 0,   0, 1, 0, 0,   0, 0, 1, 0,   0, 0, 0, 1),
-		90:      NewMatrix(0, 0, -1, 0,   0, 1, 0, 0,   1, 0, 0, 0,   0, 0, 0, 1),
-		180:     NewMatrix(-1, 0, 0, 0,   0, 1, 0, 0,   0, 0, -1, 0,   0, 0, 0, 1),
-		270:     NewMatrix(0, 0, 1, 0,   0, 1, 0, 0,   -1, 0, 0, 0,   0, 0, 0, 1)}
+		0:   NewMatrix(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1),
+		90:  NewMatrix(0, 0, -1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1),
+		180: NewMatrix(-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1),
+		270: NewMatrix(0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 0, 1)}
 
 	for angle, expected := range cases {
 		actual := NewIdentity().Rotatey(angle)
@@ -123,10 +121,10 @@ func TestMatrixRotatey(t *testing.T) {
 
 func TestMatrixRotatez(t *testing.T) {
 	cases := map[float64]*Matrix4{
-		0:       NewMatrix(1, 0, 0, 0,   0, 1, 0, 0,   0, 0, 1, 0,   0, 0, 0, 1),
-		90:      NewMatrix(0, 1, 0, 0,   -1, 0, 0, 0,   0, 0, 1, 0,   0, 0, 0, 1),
-		180:     NewMatrix(-1, 0, 0, 0,   0, -1, 0, 0,   0, 0, 1, 0,   0, 0, 0, 1),
-		270:     NewMatrix(0, -1, 0, 0,   1, 0, 0, 0,   0, 0, 1, 0,   0, 0, 0, 1)}
+		0:   NewMatrix(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1),
+		90:  NewMatrix(0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1),
+		180: NewMatrix(-1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1),
+		270: NewMatrix(0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)}
 
 	for angle, expected := range cases {
 		actual := NewIdentity().Rotatez(angle)

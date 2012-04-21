@@ -28,9 +28,6 @@ type Side struct {
 	x, x1, x2, z, z1, z2, dir, y float64
 }
 
-
-
-
 func (world *World) Init() {
 
 	world.chunks = make(map[int16]*Chunk)
@@ -200,27 +197,26 @@ func (world *World) AirNeighbours(x int16, z int16, y int16) (n, s, w, e, u, d b
 }
 
 func (world *World) AirNeighbour(x int16, z int16, y int16, face int) bool {
-	if face == UP_FACE && world.ChunkLoadedFor(x, y+1, z) && world.At(x, y+1, z) == BLOCK_AIR { 
-		return true 
+	if face == UP_FACE && world.ChunkLoadedFor(x, y+1, z) && world.At(x, y+1, z) == BLOCK_AIR {
+		return true
 	}
-	if face == NORTH_FACE && world.ChunkLoadedFor(x, y, z-1) && world.At(x, y, z-1) == BLOCK_AIR { 
-		return true 
+	if face == NORTH_FACE && world.ChunkLoadedFor(x, y, z-1) && world.At(x, y, z-1) == BLOCK_AIR {
+		return true
 	}
-	if face == SOUTH_FACE && world.ChunkLoadedFor(x, y, z+1) && world.At(x, y, z+1) == BLOCK_AIR { 
-		return true 
+	if face == SOUTH_FACE && world.ChunkLoadedFor(x, y, z+1) && world.At(x, y, z+1) == BLOCK_AIR {
+		return true
 	}
-	if face == EAST_FACE && world.ChunkLoadedFor(x+1, y, z) && world.At(x+1, y, z) == BLOCK_AIR { 
-		return true 
+	if face == EAST_FACE && world.ChunkLoadedFor(x+1, y, z) && world.At(x+1, y, z) == BLOCK_AIR {
+		return true
 	}
-	if face == WEST_FACE && world.ChunkLoadedFor(x-1, y, z) && world.At(x-1, y, z) == BLOCK_AIR { 
-		return true 
+	if face == WEST_FACE && world.ChunkLoadedFor(x-1, y, z) && world.At(x-1, y, z) == BLOCK_AIR {
+		return true
 	}
-	if face == DOWN_FACE && world.ChunkLoadedFor(x, y-1, z) && world.At(x, y-1, z) == BLOCK_AIR { 
-		return true 
+	if face == DOWN_FACE && world.ChunkLoadedFor(x, y-1, z) && world.At(x, y-1, z) == BLOCK_AIR {
+		return true
 	}
 	return false
 }
-
 
 // lineRectCollide( line, rect )
 //

@@ -11,15 +11,15 @@ type Ray struct {
 }
 
 type Box struct {
-	min    *Vectorf
-	max    *Vectorf
+	min *Vectorf
+	max *Vectorf
 }
 
 // Ported from http://tog.acm.org/resources/GraphicsGems/gems/RayBox.c
 func (self *Ray) HitsBox(box *Box) (hit bool, face int) {
-	const RIGHT = 	0
-	const LEFT = 	1
-	const MIDDLE = 	2
+	const RIGHT = 0
+	const LEFT = 1
+	const MIDDLE = 2
 
 	inside := true
 	quadrant := [3]int{}
@@ -47,15 +47,14 @@ func (self *Ray) HitsBox(box *Box) (hit bool, face int) {
 		// Calculate T distances to candidate planes
 		for i := 0; i < 3; i++ {
 			if quadrant[i] != MIDDLE && self.dir[i] != 0 {
-				maxT[i] = (candidatePlane[i]-self.origin[i]) / self.dir[i]
+				maxT[i] = (candidatePlane[i] - self.origin[i]) / self.dir[i]
 			} else {
 				maxT[i] = -1.0
 			}
 		}
 
-
 		// Get largest of the maxT's for final choice of intersection
-		whichPlane = 0;
+		whichPlane = 0
 		for i := 1; i < 3; i++ {
 			if maxT[whichPlane] < maxT[i] {
 				whichPlane = i
@@ -73,7 +72,7 @@ func (self *Ray) HitsBox(box *Box) (hit bool, face int) {
 
 		for i := 0; i < 3; i++ {
 			if whichPlane != i {
-				coord[i] = self.origin[i] + maxT[whichPlane] * self.dir[i]
+				coord[i] = self.origin[i] + maxT[whichPlane]*self.dir[i]
 				// println("coord[", i, "]=", coord[i])
 				if coord[i] < box.min[i] || coord[i] > box.max[i] {
 					hit = false
@@ -106,21 +105,17 @@ func (self *Ray) HitsBox(box *Box) (hit bool, face int) {
 		}
 	}
 
-
 	hit = true
 	return
 
-
 }
-
-
 
 // A point and its distance from another point
 type BoxDistance struct {
-	box Box
-	face int
-	distance float64	
-	index int
+	box      Box
+	face     int
+	distance float64
+	index    int
 }
 
 // A queue that orders with nearest first
@@ -129,36 +124,35 @@ type DistanceQueue []*BoxDistance
 func (self DistanceQueue) Len() int { return len(self) }
 
 func (self DistanceQueue) Less(i, j int) bool {
-    // We want Pop to give us the highest, not lowest, priority so we use greater than here.
-    return self[i].distance < self[j].distance
+	// We want Pop to give us the highest, not lowest, priority so we use greater than here.
+	return self[i].distance < self[j].distance
 }
 
 func (self DistanceQueue) Swap(i, j int) {
-    self[i], self[j] = self[j], self[i]
-    self[i].index = i
-    self[j].index = j
+	self[i], self[j] = self[j], self[i]
+	self[i].index = i
+	self[j].index = j
 }
 
 func (self *DistanceQueue) Push(x interface{}) {
-    // Push and Pop use pointer receivers because they modify the slice's length,
-    // not just its contents.
-    // To simplify indexing expressions in these methods, we save a copy of the
-    // slice object. We could instead write (*pq)[i].
-    a := *self
-    n := len(a)
-    a = a[0 : n+1]
-    item := x.(*BoxDistance)
-    item.index = n
-    a[n] = item
-    *self = a
+	// Push and Pop use pointer receivers because they modify the slice's length,
+	// not just its contents.
+	// To simplify indexing expressions in these methods, we save a copy of the
+	// slice object. We could instead write (*pq)[i].
+	a := *self
+	n := len(a)
+	a = a[0 : n+1]
+	item := x.(*BoxDistance)
+	item.index = n
+	a[n] = item
+	*self = a
 }
 
 func (self *DistanceQueue) Pop() interface{} {
-    a := *self
-    n := len(a)
-    item := a[n-1]
-    item.index = -1 // for safety
-    *self = a[0 : n-1]
-    return item
+	a := *self
+	n := len(a)
+	item := a[n-1]
+	item.index = -1 // for safety
+	*self = a[0 : n-1]
+	return item
 }
-

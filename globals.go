@@ -16,8 +16,6 @@ const piover180 = 0.0174532925
 
 var viewport Viewport
 
-
-
 var (
 	screenWidth, screenHeight int
 	tileWidth                     = 48
@@ -27,7 +25,6 @@ var (
 	timeOfDay float32 = 8
 
 	lightpos Vectorf
-
 
 	// mousex, mousey uint16
 	// origin, norm *Vectorf

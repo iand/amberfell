@@ -6,20 +6,19 @@
 package main
 
 type Viewport struct {
-	rotx float64
-	roty float64
-	rotz float64
-	x float64
-	y float64
-	z float64
-	scale float64
+	rotx   float64
+	roty   float64
+	rotz   float64
+	x      float64
+	y      float64
+	z      float64
+	scale  float64
 	matrix *Matrix4
 }
 
 // func (self *Viewport) Recalc() {
 // 	self.matrix = NewIdentity().Rotatex(self.rotx).Rotatey(self.roty).Rotatez(self.rotz).Translation(self.transx, self.transy, self.transz)
 // }
-
 
 func (self *Viewport) Rotx(angle float64) {
 	self.rotx += angle
@@ -44,7 +43,6 @@ func (self *Viewport) Rotz(angle float64) {
 	self.rotz += angle
 	// self.Recalc()
 }
-
 
 // func (self *Viewport) Transy(d float64) {
 // 	self.transy += d
@@ -78,6 +76,5 @@ func (self *Viewport) Zoomout() {
 }
 
 func ModelMatrix() *Matrix4 {
-	return NewIdentity().Rotatex(viewport.rotx).Rotatey(viewport.roty-ThePlayer.Heading()).Rotatez(viewport.rotz).Translation(-ThePlayer.position[XAXIS],-ThePlayer.position[YAXIS], -ThePlayer.position[ZAXIS])
+	return NewIdentity().Rotatex(viewport.rotx).Rotatey(viewport.roty-ThePlayer.Heading()).Rotatez(viewport.rotz).Translation(-ThePlayer.position[XAXIS], -ThePlayer.position[YAXIS], -ThePlayer.position[ZAXIS])
 }
-

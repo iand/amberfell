@@ -123,7 +123,7 @@ func (p *Player) IsFalling() bool {
 
 func (p *Player) Snapx(x float64, vx float64) {
 	p.position[XAXIS] = x
-	p.velocity[XAXIS] = vx	
+	p.velocity[XAXIS] = vx
 }
 
 func (p *Player) Snapz(z float64, vz float64) {

@@ -6,7 +6,7 @@
 package main
 
 import (
-  "testing"
+	"testing"
 )
 
 // func TestHitsBox(t *testing.T) {
@@ -26,10 +26,10 @@ import (
 // }
 
 func TestHitsBox2(t *testing.T) {
-	cases := map[Ray]bool {
-		Ray{ &Vectorf{-8.667095, 13.666898, 16.215151}, &Vectorf{0.851651, -0.422618, -0.309976} } : true }
+	cases := map[Ray]bool{
+		Ray{&Vectorf{-8.667095, 13.666898, 16.215151}, &Vectorf{0.851651, -0.422618, -0.309976}}: true}
 
-	box := Box{ &Vectorf{8.5,4.5,9.5}, &Vectorf{9.5,5.5,10.5} }
+	box := Box{&Vectorf{8.5, 4.5, 9.5}, &Vectorf{9.5, 5.5, 10.5}}
 
 	for ray, expected := range cases {
 		actual := ray.HitsBox(&box)
@@ -42,20 +42,17 @@ func TestHitsBox2(t *testing.T) {
 		}
 	}
 
-
-
-// Ray origin: {-8.667095, 13.666898, 16.215151
-// Ray norm: 0.851651, -0.422618, -0.309976
-// box: {%!s(*main.Vectorf=&[8.5 3.5 9.5]) %!s(*main.Vectorf=&[9.5 6.5 10.5])}
-// Ray origin: -8.557143, 13.787739, 16.352494
-// Ray norm: 0.851651, -0.422618, -0.309976
-// box: {%!s(*main.Vectorf=&[8.5 3.5 9.5]) %!s(*main.Vectorf=&[9.5 6.5 10.5])}
-// Ray origin: -8.474961, 14.014316, 16.269373
-// Ray norm: 0.851651, -0.422618, -0.309976
-// box: {%!s(*main.Vectorf=&[8.5 3.5 9.5]) %!s(*main.Vectorf=&[9.5 6.5 10.5])}
-// Ray origin: 24.588263, 13.833055, 0.603553
-// Ray norm: -0.774813, -0.422618, 0.470168
-// box: {%!s(*main.Vectorf=&[8.5 3.5 9.5]) %!s(*main.Vectorf=&[9.5 6.5 10.5])}
-
+	// Ray origin: {-8.667095, 13.666898, 16.215151
+	// Ray norm: 0.851651, -0.422618, -0.309976
+	// box: {%!s(*main.Vectorf=&[8.5 3.5 9.5]) %!s(*main.Vectorf=&[9.5 6.5 10.5])}
+	// Ray origin: -8.557143, 13.787739, 16.352494
+	// Ray norm: 0.851651, -0.422618, -0.309976
+	// box: {%!s(*main.Vectorf=&[8.5 3.5 9.5]) %!s(*main.Vectorf=&[9.5 6.5 10.5])}
+	// Ray origin: -8.474961, 14.014316, 16.269373
+	// Ray norm: 0.851651, -0.422618, -0.309976
+	// box: {%!s(*main.Vectorf=&[8.5 3.5 9.5]) %!s(*main.Vectorf=&[9.5 6.5 10.5])}
+	// Ray origin: 24.588263, 13.833055, 0.603553
+	// Ray norm: -0.774813, -0.422618, 0.470168
+	// box: {%!s(*main.Vectorf=&[8.5 3.5 9.5]) %!s(*main.Vectorf=&[9.5 6.5 10.5])}
 
 }

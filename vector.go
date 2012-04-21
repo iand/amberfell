@@ -255,35 +255,35 @@ func (a *Matrix4) Inverse() (*Matrix4, error) {
 }
 
 func (a *Matrix4) Translation(x, y, z float64) *Matrix4 {
-	return a.Multiply( &Matrix4{ 1, 0, 0, 0,   0, 1, 0, 0,   0, 0, 1, 0,   x, y, z, 1} )
+	return a.Multiply(&Matrix4{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, x, y, z, 1})
 }
 
 func (a *Matrix4) Rotatex(angle float64) *Matrix4 {
 	s := math.Sin(angle * math.Pi / 180)
 	c := math.Cos(angle * math.Pi / 180)
-	return a.Multiply( &Matrix4{ 1, 0, 0, 0,   0, c, s, 0,   0, -s, c, 0,   0, 0, 0, 1} )
+	return a.Multiply(&Matrix4{1, 0, 0, 0, 0, c, s, 0, 0, -s, c, 0, 0, 0, 0, 1})
 }
 
 func (a *Matrix4) Rotatey(angle float64) *Matrix4 {
 	s := math.Sin(angle * math.Pi / 180)
 	c := math.Cos(angle * math.Pi / 180)
-	return a.Multiply( &Matrix4{ c, 0, -s, 0,   0, 1, 0, 0,   s, 0, c, 0,   0, 0, 0, 1} )
+	return a.Multiply(&Matrix4{c, 0, -s, 0, 0, 1, 0, 0, s, 0, c, 0, 0, 0, 0, 1})
 }
 
 func (a *Matrix4) Rotatez(angle float64) *Matrix4 {
 	s := math.Sin(angle * math.Pi / 180)
 	c := math.Cos(angle * math.Pi / 180)
-	return a.Multiply( &Matrix4{ c, s, 0, 0,   -s, c, 0, 0,   0, 0, 1, 0,   0, 0, 0, 1} )
+	return a.Multiply(&Matrix4{c, s, 0, 0, -s, c, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1})
 }
 
 func (a *Matrix4) Scale(scale float64) *Matrix4 {
-	return a.Multiply( &Matrix4{ scale, 0, 0, 0,   0, scale, 0, 0,   0, 0, scale, 0,   0, 0, 0, 1} )
+	return a.Multiply(&Matrix4{scale, 0, 0, 0, 0, scale, 0, 0, 0, 0, scale, 0, 0, 0, 0, 1})
 }
 
 func (a *Matrix4) Transform(v *Vectorf, w float64) *Vectorf {
-	return &Vectorf{ 
+	return &Vectorf{
 
-		v[0]*a[0] + v[1]*a[4] + v[2]*a[8]  + w*a[12],
-		v[0]*a[1] + v[1]*a[5] + v[2]*a[9]  + w*a[13],
+		v[0]*a[0] + v[1]*a[4] + v[2]*a[8] + w*a[12],
+		v[0]*a[1] + v[1]*a[5] + v[2]*a[9] + w*a[13],
 		v[0]*a[2] + v[1]*a[6] + v[2]*a[10] + w*a[14]}
 }

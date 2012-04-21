@@ -6,8 +6,10 @@
 package main
 
 import (
+	"fmt"
 	"github.com/kierdavis/go/amberfell/mm3dmodel"
 	"math"
+	"os"
 )
 
 // relative coordinates range from -3 to +3
@@ -72,7 +74,7 @@ func LoadModel(filename string) (model *mm3dmodel.Model) {
 	}
 	defer f.Close()
 
-	model, err := mm3dmodel.Read(f)
+	model, err = mm3dmodel.Read(f)
 	if err != nil {
 		panic(err)
 	}

@@ -29,7 +29,6 @@ type TerrainBlock struct {
 	wtexture *gl.Texture
 }
 
-
 func LoadMapTextures() {
 	const pixels = 48
 
@@ -343,8 +342,6 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 		gl.TexCoord2f(0.5, 0.5)
 		gl.Vertex3f(0, h, 0) // Top Right Of The Texture and Quad
 
-
-
 		gl.End()
 		// utexture.Unbind(gl.TEXTURE_2D)
 		// CheckGLError()
@@ -386,7 +383,6 @@ func HighlightCuboidFace(bw float64, bh float64, bd float64, face int) {
 		gl.Vertex3f(d, h+0.8, -w)  // Top Right Of The Texture and Quad
 		gl.Vertex3f(d, h+0.8, w)   // Bottom Right Of The Texture and Quad
 		gl.Vertex3f(-d, h+0.8, w)  // Bottom Left Of The Texture and Quad
-
 
 		gl.End()
 		gl.Disable(gl.POLYGON_OFFSET_LINE)

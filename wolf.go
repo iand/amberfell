@@ -6,12 +6,10 @@
 package main
 
 import (
-	"fmt"
 	"github.com/banthar/gl"
 	"github.com/kierdavis/go/amberfell/mm3dmodel"
 	"math"
 	"math/rand"
-	"os"
 )
 
 var WolfModel *mm3dmodel.Model
