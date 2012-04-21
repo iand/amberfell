@@ -28,6 +28,9 @@ type Side struct {
 	x, x1, x2, z, z1, z2, dir, y float64
 }
 
+
+
+
 func (world *World) Init() {
 
 	world.chunks = make(map[int16]*Chunk)
@@ -196,6 +199,29 @@ func (world *World) AirNeighbours(x int16, z int16, y int16) (n, s, w, e, u, d b
 	return
 }
 
+func (world *World) AirNeighbour(x int16, z int16, y int16, face int) bool {
+	if face == UP_FACE && world.ChunkLoadedFor(x, y+1, z) && world.At(x, y+1, z) == BLOCK_AIR { 
+		return true 
+	}
+	if face == NORTH_FACE && world.ChunkLoadedFor(x, y, z-1) && world.At(x, y, z-1) == BLOCK_AIR { 
+		return true 
+	}
+	if face == SOUTH_FACE && world.ChunkLoadedFor(x, y, z+1) && world.At(x, y, z+1) == BLOCK_AIR { 
+		return true 
+	}
+	if face == EAST_FACE && world.ChunkLoadedFor(x+1, y, z) && world.At(x+1, y, z) == BLOCK_AIR { 
+		return true 
+	}
+	if face == WEST_FACE && world.ChunkLoadedFor(x-1, y, z) && world.At(x-1, y, z) == BLOCK_AIR { 
+		return true 
+	}
+	if face == DOWN_FACE && world.ChunkLoadedFor(x, y-1, z) && world.At(x, y-1, z) == BLOCK_AIR { 
+		return true 
+	}
+	return false
+}
+
+
 // lineRectCollide( line, rect )
 //
 // Checks if an axis-aligned line and a bounding box overlap.
@@ -338,9 +364,9 @@ func (world World) ChunkLoadedFor(x int16, y int16, z int16) bool {
 	return ok
 }
 
-func (world *World) Draw(center Vectorf, selectMode bool) {
+func (world *World) Draw(center Vectorf) {
 	for _, v := range world.mobs {
-		v.Draw(center, selectMode)
+		v.Draw(center)
 	}
 
 	//gl.Translatef(-float32(center[XAXIS]), -float32(center[YAXIS]), -float32(center[ZAXIS]))
@@ -354,28 +380,17 @@ func (world *World) Draw(center Vectorf, selectMode bool) {
 		for z = pz - 30; z < pz+30; z++ {
 			if x+z-px-pz <= ViewRadius && x+z-px-pz >= -ViewRadius {
 				for y = py - 5; y < py+16; y++ {
-					dx := x - px
-					dy := y - py
-					dz := z - pz
 
 					var blockid byte = world.At(x, y, z)
 					if blockid != 0 {
 						var n, s, w, e, u, d bool = world.AirNeighbours(x, z, y)
 						if n || s || w || e || u || d {
 
-
-							var id uint16 = 0
-
-							if dx >= -2 && dx <= 2 && dy >= -2 && dy <= 2 && dz >= -2 && dz <= 2 {
-								id = RelativeCoordinateToBlockId(dx, dy, dz)
-							}
-							if !selectMode || id != 0 {
-								gl.PushMatrix()
-								gl.Translatef(float32(x), float32(y), float32(z))
-								TerrainCube(n, s, w, e, u, d, blockid, id, selectMode)
-								count++
-								gl.PopMatrix()
-							}
+							gl.PushMatrix()
+							gl.Translatef(float32(x), float32(y), float32(z))
+							TerrainCube(n, s, w, e, u, d, blockid)
+							count++
+							gl.PopMatrix()
 						}
 					}
 				}

@@ -102,30 +102,20 @@ func QuitGraphics() {
 	sdl.Quit()
 }
 
-func Draw(selectMode bool) {
+func Draw() {
 	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT)
 
-	if selectMode {
-		gl.Disable(gl.TEXTURE_2D)
-		gl.Disable(gl.FOG)
-		//gl.Disable(gl.LIGHTING)
-		//gl.Disable(gl.LIGHT0)
-		gl.Disable(gl.LIGHT1)
-		//gl.Disable(gl.COLOR_MATERIAL)
+	gl.Color4ub(255, 255, 255, 255)
+	gl.Enable(gl.TEXTURE_2D)
+	//gl.Enable(gl.FOG)
+	gl.Enable(gl.LIGHTING)
+	gl.Enable(gl.LIGHT0)
+	gl.Enable(gl.COLOR_MATERIAL)
+
+	if timeOfDay < 5.3 || timeOfDay > 20.7 {
+		gl.Enable(gl.LIGHT1)
 	} else {
-		gl.Color4ub(255, 255, 255, 255)
-		gl.Enable(gl.TEXTURE_2D)
-		//gl.Enable(gl.FOG)
-		gl.Enable(gl.LIGHTING)
-		gl.Enable(gl.LIGHT0)
-		gl.Enable(gl.COLOR_MATERIAL)
-
-		if timeOfDay < 5.3 || timeOfDay > 20.7 {
-			gl.Enable(gl.LIGHT1)
-		} else {
-			gl.Disable(gl.LIGHT1)
-		}
-
+		gl.Disable(gl.LIGHT1)
 	}
 
 
@@ -180,10 +170,10 @@ func Draw(selectMode bool) {
 
 	// CheckGLError()
 	gl.RenderMode(gl.RENDER)
-	ThePlayer.Draw(center, false)
+	ThePlayer.Draw(center)
 	// CheckGLError()
 
-	TheWorld.Draw(center, false)
+	TheWorld.Draw(center)
 	// CheckGLError()
 
 	// // var mousex, mousey int
@@ -223,76 +213,108 @@ func Draw(selectMode bool) {
 
 	// fmt.Printf("Ray origin: %f, %f, %f\n", origin[0], origin[1], origin[2])
 	// fmt.Printf("Ray norm: %f, %f, %f\n", norm[0], norm[1], norm[2])
+	var pm32 []float32 = make([]float32, 16)
+	var mousex, mousey int
+	_ = sdl.GetMouseState(&mousex, &mousey)
+
+	gl.GetFloatv(gl.PROJECTION_MATRIX, pm32)
+	var projectionMatrix64 *Matrix4 = NewMatrix(float64(pm32[0]),float64(pm32[1]),float64(pm32[2]),float64(pm32[3]),float64(pm32[4]),float64(pm32[5]),float64(pm32[6]),float64(pm32[7]),float64(pm32[8]),float64(pm32[9]),float64(pm32[10]),float64(pm32[11]),float64(pm32[12]),float64(pm32[13]),float64(pm32[14]),float64(pm32[15]))
+
+	inverseMatrix, _ := projectionMatrix64.Multiply(ModelMatrix()).Inverse()
+	
+	x := (float64(mousex)-float64(screenWidth)/2) / ( float64(screenWidth)/2 )
+	z := (float64(screenHeight)/2 - float64(mousey)) / ( float64(screenHeight)/2 )
+
+	origin := inverseMatrix.Transform(&Vectorf{x, z , -1}, 1)
+	norm := inverseMatrix.Transform(&Vectorf{0, 0, 1}, 0).Normalize()
 
 	if origin != nil && norm != nil {
-		ray := Ray{ origin, norm }
-
-		// // See http://www.dyn-lab.com/articles/pick-selection.html
 		pos := IntPosition(ThePlayer.position)
-		found := false
-		for dz := int16(5); dz > -6; dz-- {
-			for dx := int16(-5); dx < 6; dx++ {
-				for dy := int16(-5); dy < 6; dy++ {
-					if TheWorld.At(pos[XAXIS]+dx, pos[YAXIS]+dy, pos[ZAXIS]+dz) != BLOCK_AIR {
-						box := Box{
-								&Vectorf{float64(pos[XAXIS]+dx)-0.5, float64(pos[YAXIS]+dy)-0.5,float64(pos[ZAXIS]+dz)-0.5}, 
-								&Vectorf{float64(pos[XAXIS]+dx)+0.5, float64(pos[YAXIS]+dy)+0.5,float64(pos[ZAXIS]+dz)+0.5} }
-				
-						hit, face := ray.HitsBox(&box)
-						if hit {
-							// println("Hit: ", pos[XAXIS]+dx, pos[YAXIS]+dy, pos[ZAXIS]+dz)
-							gl.PushMatrix()
-							gl.LineWidth(4)
-							gl.Color4ub(255, 0, 0, 192)
-						    gl.Begin(gl.QUADS)
-						    if face == UP_FACE {
-							    gl.Vertex3f( float32(box.min[XAXIS]), float32(box.max[YAXIS]+0.04), float32(box.min[ZAXIS]))
-							    gl.Vertex3f( float32(box.max[XAXIS]), float32(box.max[YAXIS]+0.04), float32(box.min[ZAXIS]))
-							    gl.Vertex3f( float32(box.max[XAXIS]), float32(box.max[YAXIS]+0.04), float32(box.max[ZAXIS]))
-							    gl.Vertex3f( float32(box.min[XAXIS]), float32(box.max[YAXIS]+0.04), float32(box.max[ZAXIS]))
-							} else if face == EAST_FACE {
-							    gl.Vertex3f( float32(box.max[XAXIS]+0.04), float32(box.min[YAXIS]), float32(box.min[ZAXIS]))
-							    gl.Vertex3f( float32(box.max[XAXIS]+0.04), float32(box.max[YAXIS]), float32(box.min[ZAXIS]))
-							    gl.Vertex3f( float32(box.max[XAXIS]+0.04), float32(box.max[YAXIS]), float32(box.max[ZAXIS]))
-							    gl.Vertex3f( float32(box.max[XAXIS]+0.04), float32(box.min[YAXIS]), float32(box.max[ZAXIS]))
-							} else if face == WEST_FACE {
-							    gl.Vertex3f( float32(box.min[XAXIS]-0.04), float32(box.min[YAXIS]), float32(box.min[ZAXIS]))
-							    gl.Vertex3f( float32(box.min[XAXIS]-0.04), float32(box.min[YAXIS]), float32(box.max[ZAXIS]))
-							    gl.Vertex3f( float32(box.min[XAXIS]-0.04), float32(box.max[YAXIS]), float32(box.max[ZAXIS]))
-							    gl.Vertex3f( float32(box.min[XAXIS]-0.04), float32(box.max[YAXIS]), float32(box.min[ZAXIS]))
-							} else if face == NORTH_FACE {
-							    gl.Vertex3f( float32(box.min[XAXIS]), float32(box.min[YAXIS]), float32(box.min[ZAXIS]-0.04))
-							    gl.Vertex3f( float32(box.max[XAXIS]), float32(box.min[YAXIS]), float32(box.min[ZAXIS]-0.04))
-							    gl.Vertex3f( float32(box.max[XAXIS]), float32(box.max[YAXIS]), float32(box.min[ZAXIS]-0.04))
-							    gl.Vertex3f( float32(box.min[XAXIS]), float32(box.max[YAXIS]), float32(box.min[ZAXIS]-0.04))
-							} else if face == SOUTH_FACE {
-							    gl.Vertex3f( float32(box.min[XAXIS]), float32(box.min[YAXIS]), float32(box.max[ZAXIS]+0.04))
-							    gl.Vertex3f( float32(box.max[XAXIS]), float32(box.min[YAXIS]), float32(box.max[ZAXIS]+0.04))
-							    gl.Vertex3f( float32(box.max[XAXIS]), float32(box.max[YAXIS]), float32(box.max[ZAXIS]+0.04))
-							    gl.Vertex3f( float32(box.min[XAXIS]), float32(box.max[YAXIS]), float32(box.max[ZAXIS]+0.04))
-						    } else if face == DOWN_FACE {
-							    gl.Vertex3f( float32(box.min[XAXIS]), float32(box.min[YAXIS]-0.04), float32(box.min[ZAXIS]))
-							    gl.Vertex3f( float32(box.max[XAXIS]), float32(box.min[YAXIS]-0.04), float32(box.min[ZAXIS]))
-							    gl.Vertex3f( float32(box.max[XAXIS]), float32(box.min[YAXIS]-0.04), float32(box.max[ZAXIS]))
-							    gl.Vertex3f( float32(box.min[XAXIS]), float32(box.min[YAXIS]-0.04), float32(box.max[ZAXIS]))
-							}
-						    gl.End()
-							gl.PopMatrix()
-							found = true
-							break
+		ray := Ray{ origin, norm }
+		// for dy := int16(5); dy > -6; dy-- {
+		// 	for dz := int16(-5); dz < 6; dz++ {
+		// 		for dx := int16(-5); dx < 6; dx++ {
+		// 			if TheWorld.At(pos[XAXIS]+dx, pos[YAXIS]+dy, pos[ZAXIS]+dz) != BLOCK_AIR {
+		// 				box := Box{
+		// 						&Vectorf{float64(pos[XAXIS]+dx)-0.5, float64(pos[YAXIS]+dy)-0.5,float64(pos[ZAXIS]+dz)-0.5}, 
+		// 						&Vectorf{float64(pos[XAXIS]+dx)+0.5, float64(pos[YAXIS]+dy)+0.5,float64(pos[ZAXIS]+dz)+0.5} }
+		// 				vcenter := Vectorf{float64(pos[XAXIS]), float64(pos[YAXIS]),float64(pos[ZAXIS])}
+		// 		        item := &BoxDistance{
+		// 		            box:    box,
+		// 		            distance: math.Sqrt(math.Pow(vcenter[0]-origin[0], 2) + math.Pow(vcenter[1]-origin[1], 2) + math.Pow(vcenter[2]-origin[2], 2)),
+		// 		        }												
+		// 		        heap.Push(&testBlocks, item)
+		// 		    }
+		// 		}
+		// 	}
+		// }
+		// // See http://www.dyn-lab.com/articles/pick-selection.html
+
+		var box *Box = nil
+		distance := float64(1e9)
+		face := int(0)
+		for dy := int16(5); dy > -6; dy-- {
+			for dz := int16(-5); dz < 6; dz++ {
+				for dx := int16(-5); dx < 6; dx++ {
+		            trialDistance := math.Sqrt(math.Pow(float64(pos[XAXIS]+dx)-origin[0], 2) + math.Pow(float64(pos[YAXIS]+dy)-origin[1], 2) + math.Pow(float64(pos[ZAXIS]+dz)-origin[2], 2))
+		            if trialDistance <  distance {
+						if TheWorld.At(pos[XAXIS]+dx, pos[YAXIS]+dy, pos[ZAXIS]+dz) != BLOCK_AIR {
+							trialBox := &Box{
+									&Vectorf{float64(pos[XAXIS]+dx)-0.5, float64(pos[YAXIS]+dy)-0.5,float64(pos[ZAXIS]+dz)-0.5}, 
+									&Vectorf{float64(pos[XAXIS]+dx)+0.5, float64(pos[YAXIS]+dy)+0.5,float64(pos[ZAXIS]+dz)+0.5} }
+					
+							hit, trialFace := ray.HitsBox(trialBox)
+							if hit /*&& TheWorld.AirNeighbour(pos[XAXIS]+dx, pos[YAXIS]+dy, pos[ZAXIS]+dz, face)*/ {
+				            	distance = trialDistance
+				            	box = trialBox
+				            	face = trialFace
+				            }
+
 						} 
 					}
 				}
-				if found {
-					break
-				}
-			}
-			if found {
-				break
 			}
 		}
 
-
+		if box != nil {
+			gl.PushMatrix()
+			gl.LineWidth(4)
+			gl.Color4ub(255, 0, 0, 32)
+		    gl.Begin(gl.QUADS)
+		    if face == UP_FACE {
+			    gl.Vertex3f( float32(box.min[XAXIS]), float32(box.max[YAXIS]+0.04), float32(box.min[ZAXIS]))
+			    gl.Vertex3f( float32(box.max[XAXIS]), float32(box.max[YAXIS]+0.04), float32(box.min[ZAXIS]))
+			    gl.Vertex3f( float32(box.max[XAXIS]), float32(box.max[YAXIS]+0.04), float32(box.max[ZAXIS]))
+			    gl.Vertex3f( float32(box.min[XAXIS]), float32(box.max[YAXIS]+0.04), float32(box.max[ZAXIS]))
+			} else if face == EAST_FACE {
+			    gl.Vertex3f( float32(box.max[XAXIS]+0.04), float32(box.min[YAXIS]), float32(box.min[ZAXIS]))
+			    gl.Vertex3f( float32(box.max[XAXIS]+0.04), float32(box.max[YAXIS]), float32(box.min[ZAXIS]))
+			    gl.Vertex3f( float32(box.max[XAXIS]+0.04), float32(box.max[YAXIS]), float32(box.max[ZAXIS]))
+			    gl.Vertex3f( float32(box.max[XAXIS]+0.04), float32(box.min[YAXIS]), float32(box.max[ZAXIS]))
+			} else if face == WEST_FACE {
+			    gl.Vertex3f( float32(box.min[XAXIS]-0.04), float32(box.min[YAXIS]), float32(box.min[ZAXIS]))
+			    gl.Vertex3f( float32(box.min[XAXIS]-0.04), float32(box.min[YAXIS]), float32(box.max[ZAXIS]))
+			    gl.Vertex3f( float32(box.min[XAXIS]-0.04), float32(box.max[YAXIS]), float32(box.max[ZAXIS]))
+			    gl.Vertex3f( float32(box.min[XAXIS]-0.04), float32(box.max[YAXIS]), float32(box.min[ZAXIS]))
+			} else if face == NORTH_FACE {
+			    gl.Vertex3f( float32(box.min[XAXIS]), float32(box.min[YAXIS]), float32(box.min[ZAXIS]-0.04))
+			    gl.Vertex3f( float32(box.max[XAXIS]), float32(box.min[YAXIS]), float32(box.min[ZAXIS]-0.04))
+			    gl.Vertex3f( float32(box.max[XAXIS]), float32(box.max[YAXIS]), float32(box.min[ZAXIS]-0.04))
+			    gl.Vertex3f( float32(box.min[XAXIS]), float32(box.max[YAXIS]), float32(box.min[ZAXIS]-0.04))
+			} else if face == SOUTH_FACE {
+			    gl.Vertex3f( float32(box.min[XAXIS]), float32(box.min[YAXIS]), float32(box.max[ZAXIS]+0.04))
+			    gl.Vertex3f( float32(box.max[XAXIS]), float32(box.min[YAXIS]), float32(box.max[ZAXIS]+0.04))
+			    gl.Vertex3f( float32(box.max[XAXIS]), float32(box.max[YAXIS]), float32(box.max[ZAXIS]+0.04))
+			    gl.Vertex3f( float32(box.min[XAXIS]), float32(box.max[YAXIS]), float32(box.max[ZAXIS]+0.04))
+		    } else if face == DOWN_FACE {
+			    gl.Vertex3f( float32(box.min[XAXIS]), float32(box.min[YAXIS]-0.04), float32(box.min[ZAXIS]))
+			    gl.Vertex3f( float32(box.max[XAXIS]), float32(box.min[YAXIS]-0.04), float32(box.min[ZAXIS]))
+			    gl.Vertex3f( float32(box.max[XAXIS]), float32(box.min[YAXIS]-0.04), float32(box.max[ZAXIS]))
+			    gl.Vertex3f( float32(box.min[XAXIS]), float32(box.min[YAXIS]-0.04), float32(box.max[ZAXIS]))
+			}
+		    gl.End()
+			gl.PopMatrix()
+		}
 
 	}
 
@@ -306,9 +328,7 @@ func Draw(selectMode bool) {
 	// feedbackBuffer.size = gl.RenderMode(gl.RENDER)
 
 
-	if !selectMode {
-		gl.Finish()
-		gl.Flush()
-		sdl.GL_SwapBuffers()
-	}
+	gl.Finish()
+	gl.Flush()
+	sdl.GL_SwapBuffers()
 }

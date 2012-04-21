@@ -102,7 +102,7 @@ func LoadTerrainCubes() {
 			}
 
 			gl.NewList(listid, gl.COMPILE)
-			Cuboid(1, 1, 1, etexture, wtexture, ntexture, stexture, utexture, dtexture, 0, false)
+			Cuboid(1, 1, 1, etexture, wtexture, ntexture, stexture, utexture, dtexture)
 			gl.EndList()
 			// CheckGLError()
 
@@ -137,7 +137,7 @@ func terrainCubeIndex(n bool, s bool, w bool, e bool, u bool, d bool, blockid by
 	return index
 }
 
-func TerrainCube(n bool, s bool, w bool, e bool, u bool, d bool, blockid byte, id uint16, selectMode bool) {
+func TerrainCube(n bool, s bool, w bool, e bool, u bool, d bool, blockid byte) {
 	var ntexture, stexture, etexture, wtexture, utexture, dtexture *gl.Texture
 
 	block := TerrainBlocks[blockid]
@@ -160,22 +160,18 @@ func TerrainCube(n bool, s bool, w bool, e bool, u bool, d bool, blockid byte, i
 	// if d { dtexture = block.dtexture }
 
 	// if selectMode {
-	Cuboid(1, 1, 1, etexture, wtexture, ntexture, stexture, utexture, dtexture, id, selectMode)
+	Cuboid(1, 1, 1, etexture, wtexture, ntexture, stexture, utexture, dtexture)
 	// } else {
 	// gl.CallList(TerrainCubes[terrainCubeIndex(n, s, e, w, u, d, blockid)])
 	// }
 
 }
 
-func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *gl.Texture, ntexture *gl.Texture, stexture *gl.Texture, utexture *gl.Texture, dtexture *gl.Texture, id uint16, selectMode bool) {
+func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *gl.Texture, ntexture *gl.Texture, stexture *gl.Texture, utexture *gl.Texture, dtexture *gl.Texture) {
 	w, h, d := float32(bw)/2, float32(bh)/2, float32(bd)/2
 
 	// Front face
 	if etexture != nil {
-		if selectMode {
-			gl.PassThrough(float32(id*65336) + EAST_FACE)
-			// gl.Color4ub(uint8(id&0x00FF), uint8(id&0xFF00>>8), EAST_FACE, 0)
-		}
 		etexture.Bind(gl.TEXTURE_2D)
 
 		// gl.EnableClientState(gl.VERTEX_ARRAY)        // Enable Vertex Arrays
@@ -202,10 +198,6 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 	}
 	// Back Face
 	if wtexture != nil {
-		if selectMode {
-			gl.PassThrough(float32(id*65336) + WEST_FACE)
-			// gl.Color4ub(uint8(id&0x00FF), uint8(id&0xFF00>>8), WEST_FACE, 0)
-		}
 		wtexture.Bind(gl.TEXTURE_2D)
 		gl.Begin(gl.QUADS)
 		gl.Normal3f(-1.0, 0.0, 0.0)
@@ -225,10 +217,6 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 
 	// Left Face
 	if ntexture != nil {
-		if selectMode {
-			gl.PassThrough(float32(id*65336) + NORTH_FACE)
-			// gl.Color4ub(uint8(id&0x00FF), uint8(id&0xFF00>>8), NORTH_FACE, 0)
-		}
 		ntexture.Bind(gl.TEXTURE_2D)
 		gl.Begin(gl.QUADS)
 		gl.Normal3f(0.0, 0.0, -1.0)
@@ -246,10 +234,6 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 
 	// Right Face
 	if stexture != nil {
-		if selectMode {
-			gl.PassThrough(float32(id*65336) + SOUTH_FACE)
-			// gl.Color4ub(uint8(id&0x00FF), uint8(id&0xFF00>>8), SOUTH_FACE, 0)
-		}
 		stexture.Bind(gl.TEXTURE_2D)
 		gl.Begin(gl.QUADS)
 		gl.Normal3f(0.0, 0.0, 1.0)
@@ -269,10 +253,6 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 
 	// Top Face
 	if utexture != nil {
-		if selectMode {
-			gl.PassThrough(float32(id*65336) + UP_FACE)
-			// gl.Color4ub(uint8(id&0x00FF), uint8(id&0xFF00>>8), UP_FACE, 0)
-		}
 		utexture.Bind(gl.TEXTURE_2D)
 
 		gl.Begin(gl.QUADS)
@@ -363,134 +343,7 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 		gl.TexCoord2f(0.5, 0.5)
 		gl.Vertex3f(0, h, 0) // Top Right Of The Texture and Quad
 
-		// Triangles
-		// gl.TexCoord2f(0.0, 1.0)
-		// gl.Vertex3f(-d,  h, -w)  // Top Left Of The Texture and Quad
-		// gl.TexCoord2f(0.0, 0.0)
-		// gl.Vertex3f(-d,  h,  w)  // Bottom Left Of The Texture and Quad
-		// gl.TexCoord2f(0.5, 0.5)
-		// gl.Vertex3f( 0,  h,  0)  // Bottom Right Of The Texture and Quad
 
-		// gl.TexCoord2f(0.0, 0.0)
-		// gl.Vertex3f(-d,  h,  w)  // Top Left Of The Texture and Quad
-		// gl.TexCoord2f(1.0, 0.0)
-		// gl.Vertex3f(d,  h,  w)  // Bottom Left Of The Texture and Quad
-		// gl.TexCoord2f(0.5, 0.5)
-		// gl.Vertex3f( 0,  h,  0)  // Bottom Right Of The Texture and Quad
-
-		// gl.TexCoord2f(1.0, 0.0)
-		// gl.Vertex3f(d,  h,  w)  // Top Left Of The Texture and Quad
-		// gl.TexCoord2f(1.0, 1.0)
-		// gl.Vertex3f(d,  h,  -w)  // Bottom Left Of The Texture and Quad
-		// gl.TexCoord2f(0.5, 0.5)
-		// gl.Vertex3f( 0,  h,  0)  // Bottom Right Of The Texture and Quad
-
-		// gl.TexCoord2f(1.0, 1.0)
-		// gl.Vertex3f(d,  h,  -w)  // Top Left Of The Texture and Quad
-		// gl.TexCoord2f(0.0, 1.0)
-		// gl.Vertex3f(-d,  h,  -w)  // Bottom Left Of The Texture and Quad
-		// gl.TexCoord2f(0.5, 0.5)
-		// gl.Vertex3f( 0,  h,  0)  // Bottom Right Of The Texture and Quad
-
-		// DRAW 3x3 Subsquares
-
-		//  -d:-w   -d:-w/3     -d:w/3     -d:+w
-		//
-		//  -d/3:-w  -d/3:-w/3  -d/3:w/3   -d/3:w
-		//
-		//  +d/3:-w  +d/3:-w/3  +d/3:w/3   +d/3:w
-		//
-		//  +d:-w  +d:-w/3  +d:w/3   +d:w
-
-		// Texture
-		// 0.0:1.0    0.0:2/3   0.0:1/3   0.0:0.0
-		// 1/3:1.0    1/3:2/3   1/3:1/3   1/3:0.0
-		// 2/3:1.0    2/3:2/3   2/3:1/3   2/3:0.0
-		// 1.0:1.0    1.0:2/3   1.0:1/3   1.0:0.0
-
-		// FIRST
-		// gl.TexCoord2f(0.0, 1.0)
-		// gl.Vertex3f(-d,  h, -w)  // Top Left Of The Texture and Quad
-		// gl.TexCoord2f(0.0, 2/3)
-		// gl.Vertex3f(-d,  h,  -w/3)  // Bottom Left Of The Texture and Quad
-		// gl.TexCoord2f(1/3, 2/3)
-		// gl.Vertex3f(-d/3,  h, -w/3)  // Bottom Right Of The Texture and Quad
-		// gl.TexCoord2f(1/3, 1.0)
-		// gl.Vertex3f(-d/3,  h, -w)  // Top Right Of The Texture and Quad
-
-		// gl.TexCoord2f(0.0, 2/3)
-		// gl.Vertex3f(-d,  h, -w/3)  // Top Left Of The Texture and Quad
-		// gl.TexCoord2f(0.0, 1/3)
-		// gl.Vertex3f(-d,  h,  w/3)  // Bottom Left Of The Texture and Quad
-		// gl.TexCoord2f(1/3, 1/3)
-		// gl.Vertex3f(-d/3,  h, w/3)  // Bottom Right Of The Texture and Quad
-		// gl.TexCoord2f(1/3, 2/3)
-		// gl.Vertex3f(-d/3,  h, -w/3)  // Top Right Of The Texture and Quad
-
-		// gl.TexCoord2f(0.0, 1/3)
-		// gl.Vertex3f(-d,  h, w/3)  // Top Left Of The Texture and Quad
-		// gl.TexCoord2f(0.0, 0.0)
-		// gl.Vertex3f(-d,  h,  w)  // Bottom Left Of The Texture and Quad
-		// gl.TexCoord2f(1/3, 0.0)
-		// gl.Vertex3f(-d/3,  h, w)  // Bottom Right Of The Texture and Quad
-		// gl.TexCoord2f(1/3, 1/3)
-		// gl.Vertex3f(-d/3,  h, w/3)  // Top Right Of The Texture and Quad
-
-		// // SECOND
-		// gl.TexCoord2f(1/3, 1.0)
-		// gl.Vertex3f(-d/3,  h, -w)  // Top Left Of The Texture and Quad
-		// gl.TexCoord2f(1/3, 2/3)
-		// gl.Vertex3f(-d/3,  h,  -w/3)  // Bottom Left Of The Texture and Quad
-		// gl.TexCoord2f(2/3, 2/3)
-		// gl.Vertex3f( d/3,  h, -w/3)  // Bottom Right Of The Texture and Quad
-		// gl.TexCoord2f(2/3, 1.0)
-		// gl.Vertex3f( d/3,  h, -w)  // Top Right Of The Texture and Quad
-
-		// gl.TexCoord2f(1/3, 2/3)
-		// gl.Vertex3f(-d/3,  h, -w/3)  // Top Left Of The Texture and Quad
-		// gl.TexCoord2f(1/3, 1/3)
-		// gl.Vertex3f(-d/3,  h,  w/3)  // Bottom Left Of The Texture and Quad
-		// gl.TexCoord2f(2/3, 1/3)
-		// gl.Vertex3f( d/3,  h, w/3)  // Bottom Right Of The Texture and Quad
-		// gl.TexCoord2f(2/3, 2/3)
-		// gl.Vertex3f( d/3,  h, -w/3)  // Top Right Of The Texture and Quad
-
-		// gl.TexCoord2f(1/3, 1/3)
-		// gl.Vertex3f(-d/3,  h, w/3)  // Top Left Of The Texture and Quad
-		// gl.TexCoord2f(1/3, 0.0)
-		// gl.Vertex3f(-d/3,  h,  w)  // Bottom Left Of The Texture and Quad
-		// gl.TexCoord2f(2/3, 0.0)
-		// gl.Vertex3f( d/3,  h, w)  // Bottom Right Of The Texture and Quad
-		// gl.TexCoord2f(2/3, 1/3)
-		// gl.Vertex3f( d/3,  h, w/3)  // Top Right Of The Texture and Quad
-
-		// // THIRD
-		// gl.TexCoord2f(2/3, 1/3)
-		// gl.Vertex3f(d/3,  h, w/3)  // Top Left Of The Texture and Quad
-		// gl.TexCoord2f(2/3, 0.0)
-		// gl.Vertex3f(d/3,  h,  w)  // Bottom Left Of The Texture and Quad
-		// gl.TexCoord2f(1.0, 0.0)
-		// gl.Vertex3f( d,  h, w)  // Bottom Right Of The Texture and Quad
-		// gl.TexCoord2f(1.0, 1/3)
-		// gl.Vertex3f( d,  h, w/3)  // Top Right Of The Texture and Quad
-
-		// gl.TexCoord2f(2/3, 2/3)
-		// gl.Vertex3f(d/3,  h, -w/3)  // Top Left Of The Texture and Quad
-		// gl.TexCoord2f(2/3, 1/3)
-		// gl.Vertex3f(d/3,  h,  w/3)  // Bottom Left Of The Texture and Quad
-		// gl.TexCoord2f(1.0, 1/3)
-		// gl.Vertex3f( d,  h, w/3)  // Bottom Right Of The Texture and Quad
-		// gl.TexCoord2f(1.0, 2/3)
-		// gl.Vertex3f( d,  h, -w/3)  // Top Right Of The Texture and Quad
-
-		// gl.TexCoord2f(2/3, 1.0)
-		// gl.Vertex3f(d/3,  h, -w)  // Top Left Of The Texture and Quad
-		// gl.TexCoord2f(2/3, 2/3)
-		// gl.Vertex3f(d/3,  h,  -w/3)  // Bottom Left Of The Texture and Quad
-		// gl.TexCoord2f(1.0, 2/3)
-		// gl.Vertex3f( d,  h, -w/3)  // Bottom Right Of The Texture and Quad
-		// gl.TexCoord2f(1.0, 1.0)
-		// gl.Vertex3f( d,  h, -w)  // Top Right Of The Texture and Quad
 
 		gl.End()
 		// utexture.Unbind(gl.TEXTURE_2D)
@@ -499,10 +352,6 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 
 	// Bottom Face
 	if dtexture != nil {
-		if selectMode {
-			gl.PassThrough(float32(id*65336) + DOWN_FACE)
-			// gl.Color4ub(uint8(id&0x00FF), uint8(id&0xFF00>>8), DOWN_FACE, 0)
-		}
 		dtexture.Bind(gl.TEXTURE_2D)
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
@@ -537,6 +386,7 @@ func HighlightCuboidFace(bw float64, bh float64, bd float64, face int) {
 		gl.Vertex3f(d, h+0.8, -w)  // Top Right Of The Texture and Quad
 		gl.Vertex3f(d, h+0.8, w)   // Bottom Right Of The Texture and Quad
 		gl.Vertex3f(-d, h+0.8, w)  // Bottom Left Of The Texture and Quad
+
 
 		gl.End()
 		gl.Disable(gl.POLYGON_OFFSET_LINE)

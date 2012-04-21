@@ -132,12 +132,12 @@ func (w *Wolf) Act(dt float64) {
 	w.velocity[YAXIS] = 0.8 * math.Abs(math.Sin(w.bounce*math.Pi/180))
 }
 
-func (wolf *Wolf) Draw(center Vectorf, selectMode bool) {
+func (wolf *Wolf) Draw(center Vectorf) {
 	gl.PushMatrix()
 	gl.Translatef(float32(wolf.X()), float32(wolf.Y()), float32(wolf.Z()))
 	gl.Rotated(wolf.Heading(), 0.0, 1.0, 0.0)
 	//Cuboid(wolf.W(), wolf.H(), wolf.D(), 33, 32, 32, 32, 32, 32, 0, selectMode)
-	Cuboid(0.3, 0.5, 1.2, &MapTextures[33], &MapTextures[32], &MapTextures[32], &MapTextures[32], &MapTextures[32], &MapTextures[32], 0, selectMode)
+	Cuboid(0.3, 0.5, 1.2, &MapTextures[33], &MapTextures[32], &MapTextures[32], &MapTextures[32], &MapTextures[32], &MapTextures[32])
 	// gl.Translatef(0.8, 0.3, 0)
 	// gl.Rotated(-10, 0.0, 0.0, 1.0)
 	// Cuboid(0.3, 0.3, 0.4, 33, 32, 32, 32, 32, 32, 0, selectMode)

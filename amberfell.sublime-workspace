@@ -40,171 +40,170 @@
 	"buffers":
 	[
 		{
-			"contents": "\n\ntype Pipe struct {\n    quantity float64 \n    capacity float64\n    output Component\n}\n\ntype Component interface {\n    Capacity() float64\n    ConnectOutput(c *Component)\n    MaxOutputs\n}\n\n\n\nfunc (c *Component) Transfer() {\n    if c.quantity > 0 && c.output != Nil {\n        if c.output.capacity > s.output.quantity {\n            s.output.quantity += math.Max(s.quantity, 1)\n            s.quantity -= math.Max(s.quantity, 1)\n        }\n\n    }\n}\n\n\ntype Source struct {\n    output Component\n}\n\n\n\nfunc (s *Source) Run() {\n    if s.output.capacity > s.output.quantity {\n        s.output.quantity++\n    }\n}\n\n\nfunc (s *Pipe) Run() {\n    if s.quantity > 0 {\n        if s.output.capacity > s.output.quantity {\n            s.output.quantity += math.Max(s.quantity, 1)\n            s.quantity -= math.Max(s.quantity, 1)\n        }\n\n    }\n}\n\nfunc (s *Cumulator) Run() {\n    if s.quantity > 0 {\n        if s.output.capacity > s.output.quantity {\n            s.output.quantity += math.Max(s.quantity, 1)\n            s.quantity -= math.Max(s.quantity, 1)\n        }\n\n    }\n}\n\n\nfunc main() {\n    \n\n    p1, p2 Pipe\n    s Source\n\n    s.ConnectOutput(p1)\n    p1.ConnectOutput(p2)\n\n    s.Run()\n    p1.Run()\n    p2.Run()\n\n\n\n\n\n\n}\n",
-			"settings":
-			{
-				"buffer_size": 1204,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "/home/iand/.config/sublime-text-2/Packages/Default/Preferences.sublime-settings",
-			"settings":
-			{
-				"buffer_size": 12108,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "/home/iand/.config/sublime-text-2/Packages/User/Preferences.sublime-settings",
-			"settings":
-			{
-				"buffer_size": 263,
-				"line_ending": "Unix"
-			}
-		},
-		{
 			"file": "amberfell.go",
 			"settings":
 			{
-				"buffer_size": 772,
+				"buffer_size": 706,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "af/constants.go",
+			"file": "constants.go",
 			"settings":
 			{
-				"buffer_size": 561,
+				"buffer_size": 619,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "af/functions.go",
+			"file": "functions.go",
 			"settings":
 			{
-				"buffer_size": 1123,
+				"buffer_size": 1382,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "Searching 31 files for \"0.5\"\n\n/home/iand/wip/amberfell/amberfell.sublime-workspace:\n  166  		},\n  167  		{\n  168: 			\"contents\": \"/*\\n  To the extent possible under law, Ian Davis has waived all copyright\\n  and related or neighboring rights to this Amberfell Source Code file.\\n  This work is published from the United Kingdom. \\n*/\\npackage af\\n\\nimport (\\n	\\\"github.com/banthar/gl\\\"\\n	\\\"math/rand\\\"\\n	// \\\"math\\\"\\n	// \\\"fmt\\\"   \\n\\n)\\n\\ntype World struct {\\n	GroundLevel int16\\n	mobs   []Mob\\n	chunks map[int16]*Chunk\\n}\\n\\ntype Chunk struct {\\n	x, y, z int16\\n	Blocks  []byte\\n}\\n\\ntype Side struct {\\n	x, x1, x2, z, z1, z2, dir, y float64\\n}\\n\\nfunc (world *World) Init() {\\n\\n	world.chunks = make(map[int16]*Chunk)\\n\\n	world.GenerateChunk(0, 0, 0)\\n	world.GenerateChunk(0, 0, 1)\\n	world.GenerateChunk(0, 0, -1)\\n	world.GenerateChunk(-1, 0, 0)\\n	world.GenerateChunk(-1, 0, 1)\\n	world.GenerateChunk(-1, 0, -1)\\n	world.GenerateChunk(1, 0, 0)\\n	world.GenerateChunk(1, 0, 1)\\n	world.GenerateChunk(1, 0, -1)\\n\\n	var iw, id int16\\n\\n	numFeatures := rand.Intn(20)\\n	for i := 0; i < numFeatures; i++ {\\n		iw, id = world.RandomSquare()\\n\\n		world.Set(iw, GroundLevel, id, 1) // stone\\n		world.Grow(iw, GroundLevel, id, 45, 45, 45, 52, 10, 10, 1)\\n	}\\n	iw, id = world.RandomSquare()\\n\\n	world.Set(iw, GroundLevel, id, 0) // air\\n	world.Grow(iw, GroundLevel, id, 20, 20, 20, 20, 0, 30, 0)\\n\\n	wolf := new(Wolf)\\n	wolf.Init(120, 17, 19, GroundLevel+1)\\n	world.mobs = append(world.mobs, wolf)\\n\\n}\\n\\n// A chunk is a 24 x 24 x 48 set of blocks\\n// x is east/west offset from World Origin\\n// z is south/north offset from World Origin\\nfunc (world *World) GenerateChunk(x int16, y int16, z int16) *Chunk {\\n	var chunk Chunk\\n	chunk.Init(x, y, z)\\n	println(\\\"Generating chunk at x:\\\", x, \\\" y:\\\", y, \\\" z:\\\", z)\\n	var iw, id, ih int16\\n	for iw = 0; iw < CHUNK_WIDTH; iw++ {\\n		for id = 0; id < CHUNK_WIDTH; id++ {\\n			for ih = 0; ih <= GroundLevel; ih++ {\\n				chunk.Set(iw, ih, id, 2) // dirt\\n			}\\n			for ih = GroundLevel + 1; ih < CHUNK_HEIGHT; ih++ {\\n				chunk.Set(iw, ih, id, 0) // air\\n			}\\n		}\\n	}\\n\\n	world.chunks[chunkIndex(x, y, z)] = &chunk\\n	return &chunk\\n\\n}\\n\\n// Gets the chunk for a given x/z block coordinate\\n// x = 0, z = 0 is in the top left of the home chunk\\nfunc (world *World) GetChunkForBlock(x int16, y int16, z int16) (*Chunk, int16, int16, int16) {\\n	cx := x / CHUNK_WIDTH\\n	cy := y / CHUNK_HEIGHT\\n	cz := z / CHUNK_WIDTH\\n	//println(\\\"cx:\\\", cx, \\\"cz:\\\", cz)\\n\\n	chunk, ok := world.chunks[chunkIndex(cx, cy, cz)]\\n	if !ok {\\n		chunk = world.GenerateChunk(cx, cy, cz)\\n	}\\n\\n	ox := x - cx*CHUNK_WIDTH\\n	if ox < 0 {\\n		ox += CHUNK_WIDTH\\n	}\\n\\n	oy := y - cy*CHUNK_HEIGHT\\n	if oy < 0 {\\n		oy += CHUNK_HEIGHT\\n	}\\n\\n	oz := z - cz*CHUNK_WIDTH\\n	if oz < 0 {\\n		oz += CHUNK_WIDTH\\n	}\\n\\n	return chunk, ox, oy, oz\\n\\n}\\n\\nfunc (world *World) At(x int16, y int16, z int16) byte {\\n	//println(\\\"x:\\\", x, \\\" y:\\\", y, \\\"z:\\\", z)\\n	chunk, ox, oy, oz := world.GetChunkForBlock(x, y, z)\\n	//println(\\\"ox:\\\", ox, \\\" y:\\\", y, \\\"oz:\\\", oz)\\n	return chunk.At(ox, oy, oz)\\n}\\n\\nfunc (world *World) Atv(v Vectori) byte {\\n	return world.At(v[XAXIS], v[YAXIS], v[ZAXIS])\\n}\\n\\nfunc (world *World) Set(x int16, y int16, z int16, b byte) {\\n	chunk, ox, oy, oz := world.GetChunkForBlock(x, y, z)\\n	chunk.Set(ox, oy, oz, b)\\n}\\n\\nfunc (world *World) Setv(v Vectori, b byte) {\\n    chunk, ox, oy, oz := world.GetChunkForBlock(v[XAXIS], v[YAXIS], v[ZAXIS])\\n    chunk.Set(ox, oy, oz, b)\\n}\\n\\n\\nfunc (world *World) RandomSquare() (x int16, z int16) {\\n	x = int16(rand.Intn(40) - 20)\\n	z = int16(rand.Intn(40) - 20)\\n	return\\n}\\n\\n// north/south = -/+ z\\n// east/west = +/- x\\n// up/down = +/- y\\n\\nfunc (world *World) Grow(x int16, y int16, z int16, n int, s int, w int, e int, u int, d int, texture byte) {\\n	if (y == 0 || world.At(x+1, y-1, z) != 0) && rand.Intn(100) < e {\\n		world.Set(x+1, y, z, texture)\\n		world.Grow(x+1, y, z, n, s, 0, e, u, d, texture)\\n	}\\n	if (y == 0 || world.At(x-1, y-1, z) != 0) && rand.Intn(100) < w {\\n		world.Set(x-1, y, z, texture)\\n		world.Grow(x-1, y, z, n, s, w, 0, u, d, texture)\\n	}\\n	if (y == 0 || world.At(x, y-1, z+1) != 0) && rand.Intn(100) < s {\\n		world.Set(x, y, z+1, texture)\\n		world.Grow(x, y, z+1, 0, s, w, e, u, d, texture)\\n	}\\n	if (y == 0 || world.At(x, y-1, z-1) != 0) && rand.Intn(100) < n {\\n		world.Set(x, y, z-1, texture)\\n		world.Grow(x, y, z-1, n, 0, w, e, u, d, texture)\\n	}\\n	if y < CHUNK_HEIGHT-1 && rand.Intn(100) < u {\\n		world.Set(x, y+1, z, texture)\\n		world.Grow(x, y+1, z, n, s, w, e, u, 0, texture)\\n	}\\n	if y > 0 && rand.Intn(100) < d {\\n		world.Set(x, y-1, z, texture)\\n		world.Grow(x, y-1, z, n, s, w, e, 0, d, texture)\\n	}\\n}\\n\\nfunc (world *World) AirNeighbours(x int16, z int16, y int16) (n, s, w, e, u, d bool) {\\n\\n	if world.ChunkLoadedFor(x-1, y, z) && world.At(x-1, y, z) == BLOCK_AIR {\\n		w = true\\n	}\\n	if world.ChunkLoadedFor(x+1, y, z) && world.At(x+1, y, z) == BLOCK_AIR {\\n		e = true\\n	}\\n	if world.ChunkLoadedFor(x, y, z-1) && world.At(x, y, z-1) == BLOCK_AIR {\\n		n = true\\n	}\\n	if world.ChunkLoadedFor(x, y, z+1) && world.At(x, y, z+1) == BLOCK_AIR {\\n		s = true\\n	}\\n	if world.ChunkLoadedFor(x, y+1, z) && world.At(x, y+1, z) == BLOCK_AIR {\\n		u = true\\n	}\\n	return\\n}\\n\\n// lineRectCollide( line, rect )\\n//\\n// Checks if an axis-aligned line and a bounding box overlap.\\n// line = { z, x1, x2 } or line = { x, z1, z2 }\\n// rect = { x, z, size }\\n\\nfunc lineRectCollide(line Side, rect Rect) (ret bool) {\\n	if line.z != 0 {\\n		ret = rect.z > line.z-rect.sizez/2 && rect.z < line.z+rect.sizez/2 && rect.x > line.x1-rect.sizex/2 && rect.x < line.x2+rect.sizex/2\\n	} else {\\n		ret = rect.x > line.x-rect.sizex/2 && rect.x < line.x+rect.sizex/2 && rect.z > line.z1-rect.sizez/2 && rect.z < line.z2+rect.sizez/2\\n	}\\n	return\\n}\\n\\n// rectRectCollide( r1, r2 )\\n//\\n// Checks if two rectangles (x1, y1, x2, y2) overlap.\\n\\nfunc rectRectCollide(r1 Side, r2 Side) bool {\\n	if r2.x1 >= r1.x1 && r2.x1 <= r1.x2 && r2.z1 >= r1.z1 && r2.z1 <= r1.z2 {\\n		return true\\n	}\\n	if r2.x2 >= r1.x1 && r2.x2 <= r1.x2 && r2.z1 >= r1.z1 && r2.z1 <= r1.z2 {\\n		return true\\n	}\\n	if r2.x2 >= r1.x1 && r2.x2 <= r1.x2 && r2.z2 >= r1.z1 && r2.z2 <= r1.z2 {\\n		return true\\n	}\\n	if r2.x1 >= r1.x1 && r2.x1 <= r1.x2 && r2.z2 >= r1.z1 && r2.z2 <= r1.z2 {\\n		return true\\n	}\\n	return false\\n}\\n\\nfunc (world *World) ApplyForces(mob Mob, dt float64) {\\n	// mobBounds := mob.DesiredBoundingBox(dt)\\n	ip := IntPosition(mob.Position())\\n\\n	// mobx := ip[XAXIS]\\n	// moby := ip[YAXIS]\\n	// mobz := ip[ZAXIS]\\n\\n	// Gravity\\n	if mob.IsFalling() {\\n		// println(\\\"is falling\\\")\\n		mob.Setvx(mob.Velocity()[XAXIS] / 1.001)\\n		mob.Setvy(mob.Velocity()[YAXIS] - 15*dt)\\n		mob.Setvz(mob.Velocity()[ZAXIS] / 1.001)\\n	} else {\\n		mob.Setvx(mob.Velocity()[XAXIS] / 1.2)\\n		//mob.Setvy(0)\\n		mob.Setvz(mob.Velocity()[ZAXIS] / 1.2)\\n	}\\n\\n	// var dx, dz, dy int16\\n	// var x,  z int16\\n\\n	playerRect := Rect{x: float64(mob.X()) + mob.Velocity()[XAXIS]*dt, z: float64(mob.Z()) + mob.Velocity()[ZAXIS]*dt, sizex: mob.W(), sizez: mob.D()}\\n\\n	// collisionCandidates := make([]Side, 0)\\n\\n	if world.Atv(ip.North()) != BLOCK_AIR {\\n		if mob.Velocity()[ZAXIS] < 0 && ip.North().HRect().Intersects(playerRect) {\\n			mob.Snapz(float64(ip.North()[ZAXIS])+0.5+playerRect.sizez/2, 0)\\n		}\\n	}\\n\\n	if world.Atv(ip.South()) != BLOCK_AIR {\\n		if mob.Velocity()[ZAXIS] > 0 && ip.South().HRect().Intersects(playerRect) {\\n			mob.Snapz(float64(ip.South()[ZAXIS])-0.5-playerRect.sizez/2, 0)\\n		}\\n	}\\n\\n	if world.Atv(ip.East()) != BLOCK_AIR {\\n		if mob.Velocity()[XAXIS] > 0 && ip.East().HRect().Intersects(playerRect) {\\n			mob.Snapx(float64(ip.East()[XAXIS])-0.5-playerRect.sizex/2, 0)\\n		}\\n	}\\n\\n	if world.Atv(ip.West()) != BLOCK_AIR {\\n		if mob.Velocity()[XAXIS] < 0 && ip.West().HRect().Intersects(playerRect) {\\n			mob.Snapx(float64(ip.West()[XAXIS])+0.5+playerRect.sizex/2, 0)\\n		}\\n	}\\n\\n	mob.SetFalling(true)\\n	if world.Atv(ip.Down()) != BLOCK_AIR {\\n		mob.SetFalling(false)\\n		if mob.Velocity()[YAXIS] < 0 {\\n			mob.Snapy(float64(ip.Down()[YAXIS])+1, 0)\\n		}\\n	} else {\\n		if world.Atv(ip.Down().North()) != BLOCK_AIR {\\n			if ip.Down().North().HRect().Intersects(playerRect) {\\n				mob.Snapy(float64(ip.Down()[YAXIS])+1, 0)\\n				mob.SetFalling(false)\\n			}\\n		}\\n\\n		if world.Atv(ip.Down().South()) != BLOCK_AIR {\\n			if ip.Down().South().HRect().Intersects(playerRect) {\\n				mob.Snapy(float64(ip.Down()[YAXIS])+1, 0)\\n				mob.SetFalling(false)\\n			}\\n		}\\n\\n		if world.Atv(ip.Down().East()) != BLOCK_AIR {\\n			if ip.Down().East().HRect().Intersects(playerRect) {\\n				mob.Snapy(float64(ip.Down()[YAXIS])+1, 0)\\n				mob.SetFalling(false)\\n			}\\n		}\\n\\n		if world.Atv(ip.Down().West()) != BLOCK_AIR {\\n			if ip.Down().West().HRect().Intersects(playerRect) {\\n				mob.Snapy(float64(ip.Down()[YAXIS])+1, 0)\\n				mob.SetFalling(false)\\n			}\\n		}\\n	}\\n\\n}\\n\\nfunc (world *World) Simulate(dt float64) {\\n	for _, v := range world.mobs {\\n		v.Act(dt)\\n		world.ApplyForces(v, dt)\\n		v.Update(dt)\\n	}\\n\\n}\\n\\nfunc (world World) ChunkLoadedFor(x int16, y int16, z int16) bool {\\n	cx := x / CHUNK_WIDTH\\n	cy := y / CHUNK_HEIGHT\\n	cz := z / CHUNK_WIDTH\\n\\n	_, ok := world.chunks[chunkIndex(cx, cy, cz)]\\n	return ok\\n}\\n\\nfunc (world *World) Draw(center Vectorf , selectMode bool) {\\n	for _, v := range world.mobs {\\n		v.Draw(center, selectMode)\\n	}\\n\\n	gl.Translatef(-float32(center[XAXIS]), -float32(center[YAXIS]), -float32(center[ZAXIS]))\\n\\n	var px, py, pz = int16(center[XAXIS]), int16(center[YAXIS]), int16(center[ZAXIS])\\n\\n	var x, y, z int16\\n\\n	count := 0\\n	for x = px - 30; x < px+30; x++ {\\n		for z = pz - 30; z < pz+30; z++ {\\n			if x+z-px-pz <= ViewRadius && x+z-px-pz >= -ViewRadius {\\n				for y = py - 5; y < py+16; y++ {\\n					dx := x - px\\n					dy := y - py\\n					dz := z - pz\\n\\n					var blockid byte = world.At(x, y, z)\\n					if blockid != 0 {\\n						var n, s, w, e, u, d bool = world.AirNeighbours(x, z, y)\\n						if n || s || w || e || u || d {\\n\\n							var id uint16 = 0\\n\\n							if dx >= -2 && dx <= 2 && dy >= -2 && dy <= 2 && dz >= -2 && dz <= 2 {\\n								id = RelativeCoordinateToBlockId(dx, dy, dz)\\n							}\\n                            if !selectMode || id != 0 {\\n    							gl.PushMatrix()\\n    							gl.Translatef(float32(x), float32(y), float32(z))\\n    							TerrainCube(n, s, w, e, u, d, blockid, id, selectMode)\\n    							count++\\n    							gl.PopMatrix()\\n                            }\\n						}\\n					}\\n				}\\n			}\\n		}\\n	}\\n	//println(\\\"Drew \\\", count, \\\" cubes\\\")\\n\\n}\\n\\nfunc chunkIndex(x int16, y int16, z int16) int16 {\\n	return z*CHUNK_WIDTH*CHUNK_WIDTH + x*CHUNK_WIDTH + y\\n}\\n\\nfunc blockIndex(x int16, y int16, z int16) int16 {\\n	return CHUNK_WIDTH*CHUNK_WIDTH*y + CHUNK_WIDTH*x + z\\n}\\n\\n// **************************************************************\\n// CHUNKS\\n// **************************************************************\\n\\nfunc (c Chunk) WorldCoords(x int16, y int16, z int16) (xw int16, yw int16, zw int16) {\\n	xw = c.x*CHUNK_WIDTH + x\\n	zw = c.z*CHUNK_WIDTH + z\\n	yw = c.y*CHUNK_HEIGHT + y\\n	return\\n}\\n\\nfunc (chunk *Chunk) Init(x int16, y int16, z int16) {\\n	chunk.x = x\\n	chunk.y = y\\n	chunk.z = z\\n	chunk.Blocks = make([]byte, CHUNK_WIDTH*CHUNK_WIDTH*CHUNK_HEIGHT)\\n}\\n\\nfunc (chunk *Chunk) At(x int16, y int16, z int16) byte {\\n	return chunk.Blocks[blockIndex(x, y, z)]\\n}\\n\\nfunc (chunk *Chunk) Set(x int16, y int16, z int16, b byte) {\\n	chunk.Blocks[blockIndex(x, y, z)] = b\\n}\\n\",\n  169  			\"file\": \"af/world.go\",\n  170  			\"file_size\": 10887,\n\n/home/iand/wip/amberfell/functions.go:\n   54      intermed := val * math.Pow(10, float64(prec))\n   55  \n   56:     if val >= 0.5 {\n   57          rounder = math.Ceil(intermed)\n   58      } else {\n\n/home/iand/wip/amberfell/player.go:\n  156  	gl.Rotated(player.Heading(), 0.0, 1.0, 0.0)\n  157  \n  158: 	gl.Translatef(0.0, float32(player.H()/2)-0.5, 0.0)\n  159  	Cuboid(player.W(), player.H(), player.D(), &MapTextures[33], &MapTextures[32], &MapTextures[32], &MapTextures[32], &MapTextures[32], &MapTextures[32], 0, selectMode)\n  160  \n\n/home/iand/wip/amberfell/shapes.go:\n  331  \n  332  		// Texture\n  333: 		// 0.0/1.0    0.0/0.5   0.0/0.0\n  334: 		// 0.5/1.0    0.5/0.5   0.5/0.0\n  335: 		// 1.0/1.0    1.0/0.5   1.0/0.0\n  336  \n  337  		// 2x2 Subsquares\n  ...\n  341  \n  342  		gl.Normal3f(0.0, 1.0, 0.0)\n  343: 		gl.TexCoord2f(0.0, 0.5)\n  344  		gl.Vertex3f(-d, h, 0) // Bottom Left Of The Texture and Quad\n  345  \n  346  		gl.Normal3f(0.0, 1.0, 0.0)\n  347: 		gl.TexCoord2f(0.5, 0.5)\n  348  		gl.Vertex3f(0, h, 0) // Bottom Right Of The Texture and Quad\n  349  \n  350  		gl.Normal3f(0.0, 1.0, 0.0)\n  351: 		gl.TexCoord2f(0.5, 1.0)\n  352  		gl.Vertex3f(0, h, -w) // Top Right Of The Texture and Quad\n  353  \n  354  		gl.Normal3f(0.0, 1.0, 0.0)\n  355: 		gl.TexCoord2f(0.5, 1.0)\n  356  		gl.Vertex3f(0, h, -w) // Top Left Of The Texture and Quad\n  357  \n  358  		gl.Normal3f(0.0, 1.0, 0.0)\n  359: 		gl.TexCoord2f(0.5, 0.5)\n  360  		gl.Vertex3f(0, h, 0) // Bottom Left Of The Texture and Quad\n  361  \n  362  		gl.Normal3f(0.0, 1.0, 0.0)\n  363: 		gl.TexCoord2f(1.0, 0.5)\n  364  		gl.Vertex3f(d, h, 0) // Bottom Right Of The Texture and Quad\n  365  \n  ...\n  369  \n  370  		gl.Normal3f(0.0, 1.0, 0.0)\n  371: 		gl.TexCoord2f(0.5, 0.5)\n  372  		gl.Vertex3f(0, h, 0) // Top Left Of The Texture and Quad\n  373  \n  374  		gl.Normal3f(0.0, 1.0, 0.0)\n  375: 		gl.TexCoord2f(0.5, 0.0)\n  376  		gl.Vertex3f(0, h, w) // Bottom Left Of The Texture and Quad\n  377  \n  ...\n  381  \n  382  		gl.Normal3f(0.0, 1.0, 0.0)\n  383: 		gl.TexCoord2f(1.0, 0.5)\n  384  		gl.Vertex3f(d, h, 0) // Top Right Of The Texture and Quad\n  385  \n  386  		gl.Normal3f(0.0, 1.0, 0.0)\n  387: 		gl.TexCoord2f(0.0, 0.5)\n  388  		gl.Vertex3f(-d, h, 0) // Top Left Of The Texture and Quad\n  389  \n  ...\n  393  \n  394  		gl.Normal3f(0.0, 1.0, 0.0)\n  395: 		gl.TexCoord2f(0.5, 0.0)\n  396  		gl.Vertex3f(0, h, w) // Bottom Right Of The Texture and Quad\n  397  \n  398  		gl.Normal3f(0.0, 1.0, 0.0)\n  399: 		gl.TexCoord2f(0.5, 0.5)\n  400  		gl.Vertex3f(0, h, 0) // Top Right Of The Texture and Quad\n  401  \n  ...\n  405  		// gl.TexCoord2f(0.0, 0.0)\n  406  		// gl.Vertex3f(-d,  h,  w)  // Bottom Left Of The Texture and Quad\n  407: 		// gl.TexCoord2f(0.5, 0.5)\n  408  		// gl.Vertex3f( 0,  h,  0)  // Bottom Right Of The Texture and Quad\n  409  \n  ...\n  412  		// gl.TexCoord2f(1.0, 0.0)\n  413  		// gl.Vertex3f(d,  h,  w)  // Bottom Left Of The Texture and Quad\n  414: 		// gl.TexCoord2f(0.5, 0.5)\n  415  		// gl.Vertex3f( 0,  h,  0)  // Bottom Right Of The Texture and Quad\n  416  \n  ...\n  419  		// gl.TexCoord2f(1.0, 1.0)\n  420  		// gl.Vertex3f(d,  h,  -w)  // Bottom Left Of The Texture and Quad\n  421: 		// gl.TexCoord2f(0.5, 0.5)\n  422  		// gl.Vertex3f( 0,  h,  0)  // Bottom Right Of The Texture and Quad\n  423  \n  ...\n  426  		// gl.TexCoord2f(0.0, 1.0)\n  427  		// gl.Vertex3f(-d,  h,  -w)  // Bottom Left Of The Texture and Quad\n  428: 		// gl.TexCoord2f(0.5, 0.5)\n  429  		// gl.Vertex3f( 0,  h,  0)  // Bottom Right Of The Texture and Quad\n  430  \n\n/home/iand/wip/amberfell/vector.go:\n   56  \n   57  func (wp Vectori) HRect() Rect {\n   58: 	return Rect{float64(wp[XAXIS]) - 0.5, float64(wp[ZAXIS]) - 0.5, 1, 1}\n   59  }\n   60  \n\n/home/iand/wip/amberfell/window.go:\n  143  	}\n  144  \n  145: 	gl.Lightfv(gl.LIGHT0, gl.POSITION, []float32{0.5, 1, 1, 0})\n  146  	gl.Lightfv(gl.LIGHT0, gl.AMBIENT, []float32{daylightIntensity, daylightIntensity, daylightIntensity, 1})\n  147  	// gl.Lightfv(gl.LIGHT0, gl.DIFFUSE, []float32{daylightIntensity, daylightIntensity, daylightIntensity,1})\n  ...\n  160  	gl.Lightfv(gl.LIGHT1, gl.DIFFUSE, []float32{diffuse, diffuse, diffuse, 1})\n  161  	gl.Lightf(gl.LIGHT1, gl.CONSTANT_ATTENUATION, 1.5)\n  162: 	gl.Lightf(gl.LIGHT1, gl.LINEAR_ATTENUATION, 0.5)\n  163  	gl.Lightf(gl.LIGHT1, gl.QUADRATIC_ATTENUATION, 0.01)\n  164  	gl.Lightf(gl.LIGHT1, gl.SPOT_CUTOFF, 35)\n\n/home/iand/wip/amberfell/wolf.go:\n   38  func (w *Wolf) Position() Vectorf { return w.position }\n   39  func (w *Wolf) IntPosition() Vectori {\n   40: 	return Vectori{int16(math.Floor(w.position[XAXIS] + 0.5)),\n   41: 		int16(math.Floor(w.position[YAXIS] + 0.5)),\n   42: 		int16(math.Floor(w.position[ZAXIS] + 0.5))}\n   43  }\n   44  \n   ..\n  143  	gl.Rotated(wolf.Heading(), 0.0, 1.0, 0.0)\n  144  	//Cuboid(wolf.W(), wolf.H(), wolf.D(), 33, 32, 32, 32, 32, 32, 0, selectMode)\n  145: 	Cuboid(0.3, 0.5, 1.2, &MapTextures[33], &MapTextures[32], &MapTextures[32], &MapTextures[32], &MapTextures[32], &MapTextures[32], 0, selectMode)\n  146  	// gl.Translatef(0.8, 0.3, 0)\n  147  	// gl.Rotated(-10, 0.0, 0.0, 1.0)\n\n/home/iand/wip/amberfell/world.go:\n  262  	if world.Atv(ip.North()) != BLOCK_AIR {\n  263  		if mob.Velocity()[ZAXIS] < 0 && ip.North().HRect().Intersects(playerRect) {\n  264: 			mob.Snapz(float64(ip.North()[ZAXIS])+0.5+playerRect.sizez/2, 0)\n  265  		}\n  266  	}\n  ...\n  268  	if world.Atv(ip.South()) != BLOCK_AIR {\n  269  		if mob.Velocity()[ZAXIS] > 0 && ip.South().HRect().Intersects(playerRect) {\n  270: 			mob.Snapz(float64(ip.South()[ZAXIS])-0.5-playerRect.sizez/2, 0)\n  271  		}\n  272  	}\n  ...\n  274  	if world.Atv(ip.East()) != BLOCK_AIR {\n  275  		if mob.Velocity()[XAXIS] > 0 && ip.East().HRect().Intersects(playerRect) {\n  276: 			mob.Snapx(float64(ip.East()[XAXIS])-0.5-playerRect.sizex/2, 0)\n  277  		}\n  278  	}\n  ...\n  280  	if world.Atv(ip.West()) != BLOCK_AIR {\n  281  		if mob.Velocity()[XAXIS] < 0 && ip.West().HRect().Intersects(playerRect) {\n  282: 			mob.Snapx(float64(ip.West()[XAXIS])+0.5+playerRect.sizex/2, 0)\n  283  		}\n  284  	}\n\n48 matches across 8 files\n\n\nSearching 30 files for \"gl.Translate\"\n\n/home/iand/wip/amberfell/amberfell.sublime-workspace:\n  166  		},\n  167  		{\n  168: 			\"contents\": \"/*\\n  To the extent possible under law, Ian Davis has waived all copyright\\n  and related or neighboring rights to this Amberfell Source Code file.\\n  This work is published from the United Kingdom. \\n*/\\npackage af\\n\\nimport (\\n	\\\"github.com/banthar/gl\\\"\\n	\\\"math/rand\\\"\\n	// \\\"math\\\"\\n	// \\\"fmt\\\"   \\n\\n)\\n\\ntype World struct {\\n	GroundLevel int16\\n	mobs   []Mob\\n	chunks map[int16]*Chunk\\n}\\n\\ntype Chunk struct {\\n	x, y, z int16\\n	Blocks  []byte\\n}\\n\\ntype Side struct {\\n	x, x1, x2, z, z1, z2, dir, y float64\\n}\\n\\nfunc (world *World) Init() {\\n\\n	world.chunks = make(map[int16]*Chunk)\\n\\n	world.GenerateChunk(0, 0, 0)\\n	world.GenerateChunk(0, 0, 1)\\n	world.GenerateChunk(0, 0, -1)\\n	world.GenerateChunk(-1, 0, 0)\\n	world.GenerateChunk(-1, 0, 1)\\n	world.GenerateChunk(-1, 0, -1)\\n	world.GenerateChunk(1, 0, 0)\\n	world.GenerateChunk(1, 0, 1)\\n	world.GenerateChunk(1, 0, -1)\\n\\n	var iw, id int16\\n\\n	numFeatures := rand.Intn(20)\\n	for i := 0; i < numFeatures; i++ {\\n		iw, id = world.RandomSquare()\\n\\n		world.Set(iw, GroundLevel, id, 1) // stone\\n		world.Grow(iw, GroundLevel, id, 45, 45, 45, 52, 10, 10, 1)\\n	}\\n	iw, id = world.RandomSquare()\\n\\n	world.Set(iw, GroundLevel, id, 0) // air\\n	world.Grow(iw, GroundLevel, id, 20, 20, 20, 20, 0, 30, 0)\\n\\n	wolf := new(Wolf)\\n	wolf.Init(120, 17, 19, GroundLevel+1)\\n	world.mobs = append(world.mobs, wolf)\\n\\n}\\n\\n// A chunk is a 24 x 24 x 48 set of blocks\\n// x is east/west offset from World Origin\\n// z is south/north offset from World Origin\\nfunc (world *World) GenerateChunk(x int16, y int16, z int16) *Chunk {\\n	var chunk Chunk\\n	chunk.Init(x, y, z)\\n	println(\\\"Generating chunk at x:\\\", x, \\\" y:\\\", y, \\\" z:\\\", z)\\n	var iw, id, ih int16\\n	for iw = 0; iw < CHUNK_WIDTH; iw++ {\\n		for id = 0; id < CHUNK_WIDTH; id++ {\\n			for ih = 0; ih <= GroundLevel; ih++ {\\n				chunk.Set(iw, ih, id, 2) // dirt\\n			}\\n			for ih = GroundLevel + 1; ih < CHUNK_HEIGHT; ih++ {\\n				chunk.Set(iw, ih, id, 0) // air\\n			}\\n		}\\n	}\\n\\n	world.chunks[chunkIndex(x, y, z)] = &chunk\\n	return &chunk\\n\\n}\\n\\n// Gets the chunk for a given x/z block coordinate\\n// x = 0, z = 0 is in the top left of the home chunk\\nfunc (world *World) GetChunkForBlock(x int16, y int16, z int16) (*Chunk, int16, int16, int16) {\\n	cx := x / CHUNK_WIDTH\\n	cy := y / CHUNK_HEIGHT\\n	cz := z / CHUNK_WIDTH\\n	//println(\\\"cx:\\\", cx, \\\"cz:\\\", cz)\\n\\n	chunk, ok := world.chunks[chunkIndex(cx, cy, cz)]\\n	if !ok {\\n		chunk = world.GenerateChunk(cx, cy, cz)\\n	}\\n\\n	ox := x - cx*CHUNK_WIDTH\\n	if ox < 0 {\\n		ox += CHUNK_WIDTH\\n	}\\n\\n	oy := y - cy*CHUNK_HEIGHT\\n	if oy < 0 {\\n		oy += CHUNK_HEIGHT\\n	}\\n\\n	oz := z - cz*CHUNK_WIDTH\\n	if oz < 0 {\\n		oz += CHUNK_WIDTH\\n	}\\n\\n	return chunk, ox, oy, oz\\n\\n}\\n\\nfunc (world *World) At(x int16, y int16, z int16) byte {\\n	//println(\\\"x:\\\", x, \\\" y:\\\", y, \\\"z:\\\", z)\\n	chunk, ox, oy, oz := world.GetChunkForBlock(x, y, z)\\n	//println(\\\"ox:\\\", ox, \\\" y:\\\", y, \\\"oz:\\\", oz)\\n	return chunk.At(ox, oy, oz)\\n}\\n\\nfunc (world *World) Atv(v Vectori) byte {\\n	return world.At(v[XAXIS], v[YAXIS], v[ZAXIS])\\n}\\n\\nfunc (world *World) Set(x int16, y int16, z int16, b byte) {\\n	chunk, ox, oy, oz := world.GetChunkForBlock(x, y, z)\\n	chunk.Set(ox, oy, oz, b)\\n}\\n\\nfunc (world *World) Setv(v Vectori, b byte) {\\n    chunk, ox, oy, oz := world.GetChunkForBlock(v[XAXIS], v[YAXIS], v[ZAXIS])\\n    chunk.Set(ox, oy, oz, b)\\n}\\n\\n\\nfunc (world *World) RandomSquare() (x int16, z int16) {\\n	x = int16(rand.Intn(40) - 20)\\n	z = int16(rand.Intn(40) - 20)\\n	return\\n}\\n\\n// north/south = -/+ z\\n// east/west = +/- x\\n// up/down = +/- y\\n\\nfunc (world *World) Grow(x int16, y int16, z int16, n int, s int, w int, e int, u int, d int, texture byte) {\\n	if (y == 0 || world.At(x+1, y-1, z) != 0) && rand.Intn(100) < e {\\n		world.Set(x+1, y, z, texture)\\n		world.Grow(x+1, y, z, n, s, 0, e, u, d, texture)\\n	}\\n	if (y == 0 || world.At(x-1, y-1, z) != 0) && rand.Intn(100) < w {\\n		world.Set(x-1, y, z, texture)\\n		world.Grow(x-1, y, z, n, s, w, 0, u, d, texture)\\n	}\\n	if (y == 0 || world.At(x, y-1, z+1) != 0) && rand.Intn(100) < s {\\n		world.Set(x, y, z+1, texture)\\n		world.Grow(x, y, z+1, 0, s, w, e, u, d, texture)\\n	}\\n	if (y == 0 || world.At(x, y-1, z-1) != 0) && rand.Intn(100) < n {\\n		world.Set(x, y, z-1, texture)\\n		world.Grow(x, y, z-1, n, 0, w, e, u, d, texture)\\n	}\\n	if y < CHUNK_HEIGHT-1 && rand.Intn(100) < u {\\n		world.Set(x, y+1, z, texture)\\n		world.Grow(x, y+1, z, n, s, w, e, u, 0, texture)\\n	}\\n	if y > 0 && rand.Intn(100) < d {\\n		world.Set(x, y-1, z, texture)\\n		world.Grow(x, y-1, z, n, s, w, e, 0, d, texture)\\n	}\\n}\\n\\nfunc (world *World) AirNeighbours(x int16, z int16, y int16) (n, s, w, e, u, d bool) {\\n\\n	if world.ChunkLoadedFor(x-1, y, z) && world.At(x-1, y, z) == BLOCK_AIR {\\n		w = true\\n	}\\n	if world.ChunkLoadedFor(x+1, y, z) && world.At(x+1, y, z) == BLOCK_AIR {\\n		e = true\\n	}\\n	if world.ChunkLoadedFor(x, y, z-1) && world.At(x, y, z-1) == BLOCK_AIR {\\n		n = true\\n	}\\n	if world.ChunkLoadedFor(x, y, z+1) && world.At(x, y, z+1) == BLOCK_AIR {\\n		s = true\\n	}\\n	if world.ChunkLoadedFor(x, y+1, z) && world.At(x, y+1, z) == BLOCK_AIR {\\n		u = true\\n	}\\n	return\\n}\\n\\n// lineRectCollide( line, rect )\\n//\\n// Checks if an axis-aligned line and a bounding box overlap.\\n// line = { z, x1, x2 } or line = { x, z1, z2 }\\n// rect = { x, z, size }\\n\\nfunc lineRectCollide(line Side, rect Rect) (ret bool) {\\n	if line.z != 0 {\\n		ret = rect.z > line.z-rect.sizez/2 && rect.z < line.z+rect.sizez/2 && rect.x > line.x1-rect.sizex/2 && rect.x < line.x2+rect.sizex/2\\n	} else {\\n		ret = rect.x > line.x-rect.sizex/2 && rect.x < line.x+rect.sizex/2 && rect.z > line.z1-rect.sizez/2 && rect.z < line.z2+rect.sizez/2\\n	}\\n	return\\n}\\n\\n// rectRectCollide( r1, r2 )\\n//\\n// Checks if two rectangles (x1, y1, x2, y2) overlap.\\n\\nfunc rectRectCollide(r1 Side, r2 Side) bool {\\n	if r2.x1 >= r1.x1 && r2.x1 <= r1.x2 && r2.z1 >= r1.z1 && r2.z1 <= r1.z2 {\\n		return true\\n	}\\n	if r2.x2 >= r1.x1 && r2.x2 <= r1.x2 && r2.z1 >= r1.z1 && r2.z1 <= r1.z2 {\\n		return true\\n	}\\n	if r2.x2 >= r1.x1 && r2.x2 <= r1.x2 && r2.z2 >= r1.z1 && r2.z2 <= r1.z2 {\\n		return true\\n	}\\n	if r2.x1 >= r1.x1 && r2.x1 <= r1.x2 && r2.z2 >= r1.z1 && r2.z2 <= r1.z2 {\\n		return true\\n	}\\n	return false\\n}\\n\\nfunc (world *World) ApplyForces(mob Mob, dt float64) {\\n	// mobBounds := mob.DesiredBoundingBox(dt)\\n	ip := IntPosition(mob.Position())\\n\\n	// mobx := ip[XAXIS]\\n	// moby := ip[YAXIS]\\n	// mobz := ip[ZAXIS]\\n\\n	// Gravity\\n	if mob.IsFalling() {\\n		// println(\\\"is falling\\\")\\n		mob.Setvx(mob.Velocity()[XAXIS] / 1.001)\\n		mob.Setvy(mob.Velocity()[YAXIS] - 15*dt)\\n		mob.Setvz(mob.Velocity()[ZAXIS] / 1.001)\\n	} else {\\n		mob.Setvx(mob.Velocity()[XAXIS] / 1.2)\\n		//mob.Setvy(0)\\n		mob.Setvz(mob.Velocity()[ZAXIS] / 1.2)\\n	}\\n\\n	// var dx, dz, dy int16\\n	// var x,  z int16\\n\\n	playerRect := Rect{x: float64(mob.X()) + mob.Velocity()[XAXIS]*dt, z: float64(mob.Z()) + mob.Velocity()[ZAXIS]*dt, sizex: mob.W(), sizez: mob.D()}\\n\\n	// collisionCandidates := make([]Side, 0)\\n\\n	if world.Atv(ip.North()) != BLOCK_AIR {\\n		if mob.Velocity()[ZAXIS] < 0 && ip.North().HRect().Intersects(playerRect) {\\n			mob.Snapz(float64(ip.North()[ZAXIS])+0.5+playerRect.sizez/2, 0)\\n		}\\n	}\\n\\n	if world.Atv(ip.South()) != BLOCK_AIR {\\n		if mob.Velocity()[ZAXIS] > 0 && ip.South().HRect().Intersects(playerRect) {\\n			mob.Snapz(float64(ip.South()[ZAXIS])-0.5-playerRect.sizez/2, 0)\\n		}\\n	}\\n\\n	if world.Atv(ip.East()) != BLOCK_AIR {\\n		if mob.Velocity()[XAXIS] > 0 && ip.East().HRect().Intersects(playerRect) {\\n			mob.Snapx(float64(ip.East()[XAXIS])-0.5-playerRect.sizex/2, 0)\\n		}\\n	}\\n\\n	if world.Atv(ip.West()) != BLOCK_AIR {\\n		if mob.Velocity()[XAXIS] < 0 && ip.West().HRect().Intersects(playerRect) {\\n			mob.Snapx(float64(ip.West()[XAXIS])+0.5+playerRect.sizex/2, 0)\\n		}\\n	}\\n\\n	mob.SetFalling(true)\\n	if world.Atv(ip.Down()) != BLOCK_AIR {\\n		mob.SetFalling(false)\\n		if mob.Velocity()[YAXIS] < 0 {\\n			mob.Snapy(float64(ip.Down()[YAXIS])+1, 0)\\n		}\\n	} else {\\n		if world.Atv(ip.Down().North()) != BLOCK_AIR {\\n			if ip.Down().North().HRect().Intersects(playerRect) {\\n				mob.Snapy(float64(ip.Down()[YAXIS])+1, 0)\\n				mob.SetFalling(false)\\n			}\\n		}\\n\\n		if world.Atv(ip.Down().South()) != BLOCK_AIR {\\n			if ip.Down().South().HRect().Intersects(playerRect) {\\n				mob.Snapy(float64(ip.Down()[YAXIS])+1, 0)\\n				mob.SetFalling(false)\\n			}\\n		}\\n\\n		if world.Atv(ip.Down().East()) != BLOCK_AIR {\\n			if ip.Down().East().HRect().Intersects(playerRect) {\\n				mob.Snapy(float64(ip.Down()[YAXIS])+1, 0)\\n				mob.SetFalling(false)\\n			}\\n		}\\n\\n		if world.Atv(ip.Down().West()) != BLOCK_AIR {\\n			if ip.Down().West().HRect().Intersects(playerRect) {\\n				mob.Snapy(float64(ip.Down()[YAXIS])+1, 0)\\n				mob.SetFalling(false)\\n			}\\n		}\\n	}\\n\\n}\\n\\nfunc (world *World) Simulate(dt float64) {\\n	for _, v := range world.mobs {\\n		v.Act(dt)\\n		world.ApplyForces(v, dt)\\n		v.Update(dt)\\n	}\\n\\n}\\n\\nfunc (world World) ChunkLoadedFor(x int16, y int16, z int16) bool {\\n	cx := x / CHUNK_WIDTH\\n	cy := y / CHUNK_HEIGHT\\n	cz := z / CHUNK_WIDTH\\n\\n	_, ok := world.chunks[chunkIndex(cx, cy, cz)]\\n	return ok\\n}\\n\\nfunc (world *World) Draw(center Vectorf , selectMode bool) {\\n	for _, v := range world.mobs {\\n		v.Draw(center, selectMode)\\n	}\\n\\n	gl.Translatef(-float32(center[XAXIS]), -float32(center[YAXIS]), -float32(center[ZAXIS]))\\n\\n	var px, py, pz = int16(center[XAXIS]), int16(center[YAXIS]), int16(center[ZAXIS])\\n\\n	var x, y, z int16\\n\\n	count := 0\\n	for x = px - 30; x < px+30; x++ {\\n		for z = pz - 30; z < pz+30; z++ {\\n			if x+z-px-pz <= ViewRadius && x+z-px-pz >= -ViewRadius {\\n				for y = py - 5; y < py+16; y++ {\\n					dx := x - px\\n					dy := y - py\\n					dz := z - pz\\n\\n					var blockid byte = world.At(x, y, z)\\n					if blockid != 0 {\\n						var n, s, w, e, u, d bool = world.AirNeighbours(x, z, y)\\n						if n || s || w || e || u || d {\\n\\n							var id uint16 = 0\\n\\n							if dx >= -2 && dx <= 2 && dy >= -2 && dy <= 2 && dz >= -2 && dz <= 2 {\\n								id = RelativeCoordinateToBlockId(dx, dy, dz)\\n							}\\n                            if !selectMode || id != 0 {\\n    							gl.PushMatrix()\\n    							gl.Translatef(float32(x), float32(y), float32(z))\\n    							TerrainCube(n, s, w, e, u, d, blockid, id, selectMode)\\n    							count++\\n    							gl.PopMatrix()\\n                            }\\n						}\\n					}\\n				}\\n			}\\n		}\\n	}\\n	//println(\\\"Drew \\\", count, \\\" cubes\\\")\\n\\n}\\n\\nfunc chunkIndex(x int16, y int16, z int16) int16 {\\n	return z*CHUNK_WIDTH*CHUNK_WIDTH + x*CHUNK_WIDTH + y\\n}\\n\\nfunc blockIndex(x int16, y int16, z int16) int16 {\\n	return CHUNK_WIDTH*CHUNK_WIDTH*y + CHUNK_WIDTH*x + z\\n}\\n\\n// **************************************************************\\n// CHUNKS\\n// **************************************************************\\n\\nfunc (c Chunk) WorldCoords(x int16, y int16, z int16) (xw int16, yw int16, zw int16) {\\n	xw = c.x*CHUNK_WIDTH + x\\n	zw = c.z*CHUNK_WIDTH + z\\n	yw = c.y*CHUNK_HEIGHT + y\\n	return\\n}\\n\\nfunc (chunk *Chunk) Init(x int16, y int16, z int16) {\\n	chunk.x = x\\n	chunk.y = y\\n	chunk.z = z\\n	chunk.Blocks = make([]byte, CHUNK_WIDTH*CHUNK_WIDTH*CHUNK_HEIGHT)\\n}\\n\\nfunc (chunk *Chunk) At(x int16, y int16, z int16) byte {\\n	return chunk.Blocks[blockIndex(x, y, z)]\\n}\\n\\nfunc (chunk *Chunk) Set(x int16, y int16, z int16, b byte) {\\n	chunk.Blocks[blockIndex(x, y, z)] = b\\n}\\n\",\n  169  			\"file\": \"af/world.go\",\n  170  			\"file_size\": 10887,\n\n/home/iand/wip/amberfell/player.go:\n  152  	gl.PushMatrix()\n  153  	gl.Rotated(player.Heading(), 0.0, 1.0, 0.0)\n  154: 	gl.Translatef(float32(player.X()), float32(player.Y()), float32(player.Z()))\n  155  \n  156: 	gl.Translatef(0.0, float32(player.H()/2)-0.5, 0.0)\n  157  	Cuboid(player.W(), player.H(), player.D(), &MapTextures[33], &MapTextures[32], &MapTextures[32], &MapTextures[32], &MapTextures[32], &MapTextures[32], 0, selectMode)\n  158  \n\n/home/iand/wip/amberfell/window.go:\n  136  	// gl.Rotated(view_rotx, 1.0, 0.0, 0.0)\n  137  	// gl.Rotated(view_roty-ThePlayer.Heading(), 0.0, 1.0, 0.0)\n  138: 	//gl.Translatef(0, -offset, 0)\n  139  \n  140  \n  ...\n  185  	// // mouseState := sdl.GetMouseState(&mousex, &mousey)\n  186  	// gl.PushMatrix()\n  187: 	// gl.Translatef(float32(center[XAXIS]),float32(center[YAXIS])-1,float32(center[ZAXIS]))\n  188  	// //print (\"i:\", i, \"j:\", j, \"b:\", World.At(i, j, groundLevel))\n  189  	// HighlightCuboidFace(1, 1, 1, TOP_FACE)\n\n/home/iand/wip/amberfell/wolf.go:\n  137  	gl.Rotated(wolf.Heading(), 0.0, 1.0, 0.0)\n  138  	//Cuboid(wolf.W(), wolf.H(), wolf.D(), 33, 32, 32, 32, 32, 32, 0, selectMode)\n  139: 	gl.Translatef(float32(wolf.X()), float32(wolf.Y()), float32(wolf.Z()))\n  140  	Cuboid(0.3, 0.5, 1.2, &MapTextures[33], &MapTextures[32], &MapTextures[32], &MapTextures[32], &MapTextures[32], &MapTextures[32], 0, selectMode)\n  141: 	// gl.Translatef(0.8, 0.3, 0)\n  142  	// gl.Rotated(-10, 0.0, 0.0, 1.0)\n  143  	// Cuboid(0.3, 0.3, 0.4, 33, 32, 32, 32, 32, 32, 0, selectMode)\n\n/home/iand/wip/amberfell/world.go:\n  344  	}\n  345  \n  346: 	//gl.Translatef(-float32(center[XAXIS]), -float32(center[YAXIS]), -float32(center[ZAXIS]))\n  347  \n  348  	var px, py, pz = int16(center[XAXIS]), int16(center[YAXIS]), int16(center[ZAXIS])\n  ...\n  371  							if !selectMode || id != 0 {\n  372  								gl.PushMatrix()\n  373: 								gl.Translatef(float32(x), float32(y), float32(z))\n  374  								TerrainCube(n, s, w, e, u, d, blockid, id, selectMode)\n  375  								count++\n\n10 matches across 5 files\n\n\nSearching 30 files for \"Heading\"\n\n/home/iand/wip/amberfell/mob.go:\n    7  \n    8  type Mob interface {\n    9: 	Heading() float64\n   10  	W() float64\n   11  	H() float64\n\n/home/iand/wip/amberfell/player.go:\n   15  type Player struct {\n   16  	Bounce        float64\n   17: 	heading       float64\n   18  	position      Vectorf\n   19  	velocity      Vectorf\n   ..\n   26  }\n   27  \n   28: func (p *Player) Init(heading float64, x int16, z int16, y int16) {\n   29: 	p.heading = heading\n   30  	p.position[XAXIS] = float64(x)\n   31  	p.position[YAXIS] = float64(y)\n   ..\n   49  func (p *Player) D() float64 { return 0.6 }\n   50  \n   51: func (p *Player) Heading() float64  { return p.heading }\n   52  func (p *Player) X() float32        { return float32(p.position[XAXIS]) }\n   53  func (p *Player) Y() float32        { return float32(p.position[YAXIS]) }\n   ..\n   58  func (p *Player) FrontBlock() Vectori {\n   59  	ip := IntPosition(p.position)\n   60: 	if p.heading > 337.5 || p.heading <= 22.5 {\n   61  		ip[XAXIS]++\n   62: 	} else if p.heading > 22.5 && p.heading <= 67.5 {\n   63  		ip[XAXIS]++\n   64  		ip[ZAXIS]--\n   65: 	} else if p.heading > 67.5 && p.heading <= 112.5 {\n   66  		ip[ZAXIS]--\n   67: 	} else if p.heading > 112.5 && p.heading <= 157.5 {\n   68  		ip[XAXIS]--\n   69  		ip[ZAXIS]--\n   70: 	} else if p.heading > 157.5 && p.heading <= 202.5 {\n   71  		ip[XAXIS]--\n   72: 	} else if p.heading > 202.5 && p.heading <= 247.5 {\n   73  		ip[XAXIS]--\n   74  		ip[ZAXIS]++\n   75: 	} else if p.heading > 247.5 && p.heading <= 292.5 {\n   76  		ip[ZAXIS]++\n   77: 	} else if p.heading > 292.5 && p.heading <= 337.5 {\n   78  		ip[XAXIS]++\n   79  		ip[ZAXIS]++\n   ..\n   86  \n   87  func (p *Player) Rotate(angle float64) {\n   88: 	p.heading += angle\n   89: 	if p.heading < 0 {\n   90: 		p.heading += 360\n   91  	}\n   92: 	if p.heading > 360 {\n   93: 		p.heading -= 360\n   94  	}\n   95  }\n   ..\n  152  	gl.PushMatrix()\n  153  	//gl.Translatef(-float32(player.X()), -float32(player.Y()), -float32(player.Z()))\n  154: 	gl.Rotated(player.Heading(), 0.0, 1.0, 0.0)\n  155  	//gl.Translatef(0.0, float32(player.H()/2)-0.5, 0.0)\n  156  \n  ...\n  197  	if keys[sdl.K_w] != 0 {\n  198  		if !p.IsFalling() {\n  199: 			p.velocity[XAXIS] = math.Cos(p.Heading()*math.Pi/180) * p.walkingSpeed\n  200: 			p.velocity[ZAXIS] = -math.Sin(p.Heading()*math.Pi/180) * p.walkingSpeed\n  201  		} else {\n  202: 			p.velocity[XAXIS] = math.Cos(p.Heading()*math.Pi/180) * p.walkingSpeed / 3\n  203: 			p.velocity[ZAXIS] = -math.Sin(p.Heading()*math.Pi/180) * p.walkingSpeed / 3\n  204  		}\n  205  \n  ...\n  207  	if keys[sdl.K_s] != 0 {\n  208  		if !p.IsFalling() {\n  209: 			p.velocity[XAXIS] = -math.Cos(p.Heading()*math.Pi/180) * p.walkingSpeed / 2\n  210: 			p.velocity[ZAXIS] = math.Sin(p.Heading()*math.Pi/180) * p.walkingSpeed / 2\n  211  		} else {\n  212: 			p.velocity[XAXIS] = -math.Cos(p.Heading()*math.Pi/180) * p.walkingSpeed / 6\n  213: 			p.velocity[ZAXIS] = math.Sin(p.Heading()*math.Pi/180) * p.walkingSpeed / 6\n  214  		}\n  215  \n\n/home/iand/wip/amberfell/window.go:\n  129  \n  130  	modelMatrix := *NewIdentity().Rotatex(view_rotx).Rotatey(view_roty).Float32()\n  131: 	// modelMatrix := *NewIdentity().Rotatex(view_rotx).Rotatey(view_roty - ThePlayer.Heading()).Translate(-center[XAXIS],-center[YAXIS],-center[ZAXIS]).Float32()\n  132  	gl.MultMatrixf(&modelMatrix[0])\n  133  \n  ...\n  135  	//gl.Rotated(0, 0.0, 0.0, 1.0)\n  136  	// gl.Rotated(view_rotx, 1.0, 0.0, 0.0)\n  137: 	// gl.Rotated(view_roty-ThePlayer.Heading(), 0.0, 1.0, 0.0)\n  138  	//gl.Translatef(0, -offset, 0)\n  139  \n  ...\n  171  	gl.Lightf(gl.LIGHT1, gl.SPOT_CUTOFF, 35)\n  172  	gl.Lightf(gl.LIGHT1, gl.SPOT_EXPONENT, 2.0)\n  173: 	gl.Lightfv(gl.LIGHT1, gl.SPOT_DIRECTION, []float32{float32(math.Cos(ThePlayer.Heading() * math.Pi / 180)), float32(-0.7), -float32(math.Sin(ThePlayer.Heading() * math.Pi / 180))})\n  174  \n  175  	// CheckGLError()\n\n/home/iand/wip/amberfell/wolf.go:\n   13  \n   14  type Wolf struct {\n   15: 	heading  float64\n   16  	position Vectorf\n   17  	velocity Vectorf\n   ..\n   20  }\n   21  \n   22: func (w *Wolf) Init(heading float64, x float32, z float32, y float32) {\n   23: 	w.heading = heading\n   24  	w.position[XAXIS] = float64(x)\n   25  	w.position[YAXIS] = float64(y)\n   ..\n   31  func (w *Wolf) D() float64 { return 3 }\n   32  \n   33: func (w *Wolf) Heading() float64  { return w.heading }\n   34  func (w *Wolf) X() float32        { return float32(w.position[XAXIS]) }\n   35  func (w *Wolf) Y() float32        { return float32(w.position[YAXIS]) }\n   ..\n   40  func (w *Wolf) FrontBlock() Vectori {\n   41  	ip := IntPosition(w.Position())\n   42: 	if w.heading > 337.5 || w.heading <= 22.5 {\n   43  		ip[XAXIS]++\n   44: 	} else if w.heading > 22.5 && w.heading <= 67.5 {\n   45  		ip[XAXIS]++\n   46  		ip[ZAXIS]--\n   47: 	} else if w.heading > 67.5 && w.heading <= 112.5 {\n   48  		ip[ZAXIS]--\n   49: 	} else if w.heading > 112.5 && w.heading <= 157.5 {\n   50  		ip[XAXIS]--\n   51  		ip[ZAXIS]--\n   52: 	} else if w.heading > 157.5 && w.heading <= 202.5 {\n   53  		ip[XAXIS]--\n   54: 	} else if w.heading > 202.5 && w.heading <= 247.5 {\n   55  		ip[XAXIS]--\n   56  		ip[ZAXIS]++\n   57: 	} else if w.heading > 247.5 && w.heading <= 292.5 {\n   58  		ip[ZAXIS]++\n   59: 	} else if w.heading > 292.5 && w.heading <= 337.5 {\n   60  		ip[XAXIS]++\n   61  		ip[ZAXIS]++\n   ..\n   68  \n   69  func (w *Wolf) Rotate(angle float64) {\n   70: 	w.heading += angle\n   71: 	if w.heading < 0 {\n   72: 		w.heading += 360\n   73  	}\n   74: 	if w.heading > 360 {\n   75: 		w.heading -= 360\n   76  	}\n   77  }\n   ..\n  122  \n  123  func (w *Wolf) Forward(v float64) {\n  124: 	w.velocity[XAXIS] = math.Cos(w.Heading() * math.Pi / 180)\n  125: 	w.velocity[ZAXIS] = -math.Sin(w.Heading() * math.Pi / 180)\n  126  }\n  127  \n  ...\n  135  func (wolf *Wolf) Draw(center Vectorf, selectMode bool) {\n  136  	gl.PushMatrix()\n  137: 	gl.Rotated(wolf.Heading(), 0.0, 1.0, 0.0)\n  138  	//Cuboid(wolf.W(), wolf.H(), wolf.D(), 33, 32, 32, 32, 32, 32, 0, selectMode)\n  139  	//gl.Translatef(float32(wolf.X()), float32(wolf.Y()), float32(wolf.Z()))\n\n71 matches across 4 files\n\n\nSearching 25 files for \"Heading()\"\n\n/home/iand/wip/amberfell/mob.go:\n    7  \n    8  type Mob interface {\n    9: 	Heading() float64\n   10  	W() float64\n   11  	H() float64\n\n/home/iand/wip/amberfell/player.go:\n   49  func (p *Player) D() float64 { return 0.6 }\n   50  \n   51: func (p *Player) Heading() float64  { return p.heading }\n   52  func (p *Player) X() float32        { return float32(p.position[XAXIS]) }\n   53  func (p *Player) Y() float32        { return float32(p.position[YAXIS]) }\n   ..\n  152  	gl.PushMatrix()\n  153  	//gl.Translatef(-float32(player.X()), -float32(player.Y()), -float32(player.Z()))\n  154: 	gl.Rotated(player.Heading(), 0.0, 1.0, 0.0)\n  155  	//gl.Translatef(0.0, float32(player.H()/2)-0.5, 0.0)\n  156  \n  ...\n  197  	if keys[sdl.K_w] != 0 {\n  198  		if !p.IsFalling() {\n  199: 			p.velocity[XAXIS] = math.Cos(p.Heading()*math.Pi/180) * p.walkingSpeed\n  200: 			p.velocity[ZAXIS] = -math.Sin(p.Heading()*math.Pi/180) * p.walkingSpeed\n  201  		} else {\n  202: 			p.velocity[XAXIS] = math.Cos(p.Heading()*math.Pi/180) * p.walkingSpeed / 3\n  203: 			p.velocity[ZAXIS] = -math.Sin(p.Heading()*math.Pi/180) * p.walkingSpeed / 3\n  204  		}\n  205  \n  ...\n  207  	if keys[sdl.K_s] != 0 {\n  208  		if !p.IsFalling() {\n  209: 			p.velocity[XAXIS] = -math.Cos(p.Heading()*math.Pi/180) * p.walkingSpeed / 2\n  210: 			p.velocity[ZAXIS] = math.Sin(p.Heading()*math.Pi/180) * p.walkingSpeed / 2\n  211  		} else {\n  212: 			p.velocity[XAXIS] = -math.Cos(p.Heading()*math.Pi/180) * p.walkingSpeed / 6\n  213: 			p.velocity[ZAXIS] = math.Sin(p.Heading()*math.Pi/180) * p.walkingSpeed / 6\n  214  		}\n  215  \n\n/home/iand/wip/amberfell/window.go:\n  129  \n  130  	modelMatrix := *NewIdentity().Rotatex(view_rotx).Rotatey(view_roty).Float32()\n  131: 	// modelMatrix := *NewIdentity().Rotatex(view_rotx).Rotatey(view_roty - ThePlayer.Heading()).Translate(-center[XAXIS],-center[YAXIS],-center[ZAXIS]).Float32()\n  132  	gl.MultMatrixf(&modelMatrix[0])\n  133  \n  ...\n  135  	//gl.Rotated(0, 0.0, 0.0, 1.0)\n  136  	// gl.Rotated(view_rotx, 1.0, 0.0, 0.0)\n  137: 	// gl.Rotated(view_roty-ThePlayer.Heading(), 0.0, 1.0, 0.0)\n  138  	//gl.Translatef(0, -offset, 0)\n  139  \n  ...\n  171  	gl.Lightf(gl.LIGHT1, gl.SPOT_CUTOFF, 35)\n  172  	gl.Lightf(gl.LIGHT1, gl.SPOT_EXPONENT, 2.0)\n  173: 	gl.Lightfv(gl.LIGHT1, gl.SPOT_DIRECTION, []float32{float32(math.Cos(ThePlayer.Heading() * math.Pi / 180)), float32(-0.7), -float32(math.Sin(ThePlayer.Heading() * math.Pi / 180))})\n  174  \n  175  	// CheckGLError()\n\n/home/iand/wip/amberfell/wolf.go:\n   31  func (w *Wolf) D() float64 { return 3 }\n   32  \n   33: func (w *Wolf) Heading() float64  { return w.heading }\n   34  func (w *Wolf) X() float32        { return float32(w.position[XAXIS]) }\n   35  func (w *Wolf) Y() float32        { return float32(w.position[YAXIS]) }\n   ..\n  122  \n  123  func (w *Wolf) Forward(v float64) {\n  124: 	w.velocity[XAXIS] = math.Cos(w.Heading() * math.Pi / 180)\n  125: 	w.velocity[ZAXIS] = -math.Sin(w.Heading() * math.Pi / 180)\n  126  }\n  127  \n  ...\n  135  func (wolf *Wolf) Draw(center Vectorf, selectMode bool) {\n  136  	gl.PushMatrix()\n  137: 	gl.Rotated(wolf.Heading(), 0.0, 1.0, 0.0)\n  138  	//Cuboid(wolf.W(), wolf.H(), wolf.D(), 33, 32, 32, 32, 32, 32, 0, selectMode)\n  139  	//gl.Translatef(float32(wolf.X()), float32(wolf.Y()), float32(wolf.Z()))\n\n19 matches across 4 files\n\n\nSearching 26 files for \"feedback\"\n\n/home/iand/wip/amberfell/gameloop.go:\n   57  \n   58  					println(\"Click:\", re.X, re.Y, re.State, re.Button, re.Which)\n   59: 					println(\"feedbackBuffer.size:\", feedbackBuffer.size)\n   60: 					feedbackBuffer.Dump()\n   61  \n   62  					if ThePlayer.CanInteract() {\n\n/home/iand/wip/amberfell/shapes.go:\n   31  }\n   32  \n   33: type FeedbackBuffer struct {\n   34  	buffer [4096]float32\n   35  	size   int\n   36  }\n   37  \n   38: func (self *FeedbackBuffer) Dump() {\n   39  \n   40  	for i := 0; i < self.size; i++ {\n\n/home/iand/wip/amberfell/window.go:\n  202  	}\n  203  \n  204: 	// gl.FeedbackBuffer(4096, gl.GL_3D_COLOR_TEXTURE, &feedbackBuffer.buffer[0])\n  205: 	// gl.RenderMode(gl.FEEDBACK)\n  206  	// //ThePlayer.Draw(center, true)\n  207  	// TheWorld.Draw(center, true)\n  208: 	// feedbackBuffer.size = gl.RenderMode(gl.RENDER)\n  209  \n  210  	gl.Translatef(0, offset, 0)\n\n9 matches across 3 files\n\n\nSearching 27 files for \"Vectori\"\n\n/home/iand/wip/amberfell/amberfell.sublime-workspace:\n  166  		},\n  167  		{\n  168: 			\"contents\": \"/*\\n  To the extent possible under law, Ian Davis has waived all copyright\\n  and related or neighboring rights to this Amberfell Source Code file.\\n  This work is published from the United Kingdom. \\n*/\\npackage af\\n\\nimport (\\n	\\\"github.com/banthar/gl\\\"\\n	\\\"math/rand\\\"\\n	// \\\"math\\\"\\n	// \\\"fmt\\\"   \\n\\n)\\n\\ntype World struct {\\n	GroundLevel int16\\n	mobs   []Mob\\n	chunks map[int16]*Chunk\\n}\\n\\ntype Chunk struct {\\n	x, y, z int16\\n	Blocks  []byte\\n}\\n\\ntype Side struct {\\n	x, x1, x2, z, z1, z2, dir, y float64\\n}\\n\\nfunc (world *World) Init() {\\n\\n	world.chunks = make(map[int16]*Chunk)\\n\\n	world.GenerateChunk(0, 0, 0)\\n	world.GenerateChunk(0, 0, 1)\\n	world.GenerateChunk(0, 0, -1)\\n	world.GenerateChunk(-1, 0, 0)\\n	world.GenerateChunk(-1, 0, 1)\\n	world.GenerateChunk(-1, 0, -1)\\n	world.GenerateChunk(1, 0, 0)\\n	world.GenerateChunk(1, 0, 1)\\n	world.GenerateChunk(1, 0, -1)\\n\\n	var iw, id int16\\n\\n	numFeatures := rand.Intn(20)\\n	for i := 0; i < numFeatures; i++ {\\n		iw, id = world.RandomSquare()\\n\\n		world.Set(iw, GroundLevel, id, 1) // stone\\n		world.Grow(iw, GroundLevel, id, 45, 45, 45, 52, 10, 10, 1)\\n	}\\n	iw, id = world.RandomSquare()\\n\\n	world.Set(iw, GroundLevel, id, 0) // air\\n	world.Grow(iw, GroundLevel, id, 20, 20, 20, 20, 0, 30, 0)\\n\\n	wolf := new(Wolf)\\n	wolf.Init(120, 17, 19, GroundLevel+1)\\n	world.mobs = append(world.mobs, wolf)\\n\\n}\\n\\n// A chunk is a 24 x 24 x 48 set of blocks\\n// x is east/west offset from World Origin\\n// z is south/north offset from World Origin\\nfunc (world *World) GenerateChunk(x int16, y int16, z int16) *Chunk {\\n	var chunk Chunk\\n	chunk.Init(x, y, z)\\n	println(\\\"Generating chunk at x:\\\", x, \\\" y:\\\", y, \\\" z:\\\", z)\\n	var iw, id, ih int16\\n	for iw = 0; iw < CHUNK_WIDTH; iw++ {\\n		for id = 0; id < CHUNK_WIDTH; id++ {\\n			for ih = 0; ih <= GroundLevel; ih++ {\\n				chunk.Set(iw, ih, id, 2) // dirt\\n			}\\n			for ih = GroundLevel + 1; ih < CHUNK_HEIGHT; ih++ {\\n				chunk.Set(iw, ih, id, 0) // air\\n			}\\n		}\\n	}\\n\\n	world.chunks[chunkIndex(x, y, z)] = &chunk\\n	return &chunk\\n\\n}\\n\\n// Gets the chunk for a given x/z block coordinate\\n// x = 0, z = 0 is in the top left of the home chunk\\nfunc (world *World) GetChunkForBlock(x int16, y int16, z int16) (*Chunk, int16, int16, int16) {\\n	cx := x / CHUNK_WIDTH\\n	cy := y / CHUNK_HEIGHT\\n	cz := z / CHUNK_WIDTH\\n	//println(\\\"cx:\\\", cx, \\\"cz:\\\", cz)\\n\\n	chunk, ok := world.chunks[chunkIndex(cx, cy, cz)]\\n	if !ok {\\n		chunk = world.GenerateChunk(cx, cy, cz)\\n	}\\n\\n	ox := x - cx*CHUNK_WIDTH\\n	if ox < 0 {\\n		ox += CHUNK_WIDTH\\n	}\\n\\n	oy := y - cy*CHUNK_HEIGHT\\n	if oy < 0 {\\n		oy += CHUNK_HEIGHT\\n	}\\n\\n	oz := z - cz*CHUNK_WIDTH\\n	if oz < 0 {\\n		oz += CHUNK_WIDTH\\n	}\\n\\n	return chunk, ox, oy, oz\\n\\n}\\n\\nfunc (world *World) At(x int16, y int16, z int16) byte {\\n	//println(\\\"x:\\\", x, \\\" y:\\\", y, \\\"z:\\\", z)\\n	chunk, ox, oy, oz := world.GetChunkForBlock(x, y, z)\\n	//println(\\\"ox:\\\", ox, \\\" y:\\\", y, \\\"oz:\\\", oz)\\n	return chunk.At(ox, oy, oz)\\n}\\n\\nfunc (world *World) Atv(v Vectori) byte {\\n	return world.At(v[XAXIS], v[YAXIS], v[ZAXIS])\\n}\\n\\nfunc (world *World) Set(x int16, y int16, z int16, b byte) {\\n	chunk, ox, oy, oz := world.GetChunkForBlock(x, y, z)\\n	chunk.Set(ox, oy, oz, b)\\n}\\n\\nfunc (world *World) Setv(v Vectori, b byte) {\\n    chunk, ox, oy, oz := world.GetChunkForBlock(v[XAXIS], v[YAXIS], v[ZAXIS])\\n    chunk.Set(ox, oy, oz, b)\\n}\\n\\n\\nfunc (world *World) RandomSquare() (x int16, z int16) {\\n	x = int16(rand.Intn(40) - 20)\\n	z = int16(rand.Intn(40) - 20)\\n	return\\n}\\n\\n// north/south = -/+ z\\n// east/west = +/- x\\n// up/down = +/- y\\n\\nfunc (world *World) Grow(x int16, y int16, z int16, n int, s int, w int, e int, u int, d int, texture byte) {\\n	if (y == 0 || world.At(x+1, y-1, z) != 0) && rand.Intn(100) < e {\\n		world.Set(x+1, y, z, texture)\\n		world.Grow(x+1, y, z, n, s, 0, e, u, d, texture)\\n	}\\n	if (y == 0 || world.At(x-1, y-1, z) != 0) && rand.Intn(100) < w {\\n		world.Set(x-1, y, z, texture)\\n		world.Grow(x-1, y, z, n, s, w, 0, u, d, texture)\\n	}\\n	if (y == 0 || world.At(x, y-1, z+1) != 0) && rand.Intn(100) < s {\\n		world.Set(x, y, z+1, texture)\\n		world.Grow(x, y, z+1, 0, s, w, e, u, d, texture)\\n	}\\n	if (y == 0 || world.At(x, y-1, z-1) != 0) && rand.Intn(100) < n {\\n		world.Set(x, y, z-1, texture)\\n		world.Grow(x, y, z-1, n, 0, w, e, u, d, texture)\\n	}\\n	if y < CHUNK_HEIGHT-1 && rand.Intn(100) < u {\\n		world.Set(x, y+1, z, texture)\\n		world.Grow(x, y+1, z, n, s, w, e, u, 0, texture)\\n	}\\n	if y > 0 && rand.Intn(100) < d {\\n		world.Set(x, y-1, z, texture)\\n		world.Grow(x, y-1, z, n, s, w, e, 0, d, texture)\\n	}\\n}\\n\\nfunc (world *World) AirNeighbours(x int16, z int16, y int16) (n, s, w, e, u, d bool) {\\n\\n	if world.ChunkLoadedFor(x-1, y, z) && world.At(x-1, y, z) == BLOCK_AIR {\\n		w = true\\n	}\\n	if world.ChunkLoadedFor(x+1, y, z) && world.At(x+1, y, z) == BLOCK_AIR {\\n		e = true\\n	}\\n	if world.ChunkLoadedFor(x, y, z-1) && world.At(x, y, z-1) == BLOCK_AIR {\\n		n = true\\n	}\\n	if world.ChunkLoadedFor(x, y, z+1) && world.At(x, y, z+1) == BLOCK_AIR {\\n		s = true\\n	}\\n	if world.ChunkLoadedFor(x, y+1, z) && world.At(x, y+1, z) == BLOCK_AIR {\\n		u = true\\n	}\\n	return\\n}\\n\\n// lineRectCollide( line, rect )\\n//\\n// Checks if an axis-aligned line and a bounding box overlap.\\n// line = { z, x1, x2 } or line = { x, z1, z2 }\\n// rect = { x, z, size }\\n\\nfunc lineRectCollide(line Side, rect Rect) (ret bool) {\\n	if line.z != 0 {\\n		ret = rect.z > line.z-rect.sizez/2 && rect.z < line.z+rect.sizez/2 && rect.x > line.x1-rect.sizex/2 && rect.x < line.x2+rect.sizex/2\\n	} else {\\n		ret = rect.x > line.x-rect.sizex/2 && rect.x < line.x+rect.sizex/2 && rect.z > line.z1-rect.sizez/2 && rect.z < line.z2+rect.sizez/2\\n	}\\n	return\\n}\\n\\n// rectRectCollide( r1, r2 )\\n//\\n// Checks if two rectangles (x1, y1, x2, y2) overlap.\\n\\nfunc rectRectCollide(r1 Side, r2 Side) bool {\\n	if r2.x1 >= r1.x1 && r2.x1 <= r1.x2 && r2.z1 >= r1.z1 && r2.z1 <= r1.z2 {\\n		return true\\n	}\\n	if r2.x2 >= r1.x1 && r2.x2 <= r1.x2 && r2.z1 >= r1.z1 && r2.z1 <= r1.z2 {\\n		return true\\n	}\\n	if r2.x2 >= r1.x1 && r2.x2 <= r1.x2 && r2.z2 >= r1.z1 && r2.z2 <= r1.z2 {\\n		return true\\n	}\\n	if r2.x1 >= r1.x1 && r2.x1 <= r1.x2 && r2.z2 >= r1.z1 && r2.z2 <= r1.z2 {\\n		return true\\n	}\\n	return false\\n}\\n\\nfunc (world *World) ApplyForces(mob Mob, dt float64) {\\n	// mobBounds := mob.DesiredBoundingBox(dt)\\n	ip := IntPosition(mob.Position())\\n\\n	// mobx := ip[XAXIS]\\n	// moby := ip[YAXIS]\\n	// mobz := ip[ZAXIS]\\n\\n	// Gravity\\n	if mob.IsFalling() {\\n		// println(\\\"is falling\\\")\\n		mob.Setvx(mob.Velocity()[XAXIS] / 1.001)\\n		mob.Setvy(mob.Velocity()[YAXIS] - 15*dt)\\n		mob.Setvz(mob.Velocity()[ZAXIS] / 1.001)\\n	} else {\\n		mob.Setvx(mob.Velocity()[XAXIS] / 1.2)\\n		//mob.Setvy(0)\\n		mob.Setvz(mob.Velocity()[ZAXIS] / 1.2)\\n	}\\n\\n	// var dx, dz, dy int16\\n	// var x,  z int16\\n\\n	playerRect := Rect{x: float64(mob.X()) + mob.Velocity()[XAXIS]*dt, z: float64(mob.Z()) + mob.Velocity()[ZAXIS]*dt, sizex: mob.W(), sizez: mob.D()}\\n\\n	// collisionCandidates := make([]Side, 0)\\n\\n	if world.Atv(ip.North()) != BLOCK_AIR {\\n		if mob.Velocity()[ZAXIS] < 0 && ip.North().HRect().Intersects(playerRect) {\\n			mob.Snapz(float64(ip.North()[ZAXIS])+0.5+playerRect.sizez/2, 0)\\n		}\\n	}\\n\\n	if world.Atv(ip.South()) != BLOCK_AIR {\\n		if mob.Velocity()[ZAXIS] > 0 && ip.South().HRect().Intersects(playerRect) {\\n			mob.Snapz(float64(ip.South()[ZAXIS])-0.5-playerRect.sizez/2, 0)\\n		}\\n	}\\n\\n	if world.Atv(ip.East()) != BLOCK_AIR {\\n		if mob.Velocity()[XAXIS] > 0 && ip.East().HRect().Intersects(playerRect) {\\n			mob.Snapx(float64(ip.East()[XAXIS])-0.5-playerRect.sizex/2, 0)\\n		}\\n	}\\n\\n	if world.Atv(ip.West()) != BLOCK_AIR {\\n		if mob.Velocity()[XAXIS] < 0 && ip.West().HRect().Intersects(playerRect) {\\n			mob.Snapx(float64(ip.West()[XAXIS])+0.5+playerRect.sizex/2, 0)\\n		}\\n	}\\n\\n	mob.SetFalling(true)\\n	if world.Atv(ip.Down()) != BLOCK_AIR {\\n		mob.SetFalling(false)\\n		if mob.Velocity()[YAXIS] < 0 {\\n			mob.Snapy(float64(ip.Down()[YAXIS])+1, 0)\\n		}\\n	} else {\\n		if world.Atv(ip.Down().North()) != BLOCK_AIR {\\n			if ip.Down().North().HRect().Intersects(playerRect) {\\n				mob.Snapy(float64(ip.Down()[YAXIS])+1, 0)\\n				mob.SetFalling(false)\\n			}\\n		}\\n\\n		if world.Atv(ip.Down().South()) != BLOCK_AIR {\\n			if ip.Down().South().HRect().Intersects(playerRect) {\\n				mob.Snapy(float64(ip.Down()[YAXIS])+1, 0)\\n				mob.SetFalling(false)\\n			}\\n		}\\n\\n		if world.Atv(ip.Down().East()) != BLOCK_AIR {\\n			if ip.Down().East().HRect().Intersects(playerRect) {\\n				mob.Snapy(float64(ip.Down()[YAXIS])+1, 0)\\n				mob.SetFalling(false)\\n			}\\n		}\\n\\n		if world.Atv(ip.Down().West()) != BLOCK_AIR {\\n			if ip.Down().West().HRect().Intersects(playerRect) {\\n				mob.Snapy(float64(ip.Down()[YAXIS])+1, 0)\\n				mob.SetFalling(false)\\n			}\\n		}\\n	}\\n\\n}\\n\\nfunc (world *World) Simulate(dt float64) {\\n	for _, v := range world.mobs {\\n		v.Act(dt)\\n		world.ApplyForces(v, dt)\\n		v.Update(dt)\\n	}\\n\\n}\\n\\nfunc (world World) ChunkLoadedFor(x int16, y int16, z int16) bool {\\n	cx := x / CHUNK_WIDTH\\n	cy := y / CHUNK_HEIGHT\\n	cz := z / CHUNK_WIDTH\\n\\n	_, ok := world.chunks[chunkIndex(cx, cy, cz)]\\n	return ok\\n}\\n\\nfunc (world *World) Draw(center Vectorf , selectMode bool) {\\n	for _, v := range world.mobs {\\n		v.Draw(center, selectMode)\\n	}\\n\\n	gl.Translatef(-float32(center[XAXIS]), -float32(center[YAXIS]), -float32(center[ZAXIS]))\\n\\n	var px, py, pz = int16(center[XAXIS]), int16(center[YAXIS]), int16(center[ZAXIS])\\n\\n	var x, y, z int16\\n\\n	count := 0\\n	for x = px - 30; x < px+30; x++ {\\n		for z = pz - 30; z < pz+30; z++ {\\n			if x+z-px-pz <= ViewRadius && x+z-px-pz >= -ViewRadius {\\n				for y = py - 5; y < py+16; y++ {\\n					dx := x - px\\n					dy := y - py\\n					dz := z - pz\\n\\n					var blockid byte = world.At(x, y, z)\\n					if blockid != 0 {\\n						var n, s, w, e, u, d bool = world.AirNeighbours(x, z, y)\\n						if n || s || w || e || u || d {\\n\\n							var id uint16 = 0\\n\\n							if dx >= -2 && dx <= 2 && dy >= -2 && dy <= 2 && dz >= -2 && dz <= 2 {\\n								id = RelativeCoordinateToBlockId(dx, dy, dz)\\n							}\\n                            if !selectMode || id != 0 {\\n    							gl.PushMatrix()\\n    							gl.Translatef(float32(x), float32(y), float32(z))\\n    							TerrainCube(n, s, w, e, u, d, blockid, id, selectMode)\\n    							count++\\n    							gl.PopMatrix()\\n                            }\\n						}\\n					}\\n				}\\n			}\\n		}\\n	}\\n	//println(\\\"Drew \\\", count, \\\" cubes\\\")\\n\\n}\\n\\nfunc chunkIndex(x int16, y int16, z int16) int16 {\\n	return z*CHUNK_WIDTH*CHUNK_WIDTH + x*CHUNK_WIDTH + y\\n}\\n\\nfunc blockIndex(x int16, y int16, z int16) int16 {\\n	return CHUNK_WIDTH*CHUNK_WIDTH*y + CHUNK_WIDTH*x + z\\n}\\n\\n// **************************************************************\\n// CHUNKS\\n// **************************************************************\\n\\nfunc (c Chunk) WorldCoords(x int16, y int16, z int16) (xw int16, yw int16, zw int16) {\\n	xw = c.x*CHUNK_WIDTH + x\\n	zw = c.z*CHUNK_WIDTH + z\\n	yw = c.y*CHUNK_HEIGHT + y\\n	return\\n}\\n\\nfunc (chunk *Chunk) Init(x int16, y int16, z int16) {\\n	chunk.x = x\\n	chunk.y = y\\n	chunk.z = z\\n	chunk.Blocks = make([]byte, CHUNK_WIDTH*CHUNK_WIDTH*CHUNK_HEIGHT)\\n}\\n\\nfunc (chunk *Chunk) At(x int16, y int16, z int16) byte {\\n	return chunk.Blocks[blockIndex(x, y, z)]\\n}\\n\\nfunc (chunk *Chunk) Set(x int16, y int16, z int16, b byte) {\\n	chunk.Blocks[blockIndex(x, y, z)] = b\\n}\\n\",\n  169  			\"file\": \"af/world.go\",\n  170  			\"file_size\": 10887,\n  ...\n  470  			\"i\",\n  471  			\"j\",\n  472: 			\"Vectori\",\n  473  			\"case BLOCK_DIRT:\",\n  474  			\"case BLOCK_STONE:\",\n\n/home/iand/wip/amberfell/functions.go:\n   26  }\n   27  \n   28: func IntPosition(pos Vectorf) Vectori {\n   29: 	return Vectori{int16(Round(pos[XAXIS], 0)),\n   30  		int16(Round(pos[YAXIS], 0)),\n   31  		int16(Round(pos[ZAXIS], 0))}\n\n/home/iand/wip/amberfell/player.go:\n   56  func (p *Player) Position() Vectorf { return p.position }\n   57  \n   58: func (p *Player) FrontBlock() Vectori {\n   59  	ip := IntPosition(p.position)\n   60  	if p.heading > 337.5 || p.heading <= 22.5 {\n   ..\n  242  }\n  243  \n  244: func (self *Player) Interact(pos Vectori, face uint8) {\n  245  	if !self.CanInteract() {\n  246  		return\n\n/home/iand/wip/amberfell/vector.go:\n   42  }\n   43  \n   44: type Vectori [3]int16\n   45  \n   46  type Rect struct {\n   ..\n   48  }\n   49  \n   50: func (wp Vectori) North() Vectori { return Vectori{wp[XAXIS], wp[YAXIS], wp[ZAXIS] - 1} }\n   51: func (wp Vectori) South() Vectori { return Vectori{wp[XAXIS], wp[YAXIS], wp[ZAXIS] + 1} }\n   52: func (wp Vectori) East() Vectori  { return Vectori{wp[XAXIS] + 1, wp[YAXIS], wp[ZAXIS]} }\n   53: func (wp Vectori) West() Vectori  { return Vectori{wp[XAXIS] - 1, wp[YAXIS], wp[ZAXIS]} }\n   54: func (wp Vectori) Up() Vectori    { return Vectori{wp[XAXIS], wp[YAXIS] + 1, wp[ZAXIS]} }\n   55: func (wp Vectori) Down() Vectori  { return Vectori{wp[XAXIS], wp[YAXIS] - 1, wp[ZAXIS]} }\n   56  \n   57: func (wp Vectori) HRect() Rect {\n   58  	return Rect{float64(wp[XAXIS]) - 0.5, float64(wp[ZAXIS]) - 0.5, 1, 1}\n   59  }\n   60  \n   61: func (self *Vectori) Adjust(dx int16, dy int16, dz int16) {\n   62  	self[XAXIS] += dx\n   63  	self[YAXIS] += dy\n   ..\n   65  }\n   66  \n   67: func (self *Vectori) String() string {\n   68  	return fmt.Sprintf(\"[x:%d, y:%d, z:%d]\", self[XAXIS], self[YAXIS], self[ZAXIS])\n   69  }\n\n/home/iand/wip/amberfell/wolf.go:\n   38  func (w *Wolf) Position() Vectorf { return w.position }\n   39  \n   40: func (w *Wolf) FrontBlock() Vectori {\n   41  	ip := IntPosition(w.Position())\n   42  	if w.heading > 337.5 || w.heading <= 22.5 {\n\n/home/iand/wip/amberfell/world.go:\n  126  }\n  127  \n  128: func (world *World) Atv(v Vectori) byte {\n  129  	return world.At(v[XAXIS], v[YAXIS], v[ZAXIS])\n  130  }\n  ...\n  135  }\n  136  \n  137: func (world *World) Setv(v Vectori, b byte) {\n  138  	chunk, ox, oy, oz := world.GetChunkForBlock(v[XAXIS], v[YAXIS], v[ZAXIS])\n  139  	chunk.Set(ox, oy, oz, b)\n\n32 matches across 6 files\n",
+			"settings":
+			{
+				"buffer_size": 55657,
 				"line_ending": "Unix",
-				"name": "package af"
+				"name": "Find Results",
+				"scratch": true
 			}
 		},
 		{
-			"file": "af/gameloop.go",
+			"file": "gameloop.go",
 			"settings":
 			{
-				"buffer_size": 4864,
-				"line_ending": "Unix",
-				"name": "package af"
-			}
-		},
-		{
-			"file": "af/globals.go",
-			"settings":
-			{
-				"buffer_size": 771,
-				"line_ending": "Unix",
-				"name": "package af"
-			}
-		},
-		{
-			"file": "af/mob.go",
-			"settings":
-			{
-				"buffer_size": 676,
+				"buffer_size": 7633,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "af/player.go",
 			"settings":
 			{
-				"buffer_size": 7215,
+				"buffer_size": 0,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "af/shapes.go",
+			"file": "globals.go",
 			"settings":
 			{
-				"buffer_size": 18848,
-				"line_ending": "Unix",
-				"name": "package af"
-			}
-		},
-		{
-			"file": "af/vector.go",
-			"settings":
-			{
-				"buffer_size": 4399,
+				"buffer_size": 638,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "af/vector_test.go",
+			"file": "mob.go",
 			"settings":
 			{
-				"buffer_size": 436,
+				"buffer_size": 661,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "af/window.go",
+			"file": "player.go",
 			"settings":
 			{
-				"buffer_size": 6112,
-				"line_ending": "Unix",
-				"name": "package af"
-			}
-		},
-		{
-			"file": "af/wolf.go",
-			"settings":
-			{
-				"buffer_size": 3993,
+				"buffer_size": 7094,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"contents": "/*\n  To the extent possible under law, Ian Davis has waived all copyright\n  and related or neighboring rights to this Amberfell Source Code file.\n  This work is published from the United Kingdom. \n*/\npackage af\n\nimport (\n	\"github.com/banthar/gl\"\n	\"math/rand\"\n	// \"math\"\n	// \"fmt\"   \n\n)\n\ntype World struct {\n	GroundLevel int16\n	mobs   []Mob\n	chunks map[int16]*Chunk\n}\n\ntype Chunk struct {\n	x, y, z int16\n	Blocks  []byte\n}\n\ntype Side struct {\n	x, x1, x2, z, z1, z2, dir, y float64\n}\n\nfunc (world *World) Init() {\n\n	world.chunks = make(map[int16]*Chunk)\n\n	world.GenerateChunk(0, 0, 0)\n	world.GenerateChunk(0, 0, 1)\n	world.GenerateChunk(0, 0, -1)\n	world.GenerateChunk(-1, 0, 0)\n	world.GenerateChunk(-1, 0, 1)\n	world.GenerateChunk(-1, 0, -1)\n	world.GenerateChunk(1, 0, 0)\n	world.GenerateChunk(1, 0, 1)\n	world.GenerateChunk(1, 0, -1)\n\n	var iw, id int16\n\n	numFeatures := rand.Intn(20)\n	for i := 0; i < numFeatures; i++ {\n		iw, id = world.RandomSquare()\n\n		world.Set(iw, GroundLevel, id, 1) // stone\n		world.Grow(iw, GroundLevel, id, 45, 45, 45, 52, 10, 10, 1)\n	}\n	iw, id = world.RandomSquare()\n\n	world.Set(iw, GroundLevel, id, 0) // air\n	world.Grow(iw, GroundLevel, id, 20, 20, 20, 20, 0, 30, 0)\n\n	wolf := new(Wolf)\n	wolf.Init(120, 17, 19, GroundLevel+1)\n	world.mobs = append(world.mobs, wolf)\n\n}\n\n// A chunk is a 24 x 24 x 48 set of blocks\n// x is east/west offset from World Origin\n// z is south/north offset from World Origin\nfunc (world *World) GenerateChunk(x int16, y int16, z int16) *Chunk {\n	var chunk Chunk\n	chunk.Init(x, y, z)\n	println(\"Generating chunk at x:\", x, \" y:\", y, \" z:\", z)\n	var iw, id, ih int16\n	for iw = 0; iw < CHUNK_WIDTH; iw++ {\n		for id = 0; id < CHUNK_WIDTH; id++ {\n			for ih = 0; ih <= GroundLevel; ih++ {\n				chunk.Set(iw, ih, id, 2) // dirt\n			}\n			for ih = GroundLevel + 1; ih < CHUNK_HEIGHT; ih++ {\n				chunk.Set(iw, ih, id, 0) // air\n			}\n		}\n	}\n\n	world.chunks[chunkIndex(x, y, z)] = &chunk\n	return &chunk\n\n}\n\n// Gets the chunk for a given x/z block coordinate\n// x = 0, z = 0 is in the top left of the home chunk\nfunc (world *World) GetChunkForBlock(x int16, y int16, z int16) (*Chunk, int16, int16, int16) {\n	cx := x / CHUNK_WIDTH\n	cy := y / CHUNK_HEIGHT\n	cz := z / CHUNK_WIDTH\n	//println(\"cx:\", cx, \"cz:\", cz)\n\n	chunk, ok := world.chunks[chunkIndex(cx, cy, cz)]\n	if !ok {\n		chunk = world.GenerateChunk(cx, cy, cz)\n	}\n\n	ox := x - cx*CHUNK_WIDTH\n	if ox < 0 {\n		ox += CHUNK_WIDTH\n	}\n\n	oy := y - cy*CHUNK_HEIGHT\n	if oy < 0 {\n		oy += CHUNK_HEIGHT\n	}\n\n	oz := z - cz*CHUNK_WIDTH\n	if oz < 0 {\n		oz += CHUNK_WIDTH\n	}\n\n	return chunk, ox, oy, oz\n\n}\n\nfunc (world *World) At(x int16, y int16, z int16) byte {\n	//println(\"x:\", x, \" y:\", y, \"z:\", z)\n	chunk, ox, oy, oz := world.GetChunkForBlock(x, y, z)\n	//println(\"ox:\", ox, \" y:\", y, \"oz:\", oz)\n	return chunk.At(ox, oy, oz)\n}\n\nfunc (world *World) Atv(v Vectori) byte {\n	return world.At(v[XAXIS], v[YAXIS], v[ZAXIS])\n}\n\nfunc (world *World) Set(x int16, y int16, z int16, b byte) {\n	chunk, ox, oy, oz := world.GetChunkForBlock(x, y, z)\n	chunk.Set(ox, oy, oz, b)\n}\n\nfunc (world *World) Setv(v Vectori, b byte) {\n    chunk, ox, oy, oz := world.GetChunkForBlock(v[XAXIS], v[YAXIS], v[ZAXIS])\n    chunk.Set(ox, oy, oz, b)\n}\n\n\nfunc (world *World) RandomSquare() (x int16, z int16) {\n	x = int16(rand.Intn(40) - 20)\n	z = int16(rand.Intn(40) - 20)\n	return\n}\n\n// north/south = -/+ z\n// east/west = +/- x\n// up/down = +/- y\n\nfunc (world *World) Grow(x int16, y int16, z int16, n int, s int, w int, e int, u int, d int, texture byte) {\n	if (y == 0 || world.At(x+1, y-1, z) != 0) && rand.Intn(100) < e {\n		world.Set(x+1, y, z, texture)\n		world.Grow(x+1, y, z, n, s, 0, e, u, d, texture)\n	}\n	if (y == 0 || world.At(x-1, y-1, z) != 0) && rand.Intn(100) < w {\n		world.Set(x-1, y, z, texture)\n		world.Grow(x-1, y, z, n, s, w, 0, u, d, texture)\n	}\n	if (y == 0 || world.At(x, y-1, z+1) != 0) && rand.Intn(100) < s {\n		world.Set(x, y, z+1, texture)\n		world.Grow(x, y, z+1, 0, s, w, e, u, d, texture)\n	}\n	if (y == 0 || world.At(x, y-1, z-1) != 0) && rand.Intn(100) < n {\n		world.Set(x, y, z-1, texture)\n		world.Grow(x, y, z-1, n, 0, w, e, u, d, texture)\n	}\n	if y < CHUNK_HEIGHT-1 && rand.Intn(100) < u {\n		world.Set(x, y+1, z, texture)\n		world.Grow(x, y+1, z, n, s, w, e, u, 0, texture)\n	}\n	if y > 0 && rand.Intn(100) < d {\n		world.Set(x, y-1, z, texture)\n		world.Grow(x, y-1, z, n, s, w, e, 0, d, texture)\n	}\n}\n\nfunc (world *World) AirNeighbours(x int16, z int16, y int16) (n, s, w, e, u, d bool) {\n\n	if world.ChunkLoadedFor(x-1, y, z) && world.At(x-1, y, z) == BLOCK_AIR {\n		w = true\n	}\n	if world.ChunkLoadedFor(x+1, y, z) && world.At(x+1, y, z) == BLOCK_AIR {\n		e = true\n	}\n	if world.ChunkLoadedFor(x, y, z-1) && world.At(x, y, z-1) == BLOCK_AIR {\n		n = true\n	}\n	if world.ChunkLoadedFor(x, y, z+1) && world.At(x, y, z+1) == BLOCK_AIR {\n		s = true\n	}\n	if world.ChunkLoadedFor(x, y+1, z) && world.At(x, y+1, z) == BLOCK_AIR {\n		u = true\n	}\n	return\n}\n\n// lineRectCollide( line, rect )\n//\n// Checks if an axis-aligned line and a bounding box overlap.\n// line = { z, x1, x2 } or line = { x, z1, z2 }\n// rect = { x, z, size }\n\nfunc lineRectCollide(line Side, rect Rect) (ret bool) {\n	if line.z != 0 {\n		ret = rect.z > line.z-rect.sizez/2 && rect.z < line.z+rect.sizez/2 && rect.x > line.x1-rect.sizex/2 && rect.x < line.x2+rect.sizex/2\n	} else {\n		ret = rect.x > line.x-rect.sizex/2 && rect.x < line.x+rect.sizex/2 && rect.z > line.z1-rect.sizez/2 && rect.z < line.z2+rect.sizez/2\n	}\n	return\n}\n\n// rectRectCollide( r1, r2 )\n//\n// Checks if two rectangles (x1, y1, x2, y2) overlap.\n\nfunc rectRectCollide(r1 Side, r2 Side) bool {\n	if r2.x1 >= r1.x1 && r2.x1 <= r1.x2 && r2.z1 >= r1.z1 && r2.z1 <= r1.z2 {\n		return true\n	}\n	if r2.x2 >= r1.x1 && r2.x2 <= r1.x2 && r2.z1 >= r1.z1 && r2.z1 <= r1.z2 {\n		return true\n	}\n	if r2.x2 >= r1.x1 && r2.x2 <= r1.x2 && r2.z2 >= r1.z1 && r2.z2 <= r1.z2 {\n		return true\n	}\n	if r2.x1 >= r1.x1 && r2.x1 <= r1.x2 && r2.z2 >= r1.z1 && r2.z2 <= r1.z2 {\n		return true\n	}\n	return false\n}\n\nfunc (world *World) ApplyForces(mob Mob, dt float64) {\n	// mobBounds := mob.DesiredBoundingBox(dt)\n	ip := IntPosition(mob.Position())\n\n	// mobx := ip[XAXIS]\n	// moby := ip[YAXIS]\n	// mobz := ip[ZAXIS]\n\n	// Gravity\n	if mob.IsFalling() {\n		// println(\"is falling\")\n		mob.Setvx(mob.Velocity()[XAXIS] / 1.001)\n		mob.Setvy(mob.Velocity()[YAXIS] - 15*dt)\n		mob.Setvz(mob.Velocity()[ZAXIS] / 1.001)\n	} else {\n		mob.Setvx(mob.Velocity()[XAXIS] / 1.2)\n		//mob.Setvy(0)\n		mob.Setvz(mob.Velocity()[ZAXIS] / 1.2)\n	}\n\n	// var dx, dz, dy int16\n	// var x,  z int16\n\n	playerRect := Rect{x: float64(mob.X()) + mob.Velocity()[XAXIS]*dt, z: float64(mob.Z()) + mob.Velocity()[ZAXIS]*dt, sizex: mob.W(), sizez: mob.D()}\n\n	// collisionCandidates := make([]Side, 0)\n\n	if world.Atv(ip.North()) != BLOCK_AIR {\n		if mob.Velocity()[ZAXIS] < 0 && ip.North().HRect().Intersects(playerRect) {\n			mob.Snapz(float64(ip.North()[ZAXIS])+0.5+playerRect.sizez/2, 0)\n		}\n	}\n\n	if world.Atv(ip.South()) != BLOCK_AIR {\n		if mob.Velocity()[ZAXIS] > 0 && ip.South().HRect().Intersects(playerRect) {\n			mob.Snapz(float64(ip.South()[ZAXIS])-0.5-playerRect.sizez/2, 0)\n		}\n	}\n\n	if world.Atv(ip.East()) != BLOCK_AIR {\n		if mob.Velocity()[XAXIS] > 0 && ip.East().HRect().Intersects(playerRect) {\n			mob.Snapx(float64(ip.East()[XAXIS])-0.5-playerRect.sizex/2, 0)\n		}\n	}\n\n	if world.Atv(ip.West()) != BLOCK_AIR {\n		if mob.Velocity()[XAXIS] < 0 && ip.West().HRect().Intersects(playerRect) {\n			mob.Snapx(float64(ip.West()[XAXIS])+0.5+playerRect.sizex/2, 0)\n		}\n	}\n\n	mob.SetFalling(true)\n	if world.Atv(ip.Down()) != BLOCK_AIR {\n		mob.SetFalling(false)\n		if mob.Velocity()[YAXIS] < 0 {\n			mob.Snapy(float64(ip.Down()[YAXIS])+1, 0)\n		}\n	} else {\n		if world.Atv(ip.Down().North()) != BLOCK_AIR {\n			if ip.Down().North().HRect().Intersects(playerRect) {\n				mob.Snapy(float64(ip.Down()[YAXIS])+1, 0)\n				mob.SetFalling(false)\n			}\n		}\n\n		if world.Atv(ip.Down().South()) != BLOCK_AIR {\n			if ip.Down().South().HRect().Intersects(playerRect) {\n				mob.Snapy(float64(ip.Down()[YAXIS])+1, 0)\n				mob.SetFalling(false)\n			}\n		}\n\n		if world.Atv(ip.Down().East()) != BLOCK_AIR {\n			if ip.Down().East().HRect().Intersects(playerRect) {\n				mob.Snapy(float64(ip.Down()[YAXIS])+1, 0)\n				mob.SetFalling(false)\n			}\n		}\n\n		if world.Atv(ip.Down().West()) != BLOCK_AIR {\n			if ip.Down().West().HRect().Intersects(playerRect) {\n				mob.Snapy(float64(ip.Down()[YAXIS])+1, 0)\n				mob.SetFalling(false)\n			}\n		}\n	}\n\n}\n\nfunc (world *World) Simulate(dt float64) {\n	for _, v := range world.mobs {\n		v.Act(dt)\n		world.ApplyForces(v, dt)\n		v.Update(dt)\n	}\n\n}\n\nfunc (world World) ChunkLoadedFor(x int16, y int16, z int16) bool {\n	cx := x / CHUNK_WIDTH\n	cy := y / CHUNK_HEIGHT\n	cz := z / CHUNK_WIDTH\n\n	_, ok := world.chunks[chunkIndex(cx, cy, cz)]\n	return ok\n}\n\nfunc (world *World) Draw(center Vectorf , selectMode bool) {\n	for _, v := range world.mobs {\n		v.Draw(center, selectMode)\n	}\n\n	gl.Translatef(-float32(center[XAXIS]), -float32(center[YAXIS]), -float32(center[ZAXIS]))\n\n	var px, py, pz = int16(center[XAXIS]), int16(center[YAXIS]), int16(center[ZAXIS])\n\n	var x, y, z int16\n\n	count := 0\n	for x = px - 30; x < px+30; x++ {\n		for z = pz - 30; z < pz+30; z++ {\n			if x+z-px-pz <= ViewRadius && x+z-px-pz >= -ViewRadius {\n				for y = py - 5; y < py+16; y++ {\n					dx := x - px\n					dy := y - py\n					dz := z - pz\n\n					var blockid byte = world.At(x, y, z)\n					if blockid != 0 {\n						var n, s, w, e, u, d bool = world.AirNeighbours(x, z, y)\n						if n || s || w || e || u || d {\n\n							var id uint16 = 0\n\n							if dx >= -2 && dx <= 2 && dy >= -2 && dy <= 2 && dz >= -2 && dz <= 2 {\n								id = RelativeCoordinateToBlockId(dx, dy, dz)\n							}\n                            if !selectMode || id != 0 {\n    							gl.PushMatrix()\n    							gl.Translatef(float32(x), float32(y), float32(z))\n    							TerrainCube(n, s, w, e, u, d, blockid, id, selectMode)\n    							count++\n    							gl.PopMatrix()\n                            }\n						}\n					}\n				}\n			}\n		}\n	}\n	//println(\"Drew \", count, \" cubes\")\n\n}\n\nfunc chunkIndex(x int16, y int16, z int16) int16 {\n	return z*CHUNK_WIDTH*CHUNK_WIDTH + x*CHUNK_WIDTH + y\n}\n\nfunc blockIndex(x int16, y int16, z int16) int16 {\n	return CHUNK_WIDTH*CHUNK_WIDTH*y + CHUNK_WIDTH*x + z\n}\n\n// **************************************************************\n// CHUNKS\n// **************************************************************\n\nfunc (c Chunk) WorldCoords(x int16, y int16, z int16) (xw int16, yw int16, zw int16) {\n	xw = c.x*CHUNK_WIDTH + x\n	zw = c.z*CHUNK_WIDTH + z\n	yw = c.y*CHUNK_HEIGHT + y\n	return\n}\n\nfunc (chunk *Chunk) Init(x int16, y int16, z int16) {\n	chunk.x = x\n	chunk.y = y\n	chunk.z = z\n	chunk.Blocks = make([]byte, CHUNK_WIDTH*CHUNK_WIDTH*CHUNK_HEIGHT)\n}\n\nfunc (chunk *Chunk) At(x int16, y int16, z int16) byte {\n	return chunk.Blocks[blockIndex(x, y, z)]\n}\n\nfunc (chunk *Chunk) Set(x int16, y int16, z int16, b byte) {\n	chunk.Blocks[blockIndex(x, y, z)] = b\n}\n",
-			"file": "af/world.go",
-			"file_size": 10887,
-			"file_write_time": 1334824700000000,
+			"file": "scene.go",
 			"settings":
 			{
-				"buffer_size": 10888,
+				"buffer_size": 36,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"contents": "{\n	\"cmd\": [\"make\"]\n}\n",
+			"file": "shapes.go",
 			"settings":
 			{
-				"buffer_size": 21,
-				"line_ending": "Unix",
-				"name": "untitled.sublime-build"
-			}
-		},
-		{
-			"file": "amberfell.sublime-project",
-			"settings":
-			{
-				"buffer_size": 68,
+				"buffer_size": 11512,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "af/timer.go",
+			"file": "geometry.go",
 			"settings":
 			{
-				"buffer_size": 1206,
+				"buffer_size": 3432,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "README.md",
+			"file": "geometry_test.go",
 			"settings":
 			{
-				"buffer_size": 176,
+				"buffer_size": 1826,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "timer.go",
+			"settings":
+			{
+				"buffer_size": 1095,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "vector.go",
+			"settings":
+			{
+				"buffer_size": 9641,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "viewport.go",
+			"settings":
+			{
+				"buffer_size": 1690,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"settings":
+			{
+				"buffer_size": 0,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "vector_test.go",
+			"settings":
+			{
+				"buffer_size": 4667,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "window.go",
+			"settings":
+			{
+				"buffer_size": 12865,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "wolf.go",
+			"settings":
+			{
+				"buffer_size": 3715,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "world.go",
+			"settings":
+			{
+				"buffer_size": 11305,
 				"line_ending": "Unix"
 			}
 		}
@@ -217,7 +216,7 @@
 		[
 			[
 				"Package Control: ",
-				"Package Control: Remove Package"
+				"Package Control: Install Package"
 			]
 		],
 		"width": 435.0
@@ -237,12 +236,34 @@
 	},
 	"file_history":
 	[
+		"/home/iand/wip/amberfell/amberfell.sublime-workspace",
+		"/home/iand/wip/amberfell/	vector_test.go",
+		"/home/iand/.config/sublime-text-2/Packages/Default/Preferences.sublime-settings",
+		"/home/iand/.config/sublime-text-2/Packages/User/GoSublime.sublime-settings",
+		"/home/iand/.config/sublime-text-2/Packages/GoSublime/Default (Linux).sublime-keymap",
+		"/home/iand/.config/sublime-text-2/Packages/GoSublime/GoSublime.sublime-settings",
+		"/home/iand/.config/sublime-text-2/Packages/User/Default (Linux).sublime-keymap",
+		"/home/iand/wip/amberfell/amberfell.sublime-project",
+		"/home/iand/.config/sublime-text-2/Packages/User/Preferences.sublime-settings",
+		"/home/iand/wip/amberfell/amberfell.go",
+		"/home/iand/wip/amberfell/af/constants.go",
+		"/home/iand/wip/amberfell/af/functions.go",
+		"/home/iand/wip/amberfell/af/gameloop.go",
+		"/home/iand/wip/amberfell/af/globals.go",
+		"/home/iand/wip/amberfell/af/mob.go",
+		"/home/iand/wip/amberfell/af/player.go",
+		"/home/iand/wip/amberfell/af/shapes.go",
+		"/home/iand/wip/amberfell/af/vector.go",
+		"/home/iand/wip/amberfell/af/vector_test.go",
+		"/home/iand/wip/amberfell/af/window.go",
+		"/home/iand/wip/amberfell/af/wolf.go",
+		"/home/iand/wip/amberfell/af/world.go",
+		"/home/iand/wip/amberfell/af/timer.go",
+		"/home/iand/wip/amberfell/README.md",
 		"/home/iand/wip/amberfell/af/blocks.go",
 		"/home/iand/.config/sublime-text-2/Packages/User/Go.sublime-settings",
 		"/home/iand/Documents/minecraft-server/plugins.txt",
 		"/home/iand/Dropbox/documents/minecraft-server/plugins.txt",
-		"/home/iand/wip/amberfell/amberfell.go",
-		"/home/iand/wip/amberfell/amberfell.sublime-project",
 		"/home/iand/wip/gofirst/sdltest.go",
 		"/home/iand/wip/gofirst/test.go",
 		"/home/iand/wip/gofirst/gltest.go",
@@ -258,14 +279,9 @@
 		"/home/iand/.cache/.fr-tMTa0R/Zen of Networked Physics/Source/Cube.h",
 		"/home/iand/gocode/src/amberfell/af/vector.go",
 		"/home/iand/gocode/src/amberfell/af/timer.go",
-		"/home/iand/.config/sublime-text-2/Packages/User/GoSublime.sublime-settings",
-		"/home/iand/.config/sublime-text-2/Packages/GoSublime/GoSublime.sublime-settings",
 		"/home/iand/gocode/src/amberfell/af/constants.go",
 		"/home/iand/.config/sublime-text-2/Packages/Default/Default (Linux).sublime-keymap",
-		"/home/iand/.config/sublime-text-2/Packages/User/Default (Linux).sublime-keymap",
 		"/home/iand/gocode/src/amberfell/world.go",
-		"/home/iand/.config/sublime-text-2/Packages/Default/Preferences.sublime-settings",
-		"/home/iand/.config/sublime-text-2/Packages/User/Preferences.sublime-settings",
 		"/home/iand/bin/go/src/pkg/code.google.com/p/graphics-go/graphics/rotate.go",
 		"/home/iand/bin/go/src/pkg/code.google.com/p/graphics-go/graphics/affine.go",
 		"/home/iand/wip/gofirst/graphicstest.go",
@@ -356,6 +372,20 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"select",
+			"transl",
+			"look",
+			"Vectori",
+			"feedback",
+			"Set(",
+			"matrixmo",
+			"Heading()",
+			"Heading",
+			"gl.Translate",
+			"%4.2f",
+			"0.5",
+			"0000     ",
+			"0000 ",
 			"r",
 			"c",
 			"IntVector",
@@ -462,11 +492,13 @@
 			"- "
 		],
 		"highlight": true,
-		"in_selection": true,
+		"in_selection": false,
 		"preserve_case": false,
 		"regex": false,
 		"replace_history":
 		[
+			"%18.13f",
+			", ",
 			"i",
 			"j",
 			"Vectori",
@@ -510,30 +542,57 @@
 	"groups":
 	[
 		{
-			"selected": 12,
+			"selected": 14,
 			"sheets":
 			[
 				{
 					"buffer": 0,
+					"file": "amberfell.go",
 					"settings":
 					{
-						"buffer_size": 1204,
+						"buffer_size": 706,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								184,
-								184
+								706,
+								706
 							]
 						],
 						"settings":
 						{
-							"auto_name": "",
-							"syntax": "Packages/Text/Plain text.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 152.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "constants.go",
+					"settings":
+					{
+						"buffer_size": 619,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								416,
+								416
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
@@ -542,52 +601,26 @@
 					"type": "text"
 				},
 				{
-					"buffer": 1,
-					"file": "/home/iand/.config/sublime-text-2/Packages/Default/Preferences.sublime-settings",
-					"settings":
-					{
-						"buffer_size": 12108,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								2877,
-								2877
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/JavaScript/JSON.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 526.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
 					"buffer": 2,
-					"file": "/home/iand/.config/sublime-text-2/Packages/User/Preferences.sublime-settings",
+					"file": "functions.go",
 					"settings":
 					{
-						"buffer_size": 263,
+						"buffer_size": 1382,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								260,
-								260
+								630,
+								641
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/JavaScript/JSON.tmLanguage"
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
@@ -597,140 +630,844 @@
 				},
 				{
 					"buffer": 3,
-					"file": "amberfell.go",
 					"settings":
 					{
-						"buffer_size": 772,
+						"buffer_size": 55657,
 						"regions":
 						{
+							"match":
+							{
+								"flags": 112,
+								"regions":
+								[
+									[
+										7283,
+										7286
+									],
+									[
+										7483,
+										7486
+									],
+									[
+										7680,
+										7683
+									],
+									[
+										7877,
+										7880
+									],
+									[
+										11667,
+										11670
+									],
+									[
+										11884,
+										11887
+									],
+									[
+										12168,
+										12171
+									],
+									[
+										12194,
+										12197
+									],
+									[
+										12205,
+										12208
+									],
+									[
+										12209,
+										12212
+									],
+									[
+										12215,
+										12218
+									],
+									[
+										12250,
+										12253
+									],
+									[
+										12377,
+										12380
+									],
+									[
+										12519,
+										12522
+									],
+									[
+										12524,
+										12527
+									],
+									[
+										12666,
+										12669
+									],
+									[
+										12811,
+										12814
+									],
+									[
+										12955,
+										12958
+									],
+									[
+										12960,
+										12963
+									],
+									[
+										13106,
+										13109
+									],
+									[
+										13262,
+										13265
+									],
+									[
+										13267,
+										13270
+									],
+									[
+										13405,
+										13408
+									],
+									[
+										13570,
+										13573
+									],
+									[
+										13714,
+										13717
+									],
+									[
+										13867,
+										13870
+									],
+									[
+										14014,
+										14017
+									],
+									[
+										14019,
+										14022
+									],
+									[
+										14243,
+										14246
+									],
+									[
+										14248,
+										14251
+									],
+									[
+										14481,
+										14484
+									],
+									[
+										14486,
+										14489
+									],
+									[
+										14720,
+										14723
+									],
+									[
+										14725,
+										14728
+									],
+									[
+										14960,
+										14963
+									],
+									[
+										14965,
+										14968
+									],
+									[
+										15181,
+										15184
+									],
+									[
+										15207,
+										15210
+									],
+									[
+										15343,
+										15346
+									],
+									[
+										15786,
+										15789
+									],
+									[
+										16105,
+										16108
+									],
+									[
+										16158,
+										16161
+									],
+									[
+										16211,
+										16214
+									],
+									[
+										16397,
+										16400
+									],
+									[
+										16826,
+										16829
+									],
+									[
+										17060,
+										17063
+									],
+									[
+										17291,
+										17294
+									],
+									[
+										17522,
+										17525
+									],
+									[
+										26980,
+										26992
+									],
+									[
+										27863,
+										27875
+									],
+									[
+										29270,
+										29282
+									],
+									[
+										29363,
+										29375
+									],
+									[
+										29759,
+										29771
+									],
+									[
+										29912,
+										29924
+									],
+									[
+										30300,
+										30312
+									],
+									[
+										30535,
+										30547
+									],
+									[
+										30740,
+										30752
+									],
+									[
+										31021,
+										31033
+									],
+									[
+										31304,
+										31311
+									],
+									[
+										31465,
+										31472
+									],
+									[
+										31599,
+										31606
+									],
+									[
+										31655,
+										31662
+									],
+									[
+										31665,
+										31672
+									],
+									[
+										31840,
+										31847
+									],
+									[
+										31870,
+										31877
+									],
+									[
+										32146,
+										32153
+									],
+									[
+										32167,
+										32174
+									],
+									[
+										32226,
+										32233
+									],
+									[
+										32246,
+										32253
+									],
+									[
+										32326,
+										32333
+									],
+									[
+										32346,
+										32353
+									],
+									[
+										32406,
+										32413
+									],
+									[
+										32427,
+										32434
+									],
+									[
+										32508,
+										32515
+									],
+									[
+										32529,
+										32536
+									],
+									[
+										32589,
+										32596
+									],
+									[
+										32610,
+										32617
+									],
+									[
+										32691,
+										32698
+									],
+									[
+										32712,
+										32719
+									],
+									[
+										32772,
+										32779
+									],
+									[
+										32793,
+										32800
+									],
+									[
+										32926,
+										32933
+									],
+									[
+										32956,
+										32963
+									],
+									[
+										32981,
+										32988
+									],
+									[
+										33019,
+										33026
+									],
+									[
+										33046,
+										33053
+									],
+									[
+										33226,
+										33233
+									],
+									[
+										33429,
+										33436
+									],
+									[
+										33511,
+										33518
+									],
+									[
+										33610,
+										33617
+									],
+									[
+										33696,
+										33703
+									],
+									[
+										33868,
+										33875
+									],
+									[
+										33953,
+										33960
+									],
+									[
+										34057,
+										34064
+									],
+									[
+										34142,
+										34149
+									],
+									[
+										34426,
+										34433
+									],
+									[
+										34686,
+										34693
+									],
+									[
+										34952,
+										34959
+									],
+									[
+										35024,
+										35031
+									],
+									[
+										35165,
+										35172
+									],
+									[
+										35282,
+										35289
+									],
+									[
+										35344,
+										35351
+									],
+									[
+										35354,
+										35361
+									],
+									[
+										35523,
+										35530
+									],
+									[
+										35553,
+										35560
+									],
+									[
+										35825,
+										35832
+									],
+									[
+										35846,
+										35853
+									],
+									[
+										35905,
+										35912
+									],
+									[
+										35925,
+										35932
+									],
+									[
+										36005,
+										36012
+									],
+									[
+										36025,
+										36032
+									],
+									[
+										36085,
+										36092
+									],
+									[
+										36106,
+										36113
+									],
+									[
+										36187,
+										36194
+									],
+									[
+										36208,
+										36215
+									],
+									[
+										36268,
+										36275
+									],
+									[
+										36289,
+										36296
+									],
+									[
+										36370,
+										36377
+									],
+									[
+										36391,
+										36398
+									],
+									[
+										36451,
+										36458
+									],
+									[
+										36472,
+										36479
+									],
+									[
+										36603,
+										36610
+									],
+									[
+										36633,
+										36640
+									],
+									[
+										36658,
+										36665
+									],
+									[
+										36696,
+										36703
+									],
+									[
+										36723,
+										36730
+									],
+									[
+										36853,
+										36860
+									],
+									[
+										36920,
+										36927
+									],
+									[
+										37083,
+										37090
+									],
+									[
+										37418,
+										37427
+									],
+									[
+										37596,
+										37605
+									],
+									[
+										37944,
+										37953
+									],
+									[
+										38147,
+										38156
+									],
+									[
+										38229,
+										38238
+									],
+									[
+										38328,
+										38337
+									],
+									[
+										38414,
+										38423
+									],
+									[
+										38586,
+										38595
+									],
+									[
+										38671,
+										38680
+									],
+									[
+										38775,
+										38784
+									],
+									[
+										38860,
+										38869
+									],
+									[
+										39144,
+										39153
+									],
+									[
+										39404,
+										39413
+									],
+									[
+										39670,
+										39679
+									],
+									[
+										39742,
+										39751
+									],
+									[
+										39918,
+										39927
+									],
+									[
+										40212,
+										40221
+									],
+									[
+										40279,
+										40288
+									],
+									[
+										40442,
+										40451
+									],
+									[
+										40839,
+										40847
+									],
+									[
+										40862,
+										40870
+									],
+									[
+										40895,
+										40903
+									],
+									[
+										41032,
+										41040
+									],
+									[
+										41140,
+										41148
+									],
+									[
+										41283,
+										41291
+									],
+									[
+										41329,
+										41337
+									],
+									[
+										41383,
+										41391
+									],
+									[
+										41485,
+										41493
+									],
+									[
+										44715,
+										44722
+									],
+									[
+										44961,
+										44968
+									],
+									[
+										53196,
+										53203
+									],
+									[
+										53361,
+										53368
+									],
+									[
+										53386,
+										53393
+									],
+									[
+										53646,
+										53653
+									],
+									[
+										53809,
+										53816
+									],
+									[
+										53947,
+										53954
+									],
+									[
+										54037,
+										54044
+									],
+									[
+										54054,
+										54061
+									],
+									[
+										54071,
+										54078
+									],
+									[
+										54134,
+										54141
+									],
+									[
+										54151,
+										54158
+									],
+									[
+										54168,
+										54175
+									],
+									[
+										54231,
+										54238
+									],
+									[
+										54247,
+										54254
+									],
+									[
+										54265,
+										54272
+									],
+									[
+										54328,
+										54335
+									],
+									[
+										54344,
+										54351
+									],
+									[
+										54362,
+										54369
+									],
+									[
+										54425,
+										54432
+									],
+									[
+										54439,
+										54446
+									],
+									[
+										54459,
+										54466
+									],
+									[
+										54522,
+										54529
+									],
+									[
+										54538,
+										54545
+									],
+									[
+										54556,
+										54563
+									],
+									[
+										54627,
+										54634
+									],
+									[
+										54765,
+										54772
+									],
+									[
+										54907,
+										54914
+									],
+									[
+										55172,
+										55179
+									],
+									[
+										55360,
+										55367
+									],
+									[
+										55496,
+										55503
+									]
+								],
+								"scope": ""
+							}
 						},
 						"selection":
 						[
 							[
-								772,
-								772
+								53324,
+								53330
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/Go/Go.tmLanguage",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
+							"detect_indentation": false,
+							"output_tag": 6,
+							"result_base_dir": "",
+							"result_file_regex": "^([A-Za-z\\\\/<].*):$",
+							"result_line_regex": "^ +([0-9]+):",
+							"scroll_past_end": true,
+							"syntax": "Packages/Default/Find Results.hidden-tmLanguage"
 						},
 						"translation.x": 0.0,
-						"translation.y": 41.0,
+						"translation.y": 12705.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
 					"buffer": 4,
-					"file": "af/constants.go",
+					"file": "gameloop.go",
 					"settings":
 					{
-						"buffer_size": 561,
+						"buffer_size": 7633,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								368,
-								368
+								7027,
+								7027
 							]
 						],
 						"settings":
 						{
 							"syntax": "Packages/Go/Go.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
+							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 3406.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
 					"buffer": 5,
-					"file": "af/functions.go",
 					"settings":
 					{
-						"buffer_size": 1123,
+						"buffer_size": 0,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								651,
-								651
+								0,
+								0
 							]
 						],
 						"settings":
 						{
-							"auto_name": "package af",
-							"syntax": "Packages/Go/Go.tmLanguage",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 45.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 6,
-					"file": "af/gameloop.go",
-					"settings":
-					{
-						"buffer_size": 4864,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								4864,
-								4864
-							]
-						],
-						"settings":
-						{
-							"auto_name": "package af",
-							"syntax": "Packages/Go/Go.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 2786.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 7,
-					"file": "af/globals.go",
-					"settings":
-					{
-						"buffer_size": 771,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								734,
-								734
-							]
-						],
-						"settings":
-						{
-							"auto_name": "package af",
-							"syntax": "Packages/Go/Go.tmLanguage",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
+							"syntax": "Packages/Text/Plain text.tmLanguage"
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
@@ -739,11 +1476,11 @@
 					"type": "text"
 				},
 				{
-					"buffer": 8,
-					"file": "af/mob.go",
+					"buffer": 6,
+					"file": "globals.go",
 					"settings":
 					{
-						"buffer_size": 676,
+						"buffer_size": 638,
 						"regions":
 						{
 						},
@@ -757,8 +1494,34 @@
 						"settings":
 						{
 							"syntax": "Packages/Go/Go.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 90.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "mob.go",
+					"settings":
+					{
+						"buffer_size": 661,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								637,
+								637
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
@@ -767,110 +1530,50 @@
 					"type": "text"
 				},
 				{
+					"buffer": 8,
+					"file": "player.go",
+					"settings":
+					{
+						"buffer_size": 7094,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								4102,
+								4102
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 2037.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
 					"buffer": 9,
-					"file": "af/player.go",
+					"file": "scene.go",
 					"settings":
 					{
-						"buffer_size": 7215,
+						"buffer_size": 36,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								4788,
-								4788
+								12,
+								12
 							]
 						],
 						"settings":
 						{
-							"spell_check": false,
-							"syntax": "Packages/Go/Go.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 2202.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 10,
-					"file": "af/shapes.go",
-					"settings":
-					{
-						"buffer_size": 18848,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								6384,
-								6384
-							]
-						],
-						"settings":
-						{
-							"auto_name": "package af",
-							"syntax": "Packages/Go/Go.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 2862.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 11,
-					"file": "af/vector.go",
-					"settings":
-					{
-						"buffer_size": 4399,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								3015,
-								3015
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Go/Go.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 1428.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 12,
-					"file": "af/vector_test.go",
-					"settings":
-					{
-						"buffer_size": 436,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								428,
-								428
-							]
-						],
-						"settings":
-						{
-							"auto_name": "",
 							"syntax": "Packages/Go/Go.tmLanguage"
 						},
 						"translation.x": 0.0,
@@ -880,55 +1583,105 @@
 					"type": "text"
 				},
 				{
-					"buffer": 13,
-					"file": "af/window.go",
+					"buffer": 10,
+					"file": "shapes.go",
 					"settings":
 					{
-						"buffer_size": 6112,
+						"buffer_size": 11512,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								6038,
-								6038
+								2826,
+								2826
 							]
 						],
 						"settings":
 						{
-							"auto_name": "package af",
 							"syntax": "Packages/Go/Go.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
+							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 2592.0,
+						"translation.y": 1258.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
-					"buffer": 14,
-					"file": "af/wolf.go",
+					"buffer": 11,
+					"file": "geometry.go",
 					"settings":
 					{
-						"buffer_size": 3993,
+						"buffer_size": 3432,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								691,
-								691
+								2682,
+								2682
 							]
 						],
 						"settings":
 						{
 							"syntax": "Packages/Go/Go.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 1770.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 12,
+					"file": "geometry_test.go",
+					"settings":
+					{
+						"buffer_size": 1826,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								653,
+								653
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Go/Go.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 60.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 13,
+					"file": "timer.go",
+					"settings":
+					{
+						"buffer_size": 1095,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								212,
+								212
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
@@ -937,29 +1690,55 @@
 					"type": "text"
 				},
 				{
-					"buffer": 15,
-					"file": "af/world.go",
+					"buffer": 14,
+					"file": "vector.go",
 					"settings":
 					{
-						"buffer_size": 10888,
+						"buffer_size": 9641,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								8777,
-								8777
+								1036,
+								1036
 							]
 						],
 						"settings":
 						{
 							"syntax": "Packages/Go/Go.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
+							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 5097.0,
+						"translation.y": 182.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 15,
+					"file": "viewport.go",
+					"settings":
+					{
+						"buffer_size": 1690,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1489,
+								1489
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 767.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -968,34 +1747,7 @@
 					"buffer": 16,
 					"settings":
 					{
-						"buffer_size": 21,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								12,
-								16
-							]
-						],
-						"settings":
-						{
-							"default_dir": "/home/iand/.config/sublime-text-2/Packages/User",
-							"syntax": "Packages/JavaScript/JSON.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 17,
-					"file": "amberfell.sublime-project",
-					"settings":
-					{
-						"buffer_size": 68,
+						"buffer_size": 0,
 						"regions":
 						{
 						},
@@ -1008,61 +1760,115 @@
 						],
 						"settings":
 						{
-							"syntax": "Packages/JavaScript/JSON.tmLanguage"
+							"syntax": "Packages/Text/Plain text.tmLanguage"
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 17,
+					"file": "vector_test.go",
+					"settings":
+					{
+						"buffer_size": 4667,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								3420,
+								3496
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 1258.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
 					"buffer": 18,
-					"file": "af/timer.go",
+					"file": "window.go",
 					"settings":
 					{
-						"buffer_size": 1206,
+						"buffer_size": 12865,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								200,
-								200
+								9795,
+								9795
 							]
 						],
 						"settings":
 						{
 							"syntax": "Packages/Go/Go.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
+							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 3812.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
 					"buffer": 19,
-					"file": "README.md",
+					"file": "wolf.go",
 					"settings":
 					{
-						"buffer_size": 176,
+						"buffer_size": 3715,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								176,
-								176
+								3436,
+								3436
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/Markdown/Markdown.tmLanguage"
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 1697.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 20,
+					"file": "world.go",
+					"settings":
+					{
+						"buffer_size": 11305,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								494,
+								494
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
@@ -1104,6 +1910,10 @@
 		]
 	},
 	"menu_visible": true,
+	"output.exec":
+	{
+		"height": 166.0
+	},
 	"replace":
 	{
 		"height": 62.0

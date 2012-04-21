@@ -8,7 +8,7 @@ package main
 import (
 	"fmt"
 	"github.com/banthar/Go-SDL/sdl"
-	"github.com/banthar/gl"
+	// "github.com/banthar/gl"
 	"time"
 )
 
@@ -55,24 +55,24 @@ func GameLoop() {
 				re := e.(*sdl.MouseButtonEvent)
 				if re.Button == 1 && re.State == 1 { // LEFT, DOWN
 
-					mousex = re.X
-					mousey = re.Y
+					// mousex = re.X
+					// mousey = re.Y
 
-					var pm32 []float32 = make([]float32, 16)
-					gl.GetFloatv(gl.PROJECTION_MATRIX, pm32)
-					var projectionMatrix64 *Matrix4 = NewMatrix(float64(pm32[0]),float64(pm32[1]),float64(pm32[2]),float64(pm32[3]),float64(pm32[4]),float64(pm32[5]),float64(pm32[6]),float64(pm32[7]),float64(pm32[8]),float64(pm32[9]),float64(pm32[10]),float64(pm32[11]),float64(pm32[12]),float64(pm32[13]),float64(pm32[14]),float64(pm32[15]))
+					// var pm32 []float32 = make([]float32, 16)
+					// gl.GetFloatv(gl.PROJECTION_MATRIX, pm32)
+					// var projectionMatrix64 *Matrix4 = NewMatrix(float64(pm32[0]),float64(pm32[1]),float64(pm32[2]),float64(pm32[3]),float64(pm32[4]),float64(pm32[5]),float64(pm32[6]),float64(pm32[7]),float64(pm32[8]),float64(pm32[9]),float64(pm32[10]),float64(pm32[11]),float64(pm32[12]),float64(pm32[13]),float64(pm32[14]),float64(pm32[15]))
 
-					inverseMatrix, _ := projectionMatrix64.Multiply(ModelMatrix()).Inverse()
+					// inverseMatrix, _ := projectionMatrix64.Multiply(ModelMatrix()).Inverse()
 					
-					x := (float64(mousex)-float64(screenWidth)/2) / ( float64(screenWidth)/2 )
-					z := (float64(screenHeight)/2 - float64(mousey)) / ( float64(screenHeight)/2 )
+					// x := (float64(mousex)-float64(screenWidth)/2) / ( float64(screenWidth)/2 )
+					// z := (float64(screenHeight)/2 - float64(mousey)) / ( float64(screenHeight)/2 )
 
-					origin = inverseMatrix.Transform(&Vectorf{x, z , -1}, 1)
-					norm = inverseMatrix.Transform(&Vectorf{0, 0, 1}, 0).Normalize()
+					// origin = inverseMatrix.Transform(&Vectorf{x, z , -1}, 1)
+					// norm = inverseMatrix.Transform(&Vectorf{0, 0, 1}, 0).Normalize()
 
 
-					fmt.Printf("Ray origin: %f, %f, %f\n", origin[0], origin[1], origin[2])
-					fmt.Printf("Ray norm: %f, %f, %f\n", norm[0], norm[1], norm[2])
+					// fmt.Printf("Ray origin: %f, %f, %f\n", origin[0], origin[1], origin[2])
+					// fmt.Printf("Ray norm: %f, %f, %f\n", norm[0], norm[1], norm[2])
 
 
 					// ray := Ray{ origin, norm }
@@ -119,47 +119,24 @@ func GameLoop() {
 					if ThePlayer.CanInteract() {
 
 						// println("Click:", re.X, re.Y, re.State, re.Button, re.Which)
-
-						// MOUSEBUTTONDOWNMASK
-						xv, yv := int(re.X), screenHeight-int(re.Y)
-						data := [4]uint8{0, 0, 0, 0}
-
-						Draw(true)
-						gl.ReadPixels(xv, yv, 1, 1, gl.RGBA, &data[0])
-						Draw(false)
-
-						fmt.Printf("pixel data: %d, %d, %d, %d\n", data[0], data[1], data[2], data[3])
-
-						id := uint16(data[0]) + uint16(data[1])*256
-						if id != 0 {
-							face := data[2]
-							dx, dy, dz := BlockIdToRelativeCoordinate(id)
-							fmt.Printf("id: %d, dx: %d, dy: %d, dz: %d, face: %d\n", id, dx, dy, dz, face)
-							if !(dx == 0 && dy == 0 && dz == 0) {
-								pos := IntPosition(ThePlayer.Position())
-								pos.Adjust(dx, dy, dz)
-								ThePlayer.Interact(pos, face)
-
-							}
-						}
 					}
 				}
 			case *sdl.MouseMotionEvent:
-				re := e.(*sdl.MouseMotionEvent)
-				mousex = re.X
-				mousey = re.Y
+				// re := e.(*sdl.MouseMotionEvent)
+				// mousex = re.X
+				// mousey = re.Y
 
-				var pm32 []float32 = make([]float32, 16)
-				gl.GetFloatv(gl.PROJECTION_MATRIX, pm32)
-				var projectionMatrix64 *Matrix4 = NewMatrix(float64(pm32[0]),float64(pm32[1]),float64(pm32[2]),float64(pm32[3]),float64(pm32[4]),float64(pm32[5]),float64(pm32[6]),float64(pm32[7]),float64(pm32[8]),float64(pm32[9]),float64(pm32[10]),float64(pm32[11]),float64(pm32[12]),float64(pm32[13]),float64(pm32[14]),float64(pm32[15]))
+				// var pm32 []float32 = make([]float32, 16)
+				// gl.GetFloatv(gl.PROJECTION_MATRIX, pm32)
+				// var projectionMatrix64 *Matrix4 = NewMatrix(float64(pm32[0]),float64(pm32[1]),float64(pm32[2]),float64(pm32[3]),float64(pm32[4]),float64(pm32[5]),float64(pm32[6]),float64(pm32[7]),float64(pm32[8]),float64(pm32[9]),float64(pm32[10]),float64(pm32[11]),float64(pm32[12]),float64(pm32[13]),float64(pm32[14]),float64(pm32[15]))
 
-				inverseMatrix, _ := projectionMatrix64.Multiply(ModelMatrix()).Inverse()
+				// inverseMatrix, _ := projectionMatrix64.Multiply(ModelMatrix()).Inverse()
 				
-				x := (float64(mousex)-float64(screenWidth)/2) / ( float64(screenWidth)/2 )
-				z := (float64(screenHeight)/2 - float64(mousey)) / ( float64(screenHeight)/2 )
+				// x := (float64(mousex)-float64(screenWidth)/2) / ( float64(screenWidth)/2 )
+				// z := (float64(screenHeight)/2 - float64(mousey)) / ( float64(screenHeight)/2 )
 
-				origin = inverseMatrix.Transform(&Vectorf{x, z , -1}, 1)
-				norm = inverseMatrix.Transform(&Vectorf{0, 0, 1}, 0).Normalize()
+				// origin = inverseMatrix.Transform(&Vectorf{x, z , -1}, 1)
+				// norm = inverseMatrix.Transform(&Vectorf{0, 0, 1}, 0).Normalize()
 
 
 				if ThePlayer.CanInteract() {
@@ -275,7 +252,7 @@ func GameLoop() {
 
 		//interpolate(previous, current, accumulator/dt)
 
-		Draw(false)
+		Draw()
 		drawFrame++
 
 		if update.GetTicks() > 1e9*3 {

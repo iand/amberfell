@@ -26,6 +26,6 @@ type Mob interface {
 	Accelerate(v Vectorf)
 	Rotate(angle float64)
 	Act(dt float64)
-	Draw(pos Vectorf, selectMode bool)
+	Draw(pos Vectorf)
 	Update(dt float64)
 }

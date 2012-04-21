@@ -152,7 +152,7 @@ func (p *Player) Act(dt float64) {
 	// noop
 }
 
-func (player *Player) Draw(center Vectorf, selectMode bool) {
+func (player *Player) Draw(center Vectorf) {
 
 	gl.PushMatrix()
 
@@ -161,7 +161,7 @@ func (player *Player) Draw(center Vectorf, selectMode bool) {
 	gl.Rotated(player.Heading(), 0.0, 1.0, 0.0)
 
 	gl.Translatef(0.0, float32(player.H()/2)-0.5, 0.0)
-	Cuboid(player.W(), player.H(), player.D(), &MapTextures[33], &MapTextures[32], &MapTextures[32], &MapTextures[32], &MapTextures[32], &MapTextures[32], 0, selectMode)
+	Cuboid(player.W(), player.H(), player.D(), &MapTextures[33], &MapTextures[32], &MapTextures[32], &MapTextures[32], &MapTextures[32], &MapTextures[32])
 
 	gl.PopMatrix()
 }

@@ -29,7 +29,7 @@ var (
 	lightpos Vectorf
 
 
-	mousex, mousey uint16
-	origin, norm *Vectorf
+	// mousex, mousey uint16
+	// origin, norm *Vectorf
 
 )
