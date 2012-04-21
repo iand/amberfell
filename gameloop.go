@@ -278,8 +278,8 @@ func GameLoop() {
 		Draw(false)
 		drawFrame++
 
-		if update.GetTicks() > 1e9/2 {
-			// fmt.Printf("draw fps: %f\n", float64(drawFrame)/(float64(update.GetTicks())/float64(1e9)))
+		if update.GetTicks() > 1e9*3 {
+			fmt.Printf("draw fps: %f\n", float64(drawFrame)/(float64(update.GetTicks())/float64(1e9)))
 			// fmt.Printf("compute fps: %f\n", float64(computeFrame)/(float64(update.GetTicks())/float64(1e9)))
 
 			timeOfDay += 0.02
