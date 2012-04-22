@@ -13,36 +13,8 @@ import (
 	// "fmt"
 )
 
-func screenToView(xs uint16, ys uint16) (xv float64, yv float64) {
-	// xs = 0 => -float64(screenWidth) / screenScale
-	// xs = screenWidth => float64(screenWidth) / screenScale
 
-	viewWidth := 2 * float64(screenWidth) / float64(screenScale)
-	xv = (-viewWidth/2 + viewWidth*float64(xs)/float64(screenWidth))
 
-	viewHeight := 2 * float64(screenHeight) / float64(screenScale)
-	yv = (-viewHeight/2 + viewHeight*float64(ys)/float64(screenHeight))
-
-	return
-}
-
-/* new window size or exposure */
-func Reshape(width int, height int) {
-	screenWidth = width
-	screenHeight = height
-
-	gl.Viewport(0, 0, width, height)
-	gl.MatrixMode(gl.PROJECTION)
-	gl.LoadIdentity()
-
-	xmin, ymin := screenToView(0, 0)
-	xmax, ymax := screenToView(uint16(width), uint16(height))
-
-	gl.Ortho(float64(xmin), float64(xmax), float64(ymin), float64(ymax), -20, 20)
-	gl.MatrixMode(gl.MODELVIEW)
-	gl.LoadIdentity()
-	// glu.LookAt(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0)
-}
 
 func InitGraphics() {
 
@@ -95,12 +67,10 @@ func InitGraphics() {
 	//LoadTerrainCubes()
 	InitTerrainBlocks()
 
-	Reshape(int(screen.W), int(screen.H))
+	viewport.Reshape(int(screen.W), int(screen.H))
 }
 
-func QuitGraphics() {
-	sdl.Quit()
-}
+
 
 func Draw() {
 	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT)
@@ -218,8 +188,8 @@ func Draw() {
 
 	inverseMatrix, _ := projectionMatrix64.Multiply(ModelMatrix()).Inverse()
 
-	x := (float64(mousex) - float64(screenWidth)/2) / (float64(screenWidth) / 2)
-	z := (float64(screenHeight)/2 - float64(mousey)) / (float64(screenHeight) / 2)
+	x := (float64(mousex) - float64(viewport.screenWidth)/2) / (float64(viewport.screenWidth) / 2)
+	z := (float64(viewport.screenHeight)/2 - float64(mousey)) / (float64(viewport.screenHeight) / 2)
 
 	origin := inverseMatrix.Transform(&Vectorf{x, z, -1}, 1)
 	norm := inverseMatrix.Transform(&Vectorf{0, 0, 1}, 0).Normalize()

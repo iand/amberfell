@@ -5,6 +5,10 @@
 */
 package main
 
+import (
+  	"github.com/banthar/gl"
+)
+
 type Viewport struct {
 	rotx   float64
 	roty   float64
@@ -13,12 +17,42 @@ type Viewport struct {
 	y      float64
 	z      float64
 	scale  float64
-	matrix *Matrix4
+	screenWidth int
+	screenHeight int
+
 }
 
-// func (self *Viewport) Recalc() {
-// 	self.matrix = NewIdentity().Rotatex(self.rotx).Rotatey(self.roty).Rotatez(self.rotz).Translation(self.transx, self.transy, self.transz)
-// }
+func (self *Viewport) ScreenToView(xs uint16, ys uint16) (xv float64, yv float64) {
+	// xs = 0 => -float64(screenWidth) / screenScale
+	// xs = screenWidth => float64(screenWidth) / screenScale
+
+	viewWidth := 2 * float64(self.screenWidth) / float64(screenScale)
+	xv = (-viewWidth/2 + viewWidth*float64(xs)/float64(self.screenWidth))
+
+	viewHeight := 2 * float64(self.screenHeight) / float64(screenScale)
+	yv = (-viewHeight/2 + viewHeight*float64(ys)/float64(self.screenHeight))
+
+	return
+}
+
+/* new window size or exposure */
+func (self *Viewport) Reshape(width int, height int) {
+	self.screenWidth = width
+	self.screenHeight = height
+
+	gl.Viewport(0, 0, width, height)
+	gl.MatrixMode(gl.PROJECTION)
+	gl.LoadIdentity()
+
+	xmin, ymin := self.ScreenToView(0, 0)
+	xmax, ymax := self.ScreenToView(uint16(width), uint16(height))
+
+	gl.Ortho(float64(xmin), float64(xmax), float64(ymin), float64(ymax), -20, 20)
+	gl.MatrixMode(gl.MODELVIEW)
+	gl.LoadIdentity()
+	// glu.LookAt(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0)
+}
+
 
 func (self *Viewport) Rotx(angle float64) {
 	self.rotx += angle

@@ -21,9 +21,7 @@ func InitGame() {
 
 }
 
-func QuitGame() {
-	println("Thanks for playing.")
-}
+
 
 func GameLoop() {
 	var currentTime, accumulator int64 = 0, 0
@@ -45,7 +43,7 @@ func GameLoop() {
 				screen := sdl.SetVideoMode(int(re.W), int(re.H), 16,
 					sdl.OPENGL|sdl.RESIZABLE)
 				if screen != nil {
-					Reshape(int(screen.W), int(screen.H))
+					viewport.Reshape(int(screen.W), int(screen.H))
 				} else {
 					panic("we couldn't set the new video mode??")
 				}
@@ -157,7 +155,7 @@ func GameLoop() {
 		keys := sdl.GetKeyState()
 
 		if keys[sdl.K_ESCAPE] != 0 {
-			ShowOverlay = !ShowOverlay
+			// ShowOverlay = !ShowOverlay
 
 			// Overlay
 

@@ -11,9 +11,28 @@ import (
 	"math/rand"
 	"os"
 	"runtime/pprof"
+	"github.com/banthar/Go-SDL/sdl"
 )
 
 var flag_profile *bool = flag.Bool("profile", false, "Output profiling information to amberfell.prof")
+
+var (
+	DebugMode  bool  = false
+	ViewRadius int16 = 30
+	TheWorld   *World
+	ThePlayer  *Player
+)
+
+var viewport Viewport
+
+var (
+	tileWidth                     = 48
+	screenScale               int = int(5 * float64(tileWidth) / 2)
+
+	timeOfDay float32 = 8
+
+)
+
 
 func main() {
 	flag.Parse()
@@ -30,8 +49,7 @@ func main() {
 
 	rand.Seed(71)
 
-	defer QuitGame()
-	defer QuitGraphics()
+	defer quit()
 
 	InitGame()
 	InitGraphics()
@@ -40,4 +58,10 @@ func main() {
 
 	return
 
+}
+
+
+func quit() {
+	sdl.Quit()
+	println("Thanks for playing.")
 }

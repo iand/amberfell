@@ -32,7 +32,7 @@ func TestHitsBox2(t *testing.T) {
 	box := Box{&Vectorf{8.5, 4.5, 9.5}, &Vectorf{9.5, 5.5, 10.5}}
 
 	for ray, expected := range cases {
-		actual := ray.HitsBox(&box)
+		actual, _ := ray.HitsBox(&box)
 		if expected != actual {
 			if expected {
 				t.Errorf("Ray %s did not hit box %s as expected", ray, box)
