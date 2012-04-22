@@ -9,6 +9,7 @@ import (
 	// "fmt"
 	"github.com/banthar/Go-SDL/sdl"
 	// "github.com/banthar/gl"
+	"runtime"
 	"time"
 )
 
@@ -155,7 +156,7 @@ func GameLoop() {
 
 		if update.GetTicks() > 1e9/2 {
 			metrics.fps = float64(drawFrame) / (float64(update.GetTicks()) / float64(1e9))
-
+			runtime.ReadMemStats(&metrics.mem)
 			timeOfDay += 0.02
 			if timeOfDay > 24 {
 				timeOfDay -= 24

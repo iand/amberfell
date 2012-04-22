@@ -10,6 +10,7 @@ import (
 	"github.com/banthar/Go-SDL/sdl"
 	"github.com/banthar/gl"
 	"math"
+	// "runtime"
 )
 
 func Draw() {
@@ -123,10 +124,31 @@ func Draw() {
 		gl.Translatef(float32(viewport.lplane)+margin, float32(viewport.bplane)+consoleHeight+margin-2*h, 0)
 		consoleFont.Print(fmt.Sprintf("X: %5.2f Y: %4.2f Z: %5.2f H: %5.2f (%s)", ThePlayer.position[XAXIS], ThePlayer.position[YAXIS], ThePlayer.position[ZAXIS], ThePlayer.heading, HeadingToCompass(ThePlayer.heading)))
 
+		gl.LoadIdentity()
+		gl.Translatef(float32(viewport.lplane)+margin, float32(viewport.bplane)+consoleHeight+margin-3*h, 0)
+
+		numgc := uint32(0)
+		avggc := float64(0)
+		var last3 [3]float64
+		if metrics.mem.NumGC > 3 {
+			numgc = metrics.mem.NumGC
+			avggc = float64(metrics.mem.PauseTotalNs) / float64(metrics.mem.NumGC) / 1e6
+			index := int(numgc) - 1
+			if index > 255 {
+				index = 255
+			}
+
+			last3[0] = float64(metrics.mem.PauseNs[index]) / 1e6
+			last3[1] = float64(metrics.mem.PauseNs[index-1]) / 1e6
+			last3[2] = float64(metrics.mem.PauseNs[index-2]) / 1e6
+		}
+
+		consoleFont.Print(fmt.Sprintf("Mem: %.1f/%.1f   GC: %.1fms [%d: %.1f, %.1f, %.1f]", float64(metrics.mem.Alloc)/(1024*1024), float64(metrics.mem.Sys)/(1024*1024), avggc, numgc, last3[0], last3[1], last3[2]))
+
 	}
 
 	gl.Finish()
 	gl.Flush()
 	sdl.GL_SwapBuffers()
-
+	// runtime.GC()
 }

@@ -15,16 +15,18 @@ import (
 	"image/color"
 	"math/rand"
 	"os"
+	"runtime"
 	"runtime/pprof"
 )
 
 var (
-	flag_profile *bool = flag.Bool("profile", false, "Output profiling information to amberfell.prof")
-	DebugMode    bool  = false
-	ViewRadius   int16 = 30
-	TheWorld     *World
-	ThePlayer    *Player
-	viewport     Viewport
+	flag_cpuprofile       = flag.Bool("cpuprofile", false, "write cpu profile to file")
+	flag_memprofile       = flag.Bool("memprofile", false, "write memory profile to file")
+	DebugMode       bool  = false
+	ViewRadius      int16 = 30
+	TheWorld        *World
+	ThePlayer       *Player
+	viewport        Viewport
 
 	timeOfDay float32 = 8
 
@@ -36,12 +38,13 @@ var (
 
 type Metrics struct {
 	fps float64
+	mem runtime.MemStats
 }
 
 func main() {
 	flag.Parse()
 
-	if *flag_profile {
+	if *flag_cpuprofile {
 		pfile, err := os.Create("amberfell.prof")
 
 		if err != nil {
@@ -49,6 +52,7 @@ func main() {
 		}
 
 		pprof.StartCPUProfile(pfile)
+		defer pprof.StopCPUProfile()
 	}
 
 	rand.Seed(71)
@@ -57,6 +61,17 @@ func main() {
 
 	initGame()
 	GameLoop()
+
+	if *flag_memprofile {
+		pfile, err := os.Create("amberfell.prof")
+
+		if err != nil {
+			panic(fmt.Sprintf("Could not create amberfell.mprof:", err))
+		}
+
+		pprof.WriteHeapProfile(pfile)
+		pfile.Close()
+	}
 
 	return
 
@@ -126,7 +141,8 @@ func initGame() {
 	//LoadTerrainCubes()
 	InitTerrainBlocks()
 
-	consoleFont = NewFont("res/FreeMono.ttf", 16, color.RGBA{255, 255, 255, 0})
+	consoleFont = NewFont("res/Jura-DemiBold.ttf", 16, color.RGBA{255, 255, 255, 0})
+	// consoleFont = NewFont("res/FreeMono.ttf", 16, color.RGBA{255, 255, 255, 0})
 
 	viewport.Reshape(int(screen.W), int(screen.H))
 
