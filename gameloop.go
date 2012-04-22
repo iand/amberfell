@@ -12,17 +12,6 @@ import (
 	"time"
 )
 
-func InitGame() {
-	TheWorld = new(World)
-	TheWorld.Init()
-
-	ThePlayer = new(Player)
-	ThePlayer.Init(0, 10, 10, FindSurface(10, 10))
-
-}
-
-
-
 func GameLoop() {
 	var currentTime, accumulator int64 = 0, 0
 	var t, dt int64 = 0, 1e9 / 40

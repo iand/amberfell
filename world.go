@@ -28,37 +28,37 @@ type Side struct {
 	x, x1, x2, z, z1, z2, dir, y float64
 }
 
-func (world *World) Init() {
+func (self *World) Init() {
 
-	world.chunks = make(map[int16]*Chunk)
+	self.chunks = make(map[int16]*Chunk)
 
-	world.GenerateChunk(0, 0, 0)
-	world.GenerateChunk(0, 0, 1)
-	world.GenerateChunk(0, 0, -1)
-	world.GenerateChunk(-1, 0, 0)
-	world.GenerateChunk(-1, 0, 1)
-	world.GenerateChunk(-1, 0, -1)
-	world.GenerateChunk(1, 0, 0)
-	world.GenerateChunk(1, 0, 1)
-	world.GenerateChunk(1, 0, -1)
+	self.GenerateChunk(0, 0, 0)
+	self.GenerateChunk(0, 0, 1)
+	self.GenerateChunk(0, 0, -1)
+	self.GenerateChunk(-1, 0, 0)
+	self.GenerateChunk(-1, 0, 1)
+	self.GenerateChunk(-1, 0, -1)
+	self.GenerateChunk(1, 0, 0)
+	self.GenerateChunk(1, 0, 1)
+	self.GenerateChunk(1, 0, -1)
 
 	var iw, id int16
 
 	numFeatures := rand.Intn(20)
 	for i := 0; i < numFeatures; i++ {
-		iw, id = world.RandomSquare()
+		iw, id = self.RandomSquare()
 
-		world.Set(iw, GroundLevel, id, 1) // stone
-		world.Grow(iw, GroundLevel, id, 45, 45, 45, 52, 10, 10, 1)
+		self.Set(iw, GroundLevel, id, 1) // stone
+		self.Grow(iw, GroundLevel, id, 45, 45, 45, 52, 10, 10, 1)
 	}
-	iw, id = world.RandomSquare()
+	iw, id = self.RandomSquare()
 
-	world.Set(iw, GroundLevel, id, 0) // air
-	world.Grow(iw, GroundLevel, id, 20, 20, 20, 20, 0, 30, 0)
+	self.Set(iw, GroundLevel, id, 0) // air
+	self.Grow(iw, GroundLevel, id, 20, 20, 20, 20, 0, 30, 0)
 
 	wolf := new(Wolf)
-	wolf.Init(200, 25, 19, float32(FindSurface(25, 19)))
-	world.mobs = append(world.mobs, wolf)
+	wolf.Init(200, 25, 19, float32(self.FindSurface(25, 19)))
+	self.mobs = append(self.mobs, wolf)
 
 }
 
@@ -395,6 +395,22 @@ func (world *World) Draw(center Vectorf) {
 	}
 	//println("Drew ", count, " cubes")
 
+}
+
+// Finds the surface level for a given x, z coordinate
+func (self *World) FindSurface(x int16, z int16) (y int16) {
+	y = GroundLevel
+	if self.At(x, y, z) == BLOCK_AIR {
+		for y > 0 && self.At(x, y, z) == BLOCK_AIR {
+			y--
+		}
+	} else {
+		for self.At(x, y, z) != BLOCK_AIR {
+			y++
+		}
+	}
+
+	return
 }
 
 func chunkIndex(x int16, y int16, z int16) int16 {

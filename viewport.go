@@ -6,20 +6,19 @@
 package main
 
 import (
-  	"github.com/banthar/gl"
+	"github.com/banthar/gl"
 )
 
 type Viewport struct {
-	rotx   float64
-	roty   float64
-	rotz   float64
-	x      float64
-	y      float64
-	z      float64
-	scale  float64
-	screenWidth int
+	rotx         float64
+	roty         float64
+	rotz         float64
+	x            float64
+	y            float64
+	z            float64
+	scale        float64
+	screenWidth  int
 	screenHeight int
-
 }
 
 func (self *Viewport) ScreenToView(xs uint16, ys uint16) (xv float64, yv float64) {
@@ -52,7 +51,6 @@ func (self *Viewport) Reshape(width int, height int) {
 	gl.LoadIdentity()
 	// glu.LookAt(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0)
 }
-
 
 func (self *Viewport) Rotx(angle float64) {
 	self.rotx += angle
