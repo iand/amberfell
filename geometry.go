@@ -299,7 +299,7 @@ func (a *Matrix4) Transform(v *Vectorf, w float64) *Vectorf {
 }
 
 // Ported from http://tog.acm.org/resources/GraphicsGems/gems/RayBox.c
-func (self *Ray) HitsBox(box *Box) (hit bool, face int) {
+func (self *Ray) HitsBox(box *Box) (hit bool, face uint8) {
 	const RIGHT = 0
 	const LEFT = 1
 	const MIDDLE = 2

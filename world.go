@@ -28,6 +28,11 @@ type Side struct {
 	x, x1, x2, z, z1, z2, dir, y float64
 }
 
+type BlockFace struct {
+	pos  Vectori
+	face uint8
+}
+
 func (self *World) Init() {
 
 	self.chunks = make(map[int16]*Chunk)
@@ -361,7 +366,7 @@ func (self World) ChunkLoadedFor(x int16, y int16, z int16) bool {
 	return ok
 }
 
-func (self *World) Draw(center Vectorf) {
+func (self *World) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 	for _, v := range self.mobs {
 		v.Draw(center)
 	}
@@ -383,9 +388,14 @@ func (self *World) Draw(center Vectorf) {
 						var n, s, w, e, u, d bool = self.AirNeighbours(x, z, y)
 						if n || s || w || e || u || d {
 
+							selectedFace := uint8(FACE_NONE)
+							if selectedBlockFace != nil && x == selectedBlockFace.pos[XAXIS] && y == selectedBlockFace.pos[YAXIS] && z == selectedBlockFace.pos[ZAXIS] {
+								selectedFace = selectedBlockFace.face
+							}
+
 							gl.PushMatrix()
 							gl.Translatef(float32(x), float32(y), float32(z))
-							TerrainCube(n, s, w, e, u, d, blockid)
+							TerrainCube(n, s, w, e, u, d, blockid, selectedFace)
 							count++
 							gl.PopMatrix()
 						}

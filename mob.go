@@ -66,12 +66,6 @@ func (self *MobData) Setvy(vy float64) {
 	self.velocity[YAXIS] = vy
 }
 
-func (self *MobData) Accelerate(v Vectorf) {
-	self.velocity[XAXIS] += v[XAXIS]
-	self.velocity[YAXIS] += v[YAXIS]
-	self.velocity[ZAXIS] += v[ZAXIS]
-}
-
 func (self *MobData) FrontBlock() Vectori {
 	ip := IntPosition(self.Position())
 	if self.heading > 337.5 || self.heading <= 22.5 {
@@ -103,11 +97,9 @@ func (self *MobData) Update(dt float64) {
 	self.position[XAXIS] += self.velocity[XAXIS] * dt
 	self.position[YAXIS] += self.velocity[YAXIS] * dt
 	self.position[ZAXIS] += self.velocity[ZAXIS] * dt
-	// fmt.Printf("position: %s\n", self.position)
 }
 
 type Mob interface {
-	Heading() float64
 	W() float64
 	H() float64
 	D() float64
@@ -122,7 +114,6 @@ type Mob interface {
 	Setvy(vy float64)
 	Setvz(vz float64)
 	SetFalling(b bool)
-	Accelerate(v Vectorf)
 	Rotate(angle float64)
 	Act(dt float64)
 	Draw(pos Vectorf)

@@ -41,66 +41,11 @@ func GameLoop() {
 			case *sdl.MouseButtonEvent:
 				re := e.(*sdl.MouseButtonEvent)
 				if re.Button == 1 && re.State == 1 { // LEFT, DOWN
-
-					// mousex = re.X
-					// mousey = re.Y
-
-					// var pm32 []float32 = make([]float32, 16)
-					// gl.GetFloatv(gl.PROJECTION_MATRIX, pm32)
-					// var projectionMatrix64 *Matrix4 = NewMatrix(float64(pm32[0]),float64(pm32[1]),float64(pm32[2]),float64(pm32[3]),float64(pm32[4]),float64(pm32[5]),float64(pm32[6]),float64(pm32[7]),float64(pm32[8]),float64(pm32[9]),float64(pm32[10]),float64(pm32[11]),float64(pm32[12]),float64(pm32[13]),float64(pm32[14]),float64(pm32[15]))
-
-					// inverseMatrix, _ := projectionMatrix64.Multiply(ModelMatrix()).Inverse()
-
-					// x := (float64(mousex)-float64(screenWidth)/2) / ( float64(screenWidth)/2 )
-					// z := (float64(screenHeight)/2 - float64(mousey)) / ( float64(screenHeight)/2 )
-
-					// origin = inverseMatrix.Transform(&Vectorf{x, z , -1}, 1)
-					// norm = inverseMatrix.Transform(&Vectorf{0, 0, 1}, 0).Normalize()
-
-					// fmt.Printf("Ray origin: %f, %f, %f\n", origin[0], origin[1], origin[2])
-					// fmt.Printf("Ray norm: %f, %f, %f\n", norm[0], norm[1], norm[2])
-
-					// ray := Ray{ origin, norm }
-
-					// // // See http://www.dyn-lab.com/articles/pick-selection.html
-					// pos := IntPosition(ThePlayer.position)
-
-					// dx, dy, dz := float64(0), float64(-1), float64(0)
-					// // for dx := float64(-5); dx < 6; dx++ {
-					// // 	for dy := float64(-5); dy < 6; dy++ {
-					// // 		for dz := float64(-5); dz < 6; dz++ {
-					// 			box := Box{
-					// 					&Vectorf{float64(pos[XAXIS])-0.5+dx, float64(pos[YAXIS])-0.5+dy,float64(pos[ZAXIS])-0.5+dz}, 
-					// 					&Vectorf{float64(pos[XAXIS])+0.5+dx, float64(pos[YAXIS])+0.5+dy,float64(pos[ZAXIS])+0.5+dz} }
-					// 			fmt.Printf("box: %s\n", box)
-
-					// 			if ray.HitsBox(&box) {
-					// 				fmt.Printf("Hits box at %d, %d, %d\n", dx, dy, dz)
-					// 			} 
-					// // 		}
-					// // 	}
-					// // }
-
-					// box := Box{
-					// 		&Vectorf{float64(pos[XAXIS])-0.5, float64(pos[YAXIS])-1.5,float64(pos[ZAXIS])-0.5}, 
-					// 		&Vectorf{float64(pos[XAXIS])+0.5, float64(pos[YAXIS])+1.5,float64(pos[ZAXIS])+0.5} }
-
-					// var pm32 []float32 = make([]float32, 16)
-					// gl.GetFloatv(gl.PROJECTION_MATRIX, pm32)
-					// var projectionMatrix64 *Matrix4 = NewMatrix(float64(pm32[0]),float64(pm32[1]),float64(pm32[2]),float64(pm32[3]),float64(pm32[4]),float64(pm32[5]),float64(pm32[6]),float64(pm32[7]),float64(pm32[8]),float64(pm32[9]),float64(pm32[10]),float64(pm32[11]),float64(pm32[12]),float64(pm32[13]),float64(pm32[14]),float64(pm32[15]))
-
-					// inverseMatrix, _ := projectionMatrix64.Multiply(ModelMatrix()).Inverse()
-
-					// x := (float64(re.X)-float64(screenWidth)/2) / ( float64(screenWidth)/2 )
-					// z := (float64(screenHeight)/2 - float64(re.Y)) / ( float64(screenHeight)/2 )
-
-					// 		inverseMatrix.Transform(&Vectorf{x, 0, z}, 1),
-					// 		inverseMatrix.Transform(&Vectorf{0, -1, 0}, 0).Normalize() }
-
-					// fmt.Printf("Ray origin: %f, %f, %f\n", ray.origin[0], ray.origin[1], ray.origin[2])
-
 					if ThePlayer.CanInteract() {
-
+						selectedBlockFace := viewport.SelectedBlockFace()
+						if selectedBlockFace != nil {
+							ThePlayer.Interact(selectedBlockFace)
+						}
 						// println("Click:", re.X, re.Y, re.State, re.Button, re.Which)
 					}
 				}

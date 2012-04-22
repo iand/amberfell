@@ -101,7 +101,7 @@ func LoadTerrainCubes() {
 			}
 
 			gl.NewList(listid, gl.COMPILE)
-			Cuboid(1, 1, 1, etexture, wtexture, ntexture, stexture, utexture, dtexture)
+			Cuboid(1, 1, 1, etexture, wtexture, ntexture, stexture, utexture, dtexture, FACE_NONE)
 			gl.EndList()
 			// CheckGLError()
 
@@ -136,7 +136,7 @@ func terrainCubeIndex(n bool, s bool, w bool, e bool, u bool, d bool, blockid by
 	return index
 }
 
-func TerrainCube(n bool, s bool, w bool, e bool, u bool, d bool, blockid byte) {
+func TerrainCube(n bool, s bool, w bool, e bool, u bool, d bool, blockid byte, selectedFace uint8) {
 	var ntexture, stexture, etexture, wtexture, utexture, dtexture *gl.Texture
 
 	block := TerrainBlocks[blockid]
@@ -159,19 +159,25 @@ func TerrainCube(n bool, s bool, w bool, e bool, u bool, d bool, blockid byte) {
 	// if d { dtexture = block.dtexture }
 
 	// if selectMode {
-	Cuboid(1, 1, 1, etexture, wtexture, ntexture, stexture, utexture, dtexture)
+	Cuboid(1, 1, 1, etexture, wtexture, ntexture, stexture, utexture, dtexture, selectedFace)
 	// } else {
 	// gl.CallList(TerrainCubes[terrainCubeIndex(n, s, e, w, u, d, blockid)])
 	// }
 
 }
 
-func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *gl.Texture, ntexture *gl.Texture, stexture *gl.Texture, utexture *gl.Texture, dtexture *gl.Texture) {
+func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *gl.Texture, ntexture *gl.Texture, stexture *gl.Texture, utexture *gl.Texture, dtexture *gl.Texture, selectedFace uint8) {
 	w, h, d := float32(bw)/2, float32(bh)/2, float32(bd)/2
 
-	// Front face
+	// East face
 	if etexture != nil {
 		etexture.Bind(gl.TEXTURE_2D)
+
+		if selectedFace == EAST_FACE {
+			gl.Color4ub(64, 192, 64, 64)
+		} else {
+			gl.Color4ub(255, 255, 255, 255)
+		}
 
 		// gl.EnableClientState(gl.VERTEX_ARRAY)        // Enable Vertex Arrays
 		// gl.EnableClientState(gl.TEXTURE_COORD_ARRAY) // Enable Texture Coord Arrays
@@ -195,8 +201,15 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 		// etexture.Unbind(gl.TEXTURE_2D)
 		// CheckGLError()
 	}
-	// Back Face
+
+	// West Face
 	if wtexture != nil {
+		if selectedFace == WEST_FACE {
+			gl.Color4ub(64, 192, 64, 64)
+		} else {
+			gl.Color4ub(255, 255, 255, 255)
+		}
+
 		wtexture.Bind(gl.TEXTURE_2D)
 		gl.Begin(gl.QUADS)
 		gl.Normal3f(-1.0, 0.0, 0.0)
@@ -214,8 +227,14 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 		// CheckGLError()
 	}
 
-	// Left Face
+	// North Face
 	if ntexture != nil {
+		if selectedFace == NORTH_FACE {
+			gl.Color4ub(64, 192, 64, 64)
+		} else {
+			gl.Color4ub(255, 255, 255, 255)
+		}
+
 		ntexture.Bind(gl.TEXTURE_2D)
 		gl.Begin(gl.QUADS)
 		gl.Normal3f(0.0, 0.0, -1.0)
@@ -231,8 +250,14 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 		// ntexture.Unbind(gl.TEXTURE_2D)
 	}
 
-	// Right Face
+	// South Face
 	if stexture != nil {
+		if selectedFace == SOUTH_FACE {
+			gl.Color4ub(64, 192, 64, 64)
+		} else {
+			gl.Color4ub(255, 255, 255, 255)
+		}
+
 		stexture.Bind(gl.TEXTURE_2D)
 		gl.Begin(gl.QUADS)
 		gl.Normal3f(0.0, 0.0, 1.0)
@@ -250,8 +275,14 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 		// CheckGLError()
 	}
 
-	// Top Face
+	// Up Face
 	if utexture != nil {
+		if selectedFace == UP_FACE {
+			gl.Color4ub(64, 192, 64, 64)
+		} else {
+			gl.Color4ub(255, 255, 255, 255)
+		}
+
 		utexture.Bind(gl.TEXTURE_2D)
 
 		gl.Begin(gl.QUADS)
@@ -347,8 +378,14 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 		// CheckGLError()
 	}
 
-	// Bottom Face
+	// Down Face
 	if dtexture != nil {
+		if selectedFace == DOWN_FACE {
+			gl.Color4ub(64, 192, 64, 64)
+		} else {
+			gl.Color4ub(255, 255, 255, 255)
+		}
+
 		dtexture.Bind(gl.TEXTURE_2D)
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)

@@ -15,12 +15,13 @@ const (
 	YAXIS = 1
 	ZAXIS = 2
 
-	EAST_FACE  = 0 // +ve x
-	WEST_FACE  = 1 // -ve x
-	NORTH_FACE = 2 // -ve z
-	SOUTH_FACE = 3 // +ve z
-	UP_FACE    = 4 // +ve y
-	DOWN_FACE  = 5 // -ve y
+	FACE_NONE  = 0 // +ve x
+	EAST_FACE  = 1 // +ve x
+	WEST_FACE  = 2 // -ve x
+	NORTH_FACE = 3 // -ve z
+	SOUTH_FACE = 4 // +ve z
+	UP_FACE    = 5 // +ve y
+	DOWN_FACE  = 6 // -ve y
 
 	BLOCK_AIR   = 0
 	BLOCK_STONE = 1

@@ -60,7 +60,7 @@ func (player *Player) Draw(center Vectorf) {
 	gl.Rotated(player.Heading(), 0.0, 1.0, 0.0)
 
 	gl.Translatef(0.0, float32(player.H()/2)-0.5, 0.0)
-	Cuboid(player.W(), player.H(), player.D(), &MapTextures[33], &MapTextures[32], &MapTextures[32], &MapTextures[32], &MapTextures[32], &MapTextures[32])
+	Cuboid(player.W(), player.H(), player.D(), &MapTextures[33], &MapTextures[32], &MapTextures[32], &MapTextures[32], &MapTextures[32], &MapTextures[32], FACE_NONE)
 
 	gl.PopMatrix()
 }
@@ -145,37 +145,37 @@ func (self *Player) CanInteract() bool {
 	return false
 }
 
-func (self *Player) Interact(pos Vectori, face uint8) {
+func (self *Player) Interact(selectedBlockFace *BlockFace) {
 	if !self.CanInteract() {
 		return
 	}
 
-	println("Interacting at ", pos.String())
+	println("Interacting at ", selectedBlockFace.pos.String())
 	switch self.currentAction {
 	case ACTION_BREAK:
-		block := TheWorld.Atv(pos)
+		block := TheWorld.Atv(selectedBlockFace.pos)
 		if block != BLOCK_AIR {
-			println("Breaking at ", pos.String())
-			TheWorld.Setv(pos, BLOCK_AIR)
+			println("Breaking at ", selectedBlockFace.pos.String())
+			TheWorld.Setv(selectedBlockFace.pos, BLOCK_AIR)
 			self.inventory[block]++
 		}
 	case ACTION_ITEM:
-		if face == UP_FACE { // top
-			pos[YAXIS]++
-		} else if face == DOWN_FACE { // bottom
-			pos[YAXIS]--
-		} else if face == SOUTH_FACE { // front
-			pos[ZAXIS]++
-		} else if face == NORTH_FACE { // back
-			pos[ZAXIS]--
-		} else if face == EAST_FACE { // left
-			pos[XAXIS]++
-		} else if face == WEST_FACE { // right
-			pos[XAXIS]--
+		if selectedBlockFace.face == UP_FACE { // top
+			selectedBlockFace.pos[YAXIS]++
+		} else if selectedBlockFace.face == DOWN_FACE { // bottom
+			selectedBlockFace.pos[YAXIS]--
+		} else if selectedBlockFace.face == SOUTH_FACE { // front
+			selectedBlockFace.pos[ZAXIS]++
+		} else if selectedBlockFace.face == NORTH_FACE { // back
+			selectedBlockFace.pos[ZAXIS]--
+		} else if selectedBlockFace.face == EAST_FACE { // left
+			selectedBlockFace.pos[XAXIS]++
+		} else if selectedBlockFace.face == WEST_FACE { // right
+			selectedBlockFace.pos[XAXIS]--
 		}
-		if TheWorld.Atv(pos) == BLOCK_AIR {
-			println("Setting at ", pos.String())
-			TheWorld.Setv(pos, byte(self.currentItem))
+		if TheWorld.Atv(selectedBlockFace.pos) == BLOCK_AIR {
+			println("Setting at ", selectedBlockFace.pos.String())
+			TheWorld.Setv(selectedBlockFace.pos, byte(self.currentItem))
 		}
 	}
 
