@@ -96,6 +96,11 @@ func Draw() {
 		//		gl.LoadIdentity ()
 		//gl.Ortho (0, float64(viewport.screenWidth), float64(viewport.screenHeight), 0, 0, 1)
 		gl.Disable(gl.DEPTH_TEST)
+		gl.Disable(gl.LIGHTING)
+		gl.Disable(gl.LIGHT0)
+		gl.Disable(gl.LIGHT1)
+		gl.Disable(gl.COLOR_MATERIAL)
+
 		gl.MatrixMode(gl.MODELVIEW)
 
 		gl.LoadIdentity()
