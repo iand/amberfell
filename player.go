@@ -13,11 +13,10 @@ import (
 )
 
 type Player struct {
-	Bounce        float64
-	heading       float64
-	position      Vectorf
-	velocity      Vectorf
-	falling       bool
+	MobData
+	Bounce float64
+	// position      Vectorf
+	// velocity      Vectorf
 	currentAction uint8
 	currentItem   uint16
 	walkingSpeed  float64
@@ -25,130 +24,30 @@ type Player struct {
 	inventory     [255]uint16
 }
 
-func (p *Player) Init(heading float64, x int16, z int16, y int16) {
-	p.heading = heading
-	p.position[XAXIS] = float64(x)
-	p.position[YAXIS] = float64(y)
-	p.position[ZAXIS] = float64(z)
-	p.walkingSpeed = 20
-	p.currentAction = ACTION_HAND
-	p.currentItem = ITEM_NONE
+func (self *Player) Init(heading float64, x int16, z int16, y int16) {
+	self.heading = heading
+	self.position[XAXIS] = float64(x)
+	self.position[YAXIS] = float64(y)
+	self.position[ZAXIS] = float64(z)
+	self.walkingSpeed = 20
+	self.currentAction = ACTION_HAND
+	self.currentItem = ITEM_NONE
 
-	p.equippedItems[0] = BLOCK_DIRT
-	p.equippedItems[1] = BLOCK_STONE
-	p.equippedItems[2] = ITEM_NONE
-	p.equippedItems[3] = ITEM_NONE
-	p.equippedItems[4] = ITEM_NONE
-	p.equippedItems[5] = ITEM_NONE
-	p.equippedItems[6] = ITEM_NONE
+	self.equippedItems[0] = BLOCK_DIRT
+	self.equippedItems[1] = BLOCK_STONE
+	self.equippedItems[2] = ITEM_NONE
+	self.equippedItems[3] = ITEM_NONE
+	self.equippedItems[4] = ITEM_NONE
+	self.equippedItems[5] = ITEM_NONE
+	self.equippedItems[6] = ITEM_NONE
 
 }
 
-func (p *Player) W() float64 { return 0.8 }
-func (p *Player) H() float64 { return 2.0 }
-func (p *Player) D() float64 { return 0.6 }
+func (self *Player) W() float64 { return 0.8 }
+func (self *Player) H() float64 { return 2.0 }
+func (self *Player) D() float64 { return 0.6 }
 
-func (p *Player) Heading() float64  { return p.heading }
-func (p *Player) X() float32        { return float32(p.position[XAXIS]) }
-func (p *Player) Y() float32        { return float32(p.position[YAXIS]) }
-func (p *Player) Z() float32        { return float32(p.position[ZAXIS]) }
-func (p *Player) Velocity() Vectorf { return p.velocity }
-func (p *Player) Position() Vectorf { return p.position }
-
-func (p *Player) FrontBlock() Vectori {
-	ip := IntPosition(p.position)
-	if p.heading > 337.5 || p.heading <= 22.5 {
-		ip[XAXIS]++
-	} else if p.heading > 22.5 && p.heading <= 67.5 {
-		ip[XAXIS]++
-		ip[ZAXIS]--
-	} else if p.heading > 67.5 && p.heading <= 112.5 {
-		ip[ZAXIS]--
-	} else if p.heading > 112.5 && p.heading <= 157.5 {
-		ip[XAXIS]--
-		ip[ZAXIS]--
-	} else if p.heading > 157.5 && p.heading <= 202.5 {
-		ip[XAXIS]--
-	} else if p.heading > 202.5 && p.heading <= 247.5 {
-		ip[XAXIS]--
-		ip[ZAXIS]++
-	} else if p.heading > 247.5 && p.heading <= 292.5 {
-		ip[ZAXIS]++
-	} else if p.heading > 292.5 && p.heading <= 337.5 {
-		ip[XAXIS]++
-		ip[ZAXIS]++
-	}
-
-	return ip
-}
-
-func (p *Player) SetFalling(b bool) { p.falling = b }
-
-func (p *Player) Rotate(angle float64) {
-	p.heading += angle
-	if p.heading < 0 {
-		p.heading += 360
-	}
-	if p.heading > 360 {
-		p.heading -= 360
-	}
-}
-
-func (p *Player) Update(dt float64) {
-	p.position[XAXIS] += p.velocity[XAXIS] * dt
-	p.position[YAXIS] += p.velocity[YAXIS] * dt
-	p.position[ZAXIS] += p.velocity[ZAXIS] * dt
-
-	// viewport.Transx(-p.velocity[XAXIS] * dt)
-	// viewport.Transy(-p.velocity[YAXIS] * dt)
-	// viewport.Transz(-p.velocity[ZAXIS] * dt)
-
-	// fmt.Printf("position: %s\n", p.position)
-	// if math.Abs(p.velocity[XAXIS]) < 0.1 { p.velocity[XAXIS] = 0 }
-	// if math.Abs(p.velocity[YAXIS]) < 0.1 { p.velocity[YAXIS] = 0 }
-	// if math.Abs(p.velocity[ZAXIS]) < 0.1 { p.velocity[ZAXIS] = 0 }
-
-	//if p.velocity[YAXIS] == 0 { p.falling = false }
-}
-
-func (p *Player) Accelerate(v Vectorf) {
-	p.velocity[XAXIS] += v[XAXIS]
-	p.velocity[YAXIS] += v[YAXIS]
-	p.velocity[ZAXIS] += v[ZAXIS]
-}
-
-func (p *Player) IsFalling() bool {
-	return p.falling
-}
-
-func (p *Player) Snapx(x float64, vx float64) {
-	p.position[XAXIS] = x
-	p.velocity[XAXIS] = vx
-}
-
-func (p *Player) Snapz(z float64, vz float64) {
-	p.position[ZAXIS] = z
-	p.velocity[ZAXIS] = vz
-}
-
-func (p *Player) Snapy(y float64, vy float64) {
-	p.position[YAXIS] = y
-	p.velocity[YAXIS] = vy
-}
-
-func (p *Player) Setvx(vx float64) {
-	p.velocity[XAXIS] = vx
-}
-
-func (p *Player) Setvz(vz float64) {
-	p.velocity[ZAXIS] = vz
-}
-
-func (p *Player) Setvy(vy float64) {
-	p.velocity[YAXIS] = vy
-}
-
-func (p *Player) Act(dt float64) {
+func (self *Player) Act(dt float64) {
 	// noop
 }
 
@@ -156,7 +55,7 @@ func (player *Player) Draw(center Vectorf) {
 
 	gl.PushMatrix()
 
-	gl.Translatef(float32(player.X()), float32(player.Y()), float32(player.Z()))
+	gl.Translatef(float32(player.position[XAXIS]), float32(player.position[YAXIS]), float32(player.position[ZAXIS]))
 	//stepHeight := float32(math.Sin(player.Bounce * piover180)/10.0)
 	gl.Rotated(player.Heading(), 0.0, 1.0, 0.0)
 
@@ -166,81 +65,81 @@ func (player *Player) Draw(center Vectorf) {
 	gl.PopMatrix()
 }
 
-func (p *Player) HandleKeys(keys []uint8) {
+func (self *Player) HandleKeys(keys []uint8) {
 	if keys[sdl.K_1] != 0 {
-		p.currentAction = ACTION_HAND
+		self.currentAction = ACTION_HAND
 	}
 	if keys[sdl.K_2] != 0 {
-		p.currentAction = ACTION_BREAK
+		self.currentAction = ACTION_BREAK
 	}
 	if keys[sdl.K_3] != 0 {
-		p.currentAction = ACTION_WEAPON
+		self.currentAction = ACTION_WEAPON
 	}
 	if keys[sdl.K_4] != 0 {
-		p.currentAction = ACTION_ITEM
-		p.currentItem = p.equippedItems[0]
+		self.currentAction = ACTION_ITEM
+		self.currentItem = self.equippedItems[0]
 	}
 	if keys[sdl.K_5] != 0 {
-		p.currentAction = ACTION_ITEM
-		p.currentItem = p.equippedItems[1]
+		self.currentAction = ACTION_ITEM
+		self.currentItem = self.equippedItems[1]
 	}
 	if keys[sdl.K_6] != 0 {
-		p.currentAction = ACTION_ITEM
-		p.currentItem = p.equippedItems[2]
+		self.currentAction = ACTION_ITEM
+		self.currentItem = self.equippedItems[2]
 	}
 	if keys[sdl.K_7] != 0 {
-		p.currentAction = ACTION_ITEM
-		p.currentItem = p.equippedItems[3]
+		self.currentAction = ACTION_ITEM
+		self.currentItem = self.equippedItems[3]
 	}
 	if keys[sdl.K_8] != 0 {
-		p.currentAction = ACTION_ITEM
-		p.currentItem = p.equippedItems[4]
+		self.currentAction = ACTION_ITEM
+		self.currentItem = self.equippedItems[4]
 	}
 	if keys[sdl.K_9] != 0 {
-		p.currentAction = ACTION_ITEM
-		p.currentItem = p.equippedItems[5]
+		self.currentAction = ACTION_ITEM
+		self.currentItem = self.equippedItems[5]
 	}
 
 	if keys[sdl.K_w] != 0 {
-		if !p.IsFalling() {
-			p.velocity[XAXIS] = math.Cos(p.Heading()*math.Pi/180) * p.walkingSpeed
-			p.velocity[ZAXIS] = -math.Sin(p.Heading()*math.Pi/180) * p.walkingSpeed
+		if !self.IsFalling() {
+			self.velocity[XAXIS] = math.Cos(self.Heading()*math.Pi/180) * self.walkingSpeed
+			self.velocity[ZAXIS] = -math.Sin(self.Heading()*math.Pi/180) * self.walkingSpeed
 		} else {
-			p.velocity[XAXIS] = math.Cos(p.Heading()*math.Pi/180) * p.walkingSpeed / 3
-			p.velocity[ZAXIS] = -math.Sin(p.Heading()*math.Pi/180) * p.walkingSpeed / 3
+			self.velocity[XAXIS] = math.Cos(self.Heading()*math.Pi/180) * self.walkingSpeed / 3
+			self.velocity[ZAXIS] = -math.Sin(self.Heading()*math.Pi/180) * self.walkingSpeed / 3
 		}
 
 	}
 	if keys[sdl.K_s] != 0 {
-		if !p.IsFalling() {
-			p.velocity[XAXIS] = -math.Cos(p.Heading()*math.Pi/180) * p.walkingSpeed / 2
-			p.velocity[ZAXIS] = math.Sin(p.Heading()*math.Pi/180) * p.walkingSpeed / 2
+		if !self.IsFalling() {
+			self.velocity[XAXIS] = -math.Cos(self.Heading()*math.Pi/180) * self.walkingSpeed / 2
+			self.velocity[ZAXIS] = math.Sin(self.Heading()*math.Pi/180) * self.walkingSpeed / 2
 		} else {
-			p.velocity[XAXIS] = -math.Cos(p.Heading()*math.Pi/180) * p.walkingSpeed / 6
-			p.velocity[ZAXIS] = math.Sin(p.Heading()*math.Pi/180) * p.walkingSpeed / 6
+			self.velocity[XAXIS] = -math.Cos(self.Heading()*math.Pi/180) * self.walkingSpeed / 6
+			self.velocity[ZAXIS] = math.Sin(self.Heading()*math.Pi/180) * self.walkingSpeed / 6
 		}
 
 	}
 	if keys[sdl.K_a] != 0 {
-		p.Rotate(22.5 / 2)
+		self.Rotate(22.5 / 2)
 		// viewport.Roty(-22.5 / 2)
 	}
 
 	if keys[sdl.K_d] != 0 {
-		p.Rotate(-22.5 / 2)
+		self.Rotate(-22.5 / 2)
 		// viewport.Roty(22.5 / 2)
 	}
 
 	if keys[sdl.K_SPACE] != 0 {
-		if !p.IsFalling() {
-			p.velocity[YAXIS] = 4
+		if !self.IsFalling() {
+			self.velocity[YAXIS] = 4
 		}
 	}
 
 }
 
-func (p *Player) CanInteract() bool {
-	if p.currentAction == ACTION_BREAK || (p.currentAction == ACTION_ITEM && p.currentItem != ITEM_NONE) {
+func (self *Player) CanInteract() bool {
+	if self.currentAction == ACTION_BREAK || (self.currentAction == ACTION_ITEM && self.currentItem != ITEM_NONE) {
 		return true
 	}
 	return false

@@ -65,7 +65,7 @@ func (self *World) Init() {
 // A chunk is a 24 x 24 x 48 set of blocks
 // x is east/west offset from World Origin
 // z is south/north offset from World Origin
-func (world *World) GenerateChunk(x int16, y int16, z int16) *Chunk {
+func (self *World) GenerateChunk(x int16, y int16, z int16) *Chunk {
 	var chunk Chunk
 	chunk.Init(x, y, z)
 	println("Generating chunk at x:", x, " y:", y, " z:", z)
@@ -81,22 +81,22 @@ func (world *World) GenerateChunk(x int16, y int16, z int16) *Chunk {
 		}
 	}
 
-	world.chunks[chunkIndex(x, y, z)] = &chunk
+	self.chunks[chunkIndex(x, y, z)] = &chunk
 	return &chunk
 
 }
 
 // Gets the chunk for a given x/z block coordinate
 // x = 0, z = 0 is in the top left of the home chunk
-func (world *World) GetChunkForBlock(x int16, y int16, z int16) (*Chunk, int16, int16, int16) {
+func (self *World) GetChunkForBlock(x int16, y int16, z int16) (*Chunk, int16, int16, int16) {
 	cx := x / CHUNK_WIDTH
 	cy := y / CHUNK_HEIGHT
 	cz := z / CHUNK_WIDTH
 	//println("cx:", cx, "cz:", cz)
 
-	chunk, ok := world.chunks[chunkIndex(cx, cy, cz)]
+	chunk, ok := self.chunks[chunkIndex(cx, cy, cz)]
 	if !ok {
-		chunk = world.GenerateChunk(cx, cy, cz)
+		chunk = self.GenerateChunk(cx, cy, cz)
 	}
 
 	ox := x - cx*CHUNK_WIDTH
@@ -118,28 +118,28 @@ func (world *World) GetChunkForBlock(x int16, y int16, z int16) (*Chunk, int16, 
 
 }
 
-func (world *World) At(x int16, y int16, z int16) byte {
+func (self *World) At(x int16, y int16, z int16) byte {
 	//println("x:", x, " y:", y, "z:", z)
-	chunk, ox, oy, oz := world.GetChunkForBlock(x, y, z)
+	chunk, ox, oy, oz := self.GetChunkForBlock(x, y, z)
 	//println("ox:", ox, " y:", y, "oz:", oz)
 	return chunk.At(ox, oy, oz)
 }
 
-func (world *World) Atv(v Vectori) byte {
-	return world.At(v[XAXIS], v[YAXIS], v[ZAXIS])
+func (self *World) Atv(v Vectori) byte {
+	return self.At(v[XAXIS], v[YAXIS], v[ZAXIS])
 }
 
-func (world *World) Set(x int16, y int16, z int16, b byte) {
-	chunk, ox, oy, oz := world.GetChunkForBlock(x, y, z)
+func (self *World) Set(x int16, y int16, z int16, b byte) {
+	chunk, ox, oy, oz := self.GetChunkForBlock(x, y, z)
 	chunk.Set(ox, oy, oz, b)
 }
 
-func (world *World) Setv(v Vectori, b byte) {
-	chunk, ox, oy, oz := world.GetChunkForBlock(v[XAXIS], v[YAXIS], v[ZAXIS])
+func (self *World) Setv(v Vectori, b byte) {
+	chunk, ox, oy, oz := self.GetChunkForBlock(v[XAXIS], v[YAXIS], v[ZAXIS])
 	chunk.Set(ox, oy, oz, b)
 }
 
-func (world *World) RandomSquare() (x int16, z int16) {
+func (self *World) RandomSquare() (x int16, z int16) {
 	x = int16(rand.Intn(40) - 20)
 	z = int16(rand.Intn(40) - 20)
 	return
@@ -149,70 +149,70 @@ func (world *World) RandomSquare() (x int16, z int16) {
 // east/west = +/- x
 // up/down = +/- y
 
-func (world *World) Grow(x int16, y int16, z int16, n int, s int, w int, e int, u int, d int, texture byte) {
-	if (y == 0 || world.At(x+1, y-1, z) != 0) && rand.Intn(100) < e {
-		world.Set(x+1, y, z, texture)
-		world.Grow(x+1, y, z, n, s, 0, e, u, d, texture)
+func (self *World) Grow(x int16, y int16, z int16, n int, s int, w int, e int, u int, d int, texture byte) {
+	if (y == 0 || self.At(x+1, y-1, z) != 0) && rand.Intn(100) < e {
+		self.Set(x+1, y, z, texture)
+		self.Grow(x+1, y, z, n, s, 0, e, u, d, texture)
 	}
-	if (y == 0 || world.At(x-1, y-1, z) != 0) && rand.Intn(100) < w {
-		world.Set(x-1, y, z, texture)
-		world.Grow(x-1, y, z, n, s, w, 0, u, d, texture)
+	if (y == 0 || self.At(x-1, y-1, z) != 0) && rand.Intn(100) < w {
+		self.Set(x-1, y, z, texture)
+		self.Grow(x-1, y, z, n, s, w, 0, u, d, texture)
 	}
-	if (y == 0 || world.At(x, y-1, z+1) != 0) && rand.Intn(100) < s {
-		world.Set(x, y, z+1, texture)
-		world.Grow(x, y, z+1, 0, s, w, e, u, d, texture)
+	if (y == 0 || self.At(x, y-1, z+1) != 0) && rand.Intn(100) < s {
+		self.Set(x, y, z+1, texture)
+		self.Grow(x, y, z+1, 0, s, w, e, u, d, texture)
 	}
-	if (y == 0 || world.At(x, y-1, z-1) != 0) && rand.Intn(100) < n {
-		world.Set(x, y, z-1, texture)
-		world.Grow(x, y, z-1, n, 0, w, e, u, d, texture)
+	if (y == 0 || self.At(x, y-1, z-1) != 0) && rand.Intn(100) < n {
+		self.Set(x, y, z-1, texture)
+		self.Grow(x, y, z-1, n, 0, w, e, u, d, texture)
 	}
 	if y < CHUNK_HEIGHT-1 && rand.Intn(100) < u {
-		world.Set(x, y+1, z, texture)
-		world.Grow(x, y+1, z, n, s, w, e, u, 0, texture)
+		self.Set(x, y+1, z, texture)
+		self.Grow(x, y+1, z, n, s, w, e, u, 0, texture)
 	}
 	if y > 0 && rand.Intn(100) < d {
-		world.Set(x, y-1, z, texture)
-		world.Grow(x, y-1, z, n, s, w, e, 0, d, texture)
+		self.Set(x, y-1, z, texture)
+		self.Grow(x, y-1, z, n, s, w, e, 0, d, texture)
 	}
 }
 
-func (world *World) AirNeighbours(x int16, z int16, y int16) (n, s, w, e, u, d bool) {
+func (self *World) AirNeighbours(x int16, z int16, y int16) (n, s, w, e, u, d bool) {
 
-	if world.ChunkLoadedFor(x-1, y, z) && world.At(x-1, y, z) == BLOCK_AIR {
+	if self.ChunkLoadedFor(x-1, y, z) && self.At(x-1, y, z) == BLOCK_AIR {
 		w = true
 	}
-	if world.ChunkLoadedFor(x+1, y, z) && world.At(x+1, y, z) == BLOCK_AIR {
+	if self.ChunkLoadedFor(x+1, y, z) && self.At(x+1, y, z) == BLOCK_AIR {
 		e = true
 	}
-	if world.ChunkLoadedFor(x, y, z-1) && world.At(x, y, z-1) == BLOCK_AIR {
+	if self.ChunkLoadedFor(x, y, z-1) && self.At(x, y, z-1) == BLOCK_AIR {
 		n = true
 	}
-	if world.ChunkLoadedFor(x, y, z+1) && world.At(x, y, z+1) == BLOCK_AIR {
+	if self.ChunkLoadedFor(x, y, z+1) && self.At(x, y, z+1) == BLOCK_AIR {
 		s = true
 	}
-	if world.ChunkLoadedFor(x, y+1, z) && world.At(x, y+1, z) == BLOCK_AIR {
+	if self.ChunkLoadedFor(x, y+1, z) && self.At(x, y+1, z) == BLOCK_AIR {
 		u = true
 	}
 	return
 }
 
-func (world *World) AirNeighbour(x int16, z int16, y int16, face int) bool {
-	if face == UP_FACE && world.ChunkLoadedFor(x, y+1, z) && world.At(x, y+1, z) == BLOCK_AIR {
+func (self *World) AirNeighbour(x int16, z int16, y int16, face int) bool {
+	if face == UP_FACE && self.ChunkLoadedFor(x, y+1, z) && self.At(x, y+1, z) == BLOCK_AIR {
 		return true
 	}
-	if face == NORTH_FACE && world.ChunkLoadedFor(x, y, z-1) && world.At(x, y, z-1) == BLOCK_AIR {
+	if face == NORTH_FACE && self.ChunkLoadedFor(x, y, z-1) && self.At(x, y, z-1) == BLOCK_AIR {
 		return true
 	}
-	if face == SOUTH_FACE && world.ChunkLoadedFor(x, y, z+1) && world.At(x, y, z+1) == BLOCK_AIR {
+	if face == SOUTH_FACE && self.ChunkLoadedFor(x, y, z+1) && self.At(x, y, z+1) == BLOCK_AIR {
 		return true
 	}
-	if face == EAST_FACE && world.ChunkLoadedFor(x+1, y, z) && world.At(x+1, y, z) == BLOCK_AIR {
+	if face == EAST_FACE && self.ChunkLoadedFor(x+1, y, z) && self.At(x+1, y, z) == BLOCK_AIR {
 		return true
 	}
-	if face == WEST_FACE && world.ChunkLoadedFor(x-1, y, z) && world.At(x-1, y, z) == BLOCK_AIR {
+	if face == WEST_FACE && self.ChunkLoadedFor(x-1, y, z) && self.At(x-1, y, z) == BLOCK_AIR {
 		return true
 	}
-	if face == DOWN_FACE && world.ChunkLoadedFor(x, y-1, z) && world.At(x, y-1, z) == BLOCK_AIR {
+	if face == DOWN_FACE && self.ChunkLoadedFor(x, y-1, z) && self.At(x, y-1, z) == BLOCK_AIR {
 		return true
 	}
 	return false
@@ -253,9 +253,10 @@ func rectRectCollide(r1 Side, r2 Side) bool {
 	return false
 }
 
-func (world *World) ApplyForces(mob Mob, dt float64) {
+func (self *World) ApplyForces(mob Mob, dt float64) {
 	// mobBounds := mob.DesiredBoundingBox(dt)
-	ip := IntPosition(mob.Position())
+	mp := mob.Position()
+	ip := IntPosition(mp)
 
 	// mobx := ip[XAXIS]
 	// moby := ip[YAXIS]
@@ -276,63 +277,63 @@ func (world *World) ApplyForces(mob Mob, dt float64) {
 	// var dx, dz, dy int16
 	// var x,  z int16
 
-	playerRect := Rect{x: float64(mob.X()) + mob.Velocity()[XAXIS]*dt, z: float64(mob.Z()) + mob.Velocity()[ZAXIS]*dt, sizex: mob.W(), sizez: mob.D()}
+	playerRect := Rect{x: float64(mp[XAXIS]) + mob.Velocity()[XAXIS]*dt, z: float64(mp[ZAXIS]) + mob.Velocity()[ZAXIS]*dt, sizex: mob.W(), sizez: mob.D()}
 
 	// collisionCandidates := make([]Side, 0)
 
-	if world.Atv(ip.North()) != BLOCK_AIR {
+	if self.Atv(ip.North()) != BLOCK_AIR {
 		if mob.Velocity()[ZAXIS] < 0 && ip.North().HRect().Intersects(playerRect) {
 			mob.Snapz(float64(ip.North()[ZAXIS])+0.5+playerRect.sizez/2, 0)
 		}
 	}
 
-	if world.Atv(ip.South()) != BLOCK_AIR {
+	if self.Atv(ip.South()) != BLOCK_AIR {
 		if mob.Velocity()[ZAXIS] > 0 && ip.South().HRect().Intersects(playerRect) {
 			mob.Snapz(float64(ip.South()[ZAXIS])-0.5-playerRect.sizez/2, 0)
 		}
 	}
 
-	if world.Atv(ip.East()) != BLOCK_AIR {
+	if self.Atv(ip.East()) != BLOCK_AIR {
 		if mob.Velocity()[XAXIS] > 0 && ip.East().HRect().Intersects(playerRect) {
 			mob.Snapx(float64(ip.East()[XAXIS])-0.5-playerRect.sizex/2, 0)
 		}
 	}
 
-	if world.Atv(ip.West()) != BLOCK_AIR {
+	if self.Atv(ip.West()) != BLOCK_AIR {
 		if mob.Velocity()[XAXIS] < 0 && ip.West().HRect().Intersects(playerRect) {
 			mob.Snapx(float64(ip.West()[XAXIS])+0.5+playerRect.sizex/2, 0)
 		}
 	}
 
 	mob.SetFalling(true)
-	if world.Atv(ip.Down()) != BLOCK_AIR {
+	if self.Atv(ip.Down()) != BLOCK_AIR {
 		mob.SetFalling(false)
 		if mob.Velocity()[YAXIS] < 0 {
 			mob.Snapy(float64(ip.Down()[YAXIS])+1, 0)
 		}
 	} else {
-		if world.Atv(ip.Down().North()) != BLOCK_AIR {
+		if self.Atv(ip.Down().North()) != BLOCK_AIR {
 			if ip.Down().North().HRect().Intersects(playerRect) {
 				mob.Snapy(float64(ip.Down()[YAXIS])+1, 0)
 				mob.SetFalling(false)
 			}
 		}
 
-		if world.Atv(ip.Down().South()) != BLOCK_AIR {
+		if self.Atv(ip.Down().South()) != BLOCK_AIR {
 			if ip.Down().South().HRect().Intersects(playerRect) {
 				mob.Snapy(float64(ip.Down()[YAXIS])+1, 0)
 				mob.SetFalling(false)
 			}
 		}
 
-		if world.Atv(ip.Down().East()) != BLOCK_AIR {
+		if self.Atv(ip.Down().East()) != BLOCK_AIR {
 			if ip.Down().East().HRect().Intersects(playerRect) {
 				mob.Snapy(float64(ip.Down()[YAXIS])+1, 0)
 				mob.SetFalling(false)
 			}
 		}
 
-		if world.Atv(ip.Down().West()) != BLOCK_AIR {
+		if self.Atv(ip.Down().West()) != BLOCK_AIR {
 			if ip.Down().West().HRect().Intersects(playerRect) {
 				mob.Snapy(float64(ip.Down()[YAXIS])+1, 0)
 				mob.SetFalling(false)
@@ -342,26 +343,26 @@ func (world *World) ApplyForces(mob Mob, dt float64) {
 
 }
 
-func (world *World) Simulate(dt float64) {
-	for _, v := range world.mobs {
+func (self *World) Simulate(dt float64) {
+	for _, v := range self.mobs {
 		v.Act(dt)
-		world.ApplyForces(v, dt)
+		self.ApplyForces(v, dt)
 		v.Update(dt)
 	}
 
 }
 
-func (world World) ChunkLoadedFor(x int16, y int16, z int16) bool {
+func (self World) ChunkLoadedFor(x int16, y int16, z int16) bool {
 	cx := x / CHUNK_WIDTH
 	cy := y / CHUNK_HEIGHT
 	cz := z / CHUNK_WIDTH
 
-	_, ok := world.chunks[chunkIndex(cx, cy, cz)]
+	_, ok := self.chunks[chunkIndex(cx, cy, cz)]
 	return ok
 }
 
-func (world *World) Draw(center Vectorf) {
-	for _, v := range world.mobs {
+func (self *World) Draw(center Vectorf) {
+	for _, v := range self.mobs {
 		v.Draw(center)
 	}
 
@@ -377,9 +378,9 @@ func (world *World) Draw(center Vectorf) {
 			if x+z-px-pz <= ViewRadius && x+z-px-pz >= -ViewRadius {
 				for y = py - 5; y < py+16; y++ {
 
-					var blockid byte = world.At(x, y, z)
+					var blockid byte = self.At(x, y, z)
 					if blockid != 0 {
-						var n, s, w, e, u, d bool = world.AirNeighbours(x, z, y)
+						var n, s, w, e, u, d bool = self.AirNeighbours(x, z, y)
 						if n || s || w || e || u || d {
 
 							gl.PushMatrix()

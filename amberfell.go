@@ -10,27 +10,26 @@ import (
 	"fmt"
 	"github.com/banthar/Go-SDL/sdl"
 	"github.com/banthar/gl"
+	"github.com/kierdavis/go/amberfell/mm3dmodel"
 	"math/rand"
 	"os"
 	"runtime/pprof"
 )
 
-var flag_profile *bool = flag.Bool("profile", false, "Output profiling information to amberfell.prof")
-
 var (
-	DebugMode  bool  = false
-	ViewRadius int16 = 30
-	TheWorld   *World
-	ThePlayer  *Player
-)
+	flag_profile *bool = flag.Bool("profile", false, "Output profiling information to amberfell.prof")
+	DebugMode    bool  = false
+	ViewRadius   int16 = 30
+	TheWorld     *World
+	ThePlayer    *Player
+	viewport     Viewport
 
-var viewport Viewport
-
-var (
 	tileWidth       = 48
 	screenScale int = int(5 * float64(tileWidth) / 2)
 
 	timeOfDay float32 = 8
+
+	WolfModel *mm3dmodel.Model
 )
 
 func main() {
@@ -58,6 +57,8 @@ func main() {
 }
 
 func initGame() {
+	WolfModel = LoadModel("res/wolf.mm3d")
+
 	TheWorld = new(World)
 	TheWorld.Init()
 

@@ -207,10 +207,6 @@ func GameLoop() {
 			viewport.Zoomout()
 		}
 
-		if DebugMode {
-			fmt.Printf("x:%f, z:%f\n", ThePlayer.X(), ThePlayer.Z())
-		}
-
 		newTime := time.Now().UnixNano()
 		deltaTime := newTime - currentTime
 		currentTime = newTime
