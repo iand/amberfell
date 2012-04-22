@@ -6,10 +6,10 @@
 package main
 
 import (
+	"fmt"
 	"github.com/banthar/Go-SDL/sdl"
 	"github.com/banthar/gl"
 	"math"
-	// "fmt"
 )
 
 func Draw() {
@@ -17,6 +17,7 @@ func Draw() {
 
 	gl.Color4ub(255, 255, 255, 255)
 	gl.Enable(gl.TEXTURE_2D)
+	gl.Enable(gl.DEPTH_TEST)
 	//gl.Enable(gl.FOG)
 	gl.Enable(gl.LIGHTING)
 	gl.Enable(gl.LIGHT0)
@@ -86,7 +87,41 @@ func Draw() {
 	selectedBlockFace := viewport.SelectedBlockFace()
 	TheWorld.Draw(center, selectedBlockFace)
 
+	if DebugMode {
+		h := float32(consoleFont.height) * PIXEL_SCALE
+		margin := float32(3.0) * PIXEL_SCALE
+		consoleHeight := 3 * h
+
+		gl.MatrixMode(gl.PROJECTION)
+		//		gl.LoadIdentity ()
+		//gl.Ortho (0, float64(viewport.screenWidth), float64(viewport.screenHeight), 0, 0, 1)
+		gl.Disable(gl.DEPTH_TEST)
+		gl.MatrixMode(gl.MODELVIEW)
+
+		gl.LoadIdentity()
+		gl.Color4ub(0, 0, 0, 208)
+
+		gl.Begin(gl.QUADS)
+		// gl.Vertex2f(float32(viewport.lplane)+0.5, float32(viewport.bplane)+0.5) // Bottom Left Of The Texture and Quad
+		// gl.Vertex2f(float32(viewport.rplane)-0.5, float32(viewport.bplane)+0.5) // Bottom Right Of The Texture and Quad
+		// gl.Vertex2f(float32(viewport.rplane)-0.5, float32(viewport.tplane)-0.5) // Top Right Of The Texture and Quad
+		// gl.Vertex2f(float32(viewport.lplane)+0.5, float32(viewport.tplane)-0.5) // Top Left Of The Texture and Quad
+		gl.Vertex2f(float32(viewport.lplane), float32(viewport.bplane)+consoleHeight+margin*2) // Bottom Left Of The Texture and Quad
+		gl.Vertex2f(float32(viewport.rplane), float32(viewport.bplane)+consoleHeight+margin*2) // Bottom Right Of The Texture and Quad
+		gl.Vertex2f(float32(viewport.rplane), float32(viewport.bplane))                        // Top Right Of The Texture and Quad
+		gl.Vertex2f(float32(viewport.lplane), float32(viewport.bplane))                        // Top Left Of The Texture and Quad
+		gl.End()
+
+		gl.Translatef(float32(viewport.lplane)+margin, float32(viewport.bplane)+consoleHeight+margin-h, 0)
+		consoleFont.Print(fmt.Sprintf("FPS: %5.2f", metrics.fps))
+		gl.LoadIdentity()
+		gl.Translatef(float32(viewport.lplane)+margin, float32(viewport.bplane)+consoleHeight+margin-2*h, 0)
+		consoleFont.Print(fmt.Sprintf("X: %5.2f Y: %4.2f Z: %5.2f H: %5.2f (%s)", ThePlayer.position[XAXIS], ThePlayer.position[YAXIS], ThePlayer.position[ZAXIS], ThePlayer.heading, HeadingToCompass(ThePlayer.heading)))
+
+	}
+
 	gl.Finish()
 	gl.Flush()
 	sdl.GL_SwapBuffers()
+
 }

@@ -22,19 +22,9 @@ type Viewport struct {
 	mousey            int
 	selectionDirty    bool
 	selectedBlockFace *BlockFace
-}
-
-func (self *Viewport) ScreenToView(xs uint16, ys uint16) (xv float64, yv float64) {
-	// xs = 0 => -float64(screenWidth) / screenScale
-	// xs = screenWidth => float64(screenWidth) / screenScale
-
-	viewWidth := 2 * float64(self.screenWidth) / float64(screenScale)
-	xv = (-viewWidth/2 + viewWidth*float64(xs)/float64(self.screenWidth))
-
-	viewHeight := 2 * float64(self.screenHeight) / float64(screenScale)
-	yv = (-viewHeight/2 + viewHeight*float64(ys)/float64(self.screenHeight))
-
-	return
+	lplane, rplane    float64
+	bplane, tplane    float64
+	near, far         float64
 }
 
 /* new window size or exposure */
@@ -47,10 +37,15 @@ func (self *Viewport) Reshape(width int, height int) {
 	gl.MatrixMode(gl.PROJECTION)
 	gl.LoadIdentity()
 
-	xmin, ymin := self.ScreenToView(0, 0)
-	xmax, ymax := self.ScreenToView(uint16(width), uint16(height))
+	viewWidth := float64(self.screenWidth) / float64(SCREEN_SCALE)
+	viewHeight := float64(self.screenHeight) / float64(SCREEN_SCALE)
 
-	gl.Ortho(float64(xmin), float64(xmax), float64(ymin), float64(ymax), -20, 20)
+	self.lplane = -viewWidth / 2
+	self.rplane = viewWidth / 2
+	self.bplane = -viewHeight / 2
+	self.tplane = viewHeight / 2
+
+	gl.Ortho(self.lplane, self.rplane, self.bplane, self.tplane, -20, 20)
 	gl.MatrixMode(gl.MODELVIEW)
 	gl.LoadIdentity()
 	// glu.LookAt(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0)

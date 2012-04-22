@@ -9,8 +9,10 @@ import (
 	"flag"
 	"fmt"
 	"github.com/banthar/Go-SDL/sdl"
+	"github.com/banthar/Go-SDL/ttf"
 	"github.com/banthar/gl"
 	"github.com/kierdavis/go/amberfell/mm3dmodel"
+	"image/color"
 	"math/rand"
 	"os"
 	"runtime/pprof"
@@ -24,13 +26,17 @@ var (
 	ThePlayer    *Player
 	viewport     Viewport
 
-	tileWidth       = 48
-	screenScale int = int(5 * float64(tileWidth) / 2)
-
 	timeOfDay float32 = 8
 
 	WolfModel *mm3dmodel.Model
+
+	consoleFont *Font
+	metrics     Metrics
 )
+
+type Metrics struct {
+	fps float64
+}
 
 func main() {
 	flag.Parse()
@@ -73,6 +79,9 @@ func initGame() {
 	// viewport.Transz(-float64(ThePlayer.Z()))
 
 	sdl.Init(sdl.INIT_VIDEO)
+	if ttf.Init() != 0 {
+		panic("Could not initalize fonts")
+	}
 
 	screen := sdl.SetVideoMode(800, 600, 32, sdl.OPENGL|sdl.RESIZABLE)
 
@@ -89,6 +98,9 @@ func initGame() {
 
 	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 	// gl.ShadeModel(gl.FLAT)    
+
+	gl.Enable(gl.BLEND)
+	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 	gl.ShadeModel(gl.SMOOTH)
 	gl.Enable(gl.LIGHTING)
 	gl.Enable(gl.LIGHT0)
@@ -100,7 +112,7 @@ func initGame() {
 
 	gl.MatrixMode(gl.PROJECTION)
 	gl.LoadIdentity()
-	gl.Ortho(-12.0, 12.0, -12.0, 12.0, -10, 10.0)
+	// gl.Ortho(-12.0, 12.0, -12.0, 12.0, -10, 10.0)
 	gl.MatrixMode(gl.MODELVIEW)
 	gl.LoadIdentity()
 	// glu.LookAt(0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0)
@@ -114,11 +126,15 @@ func initGame() {
 	//LoadTerrainCubes()
 	InitTerrainBlocks()
 
+	consoleFont = NewFont("res/FreeMono.ttf", 16, color.RGBA{255, 255, 255, 0})
+
 	viewport.Reshape(int(screen.W), int(screen.H))
 
 }
 
 func quit() {
+
+	ttf.Quit()
 	sdl.Quit()
 	println("Thanks for playing.")
 }

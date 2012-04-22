@@ -15,6 +15,12 @@ const (
 	YAXIS = 1
 	ZAXIS = 2
 
+	TILE_WIDTH   = 48                 // Height and width of a block texture in pixels
+	SCREEN_SCALE = 1.0 * TILE_WIDTH   // Width of one world coordinate unit in pixels
+	PIXEL_SCALE  = 1.0 / SCREEN_SCALE // Width of one pixel in world coordinate units
+
+	KEY_DEBOUNCE_DELAY = 3e8 // nanoseconds
+
 	FACE_NONE  = 0 // +ve x
 	EAST_FACE  = 1 // +ve x
 	WEST_FACE  = 2 // -ve x

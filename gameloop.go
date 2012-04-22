@@ -6,7 +6,7 @@
 package main
 
 import (
-	"fmt"
+	// "fmt"
 	"github.com/banthar/Go-SDL/sdl"
 	// "github.com/banthar/gl"
 	"time"
@@ -18,6 +18,9 @@ func GameLoop() {
 	var drawFrame, computeFrame int64 = 0, 0
 	fps := new(Timer)
 	fps.Start()
+
+	modeToggleTimer := new(Timer)
+	modeToggleTimer.Start()
 
 	update := new(Timer)
 	update.Start()
@@ -49,38 +52,6 @@ func GameLoop() {
 						// println("Click:", re.X, re.Y, re.State, re.Button, re.Which)
 					}
 				}
-			case *sdl.MouseMotionEvent:
-				// re := e.(*sdl.MouseMotionEvent)
-				// mousex = re.X
-				// mousey = re.Y
-
-				// var pm32 []float32 = make([]float32, 16)
-				// gl.GetFloatv(gl.PROJECTION_MATRIX, pm32)
-				// var projectionMatrix64 *Matrix4 = NewMatrix(float64(pm32[0]),float64(pm32[1]),float64(pm32[2]),float64(pm32[3]),float64(pm32[4]),float64(pm32[5]),float64(pm32[6]),float64(pm32[7]),float64(pm32[8]),float64(pm32[9]),float64(pm32[10]),float64(pm32[11]),float64(pm32[12]),float64(pm32[13]),float64(pm32[14]),float64(pm32[15]))
-
-				// inverseMatrix, _ := projectionMatrix64.Multiply(ModelMatrix()).Inverse()
-
-				// x := (float64(mousex)-float64(screenWidth)/2) / ( float64(screenWidth)/2 )
-				// z := (float64(screenHeight)/2 - float64(mousey)) / ( float64(screenHeight)/2 )
-
-				// origin = inverseMatrix.Transform(&Vectorf{x, z , -1}, 1)
-				// norm = inverseMatrix.Transform(&Vectorf{0, 0, 1}, 0).Normalize()
-
-				if ThePlayer.CanInteract() {
-
-					// println("Move:", re.X, re.Y, re.Xrel, re.Yrel)
-
-					// // MOUSEBUTTONDOWNMASK
-					// xv, yv := int(re.X), screenHeight-int(re.Y)
-					// data := [4]uint8{0, 0, 0, 0}
-
-					// Draw(true)
-					// gl.ReadPixels(xv, yv, 1, 1, gl.RGBA, &data[0])
-					// Draw(false)
-
-					// fmt.Printf("pixel data: %d, %d, %d, %d\n", data[0], data[1], data[2], data[3])
-				}
-
 			case *sdl.QuitEvent:
 				done = true
 				break
@@ -111,10 +82,14 @@ func GameLoop() {
 		ThePlayer.HandleKeys(keys)
 
 		if keys[sdl.K_F3] != 0 {
-			if DebugMode == true {
-				DebugMode = false
-			} else {
-				DebugMode = true
+			if modeToggleTimer.GetTicks() > KEY_DEBOUNCE_DELAY {
+				if DebugMode == true {
+					DebugMode = false
+				} else {
+					println("Debug mode on")
+					DebugMode = true
+				}
+				modeToggleTimer.Start()
 			}
 		}
 
@@ -178,9 +153,8 @@ func GameLoop() {
 		Draw()
 		drawFrame++
 
-		if update.GetTicks() > 1e9*3 {
-			fmt.Printf("draw fps: %f\n", float64(drawFrame)/(float64(update.GetTicks())/float64(1e9)))
-			// fmt.Printf("compute fps: %f\n", float64(computeFrame)/(float64(update.GetTicks())/float64(1e9)))
+		if update.GetTicks() > 1e9/2 {
+			metrics.fps = float64(drawFrame) / (float64(update.GetTicks()) / float64(1e9))
 
 			timeOfDay += 0.02
 			if timeOfDay > 24 {

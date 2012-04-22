@@ -174,7 +174,7 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 		etexture.Bind(gl.TEXTURE_2D)
 
 		if selectedFace == EAST_FACE {
-			gl.Color4ub(64, 192, 64, 64)
+			gl.Color4ub(96, 208, 96, 255)
 		} else {
 			gl.Color4ub(255, 255, 255, 255)
 		}
@@ -205,7 +205,7 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 	// West Face
 	if wtexture != nil {
 		if selectedFace == WEST_FACE {
-			gl.Color4ub(64, 192, 64, 64)
+			gl.Color4ub(96, 208, 96, 255)
 		} else {
 			gl.Color4ub(255, 255, 255, 255)
 		}
@@ -230,7 +230,7 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 	// North Face
 	if ntexture != nil {
 		if selectedFace == NORTH_FACE {
-			gl.Color4ub(64, 192, 64, 64)
+			gl.Color4ub(96, 208, 96, 255)
 		} else {
 			gl.Color4ub(255, 255, 255, 255)
 		}
@@ -253,7 +253,7 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 	// South Face
 	if stexture != nil {
 		if selectedFace == SOUTH_FACE {
-			gl.Color4ub(64, 192, 64, 64)
+			gl.Color4ub(96, 208, 96, 255)
 		} else {
 			gl.Color4ub(255, 255, 255, 255)
 		}
@@ -278,7 +278,7 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 	// Up Face
 	if utexture != nil {
 		if selectedFace == UP_FACE {
-			gl.Color4ub(64, 192, 64, 64)
+			gl.Color4ub(96, 208, 96, 255)
 		} else {
 			gl.Color4ub(255, 255, 255, 255)
 		}
@@ -381,7 +381,7 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 	// Down Face
 	if dtexture != nil {
 		if selectedFace == DOWN_FACE {
-			gl.Color4ub(64, 192, 64, 64)
+			gl.Color4ub(96, 208, 96, 255)
 		} else {
 			gl.Color4ub(255, 255, 255, 255)
 		}
