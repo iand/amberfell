@@ -16,7 +16,7 @@ import (
 func Draw(t int64) {
 	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT)
 
-	gl.Color4ub(255, 255, 255, 255)
+	gl.Color4ub(192, 192, 192, 255)
 	gl.Enable(gl.TEXTURE_2D)
 	gl.Enable(gl.DEPTH_TEST)
 	//gl.Enable(gl.FOG)
@@ -88,17 +88,15 @@ func Draw(t int64) {
 	selectedBlockFace := viewport.SelectedBlockFace()
 	TheWorld.Draw(center, selectedBlockFace)
 
-
 	// Draw HUD
 	gl.MatrixMode(gl.MODELVIEW)
 	gl.LoadIdentity()
 
-
-	blockscale:= float32(0.4)
+	blockscale := float32(0.4)
 	gl.Disable(gl.DEPTH_TEST)
 	radius := float32(90) * PIXEL_SCALE
-	centrex := float32(viewport.rplane) - radius  + blockscale * 0.5  //+ 20 * PIXEL_SCALE
-	centrey := float32(viewport.bplane) + radius  - blockscale * 0.5 //- 20 * PIXEL_SCALE
+	centrex := float32(viewport.rplane) - radius + blockscale*0.5 //+ 20 * PIXEL_SCALE
+	centrey := float32(viewport.bplane) + radius - blockscale*0.5 //- 20 * PIXEL_SCALE
 	//textures[TEXTURE_PICKER].Bind(gl.TEXTURE_2D)
 
 	// gl.Begin(gl.QUADS)
@@ -121,40 +119,37 @@ func Draw(t int64) {
 	gl.Begin(gl.TRIANGLE_FAN)
 	gl.Color4ub(0, 0, 0, 128)
 	gl.Vertex2f(centrex, centrey)
-	for angle := float64(0); angle <= 2*math.Pi; angle += math.Pi/2/10 {
-		gl.Vertex2f(centrex - float32(math.Sin(angle)) * radius, centrey + float32(math.Cos(angle)) * radius)
+	for angle := float64(0); angle <= 2*math.Pi; angle += math.Pi / 2 / 10 {
+		gl.Vertex2f(centrex-float32(math.Sin(angle))*radius, centrey+float32(math.Cos(angle))*radius)
 	}
-	gl.End()	
-
+	gl.End()
 
 	selectionRadius := blockscale * 1.2
-	actionItemRadius := radius - blockscale * 1.5	
+	actionItemRadius := radius - blockscale*1.5
 
 	actionItemAngle := -(float64(ThePlayer.currentAction) - 1.5) * math.Pi / 4
 	gl.Begin(gl.TRIANGLE_FAN)
 	gl.Color4ub(0, 0, 0, 228)
-	gl.Vertex2f(centrex - actionItemRadius*float32(math.Sin(actionItemAngle)) , centrey + actionItemRadius*float32(math.Cos(actionItemAngle)))
-	for angle := float64(0); angle <= 2*math.Pi; angle += math.Pi/2/10 {
-		gl.Vertex2f(centrex - actionItemRadius*float32(math.Sin(actionItemAngle)) - float32(math.Sin(angle)) * selectionRadius, centrey + actionItemRadius*float32(math.Cos(actionItemAngle)) + float32(math.Cos(angle)) * selectionRadius)
+	gl.Vertex2f(centrex-actionItemRadius*float32(math.Sin(actionItemAngle)), centrey+actionItemRadius*float32(math.Cos(actionItemAngle)))
+	for angle := float64(0); angle <= 2*math.Pi; angle += math.Pi / 2 / 10 {
+		gl.Vertex2f(centrex-actionItemRadius*float32(math.Sin(actionItemAngle))-float32(math.Sin(angle))*selectionRadius, centrey+actionItemRadius*float32(math.Cos(actionItemAngle))+float32(math.Cos(angle))*selectionRadius)
 	}
 	gl.End()
 
-	for i:= 0; i < 5; i++ {
+	for i := 0; i < 5; i++ {
 
 		item := ThePlayer.equippedItems[i]
 		if item != ITEM_NONE {
-			angle := -(float64(i)+1.5) * math.Pi / 4
+			angle := -(float64(i) + 1.5) * math.Pi / 4
 			gl.LoadIdentity()
-			gl.Translatef(centrex - actionItemRadius*float32(math.Sin(angle)) , centrey + actionItemRadius*float32(math.Cos(angle)), 12)
-			gl.Rotatef(360*float32(math.Sin(float64(t)/1e10 + float64(i))), 1.0, 0.0, 0.0)
-			gl.Rotatef(360*float32(math.Cos(float64(t)/1e10 + float64(i))), 0.0, 1.0, 0.0)
-			gl.Rotatef(360*float32(math.Sin(float64(t)/1e10 + float64(i))), 0.0, 0.0, 1.0)
+			gl.Translatef(centrex-actionItemRadius*float32(math.Sin(angle)), centrey+actionItemRadius*float32(math.Cos(angle)), 12)
+			gl.Rotatef(360*float32(math.Sin(float64(t)/1e10+float64(i))), 1.0, 0.0, 0.0)
+			gl.Rotatef(360*float32(math.Cos(float64(t)/1e10+float64(i))), 0.0, 1.0, 0.0)
+			gl.Rotatef(360*float32(math.Sin(float64(t)/1e10+float64(i))), 0.0, 0.0, 1.0)
 			gl.Scalef(blockscale, blockscale, blockscale)
 			TerrainCube(true, true, true, true, true, true, byte(item), FACE_NONE)
 		}
 	}
-
-
 
 	// Draw debug console
 	if DebugMode {

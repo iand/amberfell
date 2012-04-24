@@ -29,9 +29,11 @@ const (
 	UP_FACE    = 5 // +ve y
 	DOWN_FACE  = 6 // -ve y
 
-	BLOCK_AIR   = 0
-	BLOCK_STONE = 1
-	BLOCK_DIRT  = 2
+	BLOCK_AIR    = 0
+	BLOCK_STONE  = 1
+	BLOCK_DIRT   = 2
+	BLOCK_TRUNK  = 3 // temporarily the same as dirtd
+	BLOCK_LEAVES = 4 // temporarily the same as dirt
 
 	ACTION_HAND   = 0
 	ACTION_BREAK  = 1
@@ -45,15 +47,18 @@ const (
 	ITEM_NONE = 4096
 
 	// Terrain block textures
-	TEXTURE_STONE = 17
-	TEXTURE_STONE_TOP = 1
-	TEXTURE_DIRT = 18
-	TEXTURE_DIRT_TOP = 2
+	TEXTURE_STONE      = 17
+	TEXTURE_STONE_TOP  = 1
+	TEXTURE_DIRT       = 18
+	TEXTURE_DIRT_TOP   = 2
+	TEXTURE_TRUNK      = 19
+	TEXTURE_TRUNK_TOP  = 3
+	TEXTURE_LEAVES     = 20
+	TEXTURE_LEAVES_TOP = 20
 
 	// Player textures
 
 	// Mob textures
-
 
 	// HUD textures
 	TEXTURE_PICKER = 4096

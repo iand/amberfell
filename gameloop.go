@@ -152,7 +152,7 @@ func GameLoop() {
 
 		//interpolate(previous, current, accumulator/dt)
 
-		Draw(currentTime-startTime)
+		Draw(currentTime - startTime)
 		drawFrame++
 
 		if update.GetTicks() > 1e9/2 {

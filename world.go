@@ -49,21 +49,32 @@ func (self *World) Init() {
 
 	var iw, id int16
 
-	numFeatures := rand.Intn(20)
+	numFeatures := rand.Intn(21)
 	for i := 0; i < numFeatures; i++ {
 		iw, id = self.RandomSquare()
 
 		self.Set(iw, GroundLevel, id, 1) // stone
-		self.Grow(iw, GroundLevel, id, 45, 45, 45, 52, 10, 10, 1)
+		self.Grow(iw, GroundLevel, id, 45, 45, 45, 52, 10, 10, byte(rand.Intn(2))+1)
 	}
 	iw, id = self.RandomSquare()
 
 	self.Set(iw, GroundLevel, id, 0) // air
 	self.Grow(iw, GroundLevel, id, 20, 20, 20, 20, 0, 30, 0)
 
-	wolf := new(Wolf)
-	wolf.Init(200, 25, 19, float32(self.FindSurface(25, 19)))
-	self.mobs = append(self.mobs, wolf)
+	for i := 0; i < 10; i++ {
+		iw, id = self.RandomSquare()
+		self.GrowTree(iw, self.FindSurface(iw, id), id)
+	}
+
+	for z := int16(-30); z > -36; z-- {
+		// _, ox, oy, oz := self.GetChunkForBlock(17, 6, z)
+		// println("17, 6,", z, ":", ox, oy, oz)
+		self.Set(17, 6, z, 2)
+	}
+
+	// wolf := new(Wolf)
+	// wolf.Init(200, 25, 19, float32(self.FindSurface(25, 19)))
+	// self.mobs = append(self.mobs, wolf)
 
 }
 
@@ -145,8 +156,8 @@ func (self *World) Setv(v Vectori, b byte) {
 }
 
 func (self *World) RandomSquare() (x int16, z int16) {
-	x = int16(rand.Intn(40) - 20)
-	z = int16(rand.Intn(40) - 20)
+	x = int16(rand.Intn(80) - 20)
+	z = int16(rand.Intn(80) - 20)
 	return
 }
 
@@ -456,4 +467,107 @@ func (chunk *Chunk) At(x int16, y int16, z int16) byte {
 
 func (chunk *Chunk) Set(x int16, y int16, z int16, b byte) {
 	chunk.Blocks[blockIndex(x, y, z)] = b
+}
+
+func (self *World) GrowTree(x int16, y int16, z int16) {
+	self.Set(x, y, z, BLOCK_TRUNK)
+	self.Set(x, y+1, z, BLOCK_TRUNK)
+	self.Set(x, y+2, z, BLOCK_TRUNK)
+	self.Set(x, y+3, z, BLOCK_TRUNK)
+	self.Set(x+1, y+3, z, BLOCK_LEAVES)
+	self.Set(x-1, y+3, z, BLOCK_LEAVES)
+	self.Set(x, y+3, z+1, BLOCK_LEAVES)
+	self.Set(x, y+3, z-1, BLOCK_LEAVES)
+
+	self.GrowBranch(x, y+3, z, NORTH_FACE, 50)
+	self.GrowBranch(x, y+3, z, EAST_FACE, 50)
+	self.GrowBranch(x, y+3, z, WEST_FACE, 50)
+	self.GrowBranch(x, y+3, z, SOUTH_FACE, 50)
+
+	if rand.Intn(100) < 50 {
+		self.Set(x, y+4, z, BLOCK_TRUNK)
+		self.Set(x, y+5, z, BLOCK_TRUNK)
+		self.GrowBranch(x, y+5, z, NORTH_FACE, 50)
+		self.GrowBranch(x, y+5, z, EAST_FACE, 50)
+		self.GrowBranch(x, y+5, z, WEST_FACE, 50)
+		self.GrowBranch(x, y+5, z, SOUTH_FACE, 50)
+	}
+
+	if rand.Intn(100) < 30 {
+		self.Set(x, y+6, z, BLOCK_TRUNK)
+		self.Set(x, y+7, z, BLOCK_TRUNK)
+		self.GrowBranch(x, y+7, z, NORTH_FACE, 50)
+		self.GrowBranch(x, y+7, z, EAST_FACE, 50)
+		self.GrowBranch(x, y+7, z, WEST_FACE, 50)
+		self.GrowBranch(x, y+7, z, SOUTH_FACE, 50)
+	}
+}
+
+func (self *World) GrowBranch(x int16, y int16, z int16, face uint8, chance int) {
+	newx, newy, newz := x, y, z
+	if face == NORTH_FACE {
+		newz = z - 1
+	} else if face == SOUTH_FACE {
+		newz = z + 1
+	} else if face == WEST_FACE {
+		newx = x - 1
+	} else if face == EAST_FACE {
+		newx = x + 1
+	} else if face == UP_FACE {
+		newy = y + 1
+	} else if face == DOWN_FACE {
+		newy = y - 1
+	}
+	if rand.Intn(100) < chance {
+		self.Set(newx, newy, newz, BLOCK_TRUNK)
+		if face != SOUTH_FACE {
+			if rand.Intn(100) < 50 {
+				self.GrowBranch(newx, newy, newz, NORTH_FACE, chance/3)
+			} else {
+				self.Set(newx, newy, newz-1, BLOCK_LEAVES)
+			}
+		}
+
+		if face != NORTH_FACE {
+			if rand.Intn(100) < 50 {
+				self.GrowBranch(newx, newy, newz, SOUTH_FACE, chance/3)
+			} else {
+				self.Set(newx, newy, newz+1, BLOCK_LEAVES)
+			}
+		}
+
+		if face != EAST_FACE {
+			if rand.Intn(100) < 50 {
+				self.GrowBranch(newx, newy, newz, WEST_FACE, chance/3)
+			} else {
+				self.Set(newx-1, newy, newz, BLOCK_LEAVES)
+			}
+		}
+
+		if face != WEST_FACE {
+			if rand.Intn(100) < 50 {
+				self.GrowBranch(newx, newy, newz, EAST_FACE, chance/3)
+			} else {
+				self.Set(newx+1, newy, newz, BLOCK_LEAVES)
+			}
+		}
+
+		if face != DOWN_FACE {
+			if rand.Intn(100) < 30 {
+				self.GrowBranch(newx, newy, newz, UP_FACE, chance/3)
+			} else {
+				self.Set(newx, newy+1, newz, BLOCK_LEAVES)
+			}
+		}
+		if face != UP_FACE {
+			if rand.Intn(100) < 50 {
+				self.GrowBranch(newx, newy, newz, DOWN_FACE, chance/3)
+			} else {
+				self.Set(newx, newy-1, newz, BLOCK_LEAVES)
+			}
+		}
+	} else {
+		self.Set(newx, newy, newz, BLOCK_LEAVES)
+
+	}
 }

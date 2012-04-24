@@ -76,7 +76,6 @@ func loadTexture(filename string) *gl.Texture {
 		panic(err)
 	}
 
-
 	rect := img.Bounds()
 	rgba := image.NewRGBA(rect)
 	for x := 0; x < rect.Max.X; x++ {
@@ -85,7 +84,6 @@ func loadTexture(filename string) *gl.Texture {
 		}
 	}
 
-	
 	texture := gl.GenTexture()
 	texture.Bind(gl.TEXTURE_2D)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
@@ -97,11 +95,12 @@ func loadTexture(filename string) *gl.Texture {
 
 }
 
-
 func InitTerrainBlocks() {
 	TerrainBlocks = make(map[uint16]TerrainBlock)
-	TerrainBlocks[BLOCK_STONE] = TerrainBlock{BLOCK_STONE, "Stone", textures[TEXTURE_STONE_TOP], textures[TEXTURE_STONE], textures[TEXTURE_STONE], textures[TEXTURE_STONE], textures[TEXTURE_STONE], textures[TEXTURE_STONE]}
+	TerrainBlocks[BLOCK_STONE] = TerrainBlock{BLOCK_STONE, "Stone", textures[TEXTURE_STONE], textures[TEXTURE_STONE], textures[TEXTURE_STONE], textures[TEXTURE_STONE], textures[TEXTURE_STONE], textures[TEXTURE_STONE]}
 	TerrainBlocks[BLOCK_DIRT] = TerrainBlock{BLOCK_DIRT, "Dirt", textures[TEXTURE_DIRT_TOP], textures[TEXTURE_DIRT], textures[TEXTURE_DIRT], textures[TEXTURE_DIRT], textures[TEXTURE_DIRT], textures[TEXTURE_DIRT]}
+	TerrainBlocks[BLOCK_TRUNK] = TerrainBlock{BLOCK_TRUNK, "trunk", textures[TEXTURE_TRUNK], textures[TEXTURE_TRUNK], textures[TEXTURE_TRUNK], textures[TEXTURE_TRUNK], textures[TEXTURE_TRUNK], textures[TEXTURE_TRUNK]}
+	TerrainBlocks[BLOCK_LEAVES] = TerrainBlock{BLOCK_TRUNK, "trunk", textures[TEXTURE_LEAVES], textures[TEXTURE_LEAVES], textures[TEXTURE_LEAVES], textures[TEXTURE_LEAVES], textures[TEXTURE_LEAVES], textures[TEXTURE_LEAVES]}
 }
 
 func LoadTerrainCubes() {
@@ -189,8 +188,8 @@ func TerrainCube(n bool, s bool, w bool, e bool, u bool, d bool, blockid byte, s
 	if u {
 		utexture = block.utexture
 	}
-	if d { 
-		dtexture = block.dtexture 
+	if d {
+		dtexture = block.dtexture
 	}
 
 	// if selectMode {
