@@ -13,9 +13,8 @@ import (
 )
 
 var (
-	MapTextures   [16 * 10]gl.Texture
 	TerrainCubes  map[uint16]uint
-	TerrainBlocks map[byte]TerrainBlock
+	TerrainBlocks map[uint16]TerrainBlock
 )
 
 type TerrainBlock struct {
@@ -30,7 +29,6 @@ type TerrainBlock struct {
 }
 
 func LoadMapTextures() {
-	const pixels = 48
 
 	var file, err = os.Open("tiles.png")
 	var img image.Image
@@ -44,31 +42,66 @@ func LoadMapTextures() {
 
 	for i := 0; i < 10; i++ {
 		for j := 0; j < 16; j++ {
-			rgba := image.NewRGBA(image.Rect(0, 0, pixels, pixels))
-			for x := 0; x < pixels; x++ {
-				for y := 0; y < pixels; y++ {
-					rgba.Set(x, y, img.At(pixels*j+x, pixels*i+y))
+			rgba := image.NewRGBA(image.Rect(0, 0, TILE_WIDTH, TILE_WIDTH))
+			for x := 0; x < TILE_WIDTH; x++ {
+				for y := 0; y < TILE_WIDTH; y++ {
+					rgba.Set(x, y, img.At(TILE_WIDTH*j+x, TILE_WIDTH*i+y))
 				}
 			}
 
-			textureIndex := i*16 + j
-			MapTextures[textureIndex] = gl.GenTexture()
-			MapTextures[textureIndex].Bind(gl.TEXTURE_2D)
+			textureIndex := uint16(i*16 + j)
+			texture := gl.GenTexture()
+			textures[textureIndex] = &texture
+			textures[textureIndex].Bind(gl.TEXTURE_2D)
 			gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
 			gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
 			// gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 			// gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-			gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, pixels, pixels, 0, gl.RGBA, gl.UNSIGNED_BYTE, &rgba.Pix[0])
-			MapTextures[textureIndex].Unbind(gl.TEXTURE_2D)
+			gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, TILE_WIDTH, TILE_WIDTH, 0, gl.RGBA, gl.UNSIGNED_BYTE, &rgba.Pix[0])
+			textures[textureIndex].Unbind(gl.TEXTURE_2D)
 
 		}
 	}
 }
 
+func loadTexture(filename string) *gl.Texture {
+
+	var img image.Image
+	var file, err = os.Open(filename)
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+	if img, _, err = image.Decode(file); err != nil {
+		panic(err)
+	}
+
+
+	rect := img.Bounds()
+	rgba := image.NewRGBA(rect)
+	for x := 0; x < rect.Max.X; x++ {
+		for y := 0; y < rect.Max.Y; y++ {
+			rgba.Set(x, y, img.At(x, y))
+		}
+	}
+
+	
+	texture := gl.GenTexture()
+	texture.Bind(gl.TEXTURE_2D)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, rect.Max.X, rect.Max.Y, 0, gl.RGBA, gl.UNSIGNED_BYTE, &rgba.Pix[0])
+	texture.Unbind(gl.TEXTURE_2D)
+
+	return &texture
+
+}
+
+
 func InitTerrainBlocks() {
-	TerrainBlocks = make(map[byte]TerrainBlock)
-	TerrainBlocks[BLOCK_STONE] = TerrainBlock{BLOCK_STONE, "Stone", &MapTextures[1], &MapTextures[17], &MapTextures[17], &MapTextures[17], &MapTextures[17], &MapTextures[17]}
-	TerrainBlocks[BLOCK_DIRT] = TerrainBlock{BLOCK_DIRT, "Dirt", &MapTextures[2], &MapTextures[18], &MapTextures[18], &MapTextures[18], &MapTextures[18], &MapTextures[18]}
+	TerrainBlocks = make(map[uint16]TerrainBlock)
+	TerrainBlocks[BLOCK_STONE] = TerrainBlock{BLOCK_STONE, "Stone", textures[TEXTURE_STONE_TOP], textures[TEXTURE_STONE], textures[TEXTURE_STONE], textures[TEXTURE_STONE], textures[TEXTURE_STONE], textures[TEXTURE_STONE]}
+	TerrainBlocks[BLOCK_DIRT] = TerrainBlock{BLOCK_DIRT, "Dirt", textures[TEXTURE_DIRT_TOP], textures[TEXTURE_DIRT], textures[TEXTURE_DIRT], textures[TEXTURE_DIRT], textures[TEXTURE_DIRT], textures[TEXTURE_DIRT]}
 }
 
 func LoadTerrainCubes() {
@@ -139,7 +172,7 @@ func terrainCubeIndex(n bool, s bool, w bool, e bool, u bool, d bool, blockid by
 func TerrainCube(n bool, s bool, w bool, e bool, u bool, d bool, blockid byte, selectedFace uint8) {
 	var ntexture, stexture, etexture, wtexture, utexture, dtexture *gl.Texture
 
-	block := TerrainBlocks[blockid]
+	block := TerrainBlocks[uint16(blockid)]
 
 	if n {
 		ntexture = block.ntexture
@@ -156,7 +189,9 @@ func TerrainCube(n bool, s bool, w bool, e bool, u bool, d bool, blockid byte, s
 	if u {
 		utexture = block.utexture
 	}
-	// if d { dtexture = block.dtexture }
+	if d { 
+		dtexture = block.dtexture 
+	}
 
 	// if selectMode {
 	Cuboid(1, 1, 1, etexture, wtexture, ntexture, stexture, utexture, dtexture, selectedFace)
@@ -198,7 +233,7 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 		gl.TexCoord2f(0.0, 0.0)
 		gl.Vertex3f(d, -h, w) // Bottom Left Of The Texture and Quad
 		gl.End()
-		// etexture.Unbind(gl.TEXTURE_2D)
+		etexture.Unbind(gl.TEXTURE_2D)
 		// CheckGLError()
 	}
 
@@ -222,7 +257,7 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 		gl.TexCoord2f(0.0, 1.0)
 		gl.Vertex3f(-d, h, -w) // Top Left Of The Texture and Quad
 		gl.End()
-		// wtexture.Unbind(gl.TEXTURE_2D)
+		wtexture.Unbind(gl.TEXTURE_2D)
 
 		// CheckGLError()
 	}
@@ -247,7 +282,7 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 		gl.TexCoord2f(0.0, 0.0)
 		gl.Vertex3f(d, -h, -w) // Bottom Left Of The Texture and Quad
 		gl.End()
-		// ntexture.Unbind(gl.TEXTURE_2D)
+		ntexture.Unbind(gl.TEXTURE_2D)
 	}
 
 	// South Face
@@ -270,7 +305,7 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 		gl.TexCoord2f(0.0, 1.0)
 		gl.Vertex3f(-d, h, w) // Top Left Of The Texture and Quad
 		gl.End()
-		// stexture.Unbind(gl.TEXTURE_2D)
+		stexture.Unbind(gl.TEXTURE_2D)
 
 		// CheckGLError()
 	}
@@ -374,7 +409,7 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 		gl.Vertex3f(0, h, 0) // Top Right Of The Texture and Quad
 
 		gl.End()
-		// utexture.Unbind(gl.TEXTURE_2D)
+		utexture.Unbind(gl.TEXTURE_2D)
 		// CheckGLError()
 	}
 
@@ -400,32 +435,32 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 		gl.TexCoord2f(1.0, 0.0)
 		gl.Vertex3f(-d, -h, w) // Bottom Right Of The Texture and Quad
 		gl.End()
-		// dtexture.Unbind(gl.TEXTURE_2D)
+		dtexture.Unbind(gl.TEXTURE_2D)
 		// CheckGLError()
 	}
 
 }
 
-func HighlightCuboidFace(bw float64, bh float64, bd float64, face int) {
-	w, h, d := float32(bw)/2, float32(bh)/2, float32(bd)/2
-	// might need to use glPolygonOffset
-	gl.Color4ub(255, 32, 32, 0)
-	if face == UP_FACE {
-		gl.Enable(gl.POLYGON_OFFSET_LINE)
-		gl.PolygonOffset(-3, -1.0)
-		gl.LineWidth(1.6)
-		gl.Begin(gl.LINE_LOOP)
-		gl.Normal3f(0.0, 1.0, 0.0)
-		gl.Vertex3f(-d, h+0.8, -w) // Top Left Of The Texture and Quad
-		gl.Vertex3f(d, h+0.8, -w)  // Top Right Of The Texture and Quad
-		gl.Vertex3f(d, h+0.8, w)   // Bottom Right Of The Texture and Quad
-		gl.Vertex3f(-d, h+0.8, w)  // Bottom Left Of The Texture and Quad
+// func HighlightCuboidFace(bw float64, bh float64, bd float64, face int) {
+// 	w, h, d := float32(bw)/2, float32(bh)/2, float32(bd)/2
+// 	// might need to use glPolygonOffset
+// 	gl.Color4ub(255, 32, 32, 0)
+// 	if face == UP_FACE {
+// 		gl.Enable(gl.POLYGON_OFFSET_LINE)
+// 		gl.PolygonOffset(-3, -1.0)
+// 		gl.LineWidth(1.6)
+// 		gl.Begin(gl.LINE_LOOP)
+// 		gl.Normal3f(0.0, 1.0, 0.0)
+// 		gl.Vertex3f(-d, h+0.8, -w) // Top Left Of The Texture and Quad
+// 		gl.Vertex3f(d, h+0.8, -w)  // Top Right Of The Texture and Quad
+// 		gl.Vertex3f(d, h+0.8, w)   // Bottom Right Of The Texture and Quad
+// 		gl.Vertex3f(-d, h+0.8, w)  // Bottom Left Of The Texture and Quad
 
-		gl.End()
-		gl.Disable(gl.POLYGON_OFFSET_LINE)
-	}
-	gl.Color4ub(255, 128, 128, 128)
-}
+// 		gl.End()
+// 		gl.Disable(gl.POLYGON_OFFSET_LINE)
+// 	}
+// 	gl.Color4ub(255, 128, 128, 128)
+// }
 
 func CheckGLError() {
 	glerr := gl.GetError()

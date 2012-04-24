@@ -34,6 +34,8 @@ var (
 
 	consoleFont *Font
 	metrics     Metrics
+	textures    map[uint16]*gl.Texture = make(map[uint16]*gl.Texture)
+
 )
 
 type Metrics struct {
@@ -123,7 +125,7 @@ func initGame() {
 
 	// gl.ColorMaterial ( gl.FRONT_AND_BACK, gl.EMISSION )
 	// gl.ColorMaterial ( gl.FRONT_AND_BACK, gl.AMBIENT_AND_DIFFUSE )
-	// gl.Enable ( gl.COLOR_MATERIAL )
+	gl.Enable ( gl.COLOR_MATERIAL )
 
 	gl.MatrixMode(gl.PROJECTION)
 	gl.LoadIdentity()
@@ -143,6 +145,9 @@ func initGame() {
 
 	consoleFont = NewFont("res/Jura-DemiBold.ttf", 16, color.RGBA{255, 255, 255, 0})
 	// consoleFont = NewFont("res/FreeMono.ttf", 16, color.RGBA{255, 255, 255, 0})
+
+	textures[TEXTURE_PICKER] = loadTexture("res/dial.png")
+
 
 	viewport.Reshape(int(screen.W), int(screen.H))
 

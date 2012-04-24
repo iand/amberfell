@@ -36,7 +36,25 @@ const (
 	ACTION_HAND   = 0
 	ACTION_BREAK  = 1
 	ACTION_WEAPON = 2
-	ACTION_ITEM   = 3
+	ACTION_ITEM0  = 3
+	ACTION_ITEM1  = 4
+	ACTION_ITEM2  = 5
+	ACTION_ITEM3  = 6
+	ACTION_ITEM4  = 7
 
 	ITEM_NONE = 4096
+
+	// Terrain block textures
+	TEXTURE_STONE = 17
+	TEXTURE_STONE_TOP = 1
+	TEXTURE_DIRT = 18
+	TEXTURE_DIRT_TOP = 2
+
+	// Player textures
+
+	// Mob textures
+
+
+	// HUD textures
+	TEXTURE_PICKER = 4096
 )

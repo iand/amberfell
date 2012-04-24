@@ -14,6 +14,7 @@ import (
 )
 
 func GameLoop() {
+	var startTime int64 = time.Now().UnixNano()
 	var currentTime, accumulator int64 = 0, 0
 	var t, dt int64 = 0, 1e9 / 40
 	var drawFrame, computeFrame int64 = 0, 0
@@ -151,7 +152,7 @@ func GameLoop() {
 
 		//interpolate(previous, current, accumulator/dt)
 
-		Draw()
+		Draw(currentTime-startTime)
 		drawFrame++
 
 		if update.GetTicks() > 1e9/2 {

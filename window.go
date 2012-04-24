@@ -13,7 +13,7 @@ import (
 	// "runtime"
 )
 
-func Draw() {
+func Draw(t int64) {
 	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT)
 
 	gl.Color4ub(255, 255, 255, 255)
@@ -88,19 +88,79 @@ func Draw() {
 	selectedBlockFace := viewport.SelectedBlockFace()
 	TheWorld.Draw(center, selectedBlockFace)
 
+
+	// Draw HUD
+	gl.MatrixMode(gl.MODELVIEW)
+	gl.LoadIdentity()
+
+
+	blockscale:= float32(0.4)
+	gl.Disable(gl.DEPTH_TEST)
+	radius := float32(90) * PIXEL_SCALE
+	centrex := float32(viewport.rplane) - radius  + blockscale * 0.5  //+ 20 * PIXEL_SCALE
+	centrey := float32(viewport.bplane) + radius  - blockscale * 0.5 //- 20 * PIXEL_SCALE
+	//textures[TEXTURE_PICKER].Bind(gl.TEXTURE_2D)
+
+	// gl.Begin(gl.QUADS)
+	// gl.Normal3f(0.0, 0.0, 1.0)
+	// gl.TexCoord2f(0.0, 0.0)
+	// gl.Vertex3f(centrex - radius / 2, centrey + radius / 2, 10)
+	// gl.TexCoord2f(0.0, 1.0)
+	// gl.Vertex3f(centrex - radius / 2, centrey - radius / 2         , 10)
+	// gl.TexCoord2f(1.0, 1.0)
+	// gl.Vertex3f(centrex + radius / 2, centrey - radius / 2, 10)
+	// gl.TexCoord2f(1.0, 0.0)
+	// gl.Vertex3f(centrex + radius / 2, centrey + radius / 2, 10)
+	// textures[TEXTURE_PICKER].Unbind(gl.TEXTURE_2D)
+
+	gl.Disable(gl.DEPTH_TEST)
+	gl.Disable(gl.LIGHTING)
+	gl.Disable(gl.LIGHT0)
+	gl.Disable(gl.LIGHT1)
+
+	gl.Begin(gl.TRIANGLE_FAN)
+	gl.Color4ub(0, 0, 0, 128)
+	gl.Vertex2f(centrex, centrey)
+	for angle := float64(0); angle <= 2*math.Pi; angle += math.Pi/2/10 {
+		gl.Vertex2f(centrex - float32(math.Sin(angle)) * radius, centrey + float32(math.Cos(angle)) * radius)
+	}
+	gl.End()	
+
+
+	selectionRadius := blockscale * 1.2
+	actionItemRadius := radius - blockscale * 1.5	
+
+	actionItemAngle := -(float64(ThePlayer.currentAction) - 1.5) * math.Pi / 4
+	gl.Begin(gl.TRIANGLE_FAN)
+	gl.Color4ub(0, 0, 0, 228)
+	gl.Vertex2f(centrex - actionItemRadius*float32(math.Sin(actionItemAngle)) , centrey + actionItemRadius*float32(math.Cos(actionItemAngle)))
+	for angle := float64(0); angle <= 2*math.Pi; angle += math.Pi/2/10 {
+		gl.Vertex2f(centrex - actionItemRadius*float32(math.Sin(actionItemAngle)) - float32(math.Sin(angle)) * selectionRadius, centrey + actionItemRadius*float32(math.Cos(actionItemAngle)) + float32(math.Cos(angle)) * selectionRadius)
+	}
+	gl.End()
+
+	for i:= 0; i < 5; i++ {
+
+		item := ThePlayer.equippedItems[i]
+		if item != ITEM_NONE {
+			angle := -(float64(i)+1.5) * math.Pi / 4
+			gl.LoadIdentity()
+			gl.Translatef(centrex - actionItemRadius*float32(math.Sin(angle)) , centrey + actionItemRadius*float32(math.Cos(angle)), 12)
+			gl.Rotatef(360*float32(math.Sin(float64(t)/1e10 + float64(i))), 1.0, 0.0, 0.0)
+			gl.Rotatef(360*float32(math.Cos(float64(t)/1e10 + float64(i))), 0.0, 1.0, 0.0)
+			gl.Rotatef(360*float32(math.Sin(float64(t)/1e10 + float64(i))), 0.0, 0.0, 1.0)
+			gl.Scalef(blockscale, blockscale, blockscale)
+			TerrainCube(true, true, true, true, true, true, byte(item), FACE_NONE)
+		}
+	}
+
+
+
+	// Draw debug console
 	if DebugMode {
 		h := float32(consoleFont.height) * PIXEL_SCALE
 		margin := float32(3.0) * PIXEL_SCALE
 		consoleHeight := 3 * h
-
-		gl.MatrixMode(gl.PROJECTION)
-		//		gl.LoadIdentity ()
-		//gl.Ortho (0, float64(viewport.screenWidth), float64(viewport.screenHeight), 0, 0, 1)
-		gl.Disable(gl.DEPTH_TEST)
-		gl.Disable(gl.LIGHTING)
-		gl.Disable(gl.LIGHT0)
-		gl.Disable(gl.LIGHT1)
-		gl.Disable(gl.COLOR_MATERIAL)
 
 		gl.MatrixMode(gl.MODELVIEW)
 
@@ -108,10 +168,6 @@ func Draw() {
 		gl.Color4ub(0, 0, 0, 208)
 
 		gl.Begin(gl.QUADS)
-		// gl.Vertex2f(float32(viewport.lplane)+0.5, float32(viewport.bplane)+0.5) // Bottom Left Of The Texture and Quad
-		// gl.Vertex2f(float32(viewport.rplane)-0.5, float32(viewport.bplane)+0.5) // Bottom Right Of The Texture and Quad
-		// gl.Vertex2f(float32(viewport.rplane)-0.5, float32(viewport.tplane)-0.5) // Top Right Of The Texture and Quad
-		// gl.Vertex2f(float32(viewport.lplane)+0.5, float32(viewport.tplane)-0.5) // Top Left Of The Texture and Quad
 		gl.Vertex2f(float32(viewport.lplane), float32(viewport.bplane)+consoleHeight+margin*2) // Bottom Left Of The Texture and Quad
 		gl.Vertex2f(float32(viewport.rplane), float32(viewport.bplane)+consoleHeight+margin*2) // Bottom Right Of The Texture and Quad
 		gl.Vertex2f(float32(viewport.rplane), float32(viewport.bplane))                        // Top Right Of The Texture and Quad

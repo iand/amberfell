@@ -60,7 +60,7 @@ func (player *Player) Draw(center Vectorf) {
 	gl.Rotated(player.Heading(), 0.0, 1.0, 0.0)
 
 	gl.Translatef(0.0, float32(player.H()/2)-0.5, 0.0)
-	Cuboid(player.W(), player.H(), player.D(), &MapTextures[33], &MapTextures[32], &MapTextures[32], &MapTextures[32], &MapTextures[32], &MapTextures[32], FACE_NONE)
+	Cuboid(player.W(), player.H(), player.D(), textures[33], textures[32], textures[32], textures[32], textures[32], textures[32], FACE_NONE)
 
 	gl.PopMatrix()
 }
@@ -68,36 +68,35 @@ func (player *Player) Draw(center Vectorf) {
 func (self *Player) HandleKeys(keys []uint8) {
 	if keys[sdl.K_1] != 0 {
 		self.currentAction = ACTION_HAND
+		self.currentItem = ITEM_NONE
 	}
 	if keys[sdl.K_2] != 0 {
 		self.currentAction = ACTION_BREAK
+		self.currentItem = ITEM_NONE
 	}
 	if keys[sdl.K_3] != 0 {
 		self.currentAction = ACTION_WEAPON
+		self.currentItem = ITEM_NONE
 	}
 	if keys[sdl.K_4] != 0 {
-		self.currentAction = ACTION_ITEM
+		self.currentAction = ACTION_ITEM0
 		self.currentItem = self.equippedItems[0]
 	}
 	if keys[sdl.K_5] != 0 {
-		self.currentAction = ACTION_ITEM
+		self.currentAction = ACTION_ITEM1
 		self.currentItem = self.equippedItems[1]
 	}
 	if keys[sdl.K_6] != 0 {
-		self.currentAction = ACTION_ITEM
+		self.currentAction = ACTION_ITEM2
 		self.currentItem = self.equippedItems[2]
 	}
 	if keys[sdl.K_7] != 0 {
-		self.currentAction = ACTION_ITEM
+		self.currentAction = ACTION_ITEM3
 		self.currentItem = self.equippedItems[3]
 	}
 	if keys[sdl.K_8] != 0 {
-		self.currentAction = ACTION_ITEM
+		self.currentAction = ACTION_ITEM4
 		self.currentItem = self.equippedItems[4]
-	}
-	if keys[sdl.K_9] != 0 {
-		self.currentAction = ACTION_ITEM
-		self.currentItem = self.equippedItems[5]
 	}
 
 	if keys[sdl.K_w] != 0 {
@@ -139,7 +138,7 @@ func (self *Player) HandleKeys(keys []uint8) {
 }
 
 func (self *Player) CanInteract() bool {
-	if self.currentAction == ACTION_BREAK || (self.currentAction == ACTION_ITEM && self.currentItem != ITEM_NONE) {
+	if self.currentAction == ACTION_BREAK || self.currentItem != ITEM_NONE {
 		return true
 	}
 	return false
@@ -159,7 +158,7 @@ func (self *Player) Interact(selectedBlockFace *BlockFace) {
 			TheWorld.Setv(selectedBlockFace.pos, BLOCK_AIR)
 			self.inventory[block]++
 		}
-	case ACTION_ITEM:
+	case ACTION_ITEM0, ACTION_ITEM1, ACTION_ITEM2, ACTION_ITEM3, ACTION_ITEM4:
 		if selectedBlockFace.face == UP_FACE { // top
 			selectedBlockFace.pos[YAXIS]++
 		} else if selectedBlockFace.face == DOWN_FACE { // bottom
