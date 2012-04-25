@@ -45,21 +45,28 @@ func Draw(t int64) {
 	//gl.Translatef(-float32(center[XAXIS]), -float32(center[YAXIS]), -float32(center[ZAXIS]))
 
 	// Sun
-	gl.LightModelfv(gl.LIGHT_MODEL_AMBIENT, []float32{0.4, 0.4, 0.4, 1})
-	var daylightIntensity float32 = 0.4
+	gl.Materialfv(gl.FRONT, gl.AMBIENT, []float32{0.1, 0.1, 0.1, 1})
+	gl.Materialfv(gl.FRONT, gl.DIFFUSE, []float32{0.1, 0.1, 0.1, 1})
+	gl.Materialfv(gl.FRONT, gl.SPECULAR, []float32{0.1, 0.1, 0.1, 1})
+	gl.Materialfv(gl.FRONT, gl.SHININESS, []float32{0.0, 0.0, 0.0, 1})
+	var daylightIntensity float32 = 0.45
+	var nighttimeIntensity float32 = 0.01
 	if timeOfDay < 5 || timeOfDay > 21 {
-		daylightIntensity = 0.00
+		gl.LightModelfv(gl.LIGHT_MODEL_AMBIENT, []float32{0.2, 0.2, 0.2, 1})
+		daylightIntensity = 0.01
 	} else if timeOfDay < 6 {
-		daylightIntensity = 0.4 * (timeOfDay - 5)
+		daylightIntensity = nighttimeIntensity + daylightIntensity*(timeOfDay-5)
 	} else if timeOfDay > 20 {
-		daylightIntensity = 0.4 * (21 - timeOfDay)
+		daylightIntensity = nighttimeIntensity + daylightIntensity*(21-timeOfDay)
 	}
+
+	gl.LightModelfv(gl.LIGHT_MODEL_AMBIENT, []float32{daylightIntensity / 2.5, daylightIntensity / 2.5, daylightIntensity / 2.5, 1})
 
 	gl.Lightfv(gl.LIGHT0, gl.POSITION, []float32{30 * float32(math.Sin(ThePlayer.Heading()*math.Pi/180)), 60, 30 * float32(math.Cos(ThePlayer.Heading()*math.Pi/180)), 0})
 	gl.Lightfv(gl.LIGHT0, gl.AMBIENT, []float32{daylightIntensity, daylightIntensity, daylightIntensity, 1})
 	// gl.Lightfv(gl.LIGHT0, gl.DIFFUSE, []float32{daylightIntensity, daylightIntensity, daylightIntensity,1})
 	// gl.Lightfv(gl.LIGHT0, gl.SPECULAR, []float32{daylightIntensity, daylightIntensity, daylightIntensity,1})
-	gl.Lightfv(gl.LIGHT0, gl.DIFFUSE, []float32{daylightIntensity, daylightIntensity, daylightIntensity, 1})
+	gl.Lightfv(gl.LIGHT0, gl.DIFFUSE, []float32{daylightIntensity * 2, daylightIntensity * 2, daylightIntensity * 2, 1})
 	gl.Lightfv(gl.LIGHT0, gl.SPECULAR, []float32{daylightIntensity, daylightIntensity, daylightIntensity, 1})
 
 	// Torch
@@ -67,7 +74,7 @@ func Draw(t int64) {
 	specular := float32(0.6)
 	diffuse := float32(1)
 
-	gl.Lightfv(gl.LIGHT1, gl.POSITION, []float32{0, 1, 0, 1})
+	gl.Lightfv(gl.LIGHT1, gl.POSITION, []float32{float32(ThePlayer.position[XAXIS]), float32(ThePlayer.position[YAXIS] + 1), float32(ThePlayer.position[ZAXIS]), 1})
 	gl.Lightfv(gl.LIGHT1, gl.AMBIENT, []float32{ambient, ambient, ambient, 1})
 	gl.Lightfv(gl.LIGHT1, gl.SPECULAR, []float32{specular, specular, specular, 1})
 	gl.Lightfv(gl.LIGHT1, gl.DIFFUSE, []float32{diffuse, diffuse, diffuse, 1})

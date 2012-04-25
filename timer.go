@@ -10,6 +10,7 @@ import (
 )
 
 type Timer struct {
+	interval    int64
 	startTicks  int64
 	pausedTicks int64
 	paused      bool
@@ -37,6 +38,10 @@ func (t *Timer) GetTicks() int64 {
 	}
 
 	return 0
+}
+
+func (t *Timer) PassedInterval() bool {
+	return t.GetTicks() > t.interval
 }
 
 func (t *Timer) Pause() {

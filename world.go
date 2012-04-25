@@ -33,6 +33,11 @@ type BlockFace struct {
 	face uint8
 }
 
+type InteractingBlockFace struct {
+	blockFace *BlockFace
+	hitCount  uint8
+}
+
 func (self *World) Init() {
 
 	self.chunks = make(map[int16]*Chunk)

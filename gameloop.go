@@ -18,14 +18,18 @@ func GameLoop() {
 	var currentTime, accumulator int64 = 0, 0
 	var t, dt int64 = 0, 1e9 / 40
 	var drawFrame, computeFrame int64 = 0, 0
-	fps := new(Timer)
-	fps.Start()
 
-	modeToggleTimer := new(Timer)
-	modeToggleTimer.Start()
+	update500ms := new(Timer)
+	update500ms.interval = 500 * 1e6
+	update500ms.Start()
 
-	update := new(Timer)
-	update.Start()
+	update150ms := new(Timer)
+	update150ms.interval = 50 * 1e6
+	update150ms.Start()
+
+	debugModekeyLock := false
+
+	var interactingBlock *InteractingBlockFace
 
 	done := false
 	for !done {
@@ -39,7 +43,7 @@ func GameLoop() {
 				if screen != nil {
 					viewport.Reshape(int(screen.W), int(screen.H))
 				} else {
-					panic("we couldn't set the new video mode??")
+					panic("Could not set video mode")
 				}
 				break
 
@@ -49,14 +53,32 @@ func GameLoop() {
 					if ThePlayer.CanInteract() {
 						selectedBlockFace := viewport.SelectedBlockFace()
 						if selectedBlockFace != nil {
-							ThePlayer.Interact(selectedBlockFace)
+							if interactingBlock == nil || interactingBlock.blockFace.pos != selectedBlockFace.pos {
+								interactingBlock = new(InteractingBlockFace)
+								interactingBlock.blockFace = selectedBlockFace
+								interactingBlock.hitCount = 0
+							}
+							ThePlayer.Interact(interactingBlock)
 						}
 						// println("Click:", re.X, re.Y, re.State, re.Button, re.Which)
 					}
 				}
 			case *sdl.QuitEvent:
 				done = true
-				break
+			case *sdl.KeyboardEvent:
+				re := e.(*sdl.KeyboardEvent)
+				if re.Keysym.Sym == sdl.K_F3 {
+					if !debugModekeyLock && re.Type == sdl.KEYDOWN {
+						debugModekeyLock = true
+						if DebugMode == true {
+							DebugMode = false
+						} else {
+							DebugMode = true
+						}
+					} else if re.Type == sdl.KEYUP {
+						debugModekeyLock = false
+					}
+				}
 			}
 		}
 		keys := sdl.GetKeyState()
@@ -75,25 +97,12 @@ func GameLoop() {
 		}
 		if keys[sdl.K_LEFT] != 0 {
 			viewport.Roty(9)
-			//println("view_roty:", view_roty)
 		}
 		if keys[sdl.K_RIGHT] != 0 {
 			viewport.Roty(-9)
 		}
 
 		ThePlayer.HandleKeys(keys)
-
-		if keys[sdl.K_F3] != 0 {
-			if modeToggleTimer.GetTicks() > KEY_DEBOUNCE_DELAY {
-				if DebugMode == true {
-					DebugMode = false
-				} else {
-					println("Debug mode on")
-					DebugMode = true
-				}
-				modeToggleTimer.Start()
-			}
-		}
 
 		if keys[sdl.K_o] != 0 {
 			timeOfDay += 0.1
@@ -129,6 +138,42 @@ func GameLoop() {
 			viewport.Zoomout()
 		}
 
+		if update150ms.PassedInterval() {
+			debugModekeyLock = false
+
+			// If player is breaking a block then allow them to hold mouse down to continue action
+			if interactingBlock != nil {
+				mouseState := sdl.GetMouseState(nil, nil)
+				if mouseState == 1 {
+					if ThePlayer.CanInteract() {
+						selectedBlockFace := viewport.SelectedBlockFace()
+						if selectedBlockFace != nil {
+							if interactingBlock == nil || !interactingBlock.blockFace.pos.Equals(&selectedBlockFace.pos) {
+								interactingBlock = new(InteractingBlockFace)
+								interactingBlock.blockFace = selectedBlockFace
+								interactingBlock.hitCount = 0
+							}
+							ThePlayer.Interact(interactingBlock)
+						}
+						// println("Click:", re.X, re.Y, re.State, re.Button, re.Which)
+					}
+				}
+			}
+			update150ms.Start()
+		}
+
+		if update500ms.PassedInterval() {
+			metrics.fps = float64(drawFrame) / (float64(update500ms.GetTicks()) / float64(1e9))
+			runtime.ReadMemStats(&metrics.mem)
+			timeOfDay += 0.02
+			if timeOfDay > 24 {
+				timeOfDay -= 24
+			}
+
+			drawFrame, computeFrame = 0, 0
+			update500ms.Start()
+		}
+
 		newTime := time.Now().UnixNano()
 		deltaTime := newTime - currentTime
 		currentTime = newTime
@@ -154,18 +199,6 @@ func GameLoop() {
 
 		Draw(currentTime - startTime)
 		drawFrame++
-
-		if update.GetTicks() > 1e9/2 {
-			metrics.fps = float64(drawFrame) / (float64(update.GetTicks()) / float64(1e9))
-			runtime.ReadMemStats(&metrics.mem)
-			timeOfDay += 0.02
-			if timeOfDay > 24 {
-				timeOfDay -= 24
-			}
-
-			drawFrame, computeFrame = 0, 0
-			update.Start()
-		}
-
 	}
+
 }

@@ -62,4 +62,11 @@ const (
 
 	// HUD textures
 	TEXTURE_PICKER = 4096
+
+	// Strength of materials
+	STRENGTH_STONE  = 20
+	STRENGTH_DIRT   = 3
+	STRENGTH_WOOD   = 5
+	STRENGTH_LEAVES = 1
+	STRENGTH_IRON   = 50
 )

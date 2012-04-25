@@ -24,6 +24,11 @@ type Player struct {
 	inventory     [255]uint16
 }
 
+type BlockBreakRecord struct {
+	pos   Vectori
+	count int
+}
+
 func (self *Player) Init(heading float64, x int16, z int16, y int16) {
 	self.heading = heading
 	self.position[XAXIS] = float64(x)
@@ -144,19 +149,27 @@ func (self *Player) CanInteract() bool {
 	return false
 }
 
-func (self *Player) Interact(selectedBlockFace *BlockFace) {
+func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 	if !self.CanInteract() {
 		return
 	}
 
+	selectedBlockFace := interactingBlockFace.blockFace
 	println("Interacting at ", selectedBlockFace.pos.String())
 	switch self.currentAction {
 	case ACTION_BREAK:
-		block := TheWorld.Atv(selectedBlockFace.pos)
-		if block != BLOCK_AIR {
-			println("Breaking at ", selectedBlockFace.pos.String())
-			TheWorld.Setv(selectedBlockFace.pos, BLOCK_AIR)
-			self.inventory[block]++
+		blockid := TheWorld.Atv(selectedBlockFace.pos)
+		if blockid != BLOCK_AIR {
+
+			println("Hitting ", selectedBlockFace.pos.String())
+			interactingBlockFace.hitCount++
+			if interactingBlockFace.hitCount >= TerrainBlocks[uint16(blockid)].hitsNeeded {
+				println("Breaking at ", selectedBlockFace.pos.String())
+				TheWorld.Setv(selectedBlockFace.pos, BLOCK_AIR)
+				self.inventory[blockid]++
+				interactingBlockFace.hitCount = 0
+			}
+
 		}
 	case ACTION_ITEM0, ACTION_ITEM1, ACTION_ITEM2, ACTION_ITEM3, ACTION_ITEM4:
 		if selectedBlockFace.face == UP_FACE { // top

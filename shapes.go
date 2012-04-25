@@ -18,14 +18,15 @@ var (
 )
 
 type TerrainBlock struct {
-	id       byte
-	name     string
-	utexture *gl.Texture
-	dtexture *gl.Texture
-	ntexture *gl.Texture
-	stexture *gl.Texture
-	etexture *gl.Texture
-	wtexture *gl.Texture
+	id         byte
+	name       string
+	utexture   *gl.Texture
+	dtexture   *gl.Texture
+	ntexture   *gl.Texture
+	stexture   *gl.Texture
+	etexture   *gl.Texture
+	wtexture   *gl.Texture
+	hitsNeeded byte
 }
 
 func LoadMapTextures() {
@@ -97,10 +98,10 @@ func loadTexture(filename string) *gl.Texture {
 
 func InitTerrainBlocks() {
 	TerrainBlocks = make(map[uint16]TerrainBlock)
-	TerrainBlocks[BLOCK_STONE] = TerrainBlock{BLOCK_STONE, "Stone", textures[TEXTURE_STONE], textures[TEXTURE_STONE], textures[TEXTURE_STONE], textures[TEXTURE_STONE], textures[TEXTURE_STONE], textures[TEXTURE_STONE]}
-	TerrainBlocks[BLOCK_DIRT] = TerrainBlock{BLOCK_DIRT, "Dirt", textures[TEXTURE_DIRT_TOP], textures[TEXTURE_DIRT], textures[TEXTURE_DIRT], textures[TEXTURE_DIRT], textures[TEXTURE_DIRT], textures[TEXTURE_DIRT]}
-	TerrainBlocks[BLOCK_TRUNK] = TerrainBlock{BLOCK_TRUNK, "trunk", textures[TEXTURE_TRUNK], textures[TEXTURE_TRUNK], textures[TEXTURE_TRUNK], textures[TEXTURE_TRUNK], textures[TEXTURE_TRUNK], textures[TEXTURE_TRUNK]}
-	TerrainBlocks[BLOCK_LEAVES] = TerrainBlock{BLOCK_TRUNK, "trunk", textures[TEXTURE_LEAVES], textures[TEXTURE_LEAVES], textures[TEXTURE_LEAVES], textures[TEXTURE_LEAVES], textures[TEXTURE_LEAVES], textures[TEXTURE_LEAVES]}
+	TerrainBlocks[BLOCK_STONE] = TerrainBlock{BLOCK_STONE, "Stone", textures[TEXTURE_STONE], textures[TEXTURE_STONE], textures[TEXTURE_STONE], textures[TEXTURE_STONE], textures[TEXTURE_STONE], textures[TEXTURE_STONE], STRENGTH_STONE}
+	TerrainBlocks[BLOCK_DIRT] = TerrainBlock{BLOCK_DIRT, "Dirt", textures[TEXTURE_DIRT_TOP], textures[TEXTURE_DIRT], textures[TEXTURE_DIRT], textures[TEXTURE_DIRT], textures[TEXTURE_DIRT], textures[TEXTURE_DIRT], STRENGTH_DIRT}
+	TerrainBlocks[BLOCK_TRUNK] = TerrainBlock{BLOCK_TRUNK, "trunk", textures[TEXTURE_TRUNK], textures[TEXTURE_TRUNK], textures[TEXTURE_TRUNK], textures[TEXTURE_TRUNK], textures[TEXTURE_TRUNK], textures[TEXTURE_TRUNK], STRENGTH_WOOD}
+	TerrainBlocks[BLOCK_LEAVES] = TerrainBlock{BLOCK_TRUNK, "trunk", textures[TEXTURE_LEAVES], textures[TEXTURE_LEAVES], textures[TEXTURE_LEAVES], textures[TEXTURE_LEAVES], textures[TEXTURE_LEAVES], textures[TEXTURE_LEAVES], STRENGTH_LEAVES}
 }
 
 func LoadTerrainCubes() {

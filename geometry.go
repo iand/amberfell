@@ -101,6 +101,10 @@ func (self *Vectori) String() string {
 	return fmt.Sprintf("[x:%d, y:%d, z:%d]", self[XAXIS], self[YAXIS], self[ZAXIS])
 }
 
+func (self *Vectori) Equals(b *Vectori) bool {
+	return self[XAXIS] == b[XAXIS] && self[YAXIS] == b[YAXIS] && self[ZAXIS] == b[ZAXIS]
+}
+
 func (r1 Rect) Intersects(r2 Rect) bool {
 	if r2.x >= r1.x && r2.x <= r1.x+r1.sizex && r2.z >= r1.z && r2.z <= r1.z+r1.sizez {
 		return true
