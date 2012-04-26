@@ -18,11 +18,18 @@ type MobData struct {
 
 func (self *MobData) Heading() float64 { return self.heading }
 
+func (self *MobData) Normal() *Vectorf {
+	return &Vectorf{math.Cos(self.heading * math.Pi / 180), 0, -math.Sin(self.heading * math.Pi / 180)}
+}
+
 func (self *MobData) Velocity() Vectorf { return self.velocity }
 func (self *MobData) Position() Vectorf { return self.position }
 
 func (self *MobData) SetFalling(b bool) { self.falling = b }
 func (self *MobData) IsFalling() bool   { return self.falling }
+
+
+
 
 func (self *MobData) Rotate(angle float64) {
 	self.heading += angle
@@ -91,6 +98,15 @@ func (self *MobData) FrontBlock() Vectori {
 	}
 
 	return ip
+}
+
+// Return true if the mob is facing the point indicated by the vector
+func (self *MobData) Facing(v Vectorf) bool {
+	return self.Normal().Dot(v) > 0
+}
+
+func (self *MobData) DistanceTo(v Vectorf) float64 {
+	return self.position.Minus(v).Magnitude()
 }
 
 func (self *MobData) Update(dt float64) {
