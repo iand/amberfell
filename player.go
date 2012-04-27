@@ -146,20 +146,16 @@ func (player *Player) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 
 	if selectedBlockFace != nil {
 		blockPos := selectedBlockFace.pos.Vectorf()
-		headPos := player.position.Add(Vectorf{0,headHeight*7.5,0})
+		headPos := player.position.Add(Vectorf{0,headHeight*9,0})
 		
 		blockDir := blockPos.Minus(headPos)
 
 		yrot := (math.Atan2(blockDir[XAXIS], blockDir[ZAXIS]) - math.Pi/2) * 180 / math.Pi
-		zrot := (math.Atan2(blockDir[YAXIS], blockDir[XAXIS])) * 180 / math.Pi
-		xrot := (math.Atan2(blockDir[YAXIS], blockDir[ZAXIS])) * 180 / math.Pi
+		zrot, xrot := -12.0, -12.0
 		gl.Rotated(-player.Heading(), 0.0, 1.0, 0.0)
 		gl.Rotated(yrot, 0.0, 1.0, 0.0)
 		gl.Rotated(zrot, 0.0, 0.0, 1.0)
 		gl.Rotated(xrot, 1.0, 0.0, 0.0)
-
-
-
 	}
 
 	Cuboid(headHeight, headHeight, headHeight, textures[TEXTURE_HEAD_FRONT], textures[TEXTURE_HEAD_BACK], textures[TEXTURE_HEAD_LEFT], textures[TEXTURE_HEAD_RIGHT], nil, textures[TEXTURE_HEAD_BOTTOM], FACE_NONE)
