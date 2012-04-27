@@ -51,6 +51,10 @@ func NewTranslation(x, y, z float64) *Matrix4 {
 		x, y, z, 1}
 }
 
+func (a Vectorf) Add(b Vectorf) Vectorf {
+	return Vectorf{a[0] + b[0], a[1] + b[1], a[2] + b[2]}
+}
+
 func (a Vectorf) Minus(b Vectorf) Vectorf {
 	return Vectorf{a[0] - b[0], a[1] - b[1], a[2] - b[2]}
 }
@@ -71,9 +75,9 @@ func (a Vectorf) Magnitude() float64 {
 	return math.Sqrt(math.Pow(a[0], 2) + math.Pow(a[1], 2) + math.Pow(a[2], 2))
 }
 
-func (a *Vectorf) Normalize() *Vectorf {
+func (a Vectorf) Normalize() Vectorf {
 	mag := a.Magnitude()
-	return &Vectorf{a[0] / mag, a[1] / mag, a[2] / mag}
+	return Vectorf{a[0] / mag, a[1] / mag, a[2] / mag}
 }
 
 func (a Vectorf) String() string {
@@ -99,6 +103,10 @@ func (self *Vectori) Adjust(dx int16, dy int16, dz int16) {
 
 func (self *Vectori) String() string {
 	return fmt.Sprintf("[x:%d, y:%d, z:%d]", self[XAXIS], self[YAXIS], self[ZAXIS])
+}
+
+func (self *Vectori) Vectorf() Vectorf {
+	return Vectorf{float64(self[XAXIS]), float64(self[YAXIS]), float64(self[ZAXIS])}
 }
 
 func (self *Vectori) Equals(b *Vectori) bool {

@@ -30,7 +30,7 @@ func (self *Wolf) Act(dt float64) {
 	self.Forward(rand.Float64()*4 - 1)
 }
 
-func (self *Wolf) Draw(center Vectorf) {
+func (self *Wolf) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 	gl.PushMatrix()
 	gl.Translatef(float32(self.position[XAXIS]), float32(self.position[YAXIS]), float32(self.position[ZAXIS]))
 	gl.Rotated(self.Heading(), 0.0, 1.0, 0.0)

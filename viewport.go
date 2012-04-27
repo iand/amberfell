@@ -123,9 +123,9 @@ func (self *Viewport) SelectedBlockFace() *BlockFace {
 	origin := inverseMatrix.Transform(&Vectorf{x, z, -1}, 1)
 	norm := inverseMatrix.Transform(&Vectorf{0, 0, 1}, 0).Normalize()
 
-	if origin != nil && norm != nil {
+	if origin != nil {
 		pos := IntPosition(ThePlayer.position)
-		ray := Ray{origin, norm}
+		ray := Ray{origin, &norm}
 		reach := int16(4)
 
 		// See http://www.dyn-lab.com/articles/pick-selection.html

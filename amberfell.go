@@ -139,6 +139,7 @@ func initGame() {
 
 	gl.Enable(gl.TEXTURE_2D)
 	LoadMapTextures()
+	LoadPlayerTextures()
 	//LoadTerrainCubes()
 	InitTerrainBlocks()
 

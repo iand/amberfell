@@ -85,14 +85,10 @@ func Draw(t int64) {
 	gl.Lightf(gl.LIGHT1, gl.SPOT_EXPONENT, 2.0)
 	gl.Lightfv(gl.LIGHT1, gl.SPOT_DIRECTION, []float32{float32(math.Cos(ThePlayer.Heading() * math.Pi / 180)), float32(-0.7), -float32(math.Sin(ThePlayer.Heading() * math.Pi / 180))})
 
-	// CheckGLError()
 	gl.RenderMode(gl.RENDER)
-	ThePlayer.Draw(center)
-	// CheckGLError()
-
-	// CheckGLError()
 
 	selectedBlockFace := viewport.SelectedBlockFace()
+	ThePlayer.Draw(center, selectedBlockFace)
 	TheWorld.Draw(center, selectedBlockFace)
 
 	// Draw HUD

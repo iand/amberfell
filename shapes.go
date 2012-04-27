@@ -43,26 +43,82 @@ func LoadMapTextures() {
 
 	for i := 0; i < 10; i++ {
 		for j := 0; j < 16; j++ {
-			rgba := image.NewRGBA(image.Rect(0, 0, TILE_WIDTH, TILE_WIDTH))
-			for x := 0; x < TILE_WIDTH; x++ {
-				for y := 0; y < TILE_WIDTH; y++ {
-					rgba.Set(x, y, img.At(TILE_WIDTH*j+x, TILE_WIDTH*i+y))
-				}
-			}
-
 			textureIndex := uint16(i*16 + j)
-			texture := gl.GenTexture()
-			textures[textureIndex] = &texture
-			textures[textureIndex].Bind(gl.TEXTURE_2D)
-			gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-			gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-			// gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-			// gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-			gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, TILE_WIDTH, TILE_WIDTH, 0, gl.RGBA, gl.UNSIGNED_BYTE, &rgba.Pix[0])
-			textures[textureIndex].Unbind(gl.TEXTURE_2D)
-
+			textures[textureIndex] = imageSectionToTexture(img, image.Rect(TILE_WIDTH*j, TILE_WIDTH*i, TILE_WIDTH*j+TILE_WIDTH, TILE_WIDTH*i+TILE_WIDTH))
 		}
 	}
+}
+
+func LoadPlayerTextures() {
+
+	var file, err = os.Open("res/player.png")
+	var img image.Image
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+	if img, _, err = image.Decode(file); err != nil {
+		panic(err)
+	}
+
+	unit := 12
+	hatFront := image.NewRGBA(image.Rect(0, 0, unit, unit))
+	for x := 0; x < unit; x++ {
+		for y := 0; y < unit; y++ {
+			hatFront.Set(x, y, img.At(x, y))
+		}
+	}
+	textures[TEXTURE_HAT_FRONT] = imageSectionToTexture(img, image.Rect(0, 0, unit, unit))
+	textures[TEXTURE_HAT_LEFT] = imageSectionToTexture(img, image.Rect(unit+1, 0, 2*unit, unit))
+	textures[TEXTURE_HAT_BACK] = imageSectionToTexture(img, image.Rect(2*unit+1, 0, 3*unit, unit))
+	textures[TEXTURE_HAT_RIGHT] = imageSectionToTexture(img, image.Rect(3*unit+1, 0, 4*unit, unit))
+	textures[TEXTURE_HAT_TOP] = imageSectionToTexture(img, image.Rect(4*unit+1, 0, 5*unit, unit))
+
+	textures[TEXTURE_HEAD_FRONT] = imageSectionToTexture(img, image.Rect(0, unit+1, unit, 2*unit))
+	textures[TEXTURE_HEAD_LEFT] = imageSectionToTexture(img, image.Rect(unit+1, unit+1, 2*unit, 2*unit))
+	textures[TEXTURE_HEAD_BACK] = imageSectionToTexture(img, image.Rect(2*unit+1, unit+1, 3*unit, 2*unit))
+	textures[TEXTURE_HEAD_RIGHT] = imageSectionToTexture(img, image.Rect(3*unit+1, unit+1, 4*unit, 2*unit))
+	textures[TEXTURE_HEAD_BOTTOM] = imageSectionToTexture(img, image.Rect(4*unit+1, unit+1, 5*unit, 2*unit))
+
+	textures[TEXTURE_TORSO_FRONT] = imageSectionToTexture(img, image.Rect(0, 2*unit+1, 2*unit, 5 * unit + unit / 4))
+	textures[TEXTURE_TORSO_LEFT] = imageSectionToTexture(img, image.Rect(2*unit+1, 2*unit+1, 3*unit, 5 * unit + unit / 4))
+	textures[TEXTURE_TORSO_BACK] = imageSectionToTexture(img, image.Rect(3*unit+1, 2*unit+1, 5*unit, 5 * unit + unit / 4))
+	textures[TEXTURE_TORSO_RIGHT] = imageSectionToTexture(img, image.Rect(5*unit+1, 2*unit+1, 6*unit, 5 * unit + unit / 4))
+	textures[TEXTURE_TORSO_TOP] = imageSectionToTexture(img, image.Rect(32, 64, 55, 75))
+
+	textures[TEXTURE_LEG] = imageSectionToTexture(img, image.Rect(0, 64, 11, 105))
+	textures[TEXTURE_LEG_SIDE] = imageSectionToTexture(img, image.Rect(12, 64, 22, 105))
+	textures[TEXTURE_ARM] = imageSectionToTexture(img, image.Rect(23, 57, 31, 96))
+	textures[TEXTURE_ARM_TOP] = imageSectionToTexture(img, image.Rect(56, 64, 64, 72))
+	textures[TEXTURE_BRIM] = imageSectionToTexture(img, image.Rect(31, 76, 49, 78))
+	textures[TEXTURE_HAND] = imageSectionToTexture(img, image.Rect(23, 97, 31, 105))
+
+
+
+
+}
+
+func imageSectionToTexture(img image.Image, r image.Rectangle) *gl.Texture {
+	rgba := image.NewRGBA(image.Rect(0, 0, r.Max.X-r.Min.X, r.Max.Y-r.Min.Y))
+	for x := r.Min.X; x < r.Max.X+1; x++ {
+		for y := r.Min.Y; y < r.Max.Y+1; y++ {
+			rgba.Set(x-r.Min.X, y-r.Min.Y, img.At(x, y))
+		}
+	}
+
+	return imageToTexture(rgba)
+}
+
+func imageToTexture(rgba *image.RGBA) *gl.Texture {
+	rect := rgba.Bounds()
+	texture := gl.GenTexture()
+	texture.Bind(gl.TEXTURE_2D)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, rect.Max.X, rect.Max.Y, 0, gl.RGBA, gl.UNSIGNED_BYTE, &rgba.Pix[0])
+	texture.Unbind(gl.TEXTURE_2D)
+
+	return &texture
 }
 
 func loadTexture(filename string) *gl.Texture {
@@ -224,13 +280,13 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 
 		gl.Begin(gl.QUADS)
 		gl.Normal3f(1.0, 0.0, 0.0)
-		gl.TexCoord2f(1.0, 0.0)
-		gl.Vertex3f(d, -h, -w) // Bottom Right Of The Texture and Quad
 		gl.TexCoord2f(1.0, 1.0)
+		gl.Vertex3f(d, -h, -w) // Bottom Right Of The Texture and Quad
+		gl.TexCoord2f(1.0, 0.0)
 		gl.Vertex3f(d, h, -w) // Top Right Of The Texture and Quad
-		gl.TexCoord2f(0.0, 1.0)
-		gl.Vertex3f(d, h, w) // Top Left Of The Texture and Quad
 		gl.TexCoord2f(0.0, 0.0)
+		gl.Vertex3f(d, h, w) // Top Left Of The Texture and Quad
+		gl.TexCoord2f(0.0, 1.0)
 		gl.Vertex3f(d, -h, w) // Bottom Left Of The Texture and Quad
 		gl.End()
 		etexture.Unbind(gl.TEXTURE_2D)
@@ -248,13 +304,13 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 		wtexture.Bind(gl.TEXTURE_2D)
 		gl.Begin(gl.QUADS)
 		gl.Normal3f(-1.0, 0.0, 0.0)
-		gl.TexCoord2f(0.0, 0.0)
-		gl.Vertex3f(-d, -h, -w) // Bottom Left Of The Texture and Quad
-		gl.TexCoord2f(1.0, 0.0)
-		gl.Vertex3f(-d, -h, w) // Bottom Right Of The Texture and Quad
-		gl.TexCoord2f(1.0, 1.0)
-		gl.Vertex3f(-d, h, w) // Top Right Of The Texture and Quad
 		gl.TexCoord2f(0.0, 1.0)
+		gl.Vertex3f(-d, -h, -w) // Bottom Left Of The Texture and Quad
+		gl.TexCoord2f(1.0, 1.0)
+		gl.Vertex3f(-d, -h, w) // Bottom Right Of The Texture and Quad
+		gl.TexCoord2f(1.0, 0.0)
+		gl.Vertex3f(-d, h, w) // Top Right Of The Texture and Quad
+		gl.TexCoord2f(0.0, 0.0)
 		gl.Vertex3f(-d, h, -w) // Top Left Of The Texture and Quad
 		gl.End()
 		wtexture.Unbind(gl.TEXTURE_2D)
@@ -273,13 +329,13 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 		ntexture.Bind(gl.TEXTURE_2D)
 		gl.Begin(gl.QUADS)
 		gl.Normal3f(0.0, 0.0, -1.0)
-		gl.TexCoord2f(1.0, 0.0)
-		gl.Vertex3f(-d, -h, -w) // Bottom Right Of The Texture and Quad
 		gl.TexCoord2f(1.0, 1.0)
+		gl.Vertex3f(-d, -h, -w) // Bottom Right Of The Texture and Quad
+		gl.TexCoord2f(1.0, 0.0)
 		gl.Vertex3f(-d, h, -w) // Top Right Of The Texture and Quad
-		gl.TexCoord2f(0.0, 1.0)
-		gl.Vertex3f(d, h, -w) // Top Left Of The Texture and Quad
 		gl.TexCoord2f(0.0, 0.0)
+		gl.Vertex3f(d, h, -w) // Top Left Of The Texture and Quad
+		gl.TexCoord2f(0.0, 1.0)
 		gl.Vertex3f(d, -h, -w) // Bottom Left Of The Texture and Quad
 		gl.End()
 		ntexture.Unbind(gl.TEXTURE_2D)
@@ -296,13 +352,13 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 		stexture.Bind(gl.TEXTURE_2D)
 		gl.Begin(gl.QUADS)
 		gl.Normal3f(0.0, 0.0, 1.0)
-		gl.TexCoord2f(0.0, 0.0)
-		gl.Vertex3f(-d, -h, w) // Bottom Left Of The Texture and Quad
-		gl.TexCoord2f(1.0, 0.0)
-		gl.Vertex3f(d, -h, w) // Bottom Right Of The Texture and Quad
-		gl.TexCoord2f(1.0, 1.0)
-		gl.Vertex3f(d, h, w) // Top Right Of The Texture and Quad
 		gl.TexCoord2f(0.0, 1.0)
+		gl.Vertex3f(-d, -h, w) // Bottom Left Of The Texture and Quad
+		gl.TexCoord2f(1.0, 1.0)
+		gl.Vertex3f(d, -h, w) // Bottom Right Of The Texture and Quad
+		gl.TexCoord2f(1.0, 0.0)
+		gl.Vertex3f(d, h, w) // Top Right Of The Texture and Quad
+		gl.TexCoord2f(0.0, 0.0)
 		gl.Vertex3f(-d, h, w) // Top Left Of The Texture and Quad
 		gl.End()
 		stexture.Unbind(gl.TEXTURE_2D)
@@ -338,6 +394,10 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 		//
 		//  +d/-w   +d/0   +d/+w
 
+		// +d/-w     0/-w   -d/-w
+		// +d/0      0/0    -d/0
+        // +d/+w     0/+w   -d/+w
+
 		// Texture
 		// 0.0/1.0    0.0/0.5   0.0/0.0
 		// 0.5/1.0    0.5/0.5   0.5/0.0
@@ -346,11 +406,11 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 		// 2x2 Subsquares
 		gl.Normal3f(0.0, 1.0, 0.0)
 		gl.TexCoord2f(0.0, 1.0)
-		gl.Vertex3f(-d, h, -w) // Top Left Of The Texture and Quad
+		gl.Vertex3f(d, h, -w) // Top Left Of The Texture and Quad
 
 		gl.Normal3f(0.0, 1.0, 0.0)
 		gl.TexCoord2f(0.0, 0.5)
-		gl.Vertex3f(-d, h, 0) // Bottom Left Of The Texture and Quad
+		gl.Vertex3f(0, h, -w) // Bottom Left Of The Texture and Quad
 
 		gl.Normal3f(0.0, 1.0, 0.0)
 		gl.TexCoord2f(0.5, 0.5)
@@ -358,11 +418,14 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 
 		gl.Normal3f(0.0, 1.0, 0.0)
 		gl.TexCoord2f(0.5, 1.0)
-		gl.Vertex3f(0, h, -w) // Top Right Of The Texture and Quad
+		gl.Vertex3f(d, h, 0) // Top Right Of The Texture and Quad
+
+
+
 
 		gl.Normal3f(0.0, 1.0, 0.0)
 		gl.TexCoord2f(0.5, 1.0)
-		gl.Vertex3f(0, h, -w) // Top Left Of The Texture and Quad
+		gl.Vertex3f(d, h, 0) // Top Left Of The Texture and Quad
 
 		gl.Normal3f(0.0, 1.0, 0.0)
 		gl.TexCoord2f(0.5, 0.5)
@@ -370,11 +433,13 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 
 		gl.Normal3f(0.0, 1.0, 0.0)
 		gl.TexCoord2f(1.0, 0.5)
-		gl.Vertex3f(d, h, 0) // Bottom Right Of The Texture and Quad
+		gl.Vertex3f(0, h, w) // Bottom Right Of The Texture and Quad
 
 		gl.Normal3f(0.0, 1.0, 0.0)
 		gl.TexCoord2f(1.0, 1.0)
-		gl.Vertex3f(d, h, -w) // Top Right Of The Texture and Quad
+		gl.Vertex3f(d, h, w) // Top Right Of The Texture and Quad
+
+
 
 		gl.Normal3f(0.0, 1.0, 0.0)
 		gl.TexCoord2f(0.5, 0.5)
@@ -382,27 +447,39 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 
 		gl.Normal3f(0.0, 1.0, 0.0)
 		gl.TexCoord2f(0.5, 0.0)
-		gl.Vertex3f(0, h, w) // Bottom Left Of The Texture and Quad
+		gl.Vertex3f(-d, h, 0) // Bottom Left Of The Texture and Quad
 
 		gl.Normal3f(0.0, 1.0, 0.0)
 		gl.TexCoord2f(1.0, 0.0)
-		gl.Vertex3f(d, h, w) // Bottom Right Of The Texture and Quad
+		gl.Vertex3f(-d, h, w) // Bottom Right Of The Texture and Quad
 
 		gl.Normal3f(0.0, 1.0, 0.0)
 		gl.TexCoord2f(1.0, 0.5)
-		gl.Vertex3f(d, h, 0) // Top Right Of The Texture and Quad
+		gl.Vertex3f(0, h, w) // Top Right Of The Texture and Quad
+
+
+
+
+		// +d/-w     0/-w   -d/-w
+		// +d/0      0/0    -d/0
+        // +d/+w     0/+w   -d/+w
+
+		// Texture
+		// 0.0/1.0    0.0/0.5   0.0/0.0
+		// 0.5/1.0    0.5/0.5   0.5/0.0
+		// 1.0/1.0    1.0/0.5   1.0/0.0
 
 		gl.Normal3f(0.0, 1.0, 0.0)
 		gl.TexCoord2f(0.0, 0.5)
-		gl.Vertex3f(-d, h, 0) // Top Left Of The Texture and Quad
+		gl.Vertex3f(0, h, -w) // Top Left Of The Texture and Quad
 
 		gl.Normal3f(0.0, 1.0, 0.0)
 		gl.TexCoord2f(0.0, 0.0)
-		gl.Vertex3f(-d, h, w) // Bottom Left Of The Texture and Quad
+		gl.Vertex3f(-d, h, -w) // Bottom Left Of The Texture and Quad
 
 		gl.Normal3f(0.0, 1.0, 0.0)
 		gl.TexCoord2f(0.5, 0.0)
-		gl.Vertex3f(0, h, w) // Bottom Right Of The Texture and Quad
+		gl.Vertex3f(-d, h, 0) // Bottom Right Of The Texture and Quad
 
 		gl.Normal3f(0.0, 1.0, 0.0)
 		gl.TexCoord2f(0.5, 0.5)
@@ -490,4 +567,12 @@ func CheckGLError() {
 		panic("Got an OpenGL Error")
 	}
 
+}
+
+func Line(v Vectorf) {
+
+	gl.Begin(gl.LINE)
+	gl.Vertex3f(0,0,0)
+	gl.Vertex3f(float32(v[XAXIS]), float32(v[YAXIS]), float32(v[ZAXIS]))
+	gl.End()
 }

@@ -384,7 +384,7 @@ func (self World) ChunkLoadedFor(x int16, y int16, z int16) bool {
 
 func (self *World) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 	for _, v := range self.mobs {
-		v.Draw(center)
+		v.Draw(center, selectedBlockFace)
 	}
 
 	//gl.Translatef(-float32(center[XAXIS]), -float32(center[YAXIS]), -float32(center[ZAXIS]))
