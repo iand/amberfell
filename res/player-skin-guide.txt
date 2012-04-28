@@ -1,0 +1,21 @@
+a - Hat, front    12x12
+b - Hat, left    12x12
+c - Hat, back    12x12
+d - Hat, right   12x12
+e - Hat, top     12x12
+f - Head, front  12x12
+g - Head, left   12x12
+h - Head, back   12x12
+k - Head, right  12x12
+m - Head, under  12x12
+n - Body, front  24x39
+p - Body, left   12x39
+r - Body, back   24x39
+s - Body, right  12x39
+t - Legs, front  11x42
+u - Legs, side   11x42
+v - Arms          9x33
+w - Arm, end (hand) 9x9
+x - Body, top   24x12
+y - Arm, end (shoulder) 9x9
+z - Hat, brim   18x3
