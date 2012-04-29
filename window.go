@@ -150,7 +150,7 @@ func Draw(t int64) {
 			gl.Rotatef(360*float32(math.Cos(float64(t)/1e10+float64(i))), 0.0, 1.0, 0.0)
 			gl.Rotatef(360*float32(math.Sin(float64(t)/1e10+float64(i))), 0.0, 0.0, 1.0)
 			gl.Scalef(blockscale, blockscale, blockscale)
-			TerrainCube(true, true, true, true, true, true, byte(item), FACE_NONE)
+			TerrainCube([6]uint16{0, 0, 0, 0, 0, 0}, byte(item), FACE_NONE)
 		}
 	}
 

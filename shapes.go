@@ -27,6 +27,7 @@ type TerrainBlock struct {
 	etexture   *gl.Texture
 	wtexture   *gl.Texture
 	hitsNeeded byte
+	transparent bool
 }
 
 func LoadMapTextures() {
@@ -154,10 +155,13 @@ func loadTexture(filename string) *gl.Texture {
 
 func InitTerrainBlocks() {
 	TerrainBlocks = make(map[uint16]TerrainBlock)
-	TerrainBlocks[BLOCK_STONE] = TerrainBlock{BLOCK_STONE, "Stone", textures[TEXTURE_STONE], textures[TEXTURE_STONE], textures[TEXTURE_STONE], textures[TEXTURE_STONE], textures[TEXTURE_STONE], textures[TEXTURE_STONE], STRENGTH_STONE}
-	TerrainBlocks[BLOCK_DIRT] = TerrainBlock{BLOCK_DIRT, "Dirt", textures[TEXTURE_DIRT_TOP], textures[TEXTURE_DIRT], textures[TEXTURE_DIRT], textures[TEXTURE_DIRT], textures[TEXTURE_DIRT], textures[TEXTURE_DIRT], STRENGTH_DIRT}
-	TerrainBlocks[BLOCK_TRUNK] = TerrainBlock{BLOCK_TRUNK, "trunk", textures[TEXTURE_TRUNK], textures[TEXTURE_TRUNK], textures[TEXTURE_TRUNK], textures[TEXTURE_TRUNK], textures[TEXTURE_TRUNK], textures[TEXTURE_TRUNK], STRENGTH_WOOD}
-	TerrainBlocks[BLOCK_LEAVES] = TerrainBlock{BLOCK_TRUNK, "trunk", textures[TEXTURE_LEAVES], textures[TEXTURE_LEAVES], textures[TEXTURE_LEAVES], textures[TEXTURE_LEAVES], textures[TEXTURE_LEAVES], textures[TEXTURE_LEAVES], STRENGTH_LEAVES}
+	TerrainBlocks[BLOCK_AIR] = TerrainBlock{BLOCK_AIR, "Air", nil, nil, nil, nil, nil, nil, STRENGTH_STONE, true}
+	TerrainBlocks[BLOCK_STONE] = TerrainBlock{BLOCK_STONE, "Stone", textures[TEXTURE_STONE], textures[TEXTURE_STONE], textures[TEXTURE_STONE], textures[TEXTURE_STONE], textures[TEXTURE_STONE], textures[TEXTURE_STONE], STRENGTH_STONE, false}
+	TerrainBlocks[BLOCK_DIRT] = TerrainBlock{BLOCK_DIRT, "Dirt", textures[TEXTURE_DIRT_TOP], textures[TEXTURE_DIRT], textures[TEXTURE_DIRT], textures[TEXTURE_DIRT], textures[TEXTURE_DIRT], textures[TEXTURE_DIRT], STRENGTH_DIRT, false}
+	TerrainBlocks[BLOCK_TRUNK] = TerrainBlock{BLOCK_TRUNK, "trunk", textures[TEXTURE_TRUNK], textures[TEXTURE_TRUNK], textures[TEXTURE_TRUNK], textures[TEXTURE_TRUNK], textures[TEXTURE_TRUNK], textures[TEXTURE_TRUNK], STRENGTH_WOOD, false}
+	TerrainBlocks[BLOCK_LEAVES] = TerrainBlock{BLOCK_TRUNK, "trunk", textures[TEXTURE_LEAVES], textures[TEXTURE_LEAVES], textures[TEXTURE_LEAVES], textures[TEXTURE_LEAVES], textures[TEXTURE_LEAVES], textures[TEXTURE_LEAVES], STRENGTH_LEAVES, false}
+	TerrainBlocks[BLOCK_LOG_WALL] = TerrainBlock{BLOCK_LOG_WALL, "log wall", textures[TEXTURE_LOG_WALL_TOP], textures[TEXTURE_LOG_WALL_TOP], textures[TEXTURE_LOG_WALL], textures[TEXTURE_LOG_WALL], textures[TEXTURE_LOG_WALL], textures[TEXTURE_LOG_WALL], STRENGTH_WOOD, true}
+
 }
 
 func LoadTerrainCubes() {
@@ -225,37 +229,112 @@ func terrainCubeIndex(n bool, s bool, w bool, e bool, u bool, d bool, blockid by
 	return index
 }
 
-func TerrainCube(n bool, s bool, w bool, e bool, u bool, d bool, blockid byte, selectedFace uint8) {
-	var ntexture, stexture, etexture, wtexture, utexture, dtexture *gl.Texture
+func TerrainCube(neighbours [6]uint16, blockid byte, selectedFace uint8) {
 
 	block := TerrainBlocks[uint16(blockid)]
 
-	if n {
-		ntexture = block.ntexture
-	}
-	if s {
-		stexture = block.stexture
-	}
-	if e {
-		etexture = block.etexture
-	}
-	if w {
-		wtexture = block.wtexture
-	}
-	if u {
-		utexture = block.utexture
-	}
-	if d {
-		dtexture = block.dtexture
+
+	switch blockid {
+	case BLOCK_LOG_WALL:
+		if neighbours[NORTH_FACE] != BLOCK_AIR {
+			if neighbours[EAST_FACE] != BLOCK_AIR {
+				if neighbours[SOUTH_FACE] != BLOCK_AIR {
+					if neighbours[WEST_FACE] != BLOCK_AIR {
+						// Blocks to all four sides
+						WallCross(ORIENT_EAST, block.etexture, block.wtexture, block.ntexture, block.stexture, block.utexture, block.dtexture, selectedFace)
+					} else {
+						// Blocks to north, east, south
+						WallTee(ORIENT_SOUTH, block.etexture, block.wtexture, block.ntexture, block.stexture, block.utexture, block.dtexture, selectedFace)
+					}
+				} else if neighbours[WEST_FACE] != BLOCK_AIR { 
+					// Blocks to north, east, west
+					WallTee(ORIENT_EAST, block.etexture, block.wtexture, block.ntexture, block.stexture, block.utexture, block.dtexture, selectedFace)
+				} else {
+					// Blocks to north, east
+					WallCorner(ORIENT_EAST, block.etexture, block.wtexture, block.ntexture, block.stexture, block.utexture, block.dtexture, selectedFace)
+				}
+
+			} else if neighbours[SOUTH_FACE] != BLOCK_AIR {
+				if neighbours[WEST_FACE] != BLOCK_AIR {
+					// Blocks to north, south, west
+					WallTee(ORIENT_NORTH, block.etexture, block.wtexture, block.ntexture, block.stexture, block.utexture, block.dtexture, selectedFace)
+				} else {
+					// Blocks to north, south
+					WallSingle(ORIENT_NORTH, block.etexture, block.wtexture, block.ntexture, block.stexture, block.utexture, block.dtexture, selectedFace)
+				}
+			} else if neighbours[WEST_FACE] != BLOCK_AIR {
+				// Blocks to the north and west
+				WallCorner(ORIENT_NORTH, block.etexture, block.wtexture, block.ntexture, block.stexture, block.utexture, block.dtexture, selectedFace)
+
+			} else {
+				// Just a block to the north
+				WallSingle(ORIENT_NORTH, block.etexture, block.wtexture, block.ntexture, block.stexture, block.utexture, block.dtexture, selectedFace)
+			}
+
+		} else if neighbours[EAST_FACE] != BLOCK_AIR {
+			if neighbours[SOUTH_FACE] != BLOCK_AIR {
+				if neighbours[WEST_FACE] != BLOCK_AIR {
+					// Blocks to east, south, west
+					WallTee(ORIENT_WEST, block.etexture, block.wtexture, block.ntexture, block.stexture, block.utexture, block.dtexture, selectedFace)
+				} else {
+					// Blocks to east, south
+					WallCorner(ORIENT_SOUTH, block.etexture, block.wtexture, block.ntexture, block.stexture, block.utexture, block.dtexture, selectedFace)
+				}
+			} else if neighbours[WEST_FACE] != BLOCK_AIR {
+				// Blocks to east, west
+				WallSingle(ORIENT_EAST, block.etexture, block.wtexture, block.ntexture, block.stexture, block.utexture, block.dtexture, selectedFace)
+			} else {
+				// Just a block to the east
+				WallSingle(ORIENT_EAST, block.etexture, block.wtexture, block.ntexture, block.stexture, block.utexture, block.dtexture, selectedFace)
+			}
+		} else if neighbours[SOUTH_FACE] != BLOCK_AIR {
+			if neighbours[WEST_FACE] != BLOCK_AIR {
+				// Blocks to south, west
+				WallCorner(ORIENT_WEST, block.etexture, block.wtexture, block.ntexture, block.stexture, block.utexture, block.dtexture, selectedFace)
+			} else {
+				// Just a block to the south
+				WallSingle(ORIENT_NORTH, block.etexture, block.wtexture, block.ntexture, block.stexture, block.utexture, block.dtexture, selectedFace)
+			}
+		} else if neighbours[WEST_FACE] != BLOCK_AIR {
+			// Just a block to the west
+			WallSingle(ORIENT_EAST, block.etexture, block.wtexture, block.ntexture, block.stexture, block.utexture, block.dtexture, selectedFace)
+		} else {
+			// Lone block
+			WallSingle(ORIENT_EAST, block.etexture, block.wtexture, block.ntexture, block.stexture, block.utexture, block.dtexture, selectedFace)
+		}
+
+	default:
+
+		var ntexture, stexture, etexture, wtexture, utexture, dtexture *gl.Texture
+
+		if TerrainBlocks[neighbours[NORTH_FACE]].transparent {
+			ntexture = block.ntexture
+		}
+		if TerrainBlocks[neighbours[SOUTH_FACE]].transparent {
+			stexture = block.stexture
+		}
+		if TerrainBlocks[neighbours[EAST_FACE]].transparent {
+			etexture = block.etexture
+		}
+		if TerrainBlocks[neighbours[WEST_FACE]].transparent {
+			wtexture = block.wtexture
+		}
+		if TerrainBlocks[neighbours[UP_FACE]].transparent {
+			utexture = block.utexture
+		}
+		if TerrainBlocks[neighbours[DOWN_FACE]].transparent {
+			dtexture = block.dtexture
+		}
+
+		Cuboid(1, 1, 1, etexture, wtexture, ntexture, stexture, utexture, dtexture, selectedFace)
 	}
 
-	// if selectMode {
-	Cuboid(1, 1, 1, etexture, wtexture, ntexture, stexture, utexture, dtexture, selectedFace)
-	// } else {
-	// gl.CallList(TerrainCubes[terrainCubeIndex(n, s, e, w, u, d, blockid)])
-	// }
 
 }
+
+
+
+
 
 func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *gl.Texture, ntexture *gl.Texture, stexture *gl.Texture, utexture *gl.Texture, dtexture *gl.Texture, selectedFace uint8) {
 	w, h, d := float32(bw)/2, float32(bh)/2, float32(bd)/2
@@ -518,27 +597,6 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 
 }
 
-// func HighlightCuboidFace(bw float64, bh float64, bd float64, face int) {
-// 	w, h, d := float32(bw)/2, float32(bh)/2, float32(bd)/2
-// 	// might need to use glPolygonOffset
-// 	gl.Color4ub(255, 32, 32, 0)
-// 	if face == UP_FACE {
-// 		gl.Enable(gl.POLYGON_OFFSET_LINE)
-// 		gl.PolygonOffset(-3, -1.0)
-// 		gl.LineWidth(1.6)
-// 		gl.Begin(gl.LINE_LOOP)
-// 		gl.Normal3f(0.0, 1.0, 0.0)
-// 		gl.Vertex3f(-d, h+0.8, -w) // Top Left Of The Texture and Quad
-// 		gl.Vertex3f(d, h+0.8, -w)  // Top Right Of The Texture and Quad
-// 		gl.Vertex3f(d, h+0.8, w)   // Bottom Right Of The Texture and Quad
-// 		gl.Vertex3f(-d, h+0.8, w)  // Bottom Left Of The Texture and Quad
-
-// 		gl.End()
-// 		gl.Disable(gl.POLYGON_OFFSET_LINE)
-// 	}
-// 	gl.Color4ub(255, 128, 128, 128)
-// }
-
 func CheckGLError() {
 	glerr := gl.GetError()
 	if glerr&gl.INVALID_ENUM == gl.INVALID_ENUM {
@@ -575,4 +633,838 @@ func Line(v Vectorf) {
 	gl.Vertex3f(0,0,0)
 	gl.Vertex3f(float32(v[XAXIS]), float32(v[YAXIS]), float32(v[ZAXIS]))
 	gl.End()
+}
+
+func WallSingle(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntexture *gl.Texture, stexture *gl.Texture, utexture *gl.Texture, dtexture *gl.Texture, selectedFace uint8) {
+	var ppp, pp, p float32 = 1.0/2, 2.0/3/2, 1.0/3/2
+
+	_ = pp
+
+	gl.PushMatrix()	
+	if orient == ORIENT_NORTH {
+		gl.Rotated(90, 0.0, 1.0, 0.0)
+	} else if orient == ORIENT_WEST {
+		gl.Rotated(180, 0.0, 1.0, 0.0)
+	} else if orient == ORIENT_SOUTH {
+		gl.Rotated(270, 0.0, 1.0, 0.0)
+	}
+
+	// East face
+	if etexture != nil {
+		etexture.Bind(gl.TEXTURE_2D)
+		if selectedFace == EAST_FACE {
+			gl.Color4ub(96, 208, 96, 255)
+		} else {
+			gl.Color4ub(255, 255, 255, 255)
+		}
+
+		gl.Begin(gl.QUADS)
+		gl.Normal3f(1.0, 0.0, 0.0)
+		gl.TexCoord2f(2.0/3, 1)
+		gl.Vertex3f(ppp, -ppp, -p)
+		gl.TexCoord2f(2.0/3, 0)
+		gl.Vertex3f(ppp, ppp, -p) 
+		gl.TexCoord2f(1.0/3, 0)
+		gl.Vertex3f(ppp, ppp, p)
+		gl.TexCoord2f(1.0/3, 1)
+		gl.Vertex3f(ppp, -ppp, p)
+		gl.End()
+		etexture.Unbind(gl.TEXTURE_2D)
+	}
+
+	// West Face
+	if wtexture != nil {
+		if selectedFace == WEST_FACE {
+			gl.Color4ub(96, 208, 96, 255)
+		} else {
+			gl.Color4ub(255, 255, 255, 255)
+		}
+
+		wtexture.Bind(gl.TEXTURE_2D)
+		gl.Begin(gl.QUADS)
+		gl.Normal3f(-1.0, 0.0, 0.0)
+		gl.TexCoord2f(2.0/3, 1)
+		gl.Vertex3f(-ppp, -ppp, -p)
+		gl.TexCoord2f(2.0/3, 0)
+		gl.Vertex3f(-ppp, ppp, -p) 
+		gl.TexCoord2f(1.0/3, 0)
+		gl.Vertex3f(-ppp, ppp, p)
+		gl.TexCoord2f(1.0/3, 1)
+		gl.Vertex3f(-ppp, -ppp, p)
+		gl.End()
+		wtexture.Unbind(gl.TEXTURE_2D)
+	}
+
+	// North Face
+	if ntexture != nil {
+		if selectedFace == NORTH_FACE {
+			gl.Color4ub(96, 208, 96, 255)
+		} else {
+			gl.Color4ub(255, 255, 255, 255)
+		}
+
+		ntexture.Bind(gl.TEXTURE_2D)
+		gl.Begin(gl.QUADS)
+		gl.Normal3f(0.0, 0.0, -1.0)
+		gl.TexCoord2f(1.0, 1.0)
+		gl.Vertex3f(-ppp, -ppp, -p)
+		gl.TexCoord2f(1.0, 0.0)
+		gl.Vertex3f(-ppp, ppp, -p) 
+		gl.TexCoord2f(0.0, 0.0)
+		gl.Vertex3f(ppp, ppp, -p)
+		gl.TexCoord2f(0.0, 1.0)
+		gl.Vertex3f(ppp, -ppp, -p)
+		gl.End()
+		ntexture.Unbind(gl.TEXTURE_2D)
+	}
+
+	// South Face
+	if stexture != nil {
+		if selectedFace == SOUTH_FACE {
+			gl.Color4ub(96, 208, 96, 255)
+		} else {
+			gl.Color4ub(255, 255, 255, 255)
+		}
+
+		stexture.Bind(gl.TEXTURE_2D)
+		gl.Begin(gl.QUADS)
+		gl.Normal3f(0.0, 0.0, 1.0)
+		gl.TexCoord2f(1.0, 1.0)
+		gl.Vertex3f(-ppp, -ppp, p)
+		gl.TexCoord2f(1.0, 0.0)
+		gl.Vertex3f(-ppp, ppp, p) 
+		gl.TexCoord2f(0.0, 0.0)
+		gl.Vertex3f(ppp, ppp, p)
+		gl.TexCoord2f(0.0, 1.0)
+		gl.Vertex3f(ppp, -ppp, p)
+		gl.End()
+		stexture.Unbind(gl.TEXTURE_2D)
+
+	}
+
+	// Up Face
+	if utexture != nil {
+		if selectedFace == UP_FACE {
+			gl.Color4ub(96, 208, 96, 255)
+		} else {
+			gl.Color4ub(255, 255, 255, 255)
+		}
+
+		utexture.Bind(gl.TEXTURE_2D)
+		gl.Begin(gl.QUADS)
+		gl.Normal3f(0.0, 1.0, 0.0)
+		gl.TexCoord2f(1.0, 2.0/3)
+		gl.Vertex3f(-ppp, ppp, -p)
+		gl.TexCoord2f(0, 2.0/3)
+		gl.Vertex3f(ppp, ppp, -p) 
+		gl.TexCoord2f(0, 1.0/3)
+		gl.Vertex3f(ppp, ppp, p)
+		gl.TexCoord2f(1.0, 1.0/3)
+		gl.Vertex3f(-ppp, ppp, p)
+		gl.End()
+		utexture.Unbind(gl.TEXTURE_2D)
+	}
+
+	// Down Face
+	if dtexture != nil {
+		if selectedFace == DOWN_FACE {
+			gl.Color4ub(96, 208, 96, 255)
+		} else {
+			gl.Color4ub(255, 255, 255, 255)
+		}
+
+		dtexture.Bind(gl.TEXTURE_2D)
+		gl.Begin(gl.QUADS)
+		gl.Normal3f(0.0, -1.0, 0.0)
+		gl.TexCoord2f(2.0/3, 2.0/3)
+		gl.Vertex3f(-ppp, -ppp, -p)
+		gl.TexCoord2f(2.0/3, 1.0/3)
+		gl.Vertex3f(ppp, -ppp, -p) 
+		gl.TexCoord2f(1.0/3, 1.0/3)
+		gl.Vertex3f(ppp, -ppp, p)
+		gl.TexCoord2f(1.0/3, 2.0/3)
+		gl.Vertex3f(-ppp, -ppp, p)
+		gl.End()
+		dtexture.Unbind(gl.TEXTURE_2D)
+	}
+
+	gl.PopMatrix()	
+}
+
+
+func WallTee(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntexture *gl.Texture, stexture *gl.Texture, utexture *gl.Texture, dtexture *gl.Texture, selectedFace uint8) {
+	var ppp, pp, p float32 = 1.0/2, 2.0/3/2, 1.0/3/2
+
+	_ = pp
+
+	gl.PushMatrix()	
+	if orient == ORIENT_NORTH {
+		gl.Rotated(90, 0.0, 1.0, 0.0)
+	} else if orient == ORIENT_WEST {
+		gl.Rotated(180, 0.0, 1.0, 0.0)
+	} else if orient == ORIENT_SOUTH {
+		gl.Rotated(270, 0.0, 1.0, 0.0)
+	}
+
+	// East face
+	if etexture != nil {
+		etexture.Bind(gl.TEXTURE_2D)
+		if selectedFace == EAST_FACE {
+			gl.Color4ub(96, 208, 96, 255)
+		} else {
+			gl.Color4ub(255, 255, 255, 255)
+		}
+
+		gl.Begin(gl.QUADS)
+		gl.Normal3f(1.0, 0.0, 0.0)
+		gl.TexCoord2f(2.0/3, 2.0/3)
+		gl.Vertex3f(ppp, -ppp, -p)
+		gl.TexCoord2f(2.0/3, 1.0/3)
+		gl.Vertex3f(ppp, ppp, -p) 
+		gl.TexCoord2f(1.0/3, 1.0/3)
+		gl.Vertex3f(ppp, ppp, p)
+		gl.TexCoord2f(1.0/3, 2.0/3)
+		gl.Vertex3f(ppp, -ppp, p)
+		gl.End()
+		etexture.Unbind(gl.TEXTURE_2D)
+	}
+
+	// West Face
+	if wtexture != nil {
+		if selectedFace == WEST_FACE {
+			gl.Color4ub(96, 208, 96, 255)
+		} else {
+			gl.Color4ub(255, 255, 255, 255)
+		}
+
+		wtexture.Bind(gl.TEXTURE_2D)
+		gl.Begin(gl.QUADS)
+		gl.Normal3f(-1.0, 0.0, 0.0)
+		gl.TexCoord2f(2.0/3, 2.0/3)
+		gl.Vertex3f(-ppp, -ppp, -p)
+		gl.TexCoord2f(2.0/3, 1.0/3)
+		gl.Vertex3f(-ppp, ppp, -p) 
+		gl.TexCoord2f(1.0/3, 1.0/3)
+		gl.Vertex3f(-ppp, ppp, p)
+		gl.TexCoord2f(1.0/3, 2.0/3)
+		gl.Vertex3f(-ppp, -ppp, p)
+		gl.End()
+		wtexture.Unbind(gl.TEXTURE_2D)
+	}
+
+	// North Face
+	if ntexture != nil {
+		if selectedFace == NORTH_FACE {
+			gl.Color4ub(96, 208, 96, 255)
+		} else {
+			gl.Color4ub(255, 255, 255, 255)
+		}
+
+		ntexture.Bind(gl.TEXTURE_2D)
+		gl.Begin(gl.QUADS)
+		gl.Normal3f(0.0, 0.0, -1.0)
+		gl.TexCoord2f(1.0, 1.0)
+		gl.Vertex3f(-p, -ppp, -ppp)
+		gl.TexCoord2f(1.0, 0.0)
+		gl.Vertex3f(-p, ppp, -ppp) 
+		gl.TexCoord2f(0.0, 0.0)
+		gl.Vertex3f(p, ppp, -ppp)
+		gl.TexCoord2f(0.0, 1.0)
+		gl.Vertex3f(p, -ppp, -ppp)
+
+		gl.TexCoord2f(2.0/3, 2.0/3)
+		gl.Vertex3f(-ppp, -ppp, -p)
+		gl.TexCoord2f(2.0/3, 1.0/3)
+		gl.Vertex3f(-ppp, ppp, -p) 
+		gl.TexCoord2f(1.0/3, 1.0/3)
+		gl.Vertex3f(-p, ppp, -p)
+		gl.TexCoord2f(1.0/3, 2.0/3)
+		gl.Vertex3f(-p, -ppp, -p)
+
+		gl.TexCoord2f(2.0/3, 2.0/3)
+		gl.Vertex3f(p, -ppp, -p)
+		gl.TexCoord2f(2.0/3, 1.0/3)
+		gl.Vertex3f(p, ppp, -p) 
+		gl.TexCoord2f(1.0/3, 1.0/3)
+		gl.Vertex3f(ppp, ppp, -p)
+		gl.TexCoord2f(1.0/3, 2.0/3)
+		gl.Vertex3f(ppp, -ppp, -p)
+
+		gl.Normal3f(-1.0, 0.0, 0.0)
+		gl.TexCoord2f(2.0/3, 2.0/3)
+		gl.Vertex3f(-p, -ppp, -ppp)
+		gl.TexCoord2f(2.0/3, 1.0/3)
+		gl.Vertex3f(-p, ppp, -ppp) 
+		gl.TexCoord2f(1.0/3, 1.0/3)
+		gl.Vertex3f(-p, ppp, -p)
+		gl.TexCoord2f(1.0/3, 2.0/3)
+		gl.Vertex3f(-p, -ppp, -p)
+
+		gl.Normal3f(1.0, 0.0, 0.0)
+		gl.TexCoord2f(2.0/3, 2.0/3)
+		gl.Vertex3f(p, -ppp, -ppp)
+		gl.TexCoord2f(2.0/3, 1.0/3)
+		gl.Vertex3f(p, ppp, -ppp) 
+		gl.TexCoord2f(1.0/3, 1.0/3)
+		gl.Vertex3f(p, ppp, -p)
+		gl.TexCoord2f(1.0/3, 2.0/3)
+		gl.Vertex3f(p, -ppp, -p)
+
+		gl.End()
+		ntexture.Unbind(gl.TEXTURE_2D)
+	}
+
+	// South Face
+	if stexture != nil {
+		if selectedFace == SOUTH_FACE {
+			gl.Color4ub(96, 208, 96, 255)
+		} else {
+			gl.Color4ub(255, 255, 255, 255)
+		}
+
+		stexture.Bind(gl.TEXTURE_2D)
+		gl.Begin(gl.QUADS)
+		gl.Normal3f(0.0, 0.0, 1.0)
+		gl.TexCoord2f(1.0, 1.0)
+		gl.Vertex3f(-ppp, -ppp, p)
+		gl.TexCoord2f(1.0, 0.0)
+		gl.Vertex3f(-ppp, ppp, p) 
+		gl.TexCoord2f(0.0, 0.0)
+		gl.Vertex3f(ppp, ppp, p)
+		gl.TexCoord2f(0.0, 1.0)
+		gl.Vertex3f(ppp, -ppp, p)
+		gl.End()
+		stexture.Unbind(gl.TEXTURE_2D)
+
+	}
+
+	// Up Face
+	if utexture != nil {
+		if selectedFace == UP_FACE {
+			gl.Color4ub(96, 208, 96, 255)
+		} else {
+			gl.Color4ub(255, 255, 255, 255)
+		}
+
+		utexture.Bind(gl.TEXTURE_2D)
+		gl.Begin(gl.QUADS)
+		gl.Normal3f(0.0, 1.0, 0.0)
+		gl.TexCoord2f(2.0/3, 1)
+		gl.Vertex3f(-ppp, ppp, -p)
+		gl.TexCoord2f(2.0/3, 0)
+		gl.Vertex3f(ppp, ppp, -p) 
+		gl.TexCoord2f(1.0/3, 0)
+		gl.Vertex3f(ppp, ppp, p)
+		gl.TexCoord2f(1.0/3, 1)
+		gl.Vertex3f(-ppp, ppp, p)
+
+		gl.TexCoord2f(2.0/3, 2.0/3)
+		gl.Vertex3f(-p, ppp, -ppp)
+		gl.TexCoord2f(2.0/3, 1.0/3)
+		gl.Vertex3f(p, ppp, -ppp) 
+		gl.TexCoord2f(1.0/3, 1.0/3)
+		gl.Vertex3f(p, ppp, -p)
+		gl.TexCoord2f(1.0/3, 2.0/3)
+		gl.Vertex3f(-p, ppp, -p)
+
+		gl.End()
+		utexture.Unbind(gl.TEXTURE_2D)
+	}
+
+	// Down Face
+	if dtexture != nil {
+		if selectedFace == DOWN_FACE {
+			gl.Color4ub(96, 208, 96, 255)
+		} else {
+			gl.Color4ub(255, 255, 255, 255)
+		}
+
+		dtexture.Bind(gl.TEXTURE_2D)
+		gl.Begin(gl.QUADS)
+		gl.Normal3f(0.0, -1.0, 0.0)
+		gl.TexCoord2f(2.0/3, 2.0/3)
+		gl.Vertex3f(-ppp, -ppp, -p)
+		gl.TexCoord2f(2.0/3, 1.0/3)
+		gl.Vertex3f(ppp, -ppp, -p) 
+		gl.TexCoord2f(1.0/3, 1.0/3)
+		gl.Vertex3f(ppp, -ppp, p)
+		gl.TexCoord2f(1.0/3, 2.0/3)
+		gl.Vertex3f(-ppp, -ppp, p)
+
+		gl.TexCoord2f(2.0/3, 2.0/3)
+		gl.Vertex3f(-p, -ppp, -ppp)
+		gl.TexCoord2f(2.0/3, 1.0/3)
+		gl.Vertex3f(p, -ppp, -ppp) 
+		gl.TexCoord2f(1.0/3, 1.0/3)
+		gl.Vertex3f(p, -ppp, -p)
+		gl.TexCoord2f(1.0/3, 2.0/3)
+		gl.Vertex3f(-p, -ppp, -p)
+
+		gl.End()
+		dtexture.Unbind(gl.TEXTURE_2D)
+	}
+
+	gl.PopMatrix()	
+}
+
+
+func WallCorner(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntexture *gl.Texture, stexture *gl.Texture, utexture *gl.Texture, dtexture *gl.Texture, selectedFace uint8) {
+	var ppp, pp, p float32 = 1.0/2, 2.0/3/2, 1.0/3/2
+
+	_ = pp
+
+	gl.PushMatrix()	
+	if orient == ORIENT_NORTH {
+		gl.Rotated(90, 0.0, 1.0, 0.0)
+	} else if orient == ORIENT_WEST {
+		gl.Rotated(180, 0.0, 1.0, 0.0)
+	} else if orient == ORIENT_SOUTH {
+		gl.Rotated(270, 0.0, 1.0, 0.0)
+	}
+
+	// East face
+	if etexture != nil {
+		etexture.Bind(gl.TEXTURE_2D)
+		if selectedFace == EAST_FACE {
+			gl.Color4ub(96, 208, 96, 255)
+		} else {
+			gl.Color4ub(255, 255, 255, 255)
+		}
+
+		gl.Begin(gl.QUADS)
+		gl.Normal3f(1.0, 0.0, 0.0)
+		gl.TexCoord2f(2.0/3, 2.0/3)
+		gl.Vertex3f(ppp, -ppp, -p)
+		gl.TexCoord2f(2.0/3, 1.0/3)
+		gl.Vertex3f(ppp, ppp, -p) 
+		gl.TexCoord2f(1.0/3, 1.0/3)
+		gl.Vertex3f(ppp, ppp, p)
+		gl.TexCoord2f(1.0/3, 2.0/3)
+		gl.Vertex3f(ppp, -ppp, p)
+		gl.End()
+		etexture.Unbind(gl.TEXTURE_2D)
+	}
+
+	// West Face
+	if wtexture != nil {
+		if selectedFace == WEST_FACE {
+			gl.Color4ub(96, 208, 96, 255)
+		} else {
+			gl.Color4ub(255, 255, 255, 255)
+		}
+
+		wtexture.Bind(gl.TEXTURE_2D)
+		gl.Begin(gl.QUADS)
+		gl.Normal3f(-1.0, 0.0, 0.0)
+		gl.TexCoord2f(2.0/3, 1)
+		gl.Vertex3f(-p, -ppp, -ppp)
+		gl.TexCoord2f(2.0/3, 0)
+		gl.Vertex3f(-p, ppp, -ppp) 
+		gl.TexCoord2f(0, 0)
+		gl.Vertex3f(-p, ppp, p)
+		gl.TexCoord2f(0, 1)
+		gl.Vertex3f(-p, -ppp, p)
+		gl.End()
+		wtexture.Unbind(gl.TEXTURE_2D)
+	}
+
+	// North Face
+	if ntexture != nil {
+		if selectedFace == NORTH_FACE {
+			gl.Color4ub(96, 208, 96, 255)
+		} else {
+			gl.Color4ub(255, 255, 255, 255)
+		}
+
+		ntexture.Bind(gl.TEXTURE_2D)
+		gl.Begin(gl.QUADS)
+		gl.Normal3f(0.0, 0.0, -1.0)
+		gl.TexCoord2f(1.0, 1.0)
+		gl.Vertex3f(-p, -ppp, -ppp)
+		gl.TexCoord2f(1.0, 0.0)
+		gl.Vertex3f(-p, ppp, -ppp) 
+		gl.TexCoord2f(0.0, 0.0)
+		gl.Vertex3f(p, ppp, -ppp)
+		gl.TexCoord2f(0.0, 1.0)
+		gl.Vertex3f(p, -ppp, -ppp)
+
+		gl.TexCoord2f(1.0, 1.0)
+		gl.Vertex3f(p, -ppp, -p)
+		gl.TexCoord2f(1.0, 0.0)
+		gl.Vertex3f(p, ppp, -p) 
+		gl.TexCoord2f(0.0, 0.0)
+		gl.Vertex3f(ppp, ppp, -p)
+		gl.TexCoord2f(0.0, 1.0)
+		gl.Vertex3f(ppp, -ppp, -p)
+
+		gl.Normal3f(1.0, 0.0, 0.0)
+		gl.TexCoord2f(2.0/3, 2.0/3)
+		gl.Vertex3f(p, -ppp, -ppp)
+		gl.TexCoord2f(2.0/3, 1.0/3)
+		gl.Vertex3f(p, ppp, -ppp) 
+		gl.TexCoord2f(1.0/3, 1.0/3)
+		gl.Vertex3f(p, ppp, -p)
+		gl.TexCoord2f(1.0/3, 2.0/3)
+		gl.Vertex3f(p, -ppp, -p)
+
+		gl.End()
+		ntexture.Unbind(gl.TEXTURE_2D)
+	}
+
+	// South Face
+	if stexture != nil {
+		if selectedFace == SOUTH_FACE {
+			gl.Color4ub(96, 208, 96, 255)
+		} else {
+			gl.Color4ub(255, 255, 255, 255)
+		}
+
+		stexture.Bind(gl.TEXTURE_2D)
+		gl.Begin(gl.QUADS)
+		gl.Normal3f(0.0, 0.0, 1.0)
+		gl.TexCoord2f(1.0, 1.0)
+		gl.Vertex3f(-p, -ppp, p)
+		gl.TexCoord2f(1.0, 0.0)
+		gl.Vertex3f(-p, ppp, p) 
+		gl.TexCoord2f(0.0, 0.0)
+		gl.Vertex3f(ppp, ppp, p)
+		gl.TexCoord2f(0.0, 1.0)
+		gl.Vertex3f(ppp, -ppp, p)
+		gl.End()
+		stexture.Unbind(gl.TEXTURE_2D)
+
+	}
+
+	// Up Face
+	if utexture != nil {
+		if selectedFace == UP_FACE {
+			gl.Color4ub(96, 208, 96, 255)
+		} else {
+			gl.Color4ub(255, 255, 255, 255)
+		}
+
+		utexture.Bind(gl.TEXTURE_2D)
+		gl.Begin(gl.QUADS)
+		gl.Normal3f(0.0, 1.0, 0.0)
+		gl.TexCoord2f(2.0/3, 2.0/3)
+		gl.Vertex3f(-p, ppp, -p)
+		gl.TexCoord2f(2.0/3, 0)
+		gl.Vertex3f(ppp, ppp, -p) 
+		gl.TexCoord2f(1.0/3, 0)
+		gl.Vertex3f(ppp, ppp, p)
+		gl.TexCoord2f(1.0/3, 2.0/3)
+		gl.Vertex3f(-p, ppp, p)
+
+		gl.TexCoord2f(2.0/3, 2.0/3)
+		gl.Vertex3f(-p, ppp, -ppp)
+		gl.TexCoord2f(2.0/3, 1.0/3)
+		gl.Vertex3f(p, ppp, -ppp) 
+		gl.TexCoord2f(1.0/3, 1.0/3)
+		gl.Vertex3f(p, ppp, -p)
+		gl.TexCoord2f(1.0/3, 2.0/3)
+		gl.Vertex3f(-p, ppp, -p)
+
+		gl.End()
+		utexture.Unbind(gl.TEXTURE_2D)
+	}
+
+	// Down Face
+	if dtexture != nil {
+		if selectedFace == DOWN_FACE {
+			gl.Color4ub(96, 208, 96, 255)
+		} else {
+			gl.Color4ub(255, 255, 255, 255)
+		}
+
+		dtexture.Bind(gl.TEXTURE_2D)
+		gl.Begin(gl.QUADS)
+		gl.Normal3f(0.0, -1.0, 0.0)
+		gl.TexCoord2f(2.0/3, 2.0/3)
+		gl.Vertex3f(-p, -ppp, -p)
+		gl.TexCoord2f(2.0/3, 1.0/3)
+		gl.Vertex3f(ppp, -ppp, -p) 
+		gl.TexCoord2f(1.0/3, 1.0/3)
+		gl.Vertex3f(ppp, -ppp, p)
+		gl.TexCoord2f(1.0/3, 2.0/3)
+		gl.Vertex3f(-p, -ppp, p)
+
+		gl.TexCoord2f(2.0/3, 2.0/3)
+		gl.Vertex3f(-p, -ppp, -ppp)
+		gl.TexCoord2f(2.0/3, 1.0/3)
+		gl.Vertex3f(p, -ppp, -ppp) 
+		gl.TexCoord2f(1.0/3, 1.0/3)
+		gl.Vertex3f(p, -ppp, -p)
+		gl.TexCoord2f(1.0/3, 2.0/3)
+		gl.Vertex3f(-p, -ppp, -p)
+
+		gl.End()
+		dtexture.Unbind(gl.TEXTURE_2D)
+	}
+
+	gl.PopMatrix()	
+}
+
+func WallCross(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntexture *gl.Texture, stexture *gl.Texture, utexture *gl.Texture, dtexture *gl.Texture, selectedFace uint8) {
+	var ppp, pp, p float32 = 1.0/2, 2.0/3/2, 1.0/3/2
+
+	_ = pp
+
+	gl.PushMatrix()	
+	if orient == ORIENT_NORTH {
+		gl.Rotated(90, 0.0, 1.0, 0.0)
+	} else if orient == ORIENT_WEST {
+		gl.Rotated(180, 0.0, 1.0, 0.0)
+	} else if orient == ORIENT_SOUTH {
+		gl.Rotated(270, 0.0, 1.0, 0.0)
+	}
+
+	// East face
+	if etexture != nil {
+		etexture.Bind(gl.TEXTURE_2D)
+		if selectedFace == EAST_FACE {
+			gl.Color4ub(96, 208, 96, 255)
+		} else {
+			gl.Color4ub(255, 255, 255, 255)
+		}
+
+		gl.Begin(gl.QUADS)
+		gl.Normal3f(1.0, 0.0, 0.0)
+		gl.TexCoord2f(2.0/3, 2.0/3)
+		gl.Vertex3f(ppp, -ppp, -p)
+		gl.TexCoord2f(2.0/3, 1.0/3)
+		gl.Vertex3f(ppp, ppp, -p) 
+		gl.TexCoord2f(1.0/3, 1.0/3)
+		gl.Vertex3f(ppp, ppp, p)
+		gl.TexCoord2f(1.0/3, 2.0/3)
+		gl.Vertex3f(ppp, -ppp, p)
+		gl.End()
+		etexture.Unbind(gl.TEXTURE_2D)
+	}
+
+	// West Face
+	if wtexture != nil {
+		if selectedFace == WEST_FACE {
+			gl.Color4ub(96, 208, 96, 255)
+		} else {
+			gl.Color4ub(255, 255, 255, 255)
+		}
+
+		wtexture.Bind(gl.TEXTURE_2D)
+		gl.Begin(gl.QUADS)
+		gl.Normal3f(-1.0, 0.0, 0.0)
+		gl.TexCoord2f(2.0/3, 2.0/3)
+		gl.Vertex3f(-ppp, -ppp, -p)
+		gl.TexCoord2f(2.0/3, 1.0/3)
+		gl.Vertex3f(-ppp, ppp, -p) 
+		gl.TexCoord2f(1.0/3, 1.0/3)
+		gl.Vertex3f(-ppp, ppp, p)
+		gl.TexCoord2f(1.0/3, 2.0/3)
+		gl.Vertex3f(-ppp, -ppp, p)
+		gl.End()
+		wtexture.Unbind(gl.TEXTURE_2D)
+	}
+
+	// North Face
+	if ntexture != nil {
+		if selectedFace == NORTH_FACE {
+			gl.Color4ub(96, 208, 96, 255)
+		} else {
+			gl.Color4ub(255, 255, 255, 255)
+		}
+
+		ntexture.Bind(gl.TEXTURE_2D)
+		gl.Begin(gl.QUADS)
+		gl.Normal3f(0.0, 0.0, -1.0)
+		gl.TexCoord2f(1.0, 1.0)
+		gl.Vertex3f(-p, -ppp, -ppp)
+		gl.TexCoord2f(1.0, 0.0)
+		gl.Vertex3f(-p, ppp, -ppp) 
+		gl.TexCoord2f(0.0, 0.0)
+		gl.Vertex3f(p, ppp, -ppp)
+		gl.TexCoord2f(0.0, 1.0)
+		gl.Vertex3f(p, -ppp, -ppp)
+
+		gl.TexCoord2f(2.0/3, 2.0/3)
+		gl.Vertex3f(-ppp, -ppp, -p)
+		gl.TexCoord2f(2.0/3, 1.0/3)
+		gl.Vertex3f(-ppp, ppp, -p) 
+		gl.TexCoord2f(1.0/3, 1.0/3)
+		gl.Vertex3f(-p, ppp, -p)
+		gl.TexCoord2f(1.0/3, 2.0/3)
+		gl.Vertex3f(-p, -ppp, -p)
+
+		gl.TexCoord2f(2.0/3, 2.0/3)
+		gl.Vertex3f(p, -ppp, -p)
+		gl.TexCoord2f(2.0/3, 1.0/3)
+		gl.Vertex3f(p, ppp, -p) 
+		gl.TexCoord2f(1.0/3, 1.0/3)
+		gl.Vertex3f(ppp, ppp, -p)
+		gl.TexCoord2f(1.0/3, 2.0/3)
+		gl.Vertex3f(ppp, -ppp, -p)
+
+		gl.Normal3f(-1.0, 0.0, 0.0)
+		gl.TexCoord2f(2.0/3, 2.0/3)
+		gl.Vertex3f(-p, -ppp, -ppp)
+		gl.TexCoord2f(2.0/3, 1.0/3)
+		gl.Vertex3f(-p, ppp, -ppp) 
+		gl.TexCoord2f(1.0/3, 1.0/3)
+		gl.Vertex3f(-p, ppp, -p)
+		gl.TexCoord2f(1.0/3, 2.0/3)
+		gl.Vertex3f(-p, -ppp, -p)
+
+		gl.Normal3f(1.0, 0.0, 0.0)
+		gl.TexCoord2f(2.0/3, 2.0/3)
+		gl.Vertex3f(p, -ppp, -ppp)
+		gl.TexCoord2f(2.0/3, 1.0/3)
+		gl.Vertex3f(p, ppp, -ppp) 
+		gl.TexCoord2f(1.0/3, 1.0/3)
+		gl.Vertex3f(p, ppp, -p)
+		gl.TexCoord2f(1.0/3, 2.0/3)
+		gl.Vertex3f(p, -ppp, -p)
+
+		gl.End()
+		ntexture.Unbind(gl.TEXTURE_2D)
+	}
+
+	// South Face
+	if stexture != nil {
+		if selectedFace == SOUTH_FACE {
+			gl.Color4ub(96, 208, 96, 255)
+		} else {
+			gl.Color4ub(255, 255, 255, 255)
+		}
+
+		stexture.Bind(gl.TEXTURE_2D)
+		gl.Begin(gl.QUADS)
+		gl.Normal3f(0.0, 0.0, 1.0)
+		gl.TexCoord2f(1.0, 1.0)
+		gl.Vertex3f(-ppp, -ppp, p)
+		gl.TexCoord2f(1.0, 0.0)
+		gl.Vertex3f(-ppp, ppp, p) 
+		gl.TexCoord2f(0.0, 0.0)
+		gl.Vertex3f(ppp, ppp, p)
+		gl.TexCoord2f(0.0, 1.0)
+		gl.Vertex3f(ppp, -ppp, p)
+
+		gl.TexCoord2f(2.0/3, 2.0/3)
+		gl.Vertex3f(-ppp, -ppp, p)
+		gl.TexCoord2f(2.0/3, 1.0/3)
+		gl.Vertex3f(-ppp, ppp, p) 
+		gl.TexCoord2f(1.0/3, 1.0/3)
+		gl.Vertex3f(-p, ppp, p)
+		gl.TexCoord2f(1.0/3, 1.0/3)
+		gl.Vertex3f(-p, -ppp, p)
+
+		gl.TexCoord2f(2.0/3, 2.0/3)
+		gl.Vertex3f(p, -ppp, p)
+		gl.TexCoord2f(2.0/3, 1.0/3)
+		gl.Vertex3f(p, ppp, p) 
+		gl.TexCoord2f(1.0/3, 1.0/3)
+		gl.Vertex3f(ppp, ppp, p)
+		gl.TexCoord2f(1.0/3, 1.0/3)
+		gl.Vertex3f(ppp, -ppp, p)
+
+		gl.Normal3f(-1.0, 0.0, 0.0)
+		gl.TexCoord2f(2.0/3, 2.0/3)
+		gl.Vertex3f(-p, -ppp, ppp)
+		gl.TexCoord2f(2.0/3, 1.0/3)
+		gl.Vertex3f(-p, ppp, ppp) 
+		gl.TexCoord2f(1.0/3, 1.0/3)
+		gl.Vertex3f(-p, ppp, p)
+		gl.TexCoord2f(1.0/3, 2.0/3)
+		gl.Vertex3f(-p, -ppp, p)
+
+		gl.Normal3f(1.0, 0.0, 0.0)
+		gl.TexCoord2f(2.0/3, 2.0/3)
+		gl.Vertex3f(p, -ppp, ppp)
+		gl.TexCoord2f(2.0/3, 1.0/3)
+		gl.Vertex3f(p, ppp, ppp) 
+		gl.TexCoord2f(1.0/3, 1.0/3)
+		gl.Vertex3f(p, ppp, p)
+		gl.TexCoord2f(1.0/3, 2.0/3)
+		gl.Vertex3f(p, -ppp, p)
+
+
+
+		gl.End()
+		stexture.Unbind(gl.TEXTURE_2D)
+
+	}
+
+	// Up Face
+	if utexture != nil {
+		if selectedFace == UP_FACE {
+			gl.Color4ub(96, 208, 96, 255)
+		} else {
+			gl.Color4ub(255, 255, 255, 255)
+		}
+
+		utexture.Bind(gl.TEXTURE_2D)
+		gl.Begin(gl.QUADS)
+		gl.Normal3f(0.0, 1.0, 0.0)
+		gl.TexCoord2f(2.0/3, 1)
+		gl.Vertex3f(-ppp, ppp, -p)
+		gl.TexCoord2f(2.0/3, 0)
+		gl.Vertex3f(ppp, ppp, -p) 
+		gl.TexCoord2f(1.0/3, 0)
+		gl.Vertex3f(ppp, ppp, p)
+		gl.TexCoord2f(1.0/3, 1)
+		gl.Vertex3f(-ppp, ppp, p)
+
+		gl.TexCoord2f(2.0/3, 2.0/3)
+		gl.Vertex3f(-p, ppp, -ppp)
+		gl.TexCoord2f(2.0/3, 1.0/3)
+		gl.Vertex3f(p, ppp, -ppp) 
+		gl.TexCoord2f(1.0/3, 1.0/3)
+		gl.Vertex3f(p, ppp, -p)
+		gl.TexCoord2f(1.0/3, 2.0/3)
+		gl.Vertex3f(-p, ppp, -p)
+
+		gl.TexCoord2f(2.0/3, 2.0/3)
+		gl.Vertex3f(-p, ppp, ppp)
+		gl.TexCoord2f(2.0/3, 1.0/3)
+		gl.Vertex3f(p, ppp, ppp) 
+		gl.TexCoord2f(1.0/3, 1.0/3)
+		gl.Vertex3f(p, ppp, p)
+		gl.TexCoord2f(1.0/3, 2.0/3)
+		gl.Vertex3f(-p, ppp, p)
+
+		gl.End()
+		utexture.Unbind(gl.TEXTURE_2D)
+	}
+
+	// Down Face
+	if dtexture != nil {
+		if selectedFace == DOWN_FACE {
+			gl.Color4ub(96, 208, 96, 255)
+		} else {
+			gl.Color4ub(255, 255, 255, 255)
+		}
+
+		dtexture.Bind(gl.TEXTURE_2D)
+		gl.Begin(gl.QUADS)
+		gl.Normal3f(0.0, -1.0, 0.0)
+		gl.TexCoord2f(2.0/3, 1)
+		gl.Vertex3f(-ppp, -ppp, -p)
+		gl.TexCoord2f(2.0/3, 0)
+		gl.Vertex3f(ppp, -ppp, -p) 
+		gl.TexCoord2f(1.0/3, 0)
+		gl.Vertex3f(ppp, -ppp, p)
+		gl.TexCoord2f(1.0/3, 1)
+		gl.Vertex3f(-ppp, -ppp, p)
+
+		gl.TexCoord2f(2.0/3, 2.0/3)
+		gl.Vertex3f(-p, -ppp, -ppp)
+		gl.TexCoord2f(2.0/3, 1.0/3)
+		gl.Vertex3f(p, -ppp, -ppp) 
+		gl.TexCoord2f(1.0/3, 1.0/3)
+		gl.Vertex3f(p, -ppp, -p)
+		gl.TexCoord2f(1.0/3, 2.0/3)
+		gl.Vertex3f(-p, -ppp, -p)
+
+		gl.End()
+		dtexture.Unbind(gl.TEXTURE_2D)
+	}
+
+	gl.PopMatrix()	
 }

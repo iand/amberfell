@@ -21,19 +21,28 @@ const (
 
 	KEY_DEBOUNCE_DELAY = 3e8 // nanoseconds
 
-	FACE_NONE  = 0 // +ve x
-	EAST_FACE  = 1 // +ve x
-	WEST_FACE  = 2 // -ve x
-	NORTH_FACE = 3 // -ve z
-	SOUTH_FACE = 4 // +ve z
-	UP_FACE    = 5 // +ve y
-	DOWN_FACE  = 6 // -ve y
+	FACE_NONE  = 6 // 
+	EAST_FACE  = 0 // +ve x
+	WEST_FACE  = 1 // -ve x
+	NORTH_FACE = 2 // -ve z
+	SOUTH_FACE = 3 // +ve z
+	UP_FACE    = 4 // +ve y
+	DOWN_FACE  = 5 // -ve y
+
+	ORIENT_EAST  = 0
+	ORIENT_NORTH = 1
+	ORIENT_SOUTH = 2
+	ORIENT_WEST  = 3
+
 
 	BLOCK_AIR    = 0
 	BLOCK_STONE  = 1
 	BLOCK_DIRT   = 2
-	BLOCK_TRUNK  = 3 // temporarily the same as dirtd
-	BLOCK_LEAVES = 4 // temporarily the same as dirt
+	BLOCK_TRUNK  = 3 
+	BLOCK_LEAVES = 4 
+	BLOCK_LOG_WALL = 5
+
+
 
 	ACTION_HAND   = 0
 	ACTION_BREAK  = 1
@@ -55,6 +64,8 @@ const (
 	TEXTURE_TRUNK_TOP  = 3
 	TEXTURE_LEAVES     = 20
 	TEXTURE_LEAVES_TOP = 20
+	TEXTURE_LOG_WALL     = 21
+	TEXTURE_LOG_WALL_TOP = 5
 
 	// Player textures
 

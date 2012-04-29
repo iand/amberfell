@@ -197,47 +197,80 @@ func (self *World) Grow(x int16, y int16, z int16, n int, s int, w int, e int, u
 	}
 }
 
-func (self *World) AirNeighbours(x int16, z int16, y int16) (n, s, w, e, u, d bool) {
+func (self *World) HasVisibleFaces(neighbours [6]uint16) bool {
 
-	if self.ChunkLoadedFor(x-1, y, z) && self.At(x-1, y, z) == BLOCK_AIR {
-		w = true
+	switch neighbours[WEST_FACE] {
+	case BLOCK_AIR, BLOCK_LOG_WALL:
+		return true
 	}
-	if self.ChunkLoadedFor(x+1, y, z) && self.At(x+1, y, z) == BLOCK_AIR {
-		e = true
+
+	switch neighbours[EAST_FACE] {
+	case BLOCK_AIR, BLOCK_LOG_WALL:
+		return true
 	}
-	if self.ChunkLoadedFor(x, y, z-1) && self.At(x, y, z-1) == BLOCK_AIR {
-		n = true
+
+	switch neighbours[NORTH_FACE] {
+	case BLOCK_AIR, BLOCK_LOG_WALL:
+		return true
 	}
-	if self.ChunkLoadedFor(x, y, z+1) && self.At(x, y, z+1) == BLOCK_AIR {
-		s = true
+
+	switch neighbours[SOUTH_FACE] {
+	case BLOCK_AIR, BLOCK_LOG_WALL:
+		return true
 	}
-	if self.ChunkLoadedFor(x, y+1, z) && self.At(x, y+1, z) == BLOCK_AIR {
-		u = true
+
+	switch neighbours[UP_FACE] {
+	case BLOCK_AIR, BLOCK_LOG_WALL:
+		return true
 	}
+
+	return false
+}
+
+
+func (self *World) Neighbours(x int16, y int16, z int16) (neighbours [6]uint16) {
+
+	if self.ChunkLoadedFor(x-1, y, z) {
+		neighbours[WEST_FACE] = uint16(self.At(x-1, y, z))
+	} else {
+		neighbours[WEST_FACE] = BLOCK_AIR
+	}
+
+	if self.ChunkLoadedFor(x+1, y, z) {
+		neighbours[EAST_FACE] = uint16(self.At(x+1, y, z))
+	} else {
+		neighbours[EAST_FACE] = BLOCK_AIR
+	}	
+
+	if self.ChunkLoadedFor(x, y, z-1) {
+		neighbours[NORTH_FACE] = uint16(self.At(x, y, z-1))
+	} else {
+		neighbours[NORTH_FACE] = BLOCK_AIR
+	}
+
+	if self.ChunkLoadedFor(x, y, z+1) {
+		neighbours[SOUTH_FACE] = uint16(self.At(x, y, z+1))
+	} else {
+		neighbours[SOUTH_FACE] = BLOCK_AIR
+	}
+
+	if self.ChunkLoadedFor(x, y+1, z) {
+		neighbours[UP_FACE] = uint16(self.At(x, y+1, z))
+	} else {
+		neighbours[UP_FACE] = BLOCK_AIR
+	}
+
+	if self.ChunkLoadedFor(x, y-1, z) {
+		neighbours[DOWN_FACE] = uint16(self.At(x, y-1, z))
+	} else {
+		neighbours[DOWN_FACE] = BLOCK_AIR
+	}
+
+
 	return
 }
 
-func (self *World) AirNeighbour(x int16, z int16, y int16, face int) bool {
-	if face == UP_FACE && self.ChunkLoadedFor(x, y+1, z) && self.At(x, y+1, z) == BLOCK_AIR {
-		return true
-	}
-	if face == NORTH_FACE && self.ChunkLoadedFor(x, y, z-1) && self.At(x, y, z-1) == BLOCK_AIR {
-		return true
-	}
-	if face == SOUTH_FACE && self.ChunkLoadedFor(x, y, z+1) && self.At(x, y, z+1) == BLOCK_AIR {
-		return true
-	}
-	if face == EAST_FACE && self.ChunkLoadedFor(x+1, y, z) && self.At(x+1, y, z) == BLOCK_AIR {
-		return true
-	}
-	if face == WEST_FACE && self.ChunkLoadedFor(x-1, y, z) && self.At(x-1, y, z) == BLOCK_AIR {
-		return true
-	}
-	if face == DOWN_FACE && self.ChunkLoadedFor(x, y-1, z) && self.At(x, y-1, z) == BLOCK_AIR {
-		return true
-	}
-	return false
-}
+
 
 // lineRectCollide( line, rect )
 //
@@ -401,8 +434,8 @@ func (self *World) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 
 					var blockid byte = self.At(x, y, z)
 					if blockid != 0 {
-						var n, s, w, e, u, d bool = self.AirNeighbours(x, z, y)
-						if n || s || w || e || u || d {
+						neighbours := self.Neighbours(x, y, z)
+						if self.HasVisibleFaces(neighbours) {
 
 							selectedFace := uint8(FACE_NONE)
 							if selectedBlockFace != nil && x == selectedBlockFace.pos[XAXIS] && y == selectedBlockFace.pos[YAXIS] && z == selectedBlockFace.pos[ZAXIS] {
@@ -410,8 +443,9 @@ func (self *World) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 							}
 
 							gl.PushMatrix()
+
 							gl.Translatef(float32(x), float32(y), float32(z))
-							TerrainCube(n, s, w, e, u, d, blockid, selectedFace)
+							TerrainCube(neighbours, blockid, selectedFace)
 							count++
 							gl.PopMatrix()
 						}

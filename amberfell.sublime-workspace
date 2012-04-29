@@ -43,7 +43,7 @@
 			"file": "amberfell.go",
 			"settings":
 			{
-				"buffer_size": 3432,
+				"buffer_size": 3454,
 				"line_ending": "Unix"
 			}
 		},
@@ -51,7 +51,31 @@
 			"file": "player.go",
 			"settings":
 			{
-				"buffer_size": 7098,
+				"buffer_size": 9888,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "shapes.go",
+			"settings":
+			{
+				"buffer_size": 16690,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "mob.go",
+			"settings":
+			{
+				"buffer_size": 3615,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "constants.go",
+			"settings":
+			{
+				"buffer_size": 2082,
 				"line_ending": "Unix"
 			}
 		}
@@ -84,6 +108,7 @@
 	},
 	"file_history":
 	[
+		"/home/iand/wip/amberfell/res/player-texture-guide.txt",
 		"/home/iand/wip/amberfell/amberfell.go",
 		"/home/iand/wip/amberfell/constants.go",
 		"/home/iand/wip/amberfell/amberfell.sublime-workspace",
@@ -210,8 +235,7 @@
 		"/home/iand/bin/craftbukkit/plugins/OtherDrops/includes/od-undead_chaos.yml",
 		"/home/iand/bin/craftbukkit/plugins/OtherDrops/includes/od-fix_undroppables.yml",
 		"/home/iand/bin/craftbukkit/plugins/OtherDrops/includes/od-ore_extraction.yml",
-		"/home/iand/bin/craftbukkit/plugins/OtherDrops/includes/od-goldtools-smelt.yml",
-		"/home/iand/bin/craftbukkit/plugins/OtherDrops/includes/od-goldtools-basic.yml"
+		"/home/iand/bin/craftbukkit/plugins/OtherDrops/includes/od-goldtools-smelt.yml"
 	],
 	"find":
 	{
@@ -421,7 +445,6 @@
 	"groups":
 	[
 		{
-			"selected": 0,
 			"sheets":
 			[
 				{
@@ -429,15 +452,96 @@
 					"file": "amberfell.go",
 					"settings":
 					{
-						"buffer_size": 3432,
+						"buffer_size": 3454,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								3064,
+								3064
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 1823.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "player.go",
+					"settings":
+					{
+						"buffer_size": 9888,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								3326,
+								3326
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 1524.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "shapes.go",
+					"settings":
+					{
+						"buffer_size": 16690,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								14274,
+								14274
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 6774.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "mob.go",
+					"settings":
+					{
+						"buffer_size": 3615,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								348,
+								348
 							]
 						],
 						"settings":
@@ -452,19 +556,19 @@
 					"type": "text"
 				},
 				{
-					"buffer": 1,
-					"file": "player.go",
+					"buffer": 4,
+					"file": "constants.go",
 					"settings":
 					{
-						"buffer_size": 7098,
+						"buffer_size": 2082,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								1821,
+								1836
 							]
 						],
 						"settings":
@@ -473,7 +577,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 1178.0,
+						"translation.y": 728.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -512,6 +616,10 @@
 		]
 	},
 	"menu_visible": true,
+	"output.exec":
+	{
+		"height": 98.0
+	},
 	"replace":
 	{
 		"height": 62.0

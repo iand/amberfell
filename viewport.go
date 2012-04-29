@@ -126,7 +126,7 @@ func (self *Viewport) SelectedBlockFace() *BlockFace {
 	if origin != nil {
 		pos := IntPosition(ThePlayer.position)
 		ray := Ray{origin, &norm}
-		reach := int16(4)
+		reach := int16(5)
 
 		// See http://www.dyn-lab.com/articles/pick-selection.html
 		var box *Box = nil
@@ -150,7 +150,7 @@ func (self *Viewport) SelectedBlockFace() *BlockFace {
 										&Vectorf{float64(pos[XAXIS]+dx) + 0.5, float64(pos[YAXIS]+dy) + 0.5, float64(pos[ZAXIS]+dz) + 0.5}}
 
 									hit, trialFace := ray.HitsBox(trialBox)
-									if hit /*&& TheWorld.AirNeighbour(pos[XAXIS]+dx, pos[YAXIS]+dy, pos[ZAXIS]+dz, face)*/ {
+									if hit  {
 										distance = trialDistance
 										box = trialBox
 										face = trialFace

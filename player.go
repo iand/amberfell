@@ -39,7 +39,7 @@ func (self *Player) Init(heading float64, x int16, z int16, y int16) {
 
 	self.equippedItems[0] = BLOCK_DIRT
 	self.equippedItems[1] = BLOCK_STONE
-	self.equippedItems[2] = ITEM_NONE
+	self.equippedItems[2] = BLOCK_LOG_WALL
 	self.equippedItems[3] = ITEM_NONE
 	self.equippedItems[4] = ITEM_NONE
 	self.equippedItems[5] = ITEM_NONE
@@ -262,11 +262,8 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 	case ACTION_BREAK:
 		blockid := TheWorld.Atv(selectedBlockFace.pos)
 		if blockid != BLOCK_AIR {
-
-			println("Hitting ", selectedBlockFace.pos.String())
 			interactingBlockFace.hitCount++
 			if interactingBlockFace.hitCount >= TerrainBlocks[uint16(blockid)].hitsNeeded {
-				println("Breaking at ", selectedBlockFace.pos.String())
 				TheWorld.Setv(selectedBlockFace.pos, BLOCK_AIR)
 				self.inventory[blockid]++
 				interactingBlockFace.hitCount = 0
@@ -288,7 +285,6 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 			selectedBlockFace.pos[XAXIS]--
 		}
 		if TheWorld.Atv(selectedBlockFace.pos) == BLOCK_AIR {
-			println("Setting at ", selectedBlockFace.pos.String())
 			TheWorld.Setv(selectedBlockFace.pos, byte(self.currentItem))
 		}
 	}

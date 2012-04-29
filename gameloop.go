@@ -142,7 +142,7 @@ func GameLoop() {
 			debugModekeyLock = false
 
 			// If player is breaking a block then allow them to hold mouse down to continue action
-			if interactingBlock != nil {
+			if interactingBlock != nil && ThePlayer.currentAction == ACTION_BREAK {
 				mouseState := sdl.GetMouseState(nil, nil)
 				if mouseState == 1 {
 					if ThePlayer.CanInteract() {
