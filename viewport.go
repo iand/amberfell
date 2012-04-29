@@ -132,15 +132,13 @@ func (self *Viewport) SelectedBlockFace() *BlockFace {
 		var box *Box = nil
 		distance := float64(1e9)
 		face := uint8(0)
-		for dy := reach; dy > -(reach+1); dy-- {
+		for dy := reach; dy > -(reach + 1); dy-- {
 			for dz := -reach; dz < reach+1; dz++ {
 				for dx := -reach; dx < reach+1; dx++ {
-					if dy*dy + dz*dz+dx*dx <= reach*reach {
+					if dy*dy+dz*dz+dx*dx <= reach*reach {
 						blockDirection := Vectorf{float64(dx), float64(dy), float64(dz)}
 
-
 						if ThePlayer.Facing(blockDirection) && blockDirection.Magnitude() <= float64(reach) {
-
 
 							trialDistance := math.Sqrt(math.Pow(float64(pos[XAXIS]+dx)-origin[0], 2) + math.Pow(float64(pos[YAXIS]+dy)-origin[1], 2) + math.Pow(float64(pos[ZAXIS]+dz)-origin[2], 2))
 							if trialDistance < distance {
@@ -150,7 +148,7 @@ func (self *Viewport) SelectedBlockFace() *BlockFace {
 										&Vectorf{float64(pos[XAXIS]+dx) + 0.5, float64(pos[YAXIS]+dy) + 0.5, float64(pos[ZAXIS]+dz) + 0.5}}
 
 									hit, trialFace := ray.HitsBox(trialBox)
-									if hit  {
+									if hit {
 										distance = trialDistance
 										box = trialBox
 										face = trialFace

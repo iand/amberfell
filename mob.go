@@ -10,11 +10,11 @@ import (
 )
 
 type MobData struct {
-	heading  float64
-	position Vectorf
-	velocity Vectorf
-	falling  bool
-	walkingSpeed  float64
+	heading      float64
+	position     Vectorf
+	velocity     Vectorf
+	falling      bool
+	walkingSpeed float64
 	walkSequence float64
 }
 
@@ -29,9 +29,6 @@ func (self *MobData) Position() Vectorf { return self.position }
 
 func (self *MobData) SetFalling(b bool) { self.falling = b }
 func (self *MobData) IsFalling() bool   { return self.falling }
-
-
-
 
 func (self *MobData) Rotate(angle float64) {
 	self.heading += angle
@@ -117,15 +114,15 @@ func (self *MobData) Update(dt float64) {
 	self.position[ZAXIS] += self.velocity[ZAXIS] * dt
 
 	for i := 0; i < 3; i++ {
-		if math.Abs(self.velocity[i]) < 0.02 { 
+		if math.Abs(self.velocity[i]) < 0.02 {
 			self.velocity[i] = 0
 		}
 	}
 
 	if self.velocity[XAXIS] != 0 || self.velocity[ZAXIS] != 0 {
 		self.walkSequence += 2 * math.Pi * dt
-		if self.walkSequence > 2 * math.Pi {
-			self.walkSequence -= 2*math.Pi 
+		if self.walkSequence > 2*math.Pi {
+			self.walkSequence -= 2 * math.Pi
 		}
 	} else {
 		self.walkSequence = 0

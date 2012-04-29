@@ -6,9 +6,9 @@
 package main
 
 import (
-	"testing"
 	"fmt"
 	"math"
+	"testing"
 )
 
 func TestMatrixAdd(t *testing.T) {
@@ -180,17 +180,5 @@ func TestHitsBox2(t *testing.T) {
 	// Ray origin: 24.588263, 13.833055, 0.603553
 	// Ray norm: -0.774813, -0.422618, 0.470168
 	// box: {%!s(*main.Vectorf=&[8.5 3.5 9.5]) %!s(*main.Vectorf=&[9.5 6.5 10.5])}
-
-}
-
-
-func TestDotProducts(t *testing.T) {
-	a := Vectorf{1, 0, 0}
-
-	fmt.Printf("Same direction: %.2f\n", a.Dot(Vectorf{1, 0, 0}))
-	fmt.Printf("Left: %.2f\n", a.Dot(Vectorf{0, 0, -1}))
-	fmt.Printf("Right: %.2f\n", a.Dot(Vectorf{0, 0, 11}))
-	fmt.Printf("Opposite: %.2f\n", a.Dot(Vectorf{-1, 0, 0}))
-	fmt.Printf("Opposite, left: %.2f\n", a.Dot(Vectorf{math.Cos(, 0, -1}))
 
 }

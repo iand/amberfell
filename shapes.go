@@ -18,15 +18,15 @@ var (
 )
 
 type TerrainBlock struct {
-	id         byte
-	name       string
-	utexture   *gl.Texture
-	dtexture   *gl.Texture
-	ntexture   *gl.Texture
-	stexture   *gl.Texture
-	etexture   *gl.Texture
-	wtexture   *gl.Texture
-	hitsNeeded byte
+	id          byte
+	name        string
+	utexture    *gl.Texture
+	dtexture    *gl.Texture
+	ntexture    *gl.Texture
+	stexture    *gl.Texture
+	etexture    *gl.Texture
+	wtexture    *gl.Texture
+	hitsNeeded  byte
 	transparent bool
 }
 
@@ -81,10 +81,10 @@ func LoadPlayerTextures() {
 	textures[TEXTURE_HEAD_RIGHT] = imageSectionToTexture(img, image.Rect(3*unit+1, unit+1, 4*unit, 2*unit))
 	textures[TEXTURE_HEAD_BOTTOM] = imageSectionToTexture(img, image.Rect(4*unit+1, unit+1, 5*unit, 2*unit))
 
-	textures[TEXTURE_TORSO_FRONT] = imageSectionToTexture(img, image.Rect(0, 2*unit+1, 2*unit, 5 * unit + unit / 4))
-	textures[TEXTURE_TORSO_LEFT] = imageSectionToTexture(img, image.Rect(2*unit+1, 2*unit+1, 3*unit, 5 * unit + unit / 4))
-	textures[TEXTURE_TORSO_BACK] = imageSectionToTexture(img, image.Rect(3*unit+1, 2*unit+1, 5*unit, 5 * unit + unit / 4))
-	textures[TEXTURE_TORSO_RIGHT] = imageSectionToTexture(img, image.Rect(5*unit+1, 2*unit+1, 6*unit, 5 * unit + unit / 4))
+	textures[TEXTURE_TORSO_FRONT] = imageSectionToTexture(img, image.Rect(0, 2*unit+1, 2*unit, 5*unit+unit/4))
+	textures[TEXTURE_TORSO_LEFT] = imageSectionToTexture(img, image.Rect(2*unit+1, 2*unit+1, 3*unit, 5*unit+unit/4))
+	textures[TEXTURE_TORSO_BACK] = imageSectionToTexture(img, image.Rect(3*unit+1, 2*unit+1, 5*unit, 5*unit+unit/4))
+	textures[TEXTURE_TORSO_RIGHT] = imageSectionToTexture(img, image.Rect(5*unit+1, 2*unit+1, 6*unit, 5*unit+unit/4))
 	textures[TEXTURE_TORSO_TOP] = imageSectionToTexture(img, image.Rect(32, 64, 55, 75))
 
 	textures[TEXTURE_LEG] = imageSectionToTexture(img, image.Rect(0, 64, 11, 105))
@@ -93,9 +93,6 @@ func LoadPlayerTextures() {
 	textures[TEXTURE_ARM_TOP] = imageSectionToTexture(img, image.Rect(56, 64, 64, 72))
 	textures[TEXTURE_BRIM] = imageSectionToTexture(img, image.Rect(31, 76, 49, 78))
 	textures[TEXTURE_HAND] = imageSectionToTexture(img, image.Rect(23, 97, 31, 105))
-
-
-
 
 }
 
@@ -233,7 +230,6 @@ func TerrainCube(neighbours [6]uint16, blockid byte, selectedFace uint8) {
 
 	block := TerrainBlocks[uint16(blockid)]
 
-
 	switch blockid {
 	case BLOCK_LOG_WALL:
 		if neighbours[NORTH_FACE] != BLOCK_AIR {
@@ -246,7 +242,7 @@ func TerrainCube(neighbours [6]uint16, blockid byte, selectedFace uint8) {
 						// Blocks to north, east, south
 						WallTee(ORIENT_SOUTH, block.etexture, block.wtexture, block.ntexture, block.stexture, block.utexture, block.dtexture, selectedFace)
 					}
-				} else if neighbours[WEST_FACE] != BLOCK_AIR { 
+				} else if neighbours[WEST_FACE] != BLOCK_AIR {
 					// Blocks to north, east, west
 					WallTee(ORIENT_EAST, block.etexture, block.wtexture, block.ntexture, block.stexture, block.utexture, block.dtexture, selectedFace)
 				} else {
@@ -329,12 +325,7 @@ func TerrainCube(neighbours [6]uint16, blockid byte, selectedFace uint8) {
 		Cuboid(1, 1, 1, etexture, wtexture, ntexture, stexture, utexture, dtexture, selectedFace)
 	}
 
-
 }
-
-
-
-
 
 func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *gl.Texture, ntexture *gl.Texture, stexture *gl.Texture, utexture *gl.Texture, dtexture *gl.Texture, selectedFace uint8) {
 	w, h, d := float32(bw)/2, float32(bh)/2, float32(bd)/2
@@ -475,7 +466,7 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 
 		// +d/-w     0/-w   -d/-w
 		// +d/0      0/0    -d/0
-        // +d/+w     0/+w   -d/+w
+		// +d/+w     0/+w   -d/+w
 
 		// Texture
 		// 0.0/1.0    0.0/0.5   0.0/0.0
@@ -499,9 +490,6 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 		gl.TexCoord2f(0.5, 1.0)
 		gl.Vertex3f(d, h, 0) // Top Right Of The Texture and Quad
 
-
-
-
 		gl.Normal3f(0.0, 1.0, 0.0)
 		gl.TexCoord2f(0.5, 1.0)
 		gl.Vertex3f(d, h, 0) // Top Left Of The Texture and Quad
@@ -517,8 +505,6 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 		gl.Normal3f(0.0, 1.0, 0.0)
 		gl.TexCoord2f(1.0, 1.0)
 		gl.Vertex3f(d, h, w) // Top Right Of The Texture and Quad
-
-
 
 		gl.Normal3f(0.0, 1.0, 0.0)
 		gl.TexCoord2f(0.5, 0.5)
@@ -536,12 +522,9 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 		gl.TexCoord2f(1.0, 0.5)
 		gl.Vertex3f(0, h, w) // Top Right Of The Texture and Quad
 
-
-
-
 		// +d/-w     0/-w   -d/-w
 		// +d/0      0/0    -d/0
-        // +d/+w     0/+w   -d/+w
+		// +d/+w     0/+w   -d/+w
 
 		// Texture
 		// 0.0/1.0    0.0/0.5   0.0/0.0
@@ -630,17 +613,17 @@ func CheckGLError() {
 func Line(v Vectorf) {
 
 	gl.Begin(gl.LINE)
-	gl.Vertex3f(0,0,0)
+	gl.Vertex3f(0, 0, 0)
 	gl.Vertex3f(float32(v[XAXIS]), float32(v[YAXIS]), float32(v[ZAXIS]))
 	gl.End()
 }
 
 func WallSingle(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntexture *gl.Texture, stexture *gl.Texture, utexture *gl.Texture, dtexture *gl.Texture, selectedFace uint8) {
-	var ppp, pp, p float32 = 1.0/2, 2.0/3/2, 1.0/3/2
+	var ppp, pp, p float32 = 1.0 / 2, 2.0 / 3 / 2, 1.0 / 3 / 2
 
 	_ = pp
 
-	gl.PushMatrix()	
+	gl.PushMatrix()
 	if orient == ORIENT_NORTH {
 		gl.Rotated(90, 0.0, 1.0, 0.0)
 	} else if orient == ORIENT_WEST {
@@ -663,7 +646,7 @@ func WallSingle(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntextur
 		gl.TexCoord2f(2.0/3, 1)
 		gl.Vertex3f(ppp, -ppp, -p)
 		gl.TexCoord2f(2.0/3, 0)
-		gl.Vertex3f(ppp, ppp, -p) 
+		gl.Vertex3f(ppp, ppp, -p)
 		gl.TexCoord2f(1.0/3, 0)
 		gl.Vertex3f(ppp, ppp, p)
 		gl.TexCoord2f(1.0/3, 1)
@@ -686,7 +669,7 @@ func WallSingle(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntextur
 		gl.TexCoord2f(2.0/3, 1)
 		gl.Vertex3f(-ppp, -ppp, -p)
 		gl.TexCoord2f(2.0/3, 0)
-		gl.Vertex3f(-ppp, ppp, -p) 
+		gl.Vertex3f(-ppp, ppp, -p)
 		gl.TexCoord2f(1.0/3, 0)
 		gl.Vertex3f(-ppp, ppp, p)
 		gl.TexCoord2f(1.0/3, 1)
@@ -709,7 +692,7 @@ func WallSingle(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntextur
 		gl.TexCoord2f(1.0, 1.0)
 		gl.Vertex3f(-ppp, -ppp, -p)
 		gl.TexCoord2f(1.0, 0.0)
-		gl.Vertex3f(-ppp, ppp, -p) 
+		gl.Vertex3f(-ppp, ppp, -p)
 		gl.TexCoord2f(0.0, 0.0)
 		gl.Vertex3f(ppp, ppp, -p)
 		gl.TexCoord2f(0.0, 1.0)
@@ -732,7 +715,7 @@ func WallSingle(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntextur
 		gl.TexCoord2f(1.0, 1.0)
 		gl.Vertex3f(-ppp, -ppp, p)
 		gl.TexCoord2f(1.0, 0.0)
-		gl.Vertex3f(-ppp, ppp, p) 
+		gl.Vertex3f(-ppp, ppp, p)
 		gl.TexCoord2f(0.0, 0.0)
 		gl.Vertex3f(ppp, ppp, p)
 		gl.TexCoord2f(0.0, 1.0)
@@ -756,7 +739,7 @@ func WallSingle(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntextur
 		gl.TexCoord2f(1.0, 2.0/3)
 		gl.Vertex3f(-ppp, ppp, -p)
 		gl.TexCoord2f(0, 2.0/3)
-		gl.Vertex3f(ppp, ppp, -p) 
+		gl.Vertex3f(ppp, ppp, -p)
 		gl.TexCoord2f(0, 1.0/3)
 		gl.Vertex3f(ppp, ppp, p)
 		gl.TexCoord2f(1.0, 1.0/3)
@@ -779,7 +762,7 @@ func WallSingle(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntextur
 		gl.TexCoord2f(2.0/3, 2.0/3)
 		gl.Vertex3f(-ppp, -ppp, -p)
 		gl.TexCoord2f(2.0/3, 1.0/3)
-		gl.Vertex3f(ppp, -ppp, -p) 
+		gl.Vertex3f(ppp, -ppp, -p)
 		gl.TexCoord2f(1.0/3, 1.0/3)
 		gl.Vertex3f(ppp, -ppp, p)
 		gl.TexCoord2f(1.0/3, 2.0/3)
@@ -788,16 +771,15 @@ func WallSingle(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntextur
 		dtexture.Unbind(gl.TEXTURE_2D)
 	}
 
-	gl.PopMatrix()	
+	gl.PopMatrix()
 }
 
-
 func WallTee(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntexture *gl.Texture, stexture *gl.Texture, utexture *gl.Texture, dtexture *gl.Texture, selectedFace uint8) {
-	var ppp, pp, p float32 = 1.0/2, 2.0/3/2, 1.0/3/2
+	var ppp, pp, p float32 = 1.0 / 2, 2.0 / 3 / 2, 1.0 / 3 / 2
 
 	_ = pp
 
-	gl.PushMatrix()	
+	gl.PushMatrix()
 	if orient == ORIENT_NORTH {
 		gl.Rotated(90, 0.0, 1.0, 0.0)
 	} else if orient == ORIENT_WEST {
@@ -820,7 +802,7 @@ func WallTee(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntexture *
 		gl.TexCoord2f(2.0/3, 2.0/3)
 		gl.Vertex3f(ppp, -ppp, -p)
 		gl.TexCoord2f(2.0/3, 1.0/3)
-		gl.Vertex3f(ppp, ppp, -p) 
+		gl.Vertex3f(ppp, ppp, -p)
 		gl.TexCoord2f(1.0/3, 1.0/3)
 		gl.Vertex3f(ppp, ppp, p)
 		gl.TexCoord2f(1.0/3, 2.0/3)
@@ -843,7 +825,7 @@ func WallTee(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntexture *
 		gl.TexCoord2f(2.0/3, 2.0/3)
 		gl.Vertex3f(-ppp, -ppp, -p)
 		gl.TexCoord2f(2.0/3, 1.0/3)
-		gl.Vertex3f(-ppp, ppp, -p) 
+		gl.Vertex3f(-ppp, ppp, -p)
 		gl.TexCoord2f(1.0/3, 1.0/3)
 		gl.Vertex3f(-ppp, ppp, p)
 		gl.TexCoord2f(1.0/3, 2.0/3)
@@ -866,7 +848,7 @@ func WallTee(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntexture *
 		gl.TexCoord2f(1.0, 1.0)
 		gl.Vertex3f(-p, -ppp, -ppp)
 		gl.TexCoord2f(1.0, 0.0)
-		gl.Vertex3f(-p, ppp, -ppp) 
+		gl.Vertex3f(-p, ppp, -ppp)
 		gl.TexCoord2f(0.0, 0.0)
 		gl.Vertex3f(p, ppp, -ppp)
 		gl.TexCoord2f(0.0, 1.0)
@@ -875,7 +857,7 @@ func WallTee(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntexture *
 		gl.TexCoord2f(2.0/3, 2.0/3)
 		gl.Vertex3f(-ppp, -ppp, -p)
 		gl.TexCoord2f(2.0/3, 1.0/3)
-		gl.Vertex3f(-ppp, ppp, -p) 
+		gl.Vertex3f(-ppp, ppp, -p)
 		gl.TexCoord2f(1.0/3, 1.0/3)
 		gl.Vertex3f(-p, ppp, -p)
 		gl.TexCoord2f(1.0/3, 2.0/3)
@@ -884,7 +866,7 @@ func WallTee(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntexture *
 		gl.TexCoord2f(2.0/3, 2.0/3)
 		gl.Vertex3f(p, -ppp, -p)
 		gl.TexCoord2f(2.0/3, 1.0/3)
-		gl.Vertex3f(p, ppp, -p) 
+		gl.Vertex3f(p, ppp, -p)
 		gl.TexCoord2f(1.0/3, 1.0/3)
 		gl.Vertex3f(ppp, ppp, -p)
 		gl.TexCoord2f(1.0/3, 2.0/3)
@@ -894,7 +876,7 @@ func WallTee(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntexture *
 		gl.TexCoord2f(2.0/3, 2.0/3)
 		gl.Vertex3f(-p, -ppp, -ppp)
 		gl.TexCoord2f(2.0/3, 1.0/3)
-		gl.Vertex3f(-p, ppp, -ppp) 
+		gl.Vertex3f(-p, ppp, -ppp)
 		gl.TexCoord2f(1.0/3, 1.0/3)
 		gl.Vertex3f(-p, ppp, -p)
 		gl.TexCoord2f(1.0/3, 2.0/3)
@@ -904,7 +886,7 @@ func WallTee(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntexture *
 		gl.TexCoord2f(2.0/3, 2.0/3)
 		gl.Vertex3f(p, -ppp, -ppp)
 		gl.TexCoord2f(2.0/3, 1.0/3)
-		gl.Vertex3f(p, ppp, -ppp) 
+		gl.Vertex3f(p, ppp, -ppp)
 		gl.TexCoord2f(1.0/3, 1.0/3)
 		gl.Vertex3f(p, ppp, -p)
 		gl.TexCoord2f(1.0/3, 2.0/3)
@@ -928,7 +910,7 @@ func WallTee(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntexture *
 		gl.TexCoord2f(1.0, 1.0)
 		gl.Vertex3f(-ppp, -ppp, p)
 		gl.TexCoord2f(1.0, 0.0)
-		gl.Vertex3f(-ppp, ppp, p) 
+		gl.Vertex3f(-ppp, ppp, p)
 		gl.TexCoord2f(0.0, 0.0)
 		gl.Vertex3f(ppp, ppp, p)
 		gl.TexCoord2f(0.0, 1.0)
@@ -952,7 +934,7 @@ func WallTee(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntexture *
 		gl.TexCoord2f(2.0/3, 1)
 		gl.Vertex3f(-ppp, ppp, -p)
 		gl.TexCoord2f(2.0/3, 0)
-		gl.Vertex3f(ppp, ppp, -p) 
+		gl.Vertex3f(ppp, ppp, -p)
 		gl.TexCoord2f(1.0/3, 0)
 		gl.Vertex3f(ppp, ppp, p)
 		gl.TexCoord2f(1.0/3, 1)
@@ -961,7 +943,7 @@ func WallTee(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntexture *
 		gl.TexCoord2f(2.0/3, 2.0/3)
 		gl.Vertex3f(-p, ppp, -ppp)
 		gl.TexCoord2f(2.0/3, 1.0/3)
-		gl.Vertex3f(p, ppp, -ppp) 
+		gl.Vertex3f(p, ppp, -ppp)
 		gl.TexCoord2f(1.0/3, 1.0/3)
 		gl.Vertex3f(p, ppp, -p)
 		gl.TexCoord2f(1.0/3, 2.0/3)
@@ -985,7 +967,7 @@ func WallTee(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntexture *
 		gl.TexCoord2f(2.0/3, 2.0/3)
 		gl.Vertex3f(-ppp, -ppp, -p)
 		gl.TexCoord2f(2.0/3, 1.0/3)
-		gl.Vertex3f(ppp, -ppp, -p) 
+		gl.Vertex3f(ppp, -ppp, -p)
 		gl.TexCoord2f(1.0/3, 1.0/3)
 		gl.Vertex3f(ppp, -ppp, p)
 		gl.TexCoord2f(1.0/3, 2.0/3)
@@ -994,7 +976,7 @@ func WallTee(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntexture *
 		gl.TexCoord2f(2.0/3, 2.0/3)
 		gl.Vertex3f(-p, -ppp, -ppp)
 		gl.TexCoord2f(2.0/3, 1.0/3)
-		gl.Vertex3f(p, -ppp, -ppp) 
+		gl.Vertex3f(p, -ppp, -ppp)
 		gl.TexCoord2f(1.0/3, 1.0/3)
 		gl.Vertex3f(p, -ppp, -p)
 		gl.TexCoord2f(1.0/3, 2.0/3)
@@ -1004,16 +986,15 @@ func WallTee(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntexture *
 		dtexture.Unbind(gl.TEXTURE_2D)
 	}
 
-	gl.PopMatrix()	
+	gl.PopMatrix()
 }
 
-
 func WallCorner(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntexture *gl.Texture, stexture *gl.Texture, utexture *gl.Texture, dtexture *gl.Texture, selectedFace uint8) {
-	var ppp, pp, p float32 = 1.0/2, 2.0/3/2, 1.0/3/2
+	var ppp, pp, p float32 = 1.0 / 2, 2.0 / 3 / 2, 1.0 / 3 / 2
 
 	_ = pp
 
-	gl.PushMatrix()	
+	gl.PushMatrix()
 	if orient == ORIENT_NORTH {
 		gl.Rotated(90, 0.0, 1.0, 0.0)
 	} else if orient == ORIENT_WEST {
@@ -1036,7 +1017,7 @@ func WallCorner(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntextur
 		gl.TexCoord2f(2.0/3, 2.0/3)
 		gl.Vertex3f(ppp, -ppp, -p)
 		gl.TexCoord2f(2.0/3, 1.0/3)
-		gl.Vertex3f(ppp, ppp, -p) 
+		gl.Vertex3f(ppp, ppp, -p)
 		gl.TexCoord2f(1.0/3, 1.0/3)
 		gl.Vertex3f(ppp, ppp, p)
 		gl.TexCoord2f(1.0/3, 2.0/3)
@@ -1059,7 +1040,7 @@ func WallCorner(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntextur
 		gl.TexCoord2f(2.0/3, 1)
 		gl.Vertex3f(-p, -ppp, -ppp)
 		gl.TexCoord2f(2.0/3, 0)
-		gl.Vertex3f(-p, ppp, -ppp) 
+		gl.Vertex3f(-p, ppp, -ppp)
 		gl.TexCoord2f(0, 0)
 		gl.Vertex3f(-p, ppp, p)
 		gl.TexCoord2f(0, 1)
@@ -1082,7 +1063,7 @@ func WallCorner(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntextur
 		gl.TexCoord2f(1.0, 1.0)
 		gl.Vertex3f(-p, -ppp, -ppp)
 		gl.TexCoord2f(1.0, 0.0)
-		gl.Vertex3f(-p, ppp, -ppp) 
+		gl.Vertex3f(-p, ppp, -ppp)
 		gl.TexCoord2f(0.0, 0.0)
 		gl.Vertex3f(p, ppp, -ppp)
 		gl.TexCoord2f(0.0, 1.0)
@@ -1091,7 +1072,7 @@ func WallCorner(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntextur
 		gl.TexCoord2f(1.0, 1.0)
 		gl.Vertex3f(p, -ppp, -p)
 		gl.TexCoord2f(1.0, 0.0)
-		gl.Vertex3f(p, ppp, -p) 
+		gl.Vertex3f(p, ppp, -p)
 		gl.TexCoord2f(0.0, 0.0)
 		gl.Vertex3f(ppp, ppp, -p)
 		gl.TexCoord2f(0.0, 1.0)
@@ -1101,7 +1082,7 @@ func WallCorner(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntextur
 		gl.TexCoord2f(2.0/3, 2.0/3)
 		gl.Vertex3f(p, -ppp, -ppp)
 		gl.TexCoord2f(2.0/3, 1.0/3)
-		gl.Vertex3f(p, ppp, -ppp) 
+		gl.Vertex3f(p, ppp, -ppp)
 		gl.TexCoord2f(1.0/3, 1.0/3)
 		gl.Vertex3f(p, ppp, -p)
 		gl.TexCoord2f(1.0/3, 2.0/3)
@@ -1125,7 +1106,7 @@ func WallCorner(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntextur
 		gl.TexCoord2f(1.0, 1.0)
 		gl.Vertex3f(-p, -ppp, p)
 		gl.TexCoord2f(1.0, 0.0)
-		gl.Vertex3f(-p, ppp, p) 
+		gl.Vertex3f(-p, ppp, p)
 		gl.TexCoord2f(0.0, 0.0)
 		gl.Vertex3f(ppp, ppp, p)
 		gl.TexCoord2f(0.0, 1.0)
@@ -1149,7 +1130,7 @@ func WallCorner(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntextur
 		gl.TexCoord2f(2.0/3, 2.0/3)
 		gl.Vertex3f(-p, ppp, -p)
 		gl.TexCoord2f(2.0/3, 0)
-		gl.Vertex3f(ppp, ppp, -p) 
+		gl.Vertex3f(ppp, ppp, -p)
 		gl.TexCoord2f(1.0/3, 0)
 		gl.Vertex3f(ppp, ppp, p)
 		gl.TexCoord2f(1.0/3, 2.0/3)
@@ -1158,7 +1139,7 @@ func WallCorner(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntextur
 		gl.TexCoord2f(2.0/3, 2.0/3)
 		gl.Vertex3f(-p, ppp, -ppp)
 		gl.TexCoord2f(2.0/3, 1.0/3)
-		gl.Vertex3f(p, ppp, -ppp) 
+		gl.Vertex3f(p, ppp, -ppp)
 		gl.TexCoord2f(1.0/3, 1.0/3)
 		gl.Vertex3f(p, ppp, -p)
 		gl.TexCoord2f(1.0/3, 2.0/3)
@@ -1182,7 +1163,7 @@ func WallCorner(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntextur
 		gl.TexCoord2f(2.0/3, 2.0/3)
 		gl.Vertex3f(-p, -ppp, -p)
 		gl.TexCoord2f(2.0/3, 1.0/3)
-		gl.Vertex3f(ppp, -ppp, -p) 
+		gl.Vertex3f(ppp, -ppp, -p)
 		gl.TexCoord2f(1.0/3, 1.0/3)
 		gl.Vertex3f(ppp, -ppp, p)
 		gl.TexCoord2f(1.0/3, 2.0/3)
@@ -1191,7 +1172,7 @@ func WallCorner(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntextur
 		gl.TexCoord2f(2.0/3, 2.0/3)
 		gl.Vertex3f(-p, -ppp, -ppp)
 		gl.TexCoord2f(2.0/3, 1.0/3)
-		gl.Vertex3f(p, -ppp, -ppp) 
+		gl.Vertex3f(p, -ppp, -ppp)
 		gl.TexCoord2f(1.0/3, 1.0/3)
 		gl.Vertex3f(p, -ppp, -p)
 		gl.TexCoord2f(1.0/3, 2.0/3)
@@ -1201,15 +1182,15 @@ func WallCorner(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntextur
 		dtexture.Unbind(gl.TEXTURE_2D)
 	}
 
-	gl.PopMatrix()	
+	gl.PopMatrix()
 }
 
 func WallCross(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntexture *gl.Texture, stexture *gl.Texture, utexture *gl.Texture, dtexture *gl.Texture, selectedFace uint8) {
-	var ppp, pp, p float32 = 1.0/2, 2.0/3/2, 1.0/3/2
+	var ppp, pp, p float32 = 1.0 / 2, 2.0 / 3 / 2, 1.0 / 3 / 2
 
 	_ = pp
 
-	gl.PushMatrix()	
+	gl.PushMatrix()
 	if orient == ORIENT_NORTH {
 		gl.Rotated(90, 0.0, 1.0, 0.0)
 	} else if orient == ORIENT_WEST {
@@ -1232,7 +1213,7 @@ func WallCross(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntexture
 		gl.TexCoord2f(2.0/3, 2.0/3)
 		gl.Vertex3f(ppp, -ppp, -p)
 		gl.TexCoord2f(2.0/3, 1.0/3)
-		gl.Vertex3f(ppp, ppp, -p) 
+		gl.Vertex3f(ppp, ppp, -p)
 		gl.TexCoord2f(1.0/3, 1.0/3)
 		gl.Vertex3f(ppp, ppp, p)
 		gl.TexCoord2f(1.0/3, 2.0/3)
@@ -1255,7 +1236,7 @@ func WallCross(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntexture
 		gl.TexCoord2f(2.0/3, 2.0/3)
 		gl.Vertex3f(-ppp, -ppp, -p)
 		gl.TexCoord2f(2.0/3, 1.0/3)
-		gl.Vertex3f(-ppp, ppp, -p) 
+		gl.Vertex3f(-ppp, ppp, -p)
 		gl.TexCoord2f(1.0/3, 1.0/3)
 		gl.Vertex3f(-ppp, ppp, p)
 		gl.TexCoord2f(1.0/3, 2.0/3)
@@ -1278,7 +1259,7 @@ func WallCross(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntexture
 		gl.TexCoord2f(1.0, 1.0)
 		gl.Vertex3f(-p, -ppp, -ppp)
 		gl.TexCoord2f(1.0, 0.0)
-		gl.Vertex3f(-p, ppp, -ppp) 
+		gl.Vertex3f(-p, ppp, -ppp)
 		gl.TexCoord2f(0.0, 0.0)
 		gl.Vertex3f(p, ppp, -ppp)
 		gl.TexCoord2f(0.0, 1.0)
@@ -1287,7 +1268,7 @@ func WallCross(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntexture
 		gl.TexCoord2f(2.0/3, 2.0/3)
 		gl.Vertex3f(-ppp, -ppp, -p)
 		gl.TexCoord2f(2.0/3, 1.0/3)
-		gl.Vertex3f(-ppp, ppp, -p) 
+		gl.Vertex3f(-ppp, ppp, -p)
 		gl.TexCoord2f(1.0/3, 1.0/3)
 		gl.Vertex3f(-p, ppp, -p)
 		gl.TexCoord2f(1.0/3, 2.0/3)
@@ -1296,7 +1277,7 @@ func WallCross(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntexture
 		gl.TexCoord2f(2.0/3, 2.0/3)
 		gl.Vertex3f(p, -ppp, -p)
 		gl.TexCoord2f(2.0/3, 1.0/3)
-		gl.Vertex3f(p, ppp, -p) 
+		gl.Vertex3f(p, ppp, -p)
 		gl.TexCoord2f(1.0/3, 1.0/3)
 		gl.Vertex3f(ppp, ppp, -p)
 		gl.TexCoord2f(1.0/3, 2.0/3)
@@ -1306,7 +1287,7 @@ func WallCross(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntexture
 		gl.TexCoord2f(2.0/3, 2.0/3)
 		gl.Vertex3f(-p, -ppp, -ppp)
 		gl.TexCoord2f(2.0/3, 1.0/3)
-		gl.Vertex3f(-p, ppp, -ppp) 
+		gl.Vertex3f(-p, ppp, -ppp)
 		gl.TexCoord2f(1.0/3, 1.0/3)
 		gl.Vertex3f(-p, ppp, -p)
 		gl.TexCoord2f(1.0/3, 2.0/3)
@@ -1316,7 +1297,7 @@ func WallCross(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntexture
 		gl.TexCoord2f(2.0/3, 2.0/3)
 		gl.Vertex3f(p, -ppp, -ppp)
 		gl.TexCoord2f(2.0/3, 1.0/3)
-		gl.Vertex3f(p, ppp, -ppp) 
+		gl.Vertex3f(p, ppp, -ppp)
 		gl.TexCoord2f(1.0/3, 1.0/3)
 		gl.Vertex3f(p, ppp, -p)
 		gl.TexCoord2f(1.0/3, 2.0/3)
@@ -1340,7 +1321,7 @@ func WallCross(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntexture
 		gl.TexCoord2f(1.0, 1.0)
 		gl.Vertex3f(-ppp, -ppp, p)
 		gl.TexCoord2f(1.0, 0.0)
-		gl.Vertex3f(-ppp, ppp, p) 
+		gl.Vertex3f(-ppp, ppp, p)
 		gl.TexCoord2f(0.0, 0.0)
 		gl.Vertex3f(ppp, ppp, p)
 		gl.TexCoord2f(0.0, 1.0)
@@ -1349,7 +1330,7 @@ func WallCross(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntexture
 		gl.TexCoord2f(2.0/3, 2.0/3)
 		gl.Vertex3f(-ppp, -ppp, p)
 		gl.TexCoord2f(2.0/3, 1.0/3)
-		gl.Vertex3f(-ppp, ppp, p) 
+		gl.Vertex3f(-ppp, ppp, p)
 		gl.TexCoord2f(1.0/3, 1.0/3)
 		gl.Vertex3f(-p, ppp, p)
 		gl.TexCoord2f(1.0/3, 1.0/3)
@@ -1358,7 +1339,7 @@ func WallCross(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntexture
 		gl.TexCoord2f(2.0/3, 2.0/3)
 		gl.Vertex3f(p, -ppp, p)
 		gl.TexCoord2f(2.0/3, 1.0/3)
-		gl.Vertex3f(p, ppp, p) 
+		gl.Vertex3f(p, ppp, p)
 		gl.TexCoord2f(1.0/3, 1.0/3)
 		gl.Vertex3f(ppp, ppp, p)
 		gl.TexCoord2f(1.0/3, 1.0/3)
@@ -1368,7 +1349,7 @@ func WallCross(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntexture
 		gl.TexCoord2f(2.0/3, 2.0/3)
 		gl.Vertex3f(-p, -ppp, ppp)
 		gl.TexCoord2f(2.0/3, 1.0/3)
-		gl.Vertex3f(-p, ppp, ppp) 
+		gl.Vertex3f(-p, ppp, ppp)
 		gl.TexCoord2f(1.0/3, 1.0/3)
 		gl.Vertex3f(-p, ppp, p)
 		gl.TexCoord2f(1.0/3, 2.0/3)
@@ -1378,13 +1359,11 @@ func WallCross(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntexture
 		gl.TexCoord2f(2.0/3, 2.0/3)
 		gl.Vertex3f(p, -ppp, ppp)
 		gl.TexCoord2f(2.0/3, 1.0/3)
-		gl.Vertex3f(p, ppp, ppp) 
+		gl.Vertex3f(p, ppp, ppp)
 		gl.TexCoord2f(1.0/3, 1.0/3)
 		gl.Vertex3f(p, ppp, p)
 		gl.TexCoord2f(1.0/3, 2.0/3)
 		gl.Vertex3f(p, -ppp, p)
-
-
 
 		gl.End()
 		stexture.Unbind(gl.TEXTURE_2D)
@@ -1405,7 +1384,7 @@ func WallCross(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntexture
 		gl.TexCoord2f(2.0/3, 1)
 		gl.Vertex3f(-ppp, ppp, -p)
 		gl.TexCoord2f(2.0/3, 0)
-		gl.Vertex3f(ppp, ppp, -p) 
+		gl.Vertex3f(ppp, ppp, -p)
 		gl.TexCoord2f(1.0/3, 0)
 		gl.Vertex3f(ppp, ppp, p)
 		gl.TexCoord2f(1.0/3, 1)
@@ -1414,7 +1393,7 @@ func WallCross(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntexture
 		gl.TexCoord2f(2.0/3, 2.0/3)
 		gl.Vertex3f(-p, ppp, -ppp)
 		gl.TexCoord2f(2.0/3, 1.0/3)
-		gl.Vertex3f(p, ppp, -ppp) 
+		gl.Vertex3f(p, ppp, -ppp)
 		gl.TexCoord2f(1.0/3, 1.0/3)
 		gl.Vertex3f(p, ppp, -p)
 		gl.TexCoord2f(1.0/3, 2.0/3)
@@ -1423,7 +1402,7 @@ func WallCross(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntexture
 		gl.TexCoord2f(2.0/3, 2.0/3)
 		gl.Vertex3f(-p, ppp, ppp)
 		gl.TexCoord2f(2.0/3, 1.0/3)
-		gl.Vertex3f(p, ppp, ppp) 
+		gl.Vertex3f(p, ppp, ppp)
 		gl.TexCoord2f(1.0/3, 1.0/3)
 		gl.Vertex3f(p, ppp, p)
 		gl.TexCoord2f(1.0/3, 2.0/3)
@@ -1447,7 +1426,7 @@ func WallCross(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntexture
 		gl.TexCoord2f(2.0/3, 1)
 		gl.Vertex3f(-ppp, -ppp, -p)
 		gl.TexCoord2f(2.0/3, 0)
-		gl.Vertex3f(ppp, -ppp, -p) 
+		gl.Vertex3f(ppp, -ppp, -p)
 		gl.TexCoord2f(1.0/3, 0)
 		gl.Vertex3f(ppp, -ppp, p)
 		gl.TexCoord2f(1.0/3, 1)
@@ -1456,7 +1435,7 @@ func WallCross(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntexture
 		gl.TexCoord2f(2.0/3, 2.0/3)
 		gl.Vertex3f(-p, -ppp, -ppp)
 		gl.TexCoord2f(2.0/3, 1.0/3)
-		gl.Vertex3f(p, -ppp, -ppp) 
+		gl.Vertex3f(p, -ppp, -ppp)
 		gl.TexCoord2f(1.0/3, 1.0/3)
 		gl.Vertex3f(p, -ppp, -p)
 		gl.TexCoord2f(1.0/3, 2.0/3)
@@ -1466,5 +1445,5 @@ func WallCross(orient byte, etexture *gl.Texture, wtexture *gl.Texture, ntexture
 		dtexture.Unbind(gl.TEXTURE_2D)
 	}
 
-	gl.PopMatrix()	
+	gl.PopMatrix()
 }

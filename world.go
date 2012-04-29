@@ -227,7 +227,6 @@ func (self *World) HasVisibleFaces(neighbours [6]uint16) bool {
 	return false
 }
 
-
 func (self *World) Neighbours(x int16, y int16, z int16) (neighbours [6]uint16) {
 
 	if self.ChunkLoadedFor(x-1, y, z) {
@@ -240,7 +239,7 @@ func (self *World) Neighbours(x int16, y int16, z int16) (neighbours [6]uint16) 
 		neighbours[EAST_FACE] = uint16(self.At(x+1, y, z))
 	} else {
 		neighbours[EAST_FACE] = BLOCK_AIR
-	}	
+	}
 
 	if self.ChunkLoadedFor(x, y, z-1) {
 		neighbours[NORTH_FACE] = uint16(self.At(x, y, z-1))
@@ -266,11 +265,8 @@ func (self *World) Neighbours(x int16, y int16, z int16) (neighbours [6]uint16) 
 		neighbours[DOWN_FACE] = BLOCK_AIR
 	}
 
-
 	return
 }
-
-
 
 // lineRectCollide( line, rect )
 //
