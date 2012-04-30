@@ -200,27 +200,27 @@ func (self *World) Grow(x int16, y int16, z int16, n int, s int, w int, e int, u
 func (self *World) HasVisibleFaces(neighbours [6]uint16) bool {
 
 	switch neighbours[WEST_FACE] {
-	case BLOCK_AIR, BLOCK_LOG_WALL:
+	case BLOCK_AIR, BLOCK_LOG_WALL, BLOCK_LOG_SLAB:
 		return true
 	}
 
 	switch neighbours[EAST_FACE] {
-	case BLOCK_AIR, BLOCK_LOG_WALL:
+	case BLOCK_AIR, BLOCK_LOG_WALL, BLOCK_LOG_SLAB:
 		return true
 	}
 
 	switch neighbours[NORTH_FACE] {
-	case BLOCK_AIR, BLOCK_LOG_WALL:
+	case BLOCK_AIR, BLOCK_LOG_WALL, BLOCK_LOG_SLAB:
 		return true
 	}
 
 	switch neighbours[SOUTH_FACE] {
-	case BLOCK_AIR, BLOCK_LOG_WALL:
+	case BLOCK_AIR, BLOCK_LOG_WALL, BLOCK_LOG_SLAB:
 		return true
 	}
 
 	switch neighbours[UP_FACE] {
-	case BLOCK_AIR, BLOCK_LOG_WALL:
+	case BLOCK_AIR, BLOCK_LOG_WALL, BLOCK_LOG_SLAB:
 		return true
 	}
 

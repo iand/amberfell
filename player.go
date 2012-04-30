@@ -40,7 +40,7 @@ func (self *Player) Init(heading float64, x int16, z int16, y int16) {
 	self.equippedItems[0] = BLOCK_DIRT
 	self.equippedItems[1] = BLOCK_STONE
 	self.equippedItems[2] = BLOCK_LOG_WALL
-	self.equippedItems[3] = ITEM_NONE
+	self.equippedItems[3] = BLOCK_LOG_SLAB
 	self.equippedItems[4] = ITEM_NONE
 	self.equippedItems[5] = ITEM_NONE
 	self.equippedItems[6] = ITEM_NONE
@@ -145,13 +145,14 @@ func (player *Player) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 		headPos := player.position.Add(Vectorf{0, headHeight * 9, 0})
 
 		blockDir := blockPos.Minus(headPos)
-
-		yrot := (math.Atan2(blockDir[XAXIS], blockDir[ZAXIS]) - math.Pi/2) * 180 / math.Pi
-		zrot, xrot := -12.0, -12.0
-		gl.Rotated(-player.Heading(), 0.0, 1.0, 0.0)
-		gl.Rotated(yrot, 0.0, 1.0, 0.0)
-		gl.Rotated(zrot, 0.0, 0.0, 1.0)
-		gl.Rotated(xrot, 1.0, 0.0, 0.0)
+		if player.Facing(blockDir) {
+			yrot := (math.Atan2(blockDir[XAXIS], blockDir[ZAXIS]) - math.Pi/2) * 180 / math.Pi
+			zrot, xrot := -12.0, -12.0
+			gl.Rotated(-player.Heading(), 0.0, 1.0, 0.0)
+			gl.Rotated(yrot, 0.0, 1.0, 0.0)
+			gl.Rotated(zrot, 0.0, 0.0, 1.0)
+			gl.Rotated(xrot, 1.0, 0.0, 0.0)
+		}
 	}
 
 	Cuboid(headHeight, headHeight, headHeight, textures[TEXTURE_HEAD_FRONT], textures[TEXTURE_HEAD_BACK], textures[TEXTURE_HEAD_LEFT], textures[TEXTURE_HEAD_RIGHT], nil, textures[TEXTURE_HEAD_BOTTOM], FACE_NONE)

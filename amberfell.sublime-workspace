@@ -51,7 +51,7 @@
 			"file": "player.go",
 			"settings":
 			{
-				"buffer_size": 9888,
+				"buffer_size": 9672,
 				"line_ending": "Unix"
 			}
 		},
@@ -59,7 +59,15 @@
 			"file": "shapes.go",
 			"settings":
 			{
-				"buffer_size": 16690,
+				"buffer_size": 46220,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "window.go",
+			"settings":
+			{
+				"buffer_size": 8469,
 				"line_ending": "Unix"
 			}
 		},
@@ -67,7 +75,7 @@
 			"file": "mob.go",
 			"settings":
 			{
-				"buffer_size": 3615,
+				"buffer_size": 3625,
 				"line_ending": "Unix"
 			}
 		},
@@ -75,7 +83,49 @@
 			"file": "constants.go",
 			"settings":
 			{
-				"buffer_size": 2082,
+				"buffer_size": 2236,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "world.go",
+			"settings":
+			{
+				"buffer_size": 15157,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "Searching 32 files for \"AirNeighbours\"\n\n/home/iand/wip/amberfell/world.go:\n  198  }\n  199  \n  200: func (self *World) AirNeighbours(x int16, z int16, y int16) (n, s, w, e, u, d bool) {\n  201  	neighbours := self.Neighbours(x, y, z)\n  202  \n  ...\n  463  					var blockid byte = self.At(x, y, z)\n  464  					if blockid != 0 {\n  465: 						var n, s, w, e, u, d bool = self.AirNeighbours(x, z, y)\n  466  						if n || s || w || e || u || d {\n  467  \n\n2 matches in 1 file\n\n\nSearching 32 files for \"AirNeighbour\"\n\n/home/iand/wip/amberfell/viewport.go:\n  151  \n  152  									hit, trialFace := ray.HitsBox(trialBox)\n  153: 									if hit /*&& TheWorld.AirNeighbour(pos[XAXIS]+dx, pos[YAXIS]+dy, pos[ZAXIS]+dz, face)*/ {\n  154  										distance = trialDistance\n  155  										box = trialBox\n\n/home/iand/wip/amberfell/world.go:\n  198  }\n  199  \n  200: func (self *World) AirNeighbours(x int16, y int16, z int16) (n, s, w, e, u, d bool) {\n  201  	neighbours := self.Neighbours(x, y, z)\n  202  \n  ...\n  235  \n  236  \n  237: func (self *World) AirNeighbour(x int16, z int16, y int16, face int) bool {\n  238  	if face == UP_FACE && self.ChunkLoadedFor(x, y+1, z) && self.At(x, y+1, z) == BLOCK_AIR {\n  239  		return true\n  ...\n  463  					var blockid byte = self.At(x, y, z)\n  464  					if blockid != 0 {\n  465: 						var n, s, w, e, u, d bool = self.AirNeighbours(x, y, z)\n  466  						if n || s || w || e || u || d {\n  467  \n\n4 matches across 2 files\n\n\nSearching 32 files for \"AirNeighbour\"\n\n/home/iand/wip/amberfell/viewport.go:\n  151  \n  152  									hit, trialFace := ray.HitsBox(trialBox)\n  153: 									if hit /*&& TheWorld.AirNeighbour(pos[XAXIS]+dx, pos[YAXIS]+dy, pos[ZAXIS]+dz, face)*/ {\n  154  										distance = trialDistance\n  155  										box = trialBox\n\n/home/iand/wip/amberfell/world.go:\n  198  }\n  199  \n  200: func (self *World) AirNeighbours(x int16, y int16, z int16) (n, s, w, e, u, d bool) {\n  201  	neighbours := self.Neighbours(x, y, z)\n  202  \n  ...\n  235  \n  236  \n  237: func (self *World) AirNeighbour(x int16, z int16, y int16, face int) bool {\n  238  	if face == UP_FACE && self.ChunkLoadedFor(x, y+1, z) && self.At(x, y+1, z) == BLOCK_AIR {\n  239  		return true\n  ...\n  463  					var blockid byte = self.At(x, y, z)\n  464  					if blockid != 0 {\n  465: 						var n, s, w, e, u, d bool = self.AirNeighbours(x, y, z)\n  466  						if n || s || w || e || u || d {\n  467  \n\n4 matches across 2 files\n",
+			"settings":
+			{
+				"buffer_size": 2425,
+				"line_ending": "Unix",
+				"name": "Find Results",
+				"scratch": true
+			}
+		},
+		{
+			"file": "viewport.go",
+			"settings":
+			{
+				"buffer_size": 5112,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "gameloop.go",
+			"settings":
+			{
+				"buffer_size": 4709,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "geometry_test.go",
+			"settings":
+			{
+				"buffer_size": 6099,
 				"line_ending": "Unix"
 			}
 		}
@@ -252,9 +302,12 @@
 	},
 	"find_state":
 	{
-		"case_sensitive": true,
+		"case_sensitive": false,
 		"find_history":
 		[
+			"Slab",
+			"AirNeighbour",
+			"AirNeighbours",
 			"tesselate",
 			"fps",
 			"update",
@@ -379,10 +432,7 @@
 			"3",
 			"3.0",
 			"1.5",
-			"6",
-			"auto",
-			"orth",
-			"1.5"
+			"6"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -445,6 +495,7 @@
 	"groups":
 	[
 		{
+			"selected": 6,
 			"sheets":
 			[
 				{
@@ -479,15 +530,15 @@
 					"file": "player.go",
 					"settings":
 					{
-						"buffer_size": 9888,
+						"buffer_size": 9672,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								3326,
-								3326
+								999,
+								999
 							]
 						],
 						"settings":
@@ -496,7 +547,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 1524.0,
+						"translation.y": 42.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -506,15 +557,15 @@
 					"file": "shapes.go",
 					"settings":
 					{
-						"buffer_size": 16690,
+						"buffer_size": 46220,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								14274,
-								14274
+								43031,
+								43031
 							]
 						],
 						"settings":
@@ -523,25 +574,25 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 6774.0,
+						"translation.y": 23454.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
 					"buffer": 3,
-					"file": "mob.go",
+					"file": "window.go",
 					"settings":
 					{
-						"buffer_size": 3615,
+						"buffer_size": 8469,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								348,
-								348
+								0,
+								0
 							]
 						],
 						"settings":
@@ -557,18 +608,18 @@
 				},
 				{
 					"buffer": 4,
-					"file": "constants.go",
+					"file": "mob.go",
 					"settings":
 					{
-						"buffer_size": 2082,
+						"buffer_size": 3625,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1821,
-								1836
+								0,
+								0
 							]
 						],
 						"settings":
@@ -577,7 +628,221 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 728.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "constants.go",
+					"settings":
+					{
+						"buffer_size": 2236,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								989,
+								989
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 86.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "world.go",
+					"settings":
+					{
+						"buffer_size": 15157,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								5338,
+								5338
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 2874.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"settings":
+					{
+						"buffer_size": 2425,
+						"regions":
+						{
+							"match":
+							{
+								"flags": 112,
+								"regions":
+								[
+									[
+										118,
+										131
+									],
+									[
+										370,
+										383
+									],
+									[
+										647,
+										659
+									],
+									[
+										868,
+										880
+									],
+									[
+										1038,
+										1050
+									],
+									[
+										1344,
+										1356
+									],
+									[
+										1626,
+										1638
+									],
+									[
+										1847,
+										1859
+									],
+									[
+										2017,
+										2029
+									],
+									[
+										2323,
+										2335
+									]
+								],
+								"scope": ""
+							}
+						},
+						"selection":
+						[
+							[
+								1622,
+								1622
+							]
+						],
+						"settings":
+						{
+							"detect_indentation": false,
+							"output_tag": 3,
+							"result_base_dir": "",
+							"result_file_regex": "^([A-Za-z\\\\/<].*):$",
+							"result_line_regex": "^ +([0-9]+):",
+							"scroll_past_end": true,
+							"syntax": "Packages/Default/Find Results.hidden-tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 735.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 8,
+					"file": "viewport.go",
+					"settings":
+					{
+						"buffer_size": 5112,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								4052,
+								4052
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 1734.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 9,
+					"file": "gameloop.go",
+					"settings":
+					{
+						"buffer_size": 4709,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								3255,
+								3255
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 1959.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 10,
+					"file": "geometry_test.go",
+					"settings":
+					{
+						"buffer_size": 6099,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 9.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -616,10 +881,6 @@
 		]
 	},
 	"menu_visible": true,
-	"output.exec":
-	{
-		"height": 98.0
-	},
 	"replace":
 	{
 		"height": 62.0

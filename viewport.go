@@ -42,8 +42,8 @@ func (self *Viewport) Reshape(width int, height int) {
 
 	self.lplane = -viewWidth / 2
 	self.rplane = viewWidth / 2
-	self.bplane = -viewHeight / 2
-	self.tplane = viewHeight / 2
+	self.bplane = -viewHeight / 4
+	self.tplane = 3 * viewHeight / 4
 
 	gl.Ortho(self.lplane, self.rplane, self.bplane, self.tplane, -20, 20)
 	gl.MatrixMode(gl.MODELVIEW)
@@ -138,7 +138,7 @@ func (self *Viewport) SelectedBlockFace() *BlockFace {
 					if dy*dy+dz*dz+dx*dx <= reach*reach {
 						blockDirection := Vectorf{float64(dx), float64(dy), float64(dz)}
 
-						if ThePlayer.Facing(blockDirection) && blockDirection.Magnitude() <= float64(reach) {
+						if /* ThePlayer.Facing(blockDirection) && */ blockDirection.Magnitude() <= float64(reach) {
 
 							trialDistance := math.Sqrt(math.Pow(float64(pos[XAXIS]+dx)-origin[0], 2) + math.Pow(float64(pos[YAXIS]+dy)-origin[1], 2) + math.Pow(float64(pos[ZAXIS]+dz)-origin[2], 2))
 							if trialDistance < distance {
