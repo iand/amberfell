@@ -69,7 +69,7 @@ func (self *World) Init() {
 		iw, id = self.RandomSquare()
 
 		self.Set(iw, GroundLevel, id, 1) // stone
-		self.Grow(iw, GroundLevel, id, 45, 45, 45, 40, 20, 4, byte(rand.Intn(2))+1)
+		self.Grow(iw, GroundLevel, id, 45, 45, 45, 40, 40, 40, byte(rand.Intn(2))+1)
 	}
 
 	for i := 0; i < 40; i++ {
@@ -158,29 +158,29 @@ func (self *World) RandomSquare() (x uint16, z uint16) {
 // up/down = +/- y
 
 func (self *World) Grow(x uint16, y uint16, z uint16, n int, s int, w int, e int, u int, d int, texture byte) {
-	if self.At(x+1, y-1, z) != 0 && rand.Intn(100) < e {
+	if y > 0 && x < MAP_RADIUS && self.At(x+1, y-1, z) != 0 && rand.Intn(100) < e {
 		self.Set(x+1, y, z, texture)
-		self.Grow(x+1, y, z, n, s, 0, e, u, d, texture)
+		self.Grow(x+1, y, z, n, s, 0, e-2, u, d, texture)
 	}
-	if self.At(x-1, y-1, z) != 0 && rand.Intn(100) < w {
+	if y > 0 && x > 0 && self.At(x-1, y-1, z) != 0 && rand.Intn(100) < w {
 		self.Set(x-1, y, z, texture)
-		self.Grow(x-1, y, z, n, s, w, 0, u, d, texture)
+		self.Grow(x-1, y, z, n, s, w-2, 0, u, d, texture)
 	}
-	if self.At(x, y-1, z+1) != 0 && rand.Intn(100) < s {
+	if y > 0 && z < MAP_RADIUS && self.At(x, y-1, z+1) != 0 && rand.Intn(100) < s {
 		self.Set(x, y, z+1, texture)
-		self.Grow(x, y, z+1, 0, s, w, e, u, d, texture)
+		self.Grow(x, y, z+1, 0, s-2, w, e, u, d, texture)
 	}
-	if self.At(x, y-1, z-1) != 0 && rand.Intn(100) < n {
+	if y > 0 && z > 0 && self.At(x, y-1, z-1) != 0 && rand.Intn(100) < n {
 		self.Set(x, y, z-1, texture)
-		self.Grow(x, y, z-1, n, 0, w, e, u, d, texture)
+		self.Grow(x, y, z-1, n-2, 0, w, e, u, d, texture)
 	}
-	if rand.Intn(100) < u {
+	if y < MAP_RADIUS && rand.Intn(100) < u {
 		self.Set(x, y+1, z, texture)
-		self.Grow(x, y+1, z, n, s, w, e, u, 0, texture)
+		self.Grow(x, y+1, z, n, s, w, e, u-2, 0, texture)
 	}
-	if rand.Intn(100) < d {
+	if y > 0 && rand.Intn(100) < d {
 		self.Set(x, y-1, z, texture)
-		self.Grow(x, y-1, z, n, s, w, e, 0, d, texture)
+		self.Grow(x, y-1, z, n, s, w, e, 0, d-2, texture)
 	}
 }
 
