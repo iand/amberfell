@@ -8,7 +8,7 @@ package main
 const (
 	GroundLevel = 4
 
-	CHUNK_WIDTH  = 32
+	CHUNK_WIDTH  = 16
 	CHUNK_HEIGHT = 20
 
 	VERTEX_BUFFER_CAPACITY = 150000
