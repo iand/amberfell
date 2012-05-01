@@ -11,7 +11,7 @@ import (
 	"github.com/banthar/Go-SDL/sdl"
 	"github.com/banthar/Go-SDL/ttf"
 	"github.com/banthar/gl"
-	"github.com/kierdavis/go/amberfell/mm3dmodel"
+	"github.com/kierdavis/go/mm3dmodel"
 	"image/color"
 	"math/rand"
 	"os"
