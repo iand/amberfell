@@ -20,7 +20,7 @@ type World struct {
 
 type Chunk struct {
 	x, y, z      int16
-	Blocks       []byte
+	Blocks       [CHUNK_WIDTH * CHUNK_WIDTH * CHUNK_HEIGHT]byte
 	vertexBuffer VertexBuffer
 	clean        bool
 }
@@ -417,49 +417,10 @@ func (self *World) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 		v.Draw(center, selectedBlockFace)
 	}
 
-	//gl.Translatef(-float32(center[XAXIS]), -float32(center[YAXIS]), -float32(center[ZAXIS]))
-
-	// var px, py, pz = int16(center[XAXIS]), int16(center[YAXIS]), int16(center[ZAXIS])
-
-	// var x, y, z int16
-
-	// ViewRadius = int16(3 * viewport.rplane / viewport.scale)
 	metrics.cubecount = 0
-
-	// metrics.vertices = 0
-	// for x = px - ViewRadius; x < px+ViewRadius; x++ {
-	// 	for z = pz - ViewRadius; z < pz+ViewRadius; z++ {
-	// 		//if x+z-px-pz <= ViewRadius && x+z-px-pz >= -ViewRadius {
-	// 		for y = py - 5; y < py+16; y++ {
-
-	// 			var blockid byte = self.At(x, y, z)
-	// 			if blockid != 0 {
-	// 				neighbours := self.Neighbours(x, y, z)
-	// 				if self.HasVisibleFaces(neighbours) {
-
-	// 					selectedFace := uint8(FACE_NONE)
-	// 					if selectedBlockFace != nil && x == selectedBlockFace.pos[XAXIS] && y == selectedBlockFace.pos[YAXIS] && z == selectedBlockFace.pos[ZAXIS] {
-	// 						selectedFace = selectedBlockFace.face
-	// 					}
-
-	// 					// gl.PushMatrix()
-
-	// 					// gl.Translatef(float32(x), float32(y), float32(z))
-	// 					TerrainCube(float32(x), float32(y), float32(z), neighbours, blockid, selectedFace)
-	// 					metrics.cubecount++
-	// 					// gl.PopMatrix()
-	// 				}
-	// 			}
-	// 		}
-	// 		//}
-	// 	}
-	// }
-	// metrics.vertices = vertexBuffer.vertexCount
+	metrics.vertices = 0
 
 	terrainTexture.Bind(gl.TEXTURE_2D)
-	// chunk := self.chunks[0]
-
-	metrics.vertices = 0
 
 	px := int16(Round(center[XAXIS]/CHUNK_WIDTH, 0))
 	py := int16(Round(center[YAXIS]/CHUNK_HEIGHT, 0))
@@ -577,7 +538,6 @@ func (chunk *Chunk) Init(x int16, y int16, z int16) {
 	chunk.x = x
 	chunk.y = y
 	chunk.z = z
-	chunk.Blocks = make([]byte, CHUNK_WIDTH*CHUNK_WIDTH*CHUNK_HEIGHT)
 }
 
 func (chunk *Chunk) At(x int16, y int16, z int16) byte {
