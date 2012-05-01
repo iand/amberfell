@@ -43,7 +43,11 @@ func (self *World) Init() {
 
 	self.chunks = make(map[uint64]*Chunk)
 
-	self.GenerateChunk(32760/CHUNK_WIDTH, 32760/CHUNK_HEIGHT, 32760/CHUNK_WIDTH)
+	xc, yc, zc := chunkCoordsFromWorld(32760, GroundLevel, 32760)
+
+	println("1")
+	self.GenerateChunk(xc, yc, zc)
+	println("2")
 	// self.GenerateChunk(0, 0, 1)
 	// self.GenerateChunk(0, 0, -1)
 	// self.GenerateChunk(-1, 0, 0)
@@ -53,10 +57,10 @@ func (self *World) Init() {
 	// self.GenerateChunk(1, 0, 1)
 	// self.GenerateChunk(1, 0, -1)
 
-	self.Set(0, GroundLevel, 0, 1)   // stone
-	self.Set(0, GroundLevel+1, 0, 1) // stone
-	self.Set(0, GroundLevel+2, 0, 1) // stone
-	self.Set(0, GroundLevel+3, 0, 1) // stone
+	self.Set(32760, GroundLevel, 32760, 1)   // stone
+	self.Set(32760, GroundLevel+1, 32760, 1) // stone
+	self.Set(32760, GroundLevel+2, 32760, 1) // stone
+	self.Set(32760, GroundLevel+3, 32760, 1) // stone
 
 	var iw, id uint16
 
@@ -65,14 +69,10 @@ func (self *World) Init() {
 		iw, id = self.RandomSquare()
 
 		self.Set(iw, GroundLevel, id, 1) // stone
-		self.Grow(iw, GroundLevel, id, 45, 45, 45, 52, 10, 10, byte(rand.Intn(2))+1)
+		self.Grow(iw, GroundLevel, id, 45, 45, 45, 40, 20, 4, byte(rand.Intn(2))+1)
 	}
-	iw, id = self.RandomSquare()
 
-	self.Set(iw, GroundLevel, id, 0) // air
-	self.Grow(iw, GroundLevel, id, 20, 20, 20, 20, 0, 30, 0)
-
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 40; i++ {
 		iw, id = self.RandomSquare()
 		self.GrowTree(iw, self.FindSurface(iw, id), id)
 	}
@@ -93,11 +93,12 @@ func (self *World) GenerateChunk(x uint16, y uint16, z uint16) *Chunk {
 	var iw, id, ih uint16
 	for iw = 0; iw < CHUNK_WIDTH; iw++ {
 		for id = 0; id < CHUNK_WIDTH; id++ {
-			for ih = 0; ih <= GroundLevel; ih++ {
-				chunk.Set(iw, ih, id, 2) // dirt
-			}
-			for ih = GroundLevel + 1; ih < CHUNK_HEIGHT; ih++ {
-				chunk.Set(iw, ih, id, 0) // air
+			for ih = 0; ih < CHUNK_HEIGHT; ih++ {
+				if chunk.y*CHUNK_HEIGHT+ih <= GroundLevel {
+					chunk.Set(iw, ih, id, 2) // dirt
+				} else {
+					chunk.Set(iw, ih, id, 0) // dirt
+				}
 			}
 		}
 	}
@@ -110,13 +111,7 @@ func (self *World) GenerateChunk(x uint16, y uint16, z uint16) *Chunk {
 // Gets the chunk for a given x/z block coordinate
 // x = 0, z = 0 is in the top left of the home chunk
 func (self *World) GetChunkForBlock(x uint16, y uint16, z uint16) (*Chunk, uint16, uint16, uint16) {
-	cx := x / CHUNK_WIDTH
-	cy := y / CHUNK_HEIGHT
-	cz := z / CHUNK_WIDTH
-
-	// if x < 0 { cx-- }
-	// if y < 0 { cy-- }
-	// if z < 0 { cz-- }
+	cx, cy, cz := chunkCoordsFromWorld(x, y, z)
 
 	chunk, ok := self.chunks[chunkIndex(cx, cy, cz)]
 	if !ok {
@@ -124,28 +119,15 @@ func (self *World) GetChunkForBlock(x uint16, y uint16, z uint16) (*Chunk, uint1
 	}
 
 	ox := x - cx*CHUNK_WIDTH
-	if ox < 0 {
-		ox += CHUNK_WIDTH
-	}
-
 	oy := y - cy*CHUNK_HEIGHT
-	if oy < 0 {
-		oy += CHUNK_HEIGHT
-	}
-
 	oz := z - cz*CHUNK_WIDTH
-	if oz < 0 {
-		oz += CHUNK_WIDTH
-	}
 
 	return chunk, ox, oy, oz
 
 }
 
 func (self *World) At(x uint16, y uint16, z uint16) byte {
-	//println("x:", x, " y:", y, "z:", z)
 	chunk, ox, oy, oz := self.GetChunkForBlock(x, y, z)
-	//println("ox:", ox, " y:", y, "oz:", oz)
 	return chunk.At(ox, oy, oz)
 }
 
@@ -164,8 +146,10 @@ func (self *World) Setv(v Vectori, b byte) {
 }
 
 func (self *World) RandomSquare() (x uint16, z uint16) {
-	x = uint16(rand.Intn(32760) - 20)
-	z = uint16(rand.Intn(32760) - 20)
+	radius := int(120)
+
+	x = uint16(rand.Intn(radius) + 32760 - radius/2)
+	z = uint16(rand.Intn(radius) + 32760 - radius/2)
 	return
 }
 
@@ -174,27 +158,27 @@ func (self *World) RandomSquare() (x uint16, z uint16) {
 // up/down = +/- y
 
 func (self *World) Grow(x uint16, y uint16, z uint16, n int, s int, w int, e int, u int, d int, texture byte) {
-	if (y == 0 || self.At(x+1, y-1, z) != 0) && rand.Intn(100) < e {
+	if self.At(x+1, y-1, z) != 0 && rand.Intn(100) < e {
 		self.Set(x+1, y, z, texture)
 		self.Grow(x+1, y, z, n, s, 0, e, u, d, texture)
 	}
-	if (y == 0 || self.At(x-1, y-1, z) != 0) && rand.Intn(100) < w {
+	if self.At(x-1, y-1, z) != 0 && rand.Intn(100) < w {
 		self.Set(x-1, y, z, texture)
 		self.Grow(x-1, y, z, n, s, w, 0, u, d, texture)
 	}
-	if (y == 0 || self.At(x, y-1, z+1) != 0) && rand.Intn(100) < s {
+	if self.At(x, y-1, z+1) != 0 && rand.Intn(100) < s {
 		self.Set(x, y, z+1, texture)
 		self.Grow(x, y, z+1, 0, s, w, e, u, d, texture)
 	}
-	if (y == 0 || self.At(x, y-1, z-1) != 0) && rand.Intn(100) < n {
+	if self.At(x, y-1, z-1) != 0 && rand.Intn(100) < n {
 		self.Set(x, y, z-1, texture)
 		self.Grow(x, y, z-1, n, 0, w, e, u, d, texture)
 	}
-	if y < CHUNK_HEIGHT-1 && rand.Intn(100) < u {
+	if rand.Intn(100) < u {
 		self.Set(x, y+1, z, texture)
 		self.Grow(x, y+1, z, n, s, w, e, u, 0, texture)
 	}
-	if y > 0 && rand.Intn(100) < d {
+	if rand.Intn(100) < d {
 		self.Set(x, y-1, z, texture)
 		self.Grow(x, y-1, z, n, s, w, e, 0, d, texture)
 	}
