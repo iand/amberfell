@@ -7,7 +7,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/kierdavis/go/amberfell/mm3dmodel"
+	"github.com/kierdavis/go/mm3dmodel"
 	"math"
 	"os"
 )
@@ -48,7 +48,11 @@ func LoadModel(filename string) (model *mm3dmodel.Model) {
 	}
 
 	if model.NDirtySegments() > 0 {
-		fmt.Fprintf(os.Stderr, "***** MM3D Warning: found %d dirty segments in %s! Tell Kier to add more functionality!\n", model.NDirtySegments(), filename)
+		fmt.Fprintf(os.Stderr, "***** MM3D Warning: Found %d dirty segments in %s! Tell Kier to add more functionality!\n", model.NDirtySegments(), filename)
+
+		for i := 0; i < model.NDirtySegments(); i++ {
+			fmt.Fprintf(os.Stderr, "***** MM3D Warning:   * Offset type 0x%04X\n", model.DirtySegment(i).OffsetType())
+		}
 	}
 
 	return model
