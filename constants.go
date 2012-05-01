@@ -6,7 +6,7 @@
 package main
 
 const (
-	GroundLevel = 32760
+	GroundLevel = 6
 
 	CHUNK_WIDTH  = 16
 	CHUNK_HEIGHT = 20
