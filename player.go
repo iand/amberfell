@@ -28,7 +28,7 @@ type BlockBreakRecord struct {
 	count int
 }
 
-func (self *Player) Init(heading float64, x int16, z int16, y int16) {
+func (self *Player) Init(heading float64, x uint16, z uint16, y uint16) {
 	self.heading = heading
 	self.position[XAXIS] = float64(x)
 	self.position[YAXIS] = float64(y)

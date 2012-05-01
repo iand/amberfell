@@ -13,9 +13,9 @@ import (
 )
 
 func IntPosition(pos Vectorf) Vectori {
-	return Vectori{int16(Round(pos[XAXIS], 0)),
-		int16(Round(pos[YAXIS], 0)),
-		int16(Round(pos[ZAXIS], 0))}
+	return Vectori{uint16(Round(pos[XAXIS], 0)),
+		uint16(Round(pos[YAXIS], 0)),
+		uint16(Round(pos[ZAXIS], 0))}
 }
 
 // Round a float to given precision

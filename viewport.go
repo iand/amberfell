@@ -125,7 +125,7 @@ func (self *Viewport) SelectedBlockFace() *BlockFace {
 	if origin != nil {
 		pos := IntPosition(ThePlayer.position)
 		ray := Ray{origin, &norm}
-		reach := int16(5)
+		reach := uint16(5)
 
 		// See http://www.dyn-lab.com/articles/pick-selection.html
 		var box *Box = nil
@@ -162,7 +162,7 @@ func (self *Viewport) SelectedBlockFace() *BlockFace {
 		}
 
 		if box != nil {
-			self.selectedBlockFace = &BlockFace{pos: Vectori{int16(box.min[XAXIS] + 0.5), int16(box.min[YAXIS] + 0.5), int16(box.min[ZAXIS] + 0.5)}, face: face}
+			self.selectedBlockFace = &BlockFace{pos: Vectori{uint16(box.min[XAXIS] + 0.5), uint16(box.min[YAXIS] + 0.5), uint16(box.min[ZAXIS] + 0.5)}, face: face}
 			self.selectionDirty = false
 		}
 

@@ -6,10 +6,13 @@
 package main
 
 const (
-	GroundLevel = 4
+	GroundLevel = 32760
 
 	CHUNK_WIDTH  = 16
 	CHUNK_HEIGHT = 20
+
+	WORLD_RADIUS = 32760
+	MAX_CHUNK    = WORLD_RADIUS / CHUNK_HEIGHT // Larger of CHUNK_WIDTH and CHUNK_HEIGHT
 
 	VERTEX_BUFFER_CAPACITY = 150000
 

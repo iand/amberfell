@@ -6,20 +6,20 @@
 package main
 
 import (
-	"github.com/banthar/gl"
-	"math/rand"
-	// "math"
 	"fmt"
+	"github.com/banthar/gl"
+	"math"
+	"math/rand"
 )
 
 type World struct {
-	GroundLevel int16
+	GroundLevel uint16
 	mobs        []Mob
-	chunks      map[int16]*Chunk
+	chunks      map[uint64]*Chunk
 }
 
 type Chunk struct {
-	x, y, z      int16
+	x, y, z      uint16
 	Blocks       [CHUNK_WIDTH * CHUNK_WIDTH * CHUNK_HEIGHT]byte
 	vertexBuffer VertexBuffer
 	clean        bool
@@ -41,9 +41,9 @@ type InteractingBlockFace struct {
 
 func (self *World) Init() {
 
-	self.chunks = make(map[int16]*Chunk)
+	self.chunks = make(map[uint64]*Chunk)
 
-	self.GenerateChunk(0, 0, 0)
+	self.GenerateChunk(32760/CHUNK_WIDTH, 32760/CHUNK_HEIGHT, 32760/CHUNK_WIDTH)
 	// self.GenerateChunk(0, 0, 1)
 	// self.GenerateChunk(0, 0, -1)
 	// self.GenerateChunk(-1, 0, 0)
@@ -58,7 +58,7 @@ func (self *World) Init() {
 	self.Set(0, GroundLevel+2, 0, 1) // stone
 	self.Set(0, GroundLevel+3, 0, 1) // stone
 
-	var iw, id int16
+	var iw, id uint16
 
 	numFeatures := rand.Intn(21)
 	for i := 0; i < numFeatures; i++ {
@@ -77,12 +77,6 @@ func (self *World) Init() {
 		self.GrowTree(iw, self.FindSurface(iw, id), id)
 	}
 
-	for z := int16(-30); z > -36; z-- {
-		// _, ox, oy, oz := self.GetChunkForBlock(17, 6, z)
-		// println("17, 6,", z, ":", ox, oy, oz)
-		self.Set(17, 6, z, 2)
-	}
-
 	// wolf := new(Wolf)
 	// wolf.Init(200, 25, 19, float32(self.FindSurface(25, 19)))
 	// self.mobs = append(self.mobs, wolf)
@@ -92,11 +86,11 @@ func (self *World) Init() {
 // A chunk is a 24 x 24 x 48 set of blocks
 // x is east/west offset from World Origin
 // z is south/north offset from World Origin
-func (self *World) GenerateChunk(x int16, y int16, z int16) *Chunk {
+func (self *World) GenerateChunk(x uint16, y uint16, z uint16) *Chunk {
 	var chunk Chunk
 	chunk.Init(x, y, z)
 	println("Generating chunk at x:", x, " y:", y, " z:", z)
-	var iw, id, ih int16
+	var iw, id, ih uint16
 	for iw = 0; iw < CHUNK_WIDTH; iw++ {
 		for id = 0; id < CHUNK_WIDTH; id++ {
 			for ih = 0; ih <= GroundLevel; ih++ {
@@ -115,10 +109,14 @@ func (self *World) GenerateChunk(x int16, y int16, z int16) *Chunk {
 
 // Gets the chunk for a given x/z block coordinate
 // x = 0, z = 0 is in the top left of the home chunk
-func (self *World) GetChunkForBlock(x int16, y int16, z int16) (*Chunk, int16, int16, int16) {
+func (self *World) GetChunkForBlock(x uint16, y uint16, z uint16) (*Chunk, uint16, uint16, uint16) {
 	cx := x / CHUNK_WIDTH
 	cy := y / CHUNK_HEIGHT
 	cz := z / CHUNK_WIDTH
+
+	// if x < 0 { cx-- }
+	// if y < 0 { cy-- }
+	// if z < 0 { cz-- }
 
 	chunk, ok := self.chunks[chunkIndex(cx, cy, cz)]
 	if !ok {
@@ -144,18 +142,18 @@ func (self *World) GetChunkForBlock(x int16, y int16, z int16) (*Chunk, int16, i
 
 }
 
-func (self *World) At(x int16, y int16, z int16) byte {
+func (self *World) At(x uint16, y uint16, z uint16) byte {
 	//println("x:", x, " y:", y, "z:", z)
 	chunk, ox, oy, oz := self.GetChunkForBlock(x, y, z)
 	//println("ox:", ox, " y:", y, "oz:", oz)
 	return chunk.At(ox, oy, oz)
 }
 
-func (self *World) Atv(v Vectori) byte {
+func (self *World) Atv(v [3]uint16) byte {
 	return self.At(v[XAXIS], v[YAXIS], v[ZAXIS])
 }
 
-func (self *World) Set(x int16, y int16, z int16, b byte) {
+func (self *World) Set(x uint16, y uint16, z uint16, b byte) {
 	chunk, ox, oy, oz := self.GetChunkForBlock(x, y, z)
 	chunk.Set(ox, oy, oz, b)
 }
@@ -165,9 +163,9 @@ func (self *World) Setv(v Vectori, b byte) {
 	chunk.Set(ox, oy, oz, b)
 }
 
-func (self *World) RandomSquare() (x int16, z int16) {
-	x = int16(rand.Intn(80) - 20)
-	z = int16(rand.Intn(80) - 20)
+func (self *World) RandomSquare() (x uint16, z uint16) {
+	x = uint16(rand.Intn(32760) - 20)
+	z = uint16(rand.Intn(32760) - 20)
 	return
 }
 
@@ -175,7 +173,7 @@ func (self *World) RandomSquare() (x int16, z int16) {
 // east/west = +/- x
 // up/down = +/- y
 
-func (self *World) Grow(x int16, y int16, z int16, n int, s int, w int, e int, u int, d int, texture byte) {
+func (self *World) Grow(x uint16, y uint16, z uint16, n int, s int, w int, e int, u int, d int, texture byte) {
 	if (y == 0 || self.At(x+1, y-1, z) != 0) && rand.Intn(100) < e {
 		self.Set(x+1, y, z, texture)
 		self.Grow(x+1, y, z, n, s, 0, e, u, d, texture)
@@ -232,7 +230,7 @@ func (self *World) HasVisibleFaces(neighbours [6]uint16) bool {
 	return false
 }
 
-func (self *World) Neighbours(x int16, y int16, z int16) (neighbours [6]uint16) {
+func (self *World) Neighbours(x uint16, y uint16, z uint16) (neighbours [6]uint16) {
 
 	if self.ChunkLoadedFor(x-1, y, z) {
 		neighbours[WEST_FACE] = uint16(self.At(x-1, y, z))
@@ -407,7 +405,7 @@ func (self *World) Simulate(dt float64) {
 
 }
 
-func (self World) ChunkLoadedFor(x int16, y int16, z int16) bool {
+func (self World) ChunkLoadedFor(x uint16, y uint16, z uint16) bool {
 	cx := x / CHUNK_WIDTH
 	cy := y / CHUNK_HEIGHT
 	cz := z / CHUNK_WIDTH
@@ -426,19 +424,9 @@ func (self *World) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 
 	terrainTexture.Bind(gl.TEXTURE_2D)
 
-	px := int16(center[XAXIS]) / CHUNK_WIDTH
-	py := int16(center[YAXIS]) / CHUNK_HEIGHT
-	pz := int16(center[ZAXIS]) / CHUNK_WIDTH
-
-	if center[XAXIS] < 0 {
-		px--
-	}
-	if center[YAXIS] < 0 {
-		py--
-	}
-	if center[ZAXIS] < 0 {
-		pz--
-	}
+	px := uint16(center[XAXIS]) / CHUNK_WIDTH
+	py := uint16(center[YAXIS]) / CHUNK_HEIGHT
+	pz := uint16(center[ZAXIS]) / CHUNK_WIDTH
 
 	c1, ok := self.chunks[chunkIndex(px, py, pz)]
 	if !ok {
@@ -514,7 +502,7 @@ func (self *World) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 }
 
 // Finds the surface level for a given x, z coordinate
-func (self *World) FindSurface(x int16, z int16) (y int16) {
+func (self *World) FindSurface(x uint16, z uint16) (y uint16) {
 	y = GroundLevel
 	if self.At(x, y, z) == BLOCK_AIR {
 		for y > 0 && self.At(x, y, z) == BLOCK_AIR {
@@ -529,11 +517,32 @@ func (self *World) FindSurface(x int16, z int16) (y int16) {
 	return
 }
 
-func chunkIndex(x int16, y int16, z int16) int16 {
-	return z*CHUNK_WIDTH*CHUNK_WIDTH + x*CHUNK_WIDTH + y
+func chunkCoordsFromWorld(x uint16, y uint16, z uint16) (cx uint16, cy uint16, cz uint16) {
+	cx = uint16(math.Floor(float64(x) / CHUNK_WIDTH))
+	cy = uint16(math.Floor(float64(y) / CHUNK_HEIGHT))
+	cz = uint16(math.Floor(float64(z) / CHUNK_WIDTH))
+
+	return
 }
 
-func blockIndex(x int16, y int16, z int16) int16 {
+func chunkIndexFromWorld(x uint16, y uint16, z uint16) uint64 {
+	cx, cy, cz := chunkCoordsFromWorld(x, y, z)
+	return chunkIndex(cx, cy, cz)
+}
+
+func chunkIndex(cx uint16, cy uint16, cz uint16) uint64 {
+	return uint64(cz)<<32 | uint64(cy)<<16 | uint64(cx)
+}
+
+func chunkCoordsFromindex(index uint64) (cx uint16, cy uint16, cz uint16) {
+	cx = uint16(index)
+	cy = uint16(index >> 16)
+	cz = uint16(index >> 32)
+
+	return
+}
+
+func blockIndex(x uint16, y uint16, z uint16) uint16 {
 	return CHUNK_WIDTH*CHUNK_WIDTH*y + CHUNK_WIDTH*x + z
 }
 
@@ -541,25 +550,26 @@ func blockIndex(x int16, y int16, z int16) int16 {
 // CHUNKS
 // **************************************************************
 
-func (c Chunk) WorldCoords(x int16, y int16, z int16) (xw int16, yw int16, zw int16) {
+func (c Chunk) WorldCoords(x uint16, y uint16, z uint16) (xw uint16, yw uint16, zw uint16) {
 	xw = c.x*CHUNK_WIDTH + x
 	zw = c.z*CHUNK_WIDTH + z
 	yw = c.y*CHUNK_HEIGHT + y
 	return
 }
 
-func (chunk *Chunk) Init(x int16, y int16, z int16) {
+func (chunk *Chunk) Init(x uint16, y uint16, z uint16) {
 	chunk.x = x
 	chunk.y = y
 	chunk.z = z
 }
 
-func (chunk *Chunk) At(x int16, y int16, z int16) byte {
+func (chunk *Chunk) At(x uint16, y uint16, z uint16) byte {
 	return chunk.Blocks[blockIndex(x, y, z)]
 }
 
-func (chunk *Chunk) Set(x int16, y int16, z int16, b byte) {
+func (chunk *Chunk) Set(x uint16, y uint16, z uint16, b byte) {
 	chunk.Blocks[blockIndex(x, y, z)] = b
+	chunk.clean = false
 }
 
 func (self *Chunk) Render(selectedBlockFace *BlockFace) {
@@ -572,7 +582,7 @@ func (self *Chunk) Render(selectedBlockFace *BlockFace) {
 	t := Timer{}
 	t.Start()
 	self.vertexBuffer.Reset()
-	var x, y, z int16
+	var x, y, z uint16
 	for x = 0; x < CHUNK_WIDTH; x++ {
 		for z = 0; z < CHUNK_WIDTH; z++ {
 			for y = 0; y < CHUNK_HEIGHT; y++ {
@@ -622,7 +632,7 @@ func (self *Chunk) Render(selectedBlockFace *BlockFace) {
 
 }
 
-func (self *World) GrowTree(x int16, y int16, z int16) {
+func (self *World) GrowTree(x uint16, y uint16, z uint16) {
 	self.Set(x, y, z, BLOCK_TRUNK)
 	self.Set(x, y+1, z, BLOCK_TRUNK)
 	self.Set(x, y+2, z, BLOCK_TRUNK)
@@ -656,7 +666,7 @@ func (self *World) GrowTree(x int16, y int16, z int16) {
 	}
 }
 
-func (self *World) GrowBranch(x int16, y int16, z int16, face uint8, chance int) {
+func (self *World) GrowBranch(x uint16, y uint16, z uint16, face uint8, chance int) {
 	newx, newy, newz := x, y, z
 	if face == NORTH_FACE {
 		newz = z - 1

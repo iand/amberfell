@@ -11,7 +11,7 @@ import (
 )
 
 type Vectorf [3]float64
-type Vectori [3]int16
+type Vectori [3]uint16
 
 type Rect struct {
 	x, z, sizex, sizez float64
@@ -96,9 +96,9 @@ func (wp Vectori) HRect() Rect {
 }
 
 func (self *Vectori) Adjust(dx int16, dy int16, dz int16) {
-	self[XAXIS] += dx
-	self[YAXIS] += dy
-	self[ZAXIS] += dz
+	self[XAXIS] = uint16(int32(self[XAXIS]) + int32(dx))
+	self[YAXIS] = uint16(int32(self[YAXIS]) + int32(dy))
+	self[ZAXIS] = uint16(int32(self[ZAXIS]) + int32(dz))
 }
 
 func (self *Vectori) String() string {

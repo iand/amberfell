@@ -90,7 +90,7 @@ func initGame() {
 	TheWorld.Init()
 
 	ThePlayer = new(Player)
-	ThePlayer.Init(0, 10, 10, TheWorld.FindSurface(10, 10))
+	ThePlayer.Init(0, 32760, 32760, TheWorld.FindSurface(10, 10))
 
 	viewport.Zoomstd()
 	viewport.Rotx(25)
