@@ -426,9 +426,19 @@ func (self *World) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 
 	terrainTexture.Bind(gl.TEXTURE_2D)
 
-	px := int16(center[XAXIS] / CHUNK_WIDTH)
-	py := int16(center[YAXIS] / CHUNK_HEIGHT)
-	pz := int16(center[ZAXIS] / CHUNK_WIDTH)
+	px := int16(center[XAXIS]) / CHUNK_WIDTH
+	py := int16(center[YAXIS]) / CHUNK_HEIGHT
+	pz := int16(center[ZAXIS]) / CHUNK_WIDTH
+
+	if center[XAXIS] < 0 {
+		px--
+	}
+	if center[YAXIS] < 0 {
+		py--
+	}
+	if center[ZAXIS] < 0 {
+		pz--
+	}
 
 	c1, ok := self.chunks[chunkIndex(px, py, pz)]
 	if !ok {
@@ -446,61 +456,61 @@ func (self *World) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 	RenderQuadIndex(&c2.vertexBuffer)
 	metrics.vertices += c2.vertexBuffer.vertexCount
 
-	// c3, ok := self.chunks[chunkIndex(px-1, py, pz)]
-	// if !ok {
-	// 	c3 = self.GenerateChunk(px-1, py, pz)
-	// }
-	// c3.Render(selectedBlockFace)
-	// RenderQuadIndex(&c3.vertexBuffer)
-	// metrics.vertices += c3.vertexBuffer.vertexCount
+	c3, ok := self.chunks[chunkIndex(px-1, py, pz)]
+	if !ok {
+		c3 = self.GenerateChunk(px-1, py, pz)
+	}
+	c3.Render(selectedBlockFace)
+	RenderQuadIndex(&c3.vertexBuffer)
+	metrics.vertices += c3.vertexBuffer.vertexCount
 
-	// c4, ok := self.chunks[chunkIndex(px, py, pz+1)]
-	// if !ok {
-	// 	c4 = self.GenerateChunk(px, py, pz+1)
-	// }
-	// c4.Render(selectedBlockFace)
-	// RenderQuadIndex(&c4.vertexBuffer)
-	// metrics.vertices += c4.vertexBuffer.vertexCount
+	c4, ok := self.chunks[chunkIndex(px, py, pz+1)]
+	if !ok {
+		c4 = self.GenerateChunk(px, py, pz+1)
+	}
+	c4.Render(selectedBlockFace)
+	RenderQuadIndex(&c4.vertexBuffer)
+	metrics.vertices += c4.vertexBuffer.vertexCount
 
-	// c5, ok := self.chunks[chunkIndex(px, py, pz-1)]
-	// if !ok {
-	// 	c5 = self.GenerateChunk(px, py, pz-1)
-	// }
-	// c5.Render(selectedBlockFace)
-	// RenderQuadIndex(&c5.vertexBuffer)
-	// metrics.vertices += c5.vertexBuffer.vertexCount
+	c5, ok := self.chunks[chunkIndex(px, py, pz-1)]
+	if !ok {
+		c5 = self.GenerateChunk(px, py, pz-1)
+	}
+	c5.Render(selectedBlockFace)
+	RenderQuadIndex(&c5.vertexBuffer)
+	metrics.vertices += c5.vertexBuffer.vertexCount
 
-	// c6, ok := self.chunks[chunkIndex(px+1, py, pz+1)]
-	// if !ok {
-	// 	c6 = self.GenerateChunk(px+1, py, pz+1)
-	// }
-	// c6.Render(selectedBlockFace)
-	// RenderQuadIndex(&c6.vertexBuffer)
-	// metrics.vertices += c6.vertexBuffer.vertexCount
+	c6, ok := self.chunks[chunkIndex(px+1, py, pz+1)]
+	if !ok {
+		c6 = self.GenerateChunk(px+1, py, pz+1)
+	}
+	c6.Render(selectedBlockFace)
+	RenderQuadIndex(&c6.vertexBuffer)
+	metrics.vertices += c6.vertexBuffer.vertexCount
 
-	// c7, ok := self.chunks[chunkIndex(px+1, py, pz-1)]
-	// if !ok {
-	// 	c7 = self.GenerateChunk(px+1, py, pz-1)
-	// }
-	// c7.Render(selectedBlockFace)
-	// RenderQuadIndex(&c7.vertexBuffer)
-	// metrics.vertices += c7.vertexBuffer.vertexCount
+	c7, ok := self.chunks[chunkIndex(px+1, py, pz-1)]
+	if !ok {
+		c7 = self.GenerateChunk(px+1, py, pz-1)
+	}
+	c7.Render(selectedBlockFace)
+	RenderQuadIndex(&c7.vertexBuffer)
+	metrics.vertices += c7.vertexBuffer.vertexCount
 
-	// c8, ok := self.chunks[chunkIndex(px-1, py, pz+1)]
-	// if !ok {
-	// 	c8 = self.GenerateChunk(px-1, py, pz+1)
-	// }
-	// c8.Render(selectedBlockFace)
-	// RenderQuadIndex(&c8.vertexBuffer)
-	// metrics.vertices += c8.vertexBuffer.vertexCount
+	c8, ok := self.chunks[chunkIndex(px-1, py, pz+1)]
+	if !ok {
+		c8 = self.GenerateChunk(px-1, py, pz+1)
+	}
+	c8.Render(selectedBlockFace)
+	RenderQuadIndex(&c8.vertexBuffer)
+	metrics.vertices += c8.vertexBuffer.vertexCount
 
-	// c9, ok := self.chunks[chunkIndex(px-1, py, pz-1)]
-	// if !ok {
-	// 	c9 = self.GenerateChunk(px-1, py, pz-1)
-	// }
-	// c9.Render(selectedBlockFace)
-	// RenderQuadIndex(&c9.vertexBuffer)
-	// metrics.vertices += c9.vertexBuffer.vertexCount
+	c9, ok := self.chunks[chunkIndex(px-1, py, pz-1)]
+	if !ok {
+		c9 = self.GenerateChunk(px-1, py, pz-1)
+	}
+	c9.Render(selectedBlockFace)
+	RenderQuadIndex(&c9.vertexBuffer)
+	metrics.vertices += c9.vertexBuffer.vertexCount
 }
 
 // Finds the surface level for a given x, z coordinate
