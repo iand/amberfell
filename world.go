@@ -422,32 +422,33 @@ func (self *World) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 
 	var x, y, z int16
 
-	count := 0
-	for x = px - 30; x < px+30; x++ {
-		for z = pz - 30; z < pz+30; z++ {
-			if x+z-px-pz <= ViewRadius && x+z-px-pz >= -ViewRadius {
-				for y = py - 5; y < py+16; y++ {
+	ViewRadius = int16(3 * viewport.rplane / viewport.scale)
+	metrics.cubecount = 0
+	for x = px - ViewRadius; x < px+ViewRadius; x++ {
+		for z = pz - ViewRadius; z < pz+ViewRadius; z++ {
+			//if x+z-px-pz <= ViewRadius && x+z-px-pz >= -ViewRadius {
+			for y = py - 5; y < py+16; y++ {
 
-					var blockid byte = self.At(x, y, z)
-					if blockid != 0 {
-						neighbours := self.Neighbours(x, y, z)
-						if self.HasVisibleFaces(neighbours) {
+				var blockid byte = self.At(x, y, z)
+				if blockid != 0 {
+					neighbours := self.Neighbours(x, y, z)
+					if self.HasVisibleFaces(neighbours) {
 
-							selectedFace := uint8(FACE_NONE)
-							if selectedBlockFace != nil && x == selectedBlockFace.pos[XAXIS] && y == selectedBlockFace.pos[YAXIS] && z == selectedBlockFace.pos[ZAXIS] {
-								selectedFace = selectedBlockFace.face
-							}
-
-							gl.PushMatrix()
-
-							gl.Translatef(float32(x), float32(y), float32(z))
-							TerrainCube(neighbours, blockid, selectedFace)
-							count++
-							gl.PopMatrix()
+						selectedFace := uint8(FACE_NONE)
+						if selectedBlockFace != nil && x == selectedBlockFace.pos[XAXIS] && y == selectedBlockFace.pos[YAXIS] && z == selectedBlockFace.pos[ZAXIS] {
+							selectedFace = selectedBlockFace.face
 						}
+
+						gl.PushMatrix()
+
+						gl.Translatef(float32(x), float32(y), float32(z))
+						TerrainCube(neighbours, blockid, selectedFace)
+						metrics.cubecount++
+						gl.PopMatrix()
 					}
 				}
 			}
+			//}
 		}
 	}
 	//println("Drew ", count, " cubes")

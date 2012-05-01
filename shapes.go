@@ -17,6 +17,11 @@ var (
 	TerrainBlocks map[uint16]TerrainBlock
 )
 
+type TexturePos struct {
+	x float32
+	y float32
+}
+
 type TerrainBlock struct {
 	id          byte
 	name        string
@@ -26,8 +31,18 @@ type TerrainBlock struct {
 	stexture    *gl.Texture
 	etexture    *gl.Texture
 	wtexture    *gl.Texture
+	textures    [6]uint16
+	texpos      [6]TexturePos
 	hitsNeeded  byte
 	transparent bool
+}
+
+type Vertex struct {
+	p       [3]float32 // Position
+	t       [2]float32 // Texture coordinate
+	n       [3]float32 // Normal
+	c       [4]float32 // Colour
+	padding [16]byte
 }
 
 func LoadMapTextures() {
@@ -150,15 +165,36 @@ func loadTexture(filename string) *gl.Texture {
 
 }
 
+func NewTerrainBlock(id byte, name string, u uint16, d uint16, n uint16, s uint16, e uint16, w uint16, hitsNeeded byte, transparent bool) TerrainBlock {
+	return TerrainBlock{id, name,
+		textures[u],
+		textures[d],
+		textures[n],
+		textures[s],
+		textures[e],
+		textures[w],
+		[6]uint16{e, w, n, s, u, d},
+		[6]TexturePos{TexturePos{x: float32((e % TILES_HORZ)) / TILES_HORZ, y: float32((e / TILES_HORZ)) / TILES_VERT},
+			TexturePos{x: float32((w % TILES_HORZ)) / TILES_HORZ, y: float32((w / TILES_HORZ)) / TILES_VERT},
+			TexturePos{x: float32((n % TILES_HORZ)) / TILES_HORZ, y: float32((n / TILES_HORZ)) / TILES_VERT},
+			TexturePos{x: float32((s % TILES_HORZ)) / TILES_HORZ, y: float32((s / TILES_HORZ)) / TILES_VERT},
+			TexturePos{x: float32((u % TILES_HORZ)) / TILES_HORZ, y: float32((u / TILES_HORZ)) / TILES_VERT},
+			TexturePos{x: float32((d % TILES_HORZ)) / TILES_HORZ, y: float32((d / TILES_HORZ)) / TILES_VERT},
+		},
+		hitsNeeded,
+		transparent,
+	}
+}
+
 func InitTerrainBlocks() {
 	TerrainBlocks = make(map[uint16]TerrainBlock)
-	TerrainBlocks[BLOCK_AIR] = TerrainBlock{BLOCK_AIR, "Air", nil, nil, nil, nil, nil, nil, STRENGTH_STONE, true}
-	TerrainBlocks[BLOCK_STONE] = TerrainBlock{BLOCK_STONE, "Stone", textures[TEXTURE_STONE], textures[TEXTURE_STONE], textures[TEXTURE_STONE], textures[TEXTURE_STONE], textures[TEXTURE_STONE], textures[TEXTURE_STONE], STRENGTH_STONE, false}
-	TerrainBlocks[BLOCK_DIRT] = TerrainBlock{BLOCK_DIRT, "Dirt", textures[TEXTURE_DIRT_TOP], textures[TEXTURE_DIRT], textures[TEXTURE_DIRT], textures[TEXTURE_DIRT], textures[TEXTURE_DIRT], textures[TEXTURE_DIRT], STRENGTH_DIRT, false}
-	TerrainBlocks[BLOCK_TRUNK] = TerrainBlock{BLOCK_TRUNK, "trunk", textures[TEXTURE_TRUNK], textures[TEXTURE_TRUNK], textures[TEXTURE_TRUNK], textures[TEXTURE_TRUNK], textures[TEXTURE_TRUNK], textures[TEXTURE_TRUNK], STRENGTH_WOOD, false}
-	TerrainBlocks[BLOCK_LEAVES] = TerrainBlock{BLOCK_TRUNK, "trunk", textures[TEXTURE_LEAVES], textures[TEXTURE_LEAVES], textures[TEXTURE_LEAVES], textures[TEXTURE_LEAVES], textures[TEXTURE_LEAVES], textures[TEXTURE_LEAVES], STRENGTH_LEAVES, false}
-	TerrainBlocks[BLOCK_LOG_WALL] = TerrainBlock{BLOCK_LOG_WALL, "log wall", textures[TEXTURE_LOG_WALL_TOP], textures[TEXTURE_LOG_WALL_TOP], textures[TEXTURE_LOG_WALL], textures[TEXTURE_LOG_WALL], textures[TEXTURE_LOG_WALL], textures[TEXTURE_LOG_WALL], STRENGTH_WOOD, true}
-	TerrainBlocks[BLOCK_LOG_SLAB] = TerrainBlock{BLOCK_LOG_SLAB, "log slab", textures[TEXTURE_LOG_WALL], textures[TEXTURE_LOG_WALL], textures[TEXTURE_LOG_WALL], textures[TEXTURE_LOG_WALL], textures[TEXTURE_LOG_WALL], textures[TEXTURE_LOG_WALL], STRENGTH_WOOD, true}
+	TerrainBlocks[BLOCK_AIR] = NewTerrainBlock(BLOCK_AIR, "Air", TEXTURE_NONE, TEXTURE_NONE, TEXTURE_NONE, TEXTURE_NONE, TEXTURE_NONE, TEXTURE_NONE, STRENGTH_STONE, true)
+	TerrainBlocks[BLOCK_STONE] = NewTerrainBlock(BLOCK_STONE, "Stone", TEXTURE_STONE, TEXTURE_STONE, TEXTURE_STONE, TEXTURE_STONE, TEXTURE_STONE, TEXTURE_STONE, STRENGTH_STONE, false)
+	TerrainBlocks[BLOCK_DIRT] = NewTerrainBlock(BLOCK_DIRT, "Dirt", TEXTURE_DIRT_TOP, TEXTURE_DIRT, TEXTURE_DIRT, TEXTURE_DIRT, TEXTURE_DIRT, TEXTURE_DIRT, STRENGTH_DIRT, false)
+	TerrainBlocks[BLOCK_TRUNK] = NewTerrainBlock(BLOCK_TRUNK, "trunk", TEXTURE_TRUNK, TEXTURE_TRUNK, TEXTURE_TRUNK, TEXTURE_TRUNK, TEXTURE_TRUNK, TEXTURE_TRUNK, STRENGTH_WOOD, false)
+	TerrainBlocks[BLOCK_LEAVES] = NewTerrainBlock(BLOCK_TRUNK, "trunk", TEXTURE_LEAVES, TEXTURE_LEAVES, TEXTURE_LEAVES, TEXTURE_LEAVES, TEXTURE_LEAVES, TEXTURE_LEAVES, STRENGTH_LEAVES, false)
+	TerrainBlocks[BLOCK_LOG_WALL] = NewTerrainBlock(BLOCK_LOG_WALL, "log wall", TEXTURE_LOG_WALL_TOP, TEXTURE_LOG_WALL_TOP, TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, STRENGTH_WOOD, true)
+	TerrainBlocks[BLOCK_LOG_SLAB] = NewTerrainBlock(BLOCK_LOG_SLAB, "log slab", TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, STRENGTH_WOOD, true)
 
 }
 
@@ -370,162 +406,129 @@ func TerrainCube(neighbours [6]uint16, blockid byte, selectedFace uint8) {
 
 	default:
 
-		var ntexture, stexture, etexture, wtexture, utexture, dtexture *gl.Texture
+		// var ntexture, stexture, etexture, wtexture, utexture, dtexture *gl.Texture
 
-		if TerrainBlocks[neighbours[NORTH_FACE]].transparent {
-			ntexture = block.ntexture
-		}
-		if TerrainBlocks[neighbours[SOUTH_FACE]].transparent {
-			stexture = block.stexture
-		}
-		if TerrainBlocks[neighbours[EAST_FACE]].transparent {
-			etexture = block.etexture
-		}
-		if TerrainBlocks[neighbours[WEST_FACE]].transparent {
-			wtexture = block.wtexture
-		}
-		if TerrainBlocks[neighbours[UP_FACE]].transparent {
-			utexture = block.utexture
-		}
-		if TerrainBlocks[neighbours[DOWN_FACE]].transparent {
-			dtexture = block.dtexture
+		// if TerrainBlocks[neighbours[NORTH_FACE]].transparent {
+		// 	ntexture = block.ntexture
+		// }
+		// if TerrainBlocks[neighbours[SOUTH_FACE]].transparent {
+		// 	stexture = block.stexture
+		// }
+		// if TerrainBlocks[neighbours[EAST_FACE]].transparent {
+		// 	etexture = block.etexture
+		// }
+		// if TerrainBlocks[neighbours[WEST_FACE]].transparent {
+		// 	wtexture = block.wtexture
+		// }
+		// if TerrainBlocks[neighbours[UP_FACE]].transparent {
+		// 	utexture = block.utexture
+		// }
+		// if TerrainBlocks[neighbours[DOWN_FACE]].transparent {
+		// 	dtexture = block.dtexture
+		// }
+
+		// Cuboid(1, 1, 1, etexture, wtexture, ntexture, stexture, utexture, dtexture, selectedFace)
+
+		var visible [6]bool
+
+		for i := 0; i < 6; i++ {
+			if TerrainBlocks[neighbours[i]].transparent {
+				visible[i] = true
+			}
 		}
 
-		Cuboid(1, 1, 1, etexture, wtexture, ntexture, stexture, utexture, dtexture, selectedFace)
+		Cuboid2(1, 1, 1, block, visible, selectedFace)
+
 	}
 
 }
 
-func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *gl.Texture, ntexture *gl.Texture, stexture *gl.Texture, utexture *gl.Texture, dtexture *gl.Texture, selectedFace uint8) {
+func RenderQuads(v []Vertex) {
+	gl.Begin(gl.QUADS)
+	for i := 0; i < len(v); i++ {
+		gl.Normal3f(v[i].n[0], v[i].n[1], v[i].n[2])
+		gl.TexCoord2f(v[i].t[0], v[i].t[1])
+		gl.Color4f(v[i].c[0], v[i].c[1], v[i].c[2], v[i].c[3])
+		gl.Vertex3f(v[i].p[0], v[i].p[1], v[i].p[2])
+	}
+	gl.End()
+}
+
+func Cuboid2(bw float64, bh float64, bd float64, block TerrainBlock, visible [6]bool, selectedFace uint8) {
 	w, h, d := float32(bw)/2, float32(bh)/2, float32(bd)/2
 
+	v := []Vertex{}
+	terrainTexture.Bind(gl.TEXTURE_2D)
 	// East face
-	if etexture != nil {
-		etexture.Bind(gl.TEXTURE_2D)
+	if visible[EAST_FACE] {
 
+		c := COLOUR_WHITE
 		if selectedFace == EAST_FACE {
-			gl.Color4ub(96, 208, 96, 255)
-		} else {
-			gl.Color4ub(255, 255, 255, 255)
+			c = COLOUR_HIGH
 		}
 
-		// gl.EnableClientState(gl.VERTEX_ARRAY)        // Enable Vertex Arrays
-		// gl.EnableClientState(gl.TEXTURE_COORD_ARRAY) // Enable Texture Coord Arrays
-		// gl.EnableClientState(gl.NORMAL_ARRAY)        // Enable Texture Coord Arrays
-		// gl.VertexPointer(3, 0, []float32{d, -h, -w, d, h, -w, d, h, w, d, -h, w})
-		// gl.TexCoordPointer(2, 0, []float32{1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 0.0, 0.0})
-		// gl.NormalPointer(0, []float32{1.0, 0.0, 0.0})
-		// gl.DrawArrays(gl.QUADS, 0, 4)
+		v = append(v,
+			Vertex{p: [3]float32{d, -h, -w}, t: [2]float32{block.texpos[EAST_FACE].x + 1.0/TILES_HORZ, block.texpos[EAST_FACE].y + 1.0/TILES_VERT}, n: NORMAL_EAST, c: c},
+			Vertex{p: [3]float32{d, h, -w}, t: [2]float32{block.texpos[EAST_FACE].x + 1.0/TILES_HORZ, block.texpos[EAST_FACE].y + 0.0/TILES_VERT}, n: NORMAL_EAST, c: c},
+			Vertex{p: [3]float32{d, h, w}, t: [2]float32{block.texpos[EAST_FACE].x + 0.0/TILES_HORZ, block.texpos[EAST_FACE].y + 0.0/TILES_VERT}, n: NORMAL_EAST, c: c},
+			Vertex{p: [3]float32{d, -h, w}, t: [2]float32{block.texpos[EAST_FACE].x + 0.0/TILES_HORZ, block.texpos[EAST_FACE].y + 1.0/TILES_VERT}, n: NORMAL_EAST, c: c},
+		)
 
-		gl.Begin(gl.QUADS)
-		gl.Normal3f(1.0, 0.0, 0.0)
-		gl.TexCoord2f(1.0, 1.0)
-		gl.Vertex3f(d, -h, -w) // Bottom Right Of The Texture and Quad
-		gl.TexCoord2f(1.0, 0.0)
-		gl.Vertex3f(d, h, -w) // Top Right Of The Texture and Quad
-		gl.TexCoord2f(0.0, 0.0)
-		gl.Vertex3f(d, h, w) // Top Left Of The Texture and Quad
-		gl.TexCoord2f(0.0, 1.0)
-		gl.Vertex3f(d, -h, w) // Bottom Left Of The Texture and Quad
-		gl.End()
-		etexture.Unbind(gl.TEXTURE_2D)
-		// CheckGLError()
 	}
 
 	// West Face
-	if wtexture != nil {
+	if visible[WEST_FACE] {
+		c := COLOUR_WHITE
 		if selectedFace == WEST_FACE {
-			gl.Color4ub(96, 208, 96, 255)
-		} else {
-			gl.Color4ub(255, 255, 255, 255)
+			c = COLOUR_HIGH
 		}
 
-		wtexture.Bind(gl.TEXTURE_2D)
-		gl.Begin(gl.QUADS)
-		gl.Normal3f(-1.0, 0.0, 0.0)
-		gl.TexCoord2f(0.0, 1.0)
-		gl.Vertex3f(-d, -h, -w) // Bottom Left Of The Texture and Quad
-		gl.TexCoord2f(1.0, 1.0)
-		gl.Vertex3f(-d, -h, w) // Bottom Right Of The Texture and Quad
-		gl.TexCoord2f(1.0, 0.0)
-		gl.Vertex3f(-d, h, w) // Top Right Of The Texture and Quad
-		gl.TexCoord2f(0.0, 0.0)
-		gl.Vertex3f(-d, h, -w) // Top Left Of The Texture and Quad
-		gl.End()
-		wtexture.Unbind(gl.TEXTURE_2D)
+		v = append(v,
+			Vertex{p: [3]float32{-d, -h, -w}, t: [2]float32{block.texpos[WEST_FACE].x + 0.0/TILES_HORZ, block.texpos[WEST_FACE].y + 1.0/TILES_VERT}, n: NORMAL_WEST, c: c},
+			Vertex{p: [3]float32{-d, -h, w}, t: [2]float32{block.texpos[WEST_FACE].x + 1.0/TILES_HORZ, block.texpos[WEST_FACE].y + 1.0/TILES_VERT}, n: NORMAL_WEST, c: c},
+			Vertex{p: [3]float32{-d, h, w}, t: [2]float32{block.texpos[WEST_FACE].x + 1.0/TILES_HORZ, block.texpos[WEST_FACE].y + 0.0/TILES_VERT}, n: NORMAL_WEST, c: c},
+			Vertex{p: [3]float32{-d, h, -w}, t: [2]float32{block.texpos[WEST_FACE].x + 0.0/TILES_HORZ, block.texpos[WEST_FACE].y + 0.0/TILES_VERT}, n: NORMAL_WEST, c: c},
+		)
 
-		// CheckGLError()
 	}
 
 	// North Face
-	if ntexture != nil {
+	if visible[NORTH_FACE] {
+		c := COLOUR_WHITE
 		if selectedFace == NORTH_FACE {
-			gl.Color4ub(96, 208, 96, 255)
-		} else {
-			gl.Color4ub(255, 255, 255, 255)
+			c = COLOUR_HIGH
 		}
 
-		ntexture.Bind(gl.TEXTURE_2D)
-		gl.Begin(gl.QUADS)
-		gl.Normal3f(0.0, 0.0, -1.0)
-		gl.TexCoord2f(1.0, 1.0)
-		gl.Vertex3f(-d, -h, -w) // Bottom Right Of The Texture and Quad
-		gl.TexCoord2f(1.0, 0.0)
-		gl.Vertex3f(-d, h, -w) // Top Right Of The Texture and Quad
-		gl.TexCoord2f(0.0, 0.0)
-		gl.Vertex3f(d, h, -w) // Top Left Of The Texture and Quad
-		gl.TexCoord2f(0.0, 1.0)
-		gl.Vertex3f(d, -h, -w) // Bottom Left Of The Texture and Quad
-		gl.End()
-		ntexture.Unbind(gl.TEXTURE_2D)
+		v = append(v,
+			Vertex{p: [3]float32{-d, -h, -w}, t: [2]float32{block.texpos[NORTH_FACE].x + 1.0/TILES_HORZ, block.texpos[NORTH_FACE].y + 1.0/TILES_VERT}, n: NORMAL_NORTH, c: c},
+			Vertex{p: [3]float32{-d, h, -w}, t: [2]float32{block.texpos[NORTH_FACE].x + 1.0/TILES_HORZ, block.texpos[NORTH_FACE].y + 0.0/TILES_VERT}, n: NORMAL_NORTH, c: c},
+			Vertex{p: [3]float32{d, h, -w}, t: [2]float32{block.texpos[NORTH_FACE].x + 0.0/TILES_HORZ, block.texpos[NORTH_FACE].y + 0.0/TILES_VERT}, n: NORMAL_NORTH, c: c},
+			Vertex{p: [3]float32{d, -h, -w}, t: [2]float32{block.texpos[NORTH_FACE].x + 0.0/TILES_HORZ, block.texpos[NORTH_FACE].y + 1.0/TILES_VERT}, n: NORMAL_NORTH, c: c},
+		)
 	}
 
 	// South Face
-	if stexture != nil {
+	if visible[SOUTH_FACE] {
+		c := COLOUR_WHITE
 		if selectedFace == SOUTH_FACE {
-			gl.Color4ub(96, 208, 96, 255)
-		} else {
-			gl.Color4ub(255, 255, 255, 255)
+			c = COLOUR_HIGH
 		}
 
-		stexture.Bind(gl.TEXTURE_2D)
-		gl.Begin(gl.QUADS)
-		gl.Normal3f(0.0, 0.0, 1.0)
-		gl.TexCoord2f(0.0, 1.0)
-		gl.Vertex3f(-d, -h, w) // Bottom Left Of The Texture and Quad
-		gl.TexCoord2f(1.0, 1.0)
-		gl.Vertex3f(d, -h, w) // Bottom Right Of The Texture and Quad
-		gl.TexCoord2f(1.0, 0.0)
-		gl.Vertex3f(d, h, w) // Top Right Of The Texture and Quad
-		gl.TexCoord2f(0.0, 0.0)
-		gl.Vertex3f(-d, h, w) // Top Left Of The Texture and Quad
-		gl.End()
-		stexture.Unbind(gl.TEXTURE_2D)
-
-		// CheckGLError()
+		v = append(v,
+			Vertex{p: [3]float32{-d, -h, w}, t: [2]float32{block.texpos[SOUTH_FACE].x + 0.0/TILES_HORZ, block.texpos[SOUTH_FACE].y + 1.0/TILES_VERT}, n: NORMAL_SOUTH, c: c},
+			Vertex{p: [3]float32{d, -h, w}, t: [2]float32{block.texpos[SOUTH_FACE].x + 1.0/TILES_HORZ, block.texpos[SOUTH_FACE].y + 1.0/TILES_VERT}, n: NORMAL_SOUTH, c: c},
+			Vertex{p: [3]float32{d, h, w}, t: [2]float32{block.texpos[SOUTH_FACE].x + 1.0/TILES_HORZ, block.texpos[SOUTH_FACE].y + 0.0/TILES_VERT}, n: NORMAL_SOUTH, c: c},
+			Vertex{p: [3]float32{-d, h, w}, t: [2]float32{block.texpos[SOUTH_FACE].x + 0.0/TILES_HORZ, block.texpos[SOUTH_FACE].y + 0.0/TILES_VERT}, n: NORMAL_SOUTH, c: c},
+		)
 	}
 
 	// Up Face
-	if utexture != nil {
+	if visible[UP_FACE] {
+
+		c := COLOUR_WHITE
 		if selectedFace == UP_FACE {
-			gl.Color4ub(96, 208, 96, 255)
-		} else {
-			gl.Color4ub(255, 255, 255, 255)
+			c = COLOUR_HIGH
 		}
-
-		utexture.Bind(gl.TEXTURE_2D)
-
-		gl.Begin(gl.QUADS)
-		// gl.Begin(gl.TRIANGLES)
-
-		// gl.TexCoord2f(0.0, 1.0)
-		// gl.Vertex3f(-d,  h, -w)  // Top Left Of The Texture and Quad
-		// gl.TexCoord2f(0.0, 0.0)
-		// gl.Vertex3f(-d,  h,  w)  // Bottom Left Of The Texture and Quad
-		// gl.TexCoord2f(1.0, 0.0)
-		// gl.Vertex3f( d,  h,  w)  // Bottom Right Of The Texture and Quad
-		// gl.TexCoord2f(1.0, 1.0)
-		// gl.Vertex3f( d,  h, -w)  // Top Right Of The Texture and Quad
 
 		//  -d/-w   -d/0   -d/+w
 		//
@@ -542,54 +545,151 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 		// 0.5/1.0    0.5/0.5   0.5/0.0
 		// 1.0/1.0    1.0/0.5   1.0/0.0
 
-		// 2x2 Subsquares
-		gl.Normal3f(0.0, 1.0, 0.0)
-		gl.TexCoord2f(0.0, 1.0)
-		gl.Vertex3f(d, h, -w) // Top Left Of The Texture and Quad
+		// v = append(v, 
+		// 		Vertex{ p: [3]float32{ d,  h,  w}, t: [2]float32{block.texpos[UP_FACE].x + 1.0/TILES_HORZ, block.texpos[UP_FACE].y + 1.0/TILES_VERT}, n: NORMAL_UP, c: c},
+		// 		Vertex{ p: [3]float32{ d,  h, -w}, t: [2]float32{block.texpos[UP_FACE].x + 1.0/TILES_HORZ, block.texpos[UP_FACE].y + 0.0/TILES_VERT}, n: NORMAL_UP, c: c},
+		// 		Vertex{ p: [3]float32{-d,  h, -w}, t: [2]float32{block.texpos[UP_FACE].x + 0.0/TILES_HORZ, block.texpos[UP_FACE].y + 0.0/TILES_VERT}, n: NORMAL_UP, c: c},
+		// 		Vertex{ p: [3]float32{-d,  h,  w}, t: [2]float32{block.texpos[UP_FACE].x + 0.0/TILES_HORZ, block.texpos[UP_FACE].y + 1.0/TILES_VERT}, n: NORMAL_UP, c: c},
+		// 	)
+		v = append(v,
+			Vertex{p: [3]float32{d, h, -w}, t: [2]float32{block.texpos[UP_FACE].x + 0.0/TILES_HORZ, block.texpos[UP_FACE].y + 1.0/TILES_VERT}, n: NORMAL_UP, c: c},
+			Vertex{p: [3]float32{0, h, -w}, t: [2]float32{block.texpos[UP_FACE].x + 0.0/TILES_HORZ, block.texpos[UP_FACE].y + 0.5/TILES_VERT}, n: NORMAL_UP, c: c},
+			Vertex{p: [3]float32{0, h, 0}, t: [2]float32{block.texpos[UP_FACE].x + 0.5/TILES_HORZ, block.texpos[UP_FACE].y + 0.5/TILES_VERT}, n: NORMAL_UP, c: c},
+			Vertex{p: [3]float32{d, h, 0}, t: [2]float32{block.texpos[UP_FACE].x + 0.5/TILES_HORZ, block.texpos[UP_FACE].y + 1.0/TILES_VERT}, n: NORMAL_UP, c: c},
 
-		gl.Normal3f(0.0, 1.0, 0.0)
-		gl.TexCoord2f(0.0, 0.5)
-		gl.Vertex3f(0, h, -w) // Bottom Left Of The Texture and Quad
+			Vertex{p: [3]float32{d, h, 0}, t: [2]float32{block.texpos[UP_FACE].x + 0.5/TILES_HORZ, block.texpos[UP_FACE].y + 1.0/TILES_VERT}, n: NORMAL_UP, c: c},
+			Vertex{p: [3]float32{0, h, 0}, t: [2]float32{block.texpos[UP_FACE].x + 0.5/TILES_HORZ, block.texpos[UP_FACE].y + 0.5/TILES_VERT}, n: NORMAL_UP, c: c},
+			Vertex{p: [3]float32{0, h, w}, t: [2]float32{block.texpos[UP_FACE].x + 1.0/TILES_HORZ, block.texpos[UP_FACE].y + 0.5/TILES_VERT}, n: NORMAL_UP, c: c},
+			Vertex{p: [3]float32{d, h, w}, t: [2]float32{block.texpos[UP_FACE].x + 1.0/TILES_HORZ, block.texpos[UP_FACE].y + 1.0/TILES_VERT}, n: NORMAL_UP, c: c},
 
-		gl.Normal3f(0.0, 1.0, 0.0)
-		gl.TexCoord2f(0.5, 0.5)
-		gl.Vertex3f(0, h, 0) // Bottom Right Of The Texture and Quad
+			Vertex{p: [3]float32{0, h, 0}, t: [2]float32{block.texpos[UP_FACE].x + 0.5/TILES_HORZ, block.texpos[UP_FACE].y + 0.5/TILES_VERT}, n: NORMAL_UP, c: c},
+			Vertex{p: [3]float32{-d, h, 0}, t: [2]float32{block.texpos[UP_FACE].x + 0.5/TILES_HORZ, block.texpos[UP_FACE].y + 0.0/TILES_VERT}, n: NORMAL_UP, c: c},
+			Vertex{p: [3]float32{-d, h, w}, t: [2]float32{block.texpos[UP_FACE].x + 1.0/TILES_HORZ, block.texpos[UP_FACE].y + 0.0/TILES_VERT}, n: NORMAL_UP, c: c},
+			Vertex{p: [3]float32{0, h, w}, t: [2]float32{block.texpos[UP_FACE].x + 1.0/TILES_HORZ, block.texpos[UP_FACE].y + 0.5/TILES_VERT}, n: NORMAL_UP, c: c},
 
-		gl.Normal3f(0.0, 1.0, 0.0)
-		gl.TexCoord2f(0.5, 1.0)
-		gl.Vertex3f(d, h, 0) // Top Right Of The Texture and Quad
+			Vertex{p: [3]float32{0, h, -w}, t: [2]float32{block.texpos[UP_FACE].x + 0.0/TILES_HORZ, block.texpos[UP_FACE].y + 0.5/TILES_VERT}, n: NORMAL_UP, c: c},
+			Vertex{p: [3]float32{-d, h, -w}, t: [2]float32{block.texpos[UP_FACE].x + 0.0/TILES_HORZ, block.texpos[UP_FACE].y + 0.0/TILES_VERT}, n: NORMAL_UP, c: c},
+			Vertex{p: [3]float32{-d, h, 0}, t: [2]float32{block.texpos[UP_FACE].x + 0.5/TILES_HORZ, block.texpos[UP_FACE].y + 0.0/TILES_VERT}, n: NORMAL_UP, c: c},
+			Vertex{p: [3]float32{0, h, 0}, t: [2]float32{block.texpos[UP_FACE].x + 0.5/TILES_HORZ, block.texpos[UP_FACE].y + 0.5/TILES_VERT}, n: NORMAL_UP, c: c},
+		)
 
-		gl.Normal3f(0.0, 1.0, 0.0)
-		gl.TexCoord2f(0.5, 1.0)
-		gl.Vertex3f(d, h, 0) // Top Left Of The Texture and Quad
+	}
 
-		gl.Normal3f(0.0, 1.0, 0.0)
-		gl.TexCoord2f(0.5, 0.5)
-		gl.Vertex3f(0, h, 0) // Bottom Left Of The Texture and Quad
+	// Down Face
+	if visible[DOWN_FACE] {
+		c := COLOUR_WHITE
+		if selectedFace == DOWN_FACE {
+			c = COLOUR_HIGH
+		}
 
-		gl.Normal3f(0.0, 1.0, 0.0)
-		gl.TexCoord2f(1.0, 0.5)
-		gl.Vertex3f(0, h, w) // Bottom Right Of The Texture and Quad
+		v = append(v,
+			Vertex{p: [3]float32{-d, -h, -w}, t: [2]float32{block.texpos[DOWN_FACE].x + 1.0/TILES_HORZ, block.texpos[DOWN_FACE].y + 1.0/TILES_VERT}, n: NORMAL_DOWN, c: c},
+			Vertex{p: [3]float32{d, -h, -w}, t: [2]float32{block.texpos[DOWN_FACE].x + 0.0/TILES_HORZ, block.texpos[DOWN_FACE].y + 1.0/TILES_VERT}, n: NORMAL_DOWN, c: c},
+			Vertex{p: [3]float32{d, -h, w}, t: [2]float32{block.texpos[DOWN_FACE].x + 0.0/TILES_HORZ, block.texpos[DOWN_FACE].y + 0.0/TILES_VERT}, n: NORMAL_DOWN, c: c},
+			Vertex{p: [3]float32{-d, -h, w}, t: [2]float32{block.texpos[DOWN_FACE].x + 1.0/TILES_HORZ, block.texpos[DOWN_FACE].y + 0.0/TILES_VERT}, n: NORMAL_DOWN, c: c},
+		)
 
-		gl.Normal3f(0.0, 1.0, 0.0)
-		gl.TexCoord2f(1.0, 1.0)
-		gl.Vertex3f(d, h, w) // Top Right Of The Texture and Quad
+	}
 
-		gl.Normal3f(0.0, 1.0, 0.0)
-		gl.TexCoord2f(0.5, 0.5)
-		gl.Vertex3f(0, h, 0) // Top Left Of The Texture and Quad
+	RenderQuads(v)
+	terrainTexture.Unbind(gl.TEXTURE_2D)
+}
 
-		gl.Normal3f(0.0, 1.0, 0.0)
-		gl.TexCoord2f(0.5, 0.0)
-		gl.Vertex3f(-d, h, 0) // Bottom Left Of The Texture and Quad
+func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *gl.Texture, ntexture *gl.Texture, stexture *gl.Texture, utexture *gl.Texture, dtexture *gl.Texture, selectedFace uint8) {
+	w, h, d := float32(bw)/2, float32(bh)/2, float32(bd)/2
 
-		gl.Normal3f(0.0, 1.0, 0.0)
-		gl.TexCoord2f(1.0, 0.0)
-		gl.Vertex3f(-d, h, w) // Bottom Right Of The Texture and Quad
+	// East face
+	if etexture != nil {
 
-		gl.Normal3f(0.0, 1.0, 0.0)
-		gl.TexCoord2f(1.0, 0.5)
-		gl.Vertex3f(0, h, w) // Top Right Of The Texture and Quad
+		c := COLOUR_WHITE
+		if selectedFace == EAST_FACE {
+			c = COLOUR_HIGH
+		}
+
+		v := []Vertex{
+			Vertex{p: [3]float32{d, -h, -w}, t: [2]float32{1.0, 1.0}, n: NORMAL_EAST, c: c},
+			Vertex{p: [3]float32{d, h, -w}, t: [2]float32{1.0, 0.0}, n: NORMAL_EAST, c: c},
+			Vertex{p: [3]float32{d, h, w}, t: [2]float32{0.0, 0.0}, n: NORMAL_EAST, c: c},
+			Vertex{p: [3]float32{d, -h, w}, t: [2]float32{0.0, 1.0}, n: NORMAL_EAST, c: c},
+		}
+
+		etexture.Bind(gl.TEXTURE_2D)
+		RenderQuads(v)
+		etexture.Unbind(gl.TEXTURE_2D)
+	}
+
+	// West Face
+	if wtexture != nil {
+		c := COLOUR_WHITE
+		if selectedFace == WEST_FACE {
+			c = COLOUR_HIGH
+		}
+
+		v := []Vertex{
+			Vertex{p: [3]float32{-d, -h, -w}, t: [2]float32{0.0, 1.0}, n: NORMAL_WEST, c: c},
+			Vertex{p: [3]float32{-d, -h, w}, t: [2]float32{1.0, 1.0}, n: NORMAL_WEST, c: c},
+			Vertex{p: [3]float32{-d, h, w}, t: [2]float32{1.0, 0.0}, n: NORMAL_WEST, c: c},
+			Vertex{p: [3]float32{-d, h, -w}, t: [2]float32{0.0, 0.0}, n: NORMAL_WEST, c: c},
+		}
+
+		wtexture.Bind(gl.TEXTURE_2D)
+		RenderQuads(v)
+		wtexture.Unbind(gl.TEXTURE_2D)
+
+	}
+
+	// North Face
+	if ntexture != nil {
+		c := COLOUR_WHITE
+		if selectedFace == NORTH_FACE {
+			c = COLOUR_HIGH
+		}
+
+		v := []Vertex{
+			Vertex{p: [3]float32{-d, -h, -w}, t: [2]float32{1.0, 1.0}, n: NORMAL_NORTH, c: c},
+			Vertex{p: [3]float32{-d, h, -w}, t: [2]float32{1.0, 0.0}, n: NORMAL_NORTH, c: c},
+			Vertex{p: [3]float32{d, h, -w}, t: [2]float32{0.0, 0.0}, n: NORMAL_NORTH, c: c},
+			Vertex{p: [3]float32{d, -h, -w}, t: [2]float32{0.0, 1.0}, n: NORMAL_NORTH, c: c},
+		}
+
+		ntexture.Bind(gl.TEXTURE_2D)
+		RenderQuads(v)
+		ntexture.Unbind(gl.TEXTURE_2D)
+
+	}
+
+	// South Face
+	if stexture != nil {
+		c := COLOUR_WHITE
+		if selectedFace == SOUTH_FACE {
+			c = COLOUR_HIGH
+		}
+
+		v := []Vertex{
+			Vertex{p: [3]float32{-d, -h, w}, t: [2]float32{0.0, 1.0}, n: NORMAL_SOUTH, c: c},
+			Vertex{p: [3]float32{d, -h, w}, t: [2]float32{1.0, 1.0}, n: NORMAL_SOUTH, c: c},
+			Vertex{p: [3]float32{d, h, w}, t: [2]float32{1.0, 0.0}, n: NORMAL_SOUTH, c: c},
+			Vertex{p: [3]float32{-d, h, w}, t: [2]float32{0.0, 0.0}, n: NORMAL_SOUTH, c: c},
+		}
+
+		stexture.Bind(gl.TEXTURE_2D)
+		RenderQuads(v)
+		stexture.Unbind(gl.TEXTURE_2D)
+	}
+
+	// Up Face
+	if utexture != nil {
+
+		c := COLOUR_WHITE
+		if selectedFace == UP_FACE {
+			c = COLOUR_HIGH
+		}
+
+		//  -d/-w   -d/0   -d/+w
+		//
+		//  0/-w     0/0     0/+w
+		//
+		//  +d/-w   +d/0   +d/+w
 
 		// +d/-w     0/-w   -d/-w
 		// +d/0      0/0    -d/0
@@ -600,51 +700,52 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 		// 0.5/1.0    0.5/0.5   0.5/0.0
 		// 1.0/1.0    1.0/0.5   1.0/0.0
 
-		gl.Normal3f(0.0, 1.0, 0.0)
-		gl.TexCoord2f(0.0, 0.5)
-		gl.Vertex3f(0, h, -w) // Top Left Of The Texture and Quad
+		v := []Vertex{
+			Vertex{p: [3]float32{d, h, -w}, t: [2]float32{0.0, 1.0}, n: NORMAL_UP, c: c},
+			Vertex{p: [3]float32{0, h, -w}, t: [2]float32{0.0, 0.5}, n: NORMAL_UP, c: c},
+			Vertex{p: [3]float32{0, h, 0}, t: [2]float32{0.5, 0.5}, n: NORMAL_UP, c: c},
+			Vertex{p: [3]float32{d, h, 0}, t: [2]float32{0.5, 1.0}, n: NORMAL_UP, c: c},
 
-		gl.Normal3f(0.0, 1.0, 0.0)
-		gl.TexCoord2f(0.0, 0.0)
-		gl.Vertex3f(-d, h, -w) // Bottom Left Of The Texture and Quad
+			Vertex{p: [3]float32{d, h, 0}, t: [2]float32{0.5, 1.0}, n: NORMAL_UP, c: c},
+			Vertex{p: [3]float32{0, h, 0}, t: [2]float32{0.5, 0.5}, n: NORMAL_UP, c: c},
+			Vertex{p: [3]float32{0, h, w}, t: [2]float32{1.0, 0.5}, n: NORMAL_UP, c: c},
+			Vertex{p: [3]float32{d, h, w}, t: [2]float32{1.0, 1.0}, n: NORMAL_UP, c: c},
 
-		gl.Normal3f(0.0, 1.0, 0.0)
-		gl.TexCoord2f(0.5, 0.0)
-		gl.Vertex3f(-d, h, 0) // Bottom Right Of The Texture and Quad
+			Vertex{p: [3]float32{0, h, 0}, t: [2]float32{0.5, 0.5}, n: NORMAL_UP, c: c},
+			Vertex{p: [3]float32{-d, h, 0}, t: [2]float32{0.5, 0.0}, n: NORMAL_UP, c: c},
+			Vertex{p: [3]float32{-d, h, w}, t: [2]float32{1.0, 0.0}, n: NORMAL_UP, c: c},
+			Vertex{p: [3]float32{0, h, w}, t: [2]float32{1.0, 0.5}, n: NORMAL_UP, c: c},
 
-		gl.Normal3f(0.0, 1.0, 0.0)
-		gl.TexCoord2f(0.5, 0.5)
-		gl.Vertex3f(0, h, 0) // Top Right Of The Texture and Quad
+			Vertex{p: [3]float32{0, h, -w}, t: [2]float32{0.0, 0.5}, n: NORMAL_UP, c: c},
+			Vertex{p: [3]float32{-d, h, -w}, t: [2]float32{0.0, 0.0}, n: NORMAL_UP, c: c},
+			Vertex{p: [3]float32{-d, h, 0}, t: [2]float32{0.5, 0.0}, n: NORMAL_UP, c: c},
+			Vertex{p: [3]float32{0, h, 0}, t: [2]float32{0.5, 0.5}, n: NORMAL_UP, c: c},
+		}
 
-		gl.End()
+		utexture.Bind(gl.TEXTURE_2D)
+		RenderQuads(v)
 		utexture.Unbind(gl.TEXTURE_2D)
-		// CheckGLError()
+
 	}
 
 	// Down Face
 	if dtexture != nil {
+		c := COLOUR_WHITE
 		if selectedFace == DOWN_FACE {
-			gl.Color4ub(96, 208, 96, 255)
-		} else {
-			gl.Color4ub(255, 255, 255, 255)
+			c = COLOUR_HIGH
+		}
+
+		v := []Vertex{
+			Vertex{p: [3]float32{-d, -h, -w}, t: [2]float32{1.0, 1.0}, n: NORMAL_DOWN, c: c},
+			Vertex{p: [3]float32{d, -h, -w}, t: [2]float32{0.0, 1.0}, n: NORMAL_DOWN, c: c},
+			Vertex{p: [3]float32{d, -h, w}, t: [2]float32{0.0, 0.0}, n: NORMAL_DOWN, c: c},
+			Vertex{p: [3]float32{-d, -h, w}, t: [2]float32{1.0, 0.0}, n: NORMAL_DOWN, c: c},
 		}
 
 		dtexture.Bind(gl.TEXTURE_2D)
-		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-		gl.Begin(gl.QUADS)
-		gl.Normal3f(0.0, -1.0, 0.0)
-		gl.TexCoord2f(1.0, 1.0)
-		gl.Vertex3f(-d, -h, -w) // Top Right Of The Texture and Quad
-		gl.TexCoord2f(0.0, 1.0)
-		gl.Vertex3f(d, -h, -w) // Top Left Of The Texture and Quad
-		gl.TexCoord2f(0.0, 0.0)
-		gl.Vertex3f(d, -h, w) // Bottom Left Of The Texture and Quad
-		gl.TexCoord2f(1.0, 0.0)
-		gl.Vertex3f(-d, -h, w) // Bottom Right Of The Texture and Quad
-		gl.End()
+		RenderQuads(v)
 		dtexture.Unbind(gl.TEXTURE_2D)
-		// CheckGLError()
+
 	}
 
 }

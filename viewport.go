@@ -45,10 +45,10 @@ func (self *Viewport) Reshape(width int, height int) {
 	self.bplane = -viewHeight / 4
 	self.tplane = 3 * viewHeight / 4
 
+	// println("self.lplane:", self.lplane, "self.rplane", self.rplane)
 	gl.Ortho(self.lplane, self.rplane, self.bplane, self.tplane, -20, 20)
 	gl.MatrixMode(gl.MODELVIEW)
 	gl.LoadIdentity()
-	// glu.LookAt(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0)
 }
 
 func (self *Viewport) Rotx(angle float64) {
@@ -75,8 +75,7 @@ func (self *Viewport) Rotz(angle float64) {
 
 func (self *Viewport) Zoomstd() {
 	self.selectionDirty = false
-	self.scale = 0.75
-	// self.Recalc()
+	self.scale = 1.0
 }
 
 func (self *Viewport) Zoomin() {
@@ -98,7 +97,7 @@ func (self *Viewport) Zoomout() {
 }
 
 func ModelMatrix() *Matrix4 {
-	return NewIdentity().Rotatex(viewport.rotx).Rotatey(viewport.roty-ThePlayer.Heading()).Rotatez(viewport.rotz).Translation(-ThePlayer.position[XAXIS], -ThePlayer.position[YAXIS], -ThePlayer.position[ZAXIS])
+	return NewIdentity().Scale(viewport.scale).Rotatex(viewport.rotx).Rotatey(viewport.roty-ThePlayer.Heading()).Rotatez(viewport.rotz).Translation(-ThePlayer.position[XAXIS], -ThePlayer.position[YAXIS], -ThePlayer.position[ZAXIS])
 }
 
 func (self *Viewport) SelectedBlockFace() *BlockFace {

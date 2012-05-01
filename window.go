@@ -14,6 +14,7 @@ import (
 )
 
 func Draw(t int64) {
+
 	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT)
 
 	gl.Color4ub(192, 192, 192, 255)
@@ -95,63 +96,53 @@ func Draw(t int64) {
 	gl.MatrixMode(gl.MODELVIEW)
 	gl.LoadIdentity()
 
-	blockscale := float32(0.4)
-	gl.Disable(gl.DEPTH_TEST)
-	radius := float32(90) * PIXEL_SCALE
-	centrex := float32(viewport.rplane) - radius + blockscale*0.5 //+ 20 * PIXEL_SCALE
-	centrey := float32(viewport.bplane) + radius - blockscale*0.5 //- 20 * PIXEL_SCALE
-	//textures[TEXTURE_PICKER].Bind(gl.TEXTURE_2D)
-
-	// gl.Begin(gl.QUADS)
-	// gl.Normal3f(0.0, 0.0, 1.0)
-	// gl.TexCoord2f(0.0, 0.0)
-	// gl.Vertex3f(centrex - radius / 2, centrey + radius / 2, 10)
-	// gl.TexCoord2f(0.0, 1.0)
-	// gl.Vertex3f(centrex - radius / 2, centrey - radius / 2         , 10)
-	// gl.TexCoord2f(1.0, 1.0)
-	// gl.Vertex3f(centrex + radius / 2, centrey - radius / 2, 10)
-	// gl.TexCoord2f(1.0, 0.0)
-	// gl.Vertex3f(centrex + radius / 2, centrey + radius / 2, 10)
-	// textures[TEXTURE_PICKER].Unbind(gl.TEXTURE_2D)
-
 	gl.Disable(gl.DEPTH_TEST)
 	gl.Disable(gl.LIGHTING)
 	gl.Disable(gl.LIGHT0)
 	gl.Disable(gl.LIGHT1)
+	if !InventoryMode {
 
-	gl.Begin(gl.TRIANGLE_FAN)
-	gl.Color4ub(0, 0, 0, 128)
-	gl.Vertex2f(centrex, centrey)
-	for angle := float64(0); angle <= 2*math.Pi; angle += math.Pi / 2 / 10 {
-		gl.Vertex2f(centrex-float32(math.Sin(angle))*radius, centrey+float32(math.Cos(angle))*radius)
-	}
-	gl.End()
+		blockscale := float32(0.4)
+		radius := float32(90) * PIXEL_SCALE
+		centrex := float32(viewport.rplane) - radius + blockscale*0.5 //+ 20 * PIXEL_SCALE
+		centrey := float32(viewport.bplane) + radius - blockscale*0.5 //- 20 * PIXEL_SCALE
 
-	selectionRadius := blockscale * 1.2
-	actionItemRadius := radius - blockscale*1.5
-
-	actionItemAngle := -(float64(ThePlayer.currentAction) - 1.5) * math.Pi / 4
-	gl.Begin(gl.TRIANGLE_FAN)
-	gl.Color4ub(0, 0, 0, 228)
-	gl.Vertex2f(centrex-actionItemRadius*float32(math.Sin(actionItemAngle)), centrey+actionItemRadius*float32(math.Cos(actionItemAngle)))
-	for angle := float64(0); angle <= 2*math.Pi; angle += math.Pi / 2 / 10 {
-		gl.Vertex2f(centrex-actionItemRadius*float32(math.Sin(actionItemAngle))-float32(math.Sin(angle))*selectionRadius, centrey+actionItemRadius*float32(math.Cos(actionItemAngle))+float32(math.Cos(angle))*selectionRadius)
-	}
-	gl.End()
-
-	for i := 0; i < 5; i++ {
-
-		item := ThePlayer.equippedItems[i]
-		if item != ITEM_NONE {
-			angle := -(float64(i) + 1.5) * math.Pi / 4
-			gl.LoadIdentity()
-			gl.Translatef(centrex-actionItemRadius*float32(math.Sin(angle)), centrey+actionItemRadius*float32(math.Cos(angle)), 12)
-			gl.Rotatef(360*float32(math.Sin(float64(t)/1e10+float64(i))), 1.0, 0.0, 0.0)
-			gl.Rotatef(360*float32(math.Cos(float64(t)/1e10+float64(i))), 0.0, 1.0, 0.0)
-			gl.Rotatef(360*float32(math.Sin(float64(t)/1e10+float64(i))), 0.0, 0.0, 1.0)
-			gl.Scalef(blockscale, blockscale, blockscale)
-			TerrainCube([6]uint16{0, 0, 0, 0, 0, 0}, byte(item), FACE_NONE)
+		gl.Begin(gl.TRIANGLE_FAN)
+		gl.Color4ub(0, 0, 0, 128)
+		gl.Vertex2f(centrex, centrey)
+		for angle := float64(0); angle <= 2*math.Pi; angle += math.Pi / 2 / 10 {
+			gl.Vertex2f(centrex-float32(math.Sin(angle))*radius, centrey+float32(math.Cos(angle))*radius)
 		}
+		gl.End()
+
+		selectionRadius := blockscale * 1.2
+		actionItemRadius := radius - blockscale*1.5
+
+		actionItemAngle := -(float64(ThePlayer.currentAction) - 1.5) * math.Pi / 4
+		gl.Begin(gl.TRIANGLE_FAN)
+		gl.Color4ub(0, 0, 0, 228)
+		gl.Vertex2f(centrex-actionItemRadius*float32(math.Sin(actionItemAngle)), centrey+actionItemRadius*float32(math.Cos(actionItemAngle)))
+		for angle := float64(0); angle <= 2*math.Pi; angle += math.Pi / 2 / 10 {
+			gl.Vertex2f(centrex-actionItemRadius*float32(math.Sin(actionItemAngle))-float32(math.Sin(angle))*selectionRadius, centrey+actionItemRadius*float32(math.Cos(actionItemAngle))+float32(math.Cos(angle))*selectionRadius)
+		}
+		gl.End()
+
+		for i := 0; i < 5; i++ {
+
+			item := ThePlayer.equippedItems[i]
+			if item != ITEM_NONE {
+				angle := -(float64(i) + 1.5) * math.Pi / 4
+				gl.LoadIdentity()
+				gl.Translatef(centrex-actionItemRadius*float32(math.Sin(angle)), centrey+actionItemRadius*float32(math.Cos(angle)), 12)
+				gl.Rotatef(360*float32(math.Sin(float64(t)/1e10+float64(i))), 1.0, 0.0, 0.0)
+				gl.Rotatef(360*float32(math.Cos(float64(t)/1e10+float64(i))), 0.0, 1.0, 0.0)
+				gl.Rotatef(360*float32(math.Sin(float64(t)/1e10+float64(i))), 0.0, 0.0, 1.0)
+				gl.Scalef(blockscale, blockscale, blockscale)
+				TerrainCube([6]uint16{0, 0, 0, 0, 0, 0}, byte(item), FACE_NONE)
+			}
+		}
+	} else {
+
 	}
 
 	// Draw debug console
@@ -173,10 +164,10 @@ func Draw(t int64) {
 		gl.End()
 
 		gl.Translatef(float32(viewport.lplane)+margin, float32(viewport.bplane)+consoleHeight+margin-h, 0)
-		consoleFont.Print(fmt.Sprintf("FPS: %5.2f", metrics.fps))
+		consoleFont.Print(fmt.Sprintf("FPS: %5.2f CC: %d", metrics.fps, metrics.cubecount))
 		gl.LoadIdentity()
 		gl.Translatef(float32(viewport.lplane)+margin, float32(viewport.bplane)+consoleHeight+margin-2*h, 0)
-		consoleFont.Print(fmt.Sprintf("X: %5.2f Y: %4.2f Z: %5.2f H: %5.2f (%s) %s", ThePlayer.position[XAXIS], ThePlayer.position[YAXIS], ThePlayer.position[ZAXIS], ThePlayer.heading, HeadingToCompass(ThePlayer.heading), ThePlayer.Normal()))
+		consoleFont.Print(fmt.Sprintf("X: %5.2f Y: %4.2f Z: %5.2f H: %5.2f (%s)", ThePlayer.position[XAXIS], ThePlayer.position[YAXIS], ThePlayer.position[ZAXIS], ThePlayer.heading, HeadingToCompass(ThePlayer.heading)))
 
 		gl.LoadIdentity()
 		gl.Translatef(float32(viewport.lplane)+margin, float32(viewport.bplane)+consoleHeight+margin-3*h, 0)

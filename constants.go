@@ -15,6 +15,9 @@ const (
 	YAXIS = 1
 	ZAXIS = 2
 
+	TILES_HORZ = 16
+	TILES_VERT = 8
+
 	TILE_WIDTH   = 48                 // Height and width of a block texture in pixels
 	SCREEN_SCALE = 1.0 * TILE_WIDTH   // Width of one world coordinate unit in pixels
 	PIXEL_SCALE  = 1.0 / SCREEN_SCALE // Width of one pixel in world coordinate units
@@ -54,6 +57,7 @@ const (
 	ITEM_NONE = 4096
 
 	// Terrain block textures
+	TEXTURE_NONE         = 0
 	TEXTURE_STONE        = 17
 	TEXTURE_STONE_TOP    = 1
 	TEXTURE_DIRT         = 18
@@ -103,4 +107,16 @@ const (
 	STRENGTH_WOOD   = 5
 	STRENGTH_LEAVES = 1
 	STRENGTH_IRON   = 50
+)
+
+var (
+	NORMAL_EAST  = [3]float32{1.0, 0.0, 0.0}
+	NORMAL_WEST  = [3]float32{-1.0, 0.0, 0.0}
+	NORMAL_NORTH = [3]float32{0.0, 0.0, -1.0}
+	NORMAL_SOUTH = [3]float32{0.0, 0.0, 1.0}
+	NORMAL_UP    = [3]float32{0.0, 1.0, 0.0}
+	NORMAL_DOWN  = [3]float32{0.0, -1.0, 0.0}
+
+	COLOUR_WHITE = [4]float32{1.0, 1.0, 1.0, 1.0}
+	COLOUR_HIGH  = [4]float32{96.0 / 255, 208.0 / 255, 96.0 / 255, 1.0}
 )

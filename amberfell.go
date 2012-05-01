@@ -23,6 +23,7 @@ var (
 	flag_cpuprofile       = flag.Bool("cpuprofile", false, "write cpu profile to file")
 	flag_memprofile       = flag.Bool("memprofile", false, "write memory profile to file")
 	DebugMode       bool  = false
+	InventoryMode   bool  = false
 	ViewRadius      int16 = 30
 	TheWorld        *World
 	ThePlayer       *Player
@@ -32,14 +33,16 @@ var (
 
 	WolfModel *mm3dmodel.Model
 
-	consoleFont *Font
-	metrics     Metrics
-	textures    map[uint16]*gl.Texture = make(map[uint16]*gl.Texture)
+	consoleFont    *Font
+	metrics        Metrics
+	textures       map[uint16]*gl.Texture = make(map[uint16]*gl.Texture)
+	terrainTexture *gl.Texture
 )
 
 type Metrics struct {
-	fps float64
-	mem runtime.MemStats
+	fps       float64
+	mem       runtime.MemStats
+	cubecount int
 }
 
 func main() {
@@ -147,6 +150,7 @@ func initGame() {
 	// consoleFont = NewFont("res/FreeMono.ttf", 16, color.RGBA{255, 255, 255, 0})
 
 	textures[TEXTURE_PICKER] = loadTexture("res/dial.png")
+	terrainTexture = loadTexture("tiles.png")
 
 	viewport.Reshape(int(screen.W), int(screen.H))
 

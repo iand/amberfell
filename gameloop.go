@@ -28,6 +28,7 @@ func GameLoop() {
 	update150ms.Start()
 
 	debugModekeyLock := false
+	inventoryModekeyLock := false
 
 	var interactingBlock *InteractingBlockFace
 
@@ -79,6 +80,18 @@ func GameLoop() {
 						debugModekeyLock = false
 					}
 				}
+				if re.Keysym.Sym == sdl.K_i {
+					if !inventoryModekeyLock && re.Type == sdl.KEYDOWN {
+						inventoryModekeyLock = true
+						if InventoryMode == true {
+							InventoryMode = false
+						} else {
+							InventoryMode = true
+						}
+					} else if re.Type == sdl.KEYUP {
+						inventoryModekeyLock = false
+					}
+				}
 			}
 		}
 		keys := sdl.GetKeyState()
@@ -90,10 +103,18 @@ func GameLoop() {
 
 		}
 		if keys[sdl.K_UP] != 0 {
-			viewport.Rotx(5)
+			if keys[sdl.K_LCTRL] != 0 || keys[sdl.K_RCTRL] != 0 {
+				viewport.Zoomin()
+			} else {
+				viewport.Rotx(5)
+			}
 		}
 		if keys[sdl.K_DOWN] != 0 {
-			viewport.Rotx(-5)
+			if keys[sdl.K_LCTRL] != 0 || keys[sdl.K_RCTRL] != 0 {
+				viewport.Zoomout()
+			} else {
+				viewport.Rotx(-5)
+			}
 		}
 		if keys[sdl.K_LEFT] != 0 {
 			viewport.Roty(9)
@@ -115,27 +136,6 @@ func GameLoop() {
 			if timeOfDay < 0 {
 				timeOfDay += 24
 			}
-		}
-
-		if keys[sdl.K_i] != 0 {
-			if ViewRadius < 90 {
-				ViewRadius++
-				println("ViewRadius: ", ViewRadius)
-			}
-		}
-		if keys[sdl.K_k] != 0 {
-			if ViewRadius > 10 {
-				ViewRadius--
-				println("ViewRadius: ", ViewRadius)
-			}
-		}
-
-		if keys[sdl.K_u] != 0 {
-			viewport.Zoomin()
-
-		}
-		if keys[sdl.K_j] != 0 {
-			viewport.Zoomout()
 		}
 
 		if update150ms.PassedInterval() {
