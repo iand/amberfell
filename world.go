@@ -9,8 +9,7 @@ import (
 	"github.com/banthar/gl"
 	"math/rand"
 	// "math"
-	// "fmt"   
-
+	"fmt"
 )
 
 type World struct {
@@ -20,8 +19,10 @@ type World struct {
 }
 
 type Chunk struct {
-	x, y, z int16
-	Blocks  []byte
+	x, y, z      int16
+	Blocks       []byte
+	vertexBuffer VertexBuffer
+	clean        bool
 }
 
 type Side struct {
@@ -418,41 +419,123 @@ func (self *World) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 
 	//gl.Translatef(-float32(center[XAXIS]), -float32(center[YAXIS]), -float32(center[ZAXIS]))
 
-	var px, py, pz = int16(center[XAXIS]), int16(center[YAXIS]), int16(center[ZAXIS])
+	// var px, py, pz = int16(center[XAXIS]), int16(center[YAXIS]), int16(center[ZAXIS])
 
-	var x, y, z int16
+	// var x, y, z int16
 
-	ViewRadius = int16(3 * viewport.rplane / viewport.scale)
+	// ViewRadius = int16(3 * viewport.rplane / viewport.scale)
 	metrics.cubecount = 0
-	for x = px - ViewRadius; x < px+ViewRadius; x++ {
-		for z = pz - ViewRadius; z < pz+ViewRadius; z++ {
-			//if x+z-px-pz <= ViewRadius && x+z-px-pz >= -ViewRadius {
-			for y = py - 5; y < py+16; y++ {
 
-				var blockid byte = self.At(x, y, z)
-				if blockid != 0 {
-					neighbours := self.Neighbours(x, y, z)
-					if self.HasVisibleFaces(neighbours) {
+	// metrics.vertices = 0
+	// for x = px - ViewRadius; x < px+ViewRadius; x++ {
+	// 	for z = pz - ViewRadius; z < pz+ViewRadius; z++ {
+	// 		//if x+z-px-pz <= ViewRadius && x+z-px-pz >= -ViewRadius {
+	// 		for y = py - 5; y < py+16; y++ {
 
-						selectedFace := uint8(FACE_NONE)
-						if selectedBlockFace != nil && x == selectedBlockFace.pos[XAXIS] && y == selectedBlockFace.pos[YAXIS] && z == selectedBlockFace.pos[ZAXIS] {
-							selectedFace = selectedBlockFace.face
-						}
+	// 			var blockid byte = self.At(x, y, z)
+	// 			if blockid != 0 {
+	// 				neighbours := self.Neighbours(x, y, z)
+	// 				if self.HasVisibleFaces(neighbours) {
 
-						gl.PushMatrix()
+	// 					selectedFace := uint8(FACE_NONE)
+	// 					if selectedBlockFace != nil && x == selectedBlockFace.pos[XAXIS] && y == selectedBlockFace.pos[YAXIS] && z == selectedBlockFace.pos[ZAXIS] {
+	// 						selectedFace = selectedBlockFace.face
+	// 					}
 
-						gl.Translatef(float32(x), float32(y), float32(z))
-						TerrainCube(neighbours, blockid, selectedFace)
-						metrics.cubecount++
-						gl.PopMatrix()
-					}
-				}
-			}
-			//}
-		}
+	// 					// gl.PushMatrix()
+
+	// 					// gl.Translatef(float32(x), float32(y), float32(z))
+	// 					TerrainCube(float32(x), float32(y), float32(z), neighbours, blockid, selectedFace)
+	// 					metrics.cubecount++
+	// 					// gl.PopMatrix()
+	// 				}
+	// 			}
+	// 		}
+	// 		//}
+	// 	}
+	// }
+	// metrics.vertices = vertexBuffer.vertexCount
+
+	terrainTexture.Bind(gl.TEXTURE_2D)
+	// chunk := self.chunks[0]
+
+	metrics.vertices = 0
+
+	px := int16(Round(center[XAXIS]/CHUNK_WIDTH, 0))
+	py := int16(Round(center[YAXIS]/CHUNK_HEIGHT, 0))
+	pz := int16(Round(center[ZAXIS]/CHUNK_WIDTH, 0))
+
+	c1, ok := self.chunks[chunkIndex(px, py, pz)]
+	if !ok {
+		c1 = self.GenerateChunk(px, py, pz)
 	}
-	//println("Drew ", count, " cubes")
+	c1.Render(selectedBlockFace)
+	RenderQuadIndex(&c1.vertexBuffer)
+	metrics.vertices += c1.vertexBuffer.vertexCount
 
+	c2, ok := self.chunks[chunkIndex(px+1, py, pz)]
+	if !ok {
+		c2 = self.GenerateChunk(px+1, py, pz)
+	}
+	c2.Render(selectedBlockFace)
+	RenderQuadIndex(&c2.vertexBuffer)
+	metrics.vertices += c2.vertexBuffer.vertexCount
+
+	c3, ok := self.chunks[chunkIndex(px-1, py, pz)]
+	if !ok {
+		c3 = self.GenerateChunk(px-1, py, pz)
+	}
+	c3.Render(selectedBlockFace)
+	RenderQuadIndex(&c3.vertexBuffer)
+	metrics.vertices += c3.vertexBuffer.vertexCount
+
+	c4, ok := self.chunks[chunkIndex(px, py, pz+1)]
+	if !ok {
+		c4 = self.GenerateChunk(px, py, pz+1)
+	}
+	c4.Render(selectedBlockFace)
+	RenderQuadIndex(&c4.vertexBuffer)
+	metrics.vertices += c4.vertexBuffer.vertexCount
+
+	c5, ok := self.chunks[chunkIndex(px, py, pz-1)]
+	if !ok {
+		c5 = self.GenerateChunk(px, py, pz-1)
+	}
+	c5.Render(selectedBlockFace)
+	RenderQuadIndex(&c5.vertexBuffer)
+	metrics.vertices += c5.vertexBuffer.vertexCount
+
+	c6, ok := self.chunks[chunkIndex(px+1, py, pz+1)]
+	if !ok {
+		c6 = self.GenerateChunk(px+1, py, pz+1)
+	}
+	c6.Render(selectedBlockFace)
+	RenderQuadIndex(&c6.vertexBuffer)
+	metrics.vertices += c6.vertexBuffer.vertexCount
+
+	c7, ok := self.chunks[chunkIndex(px+1, py, pz-1)]
+	if !ok {
+		c7 = self.GenerateChunk(px+1, py, pz-1)
+	}
+	c7.Render(selectedBlockFace)
+	RenderQuadIndex(&c7.vertexBuffer)
+	metrics.vertices += c7.vertexBuffer.vertexCount
+
+	c8, ok := self.chunks[chunkIndex(px-1, py, pz+1)]
+	if !ok {
+		c8 = self.GenerateChunk(px-1, py, pz+1)
+	}
+	c8.Render(selectedBlockFace)
+	RenderQuadIndex(&c8.vertexBuffer)
+	metrics.vertices += c8.vertexBuffer.vertexCount
+
+	c9, ok := self.chunks[chunkIndex(px-1, py, pz-1)]
+	if !ok {
+		c9 = self.GenerateChunk(px-1, py, pz-1)
+	}
+	c9.Render(selectedBlockFace)
+	RenderQuadIndex(&c9.vertexBuffer)
+	metrics.vertices += c9.vertexBuffer.vertexCount
 }
 
 // Finds the surface level for a given x, z coordinate
@@ -503,6 +586,66 @@ func (chunk *Chunk) At(x int16, y int16, z int16) byte {
 
 func (chunk *Chunk) Set(x int16, y int16, z int16, b byte) {
 	chunk.Blocks[blockIndex(x, y, z)] = b
+}
+
+func (self *Chunk) Render(selectedBlockFace *BlockFace) {
+
+	if self.clean && !(selectedBlockFace != nil && selectedBlockFace.pos[XAXIS] >= self.x*CHUNK_WIDTH && selectedBlockFace.pos[XAXIS] < (self.x+1)*CHUNK_WIDTH &&
+		selectedBlockFace.pos[YAXIS] >= self.y*CHUNK_HEIGHT && selectedBlockFace.pos[YAXIS] < (self.y+1)*CHUNK_HEIGHT &&
+		selectedBlockFace.pos[ZAXIS] >= self.z*CHUNK_WIDTH && selectedBlockFace.pos[ZAXIS] < (self.z+1)*CHUNK_WIDTH) {
+		return
+	}
+	t := Timer{}
+	t.Start()
+	self.vertexBuffer.Reset()
+	var x, y, z int16
+	for x = 0; x < CHUNK_WIDTH; x++ {
+		for z = 0; z < CHUNK_WIDTH; z++ {
+			for y = 0; y < CHUNK_HEIGHT; y++ {
+
+				var blockid byte = self.Blocks[blockIndex(x, y, z)]
+				if blockid != 0 {
+					xw := self.x*CHUNK_WIDTH + x
+					yw := self.y*CHUNK_HEIGHT + y
+					zw := self.z*CHUNK_WIDTH + z
+
+					// xw, yw, zw := self.WorldCoords(x, y, z)
+					//neighbours := TheWorld.Neighbours(xw, yw, zw)
+					var neighbours [6]uint16
+					if x == 0 || x == CHUNK_WIDTH-1 || z == 0 || z == CHUNK_WIDTH-1 || y == 0 || y == CHUNK_HEIGHT-1 {
+						neighbours = TheWorld.Neighbours(xw, yw, zw)
+					} else {
+
+						neighbours = [6]uint16{
+							uint16(self.Blocks[blockIndex(x+1, y, z)]),
+							uint16(self.Blocks[blockIndex(x-1, y, z)]),
+							uint16(self.Blocks[blockIndex(x, y, z-1)]),
+							uint16(self.Blocks[blockIndex(x, y, z+1)]),
+							uint16(self.Blocks[blockIndex(x, y+1, z)]),
+							uint16(self.Blocks[blockIndex(x, y-1, z)]),
+						}
+					}
+
+					if TheWorld.HasVisibleFaces(neighbours) {
+
+						selectedFace := uint8(FACE_NONE)
+						if selectedBlockFace != nil && xw == selectedBlockFace.pos[XAXIS] && yw == selectedBlockFace.pos[YAXIS] && zw == selectedBlockFace.pos[ZAXIS] {
+							selectedFace = selectedBlockFace.face
+						}
+
+						TerrainCube(&self.vertexBuffer, float32(xw), float32(yw), float32(zw), neighbours, blockid, selectedFace)
+						metrics.cubecount++
+					}
+				}
+			}
+		}
+	}
+
+	metrics.vertices += self.vertexBuffer.vertexCount
+	self.clean = true
+
+	fmt.Printf("Chunk ticks: %4.0f\n", float64(t.GetTicks())/1e6)
+
 }
 
 func (self *World) GrowTree(x int16, y int16, z int16) {

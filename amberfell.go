@@ -37,12 +37,14 @@ var (
 	metrics        Metrics
 	textures       map[uint16]*gl.Texture = make(map[uint16]*gl.Texture)
 	terrainTexture *gl.Texture
+	gVertexBuffer  VertexBuffer
 )
 
 type Metrics struct {
 	fps       float64
 	mem       runtime.MemStats
 	cubecount int
+	vertices  int
 }
 
 func main() {

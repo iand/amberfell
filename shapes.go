@@ -45,6 +45,48 @@ type Vertex struct {
 	padding [16]byte
 }
 
+type TriangleIndex struct {
+	i1 uint32
+	i2 uint32
+	i3 uint32
+}
+
+type VertexBuffer struct {
+	vertices    [VERTEX_BUFFER_CAPACITY]Vertex
+	indices     [VERTEX_BUFFER_CAPACITY]TriangleIndex
+	vertexCount int
+	indexCount  int
+}
+
+func (self *VertexBuffer) Reset() {
+	self.vertexCount = 0
+	self.indexCount = 0
+}
+
+func (self *VertexBuffer) AddFace(face uint8, texture uint16, selected bool, x1, y1, z1, tx1, ty1, x2, y2, z2, tx2, ty2, x3, y3, z3, tx3, ty3, x4, y4, z4, tx4, ty4 float32) {
+	if self.vertexCount >= VERTEX_BUFFER_CAPACITY+4 {
+		// TODO: log a warning about overflowing buffer
+		return
+	}
+
+	c := COLOUR_WHITE
+	if selected {
+		c = COLOUR_HIGH
+	}
+
+	vc := self.vertexCount
+	self.vertices[vc] = Vertex{p: [3]float32{x1, y1, z1}, t: [2]float32{(float32((texture % TILES_HORZ)) + tx1) / TILES_HORZ, (float32((texture / TILES_HORZ)) + ty1) / TILES_VERT}, n: NORMALS[face], c: c}
+	self.vertices[vc+1] = Vertex{p: [3]float32{x2, y2, z2}, t: [2]float32{(float32((texture % TILES_HORZ)) + tx2) / TILES_HORZ, (float32((texture / TILES_HORZ)) + ty2) / TILES_VERT}, n: NORMALS[face], c: c}
+	self.vertices[vc+2] = Vertex{p: [3]float32{x3, y3, z3}, t: [2]float32{(float32((texture % TILES_HORZ)) + tx3) / TILES_HORZ, (float32((texture / TILES_HORZ)) + ty3) / TILES_VERT}, n: NORMALS[face], c: c}
+	self.vertices[vc+3] = Vertex{p: [3]float32{x4, y4, z4}, t: [2]float32{(float32((texture % TILES_HORZ)) + tx4) / TILES_HORZ, (float32((texture / TILES_HORZ)) + ty4) / TILES_VERT}, n: NORMALS[face], c: c}
+	self.vertexCount += 4
+
+	ic := self.indexCount
+	self.indices[ic] = TriangleIndex{uint32(vc), uint32(vc) + 1, uint32(vc) + 2}
+	self.indices[ic+1] = TriangleIndex{uint32(vc) + 2, uint32(vc) + 3, uint32(vc)}
+	self.indexCount += 2
+}
+
 func LoadMapTextures() {
 
 	var file, err = os.Open("tiles.png")
@@ -263,7 +305,7 @@ func terrainCubeIndex(n bool, s bool, w bool, e bool, u bool, d bool, blockid by
 	return index
 }
 
-func TerrainCube(neighbours [6]uint16, blockid byte, selectedFace uint8) {
+func TerrainCube(vertexBuffer *VertexBuffer, x float32, y float32, z float32, neighbours [6]uint16, blockid byte, selectedFace uint8) {
 
 	block := TerrainBlocks[uint16(blockid)]
 
@@ -406,29 +448,6 @@ func TerrainCube(neighbours [6]uint16, blockid byte, selectedFace uint8) {
 
 	default:
 
-		// var ntexture, stexture, etexture, wtexture, utexture, dtexture *gl.Texture
-
-		// if TerrainBlocks[neighbours[NORTH_FACE]].transparent {
-		// 	ntexture = block.ntexture
-		// }
-		// if TerrainBlocks[neighbours[SOUTH_FACE]].transparent {
-		// 	stexture = block.stexture
-		// }
-		// if TerrainBlocks[neighbours[EAST_FACE]].transparent {
-		// 	etexture = block.etexture
-		// }
-		// if TerrainBlocks[neighbours[WEST_FACE]].transparent {
-		// 	wtexture = block.wtexture
-		// }
-		// if TerrainBlocks[neighbours[UP_FACE]].transparent {
-		// 	utexture = block.utexture
-		// }
-		// if TerrainBlocks[neighbours[DOWN_FACE]].transparent {
-		// 	dtexture = block.dtexture
-		// }
-
-		// Cuboid(1, 1, 1, etexture, wtexture, ntexture, stexture, utexture, dtexture, selectedFace)
-
 		var visible [6]bool
 
 		for i := 0; i < 6; i++ {
@@ -437,7 +456,7 @@ func TerrainCube(neighbours [6]uint16, blockid byte, selectedFace uint8) {
 			}
 		}
 
-		Cuboid2(1, 1, 1, block, visible, selectedFace)
+		Cuboid2(vertexBuffer, x, y, z, 1, 1, 1, block, visible, selectedFace)
 
 	}
 
@@ -454,81 +473,62 @@ func RenderQuads(v []Vertex) {
 	gl.End()
 }
 
-func Cuboid2(bw float64, bh float64, bd float64, block TerrainBlock, visible [6]bool, selectedFace uint8) {
+func RenderQuadIndex(vertexBuffer *VertexBuffer) {
+	gl.Begin(gl.QUADS)
+	for i := 0; i < vertexBuffer.vertexCount; i++ {
+		gl.Normal3f(vertexBuffer.vertices[i].n[0], vertexBuffer.vertices[i].n[1], vertexBuffer.vertices[i].n[2])
+		gl.TexCoord2f(vertexBuffer.vertices[i].t[0], vertexBuffer.vertices[i].t[1])
+		gl.Color4f(vertexBuffer.vertices[i].c[0], vertexBuffer.vertices[i].c[1], vertexBuffer.vertices[i].c[2], vertexBuffer.vertices[i].c[3])
+		gl.Vertex3f(vertexBuffer.vertices[i].p[0], vertexBuffer.vertices[i].p[1], vertexBuffer.vertices[i].p[2])
+	}
+	gl.End()
+}
+
+func Cuboid2(vertexBuffer *VertexBuffer, x float32, y float32, z float32, bw float64, bh float64, bd float64, block TerrainBlock, visible [6]bool, selectedFace uint8) {
 	w, h, d := float32(bw)/2, float32(bh)/2, float32(bd)/2
 
-	v := []Vertex{}
-	terrainTexture.Bind(gl.TEXTURE_2D)
 	// East face
 	if visible[EAST_FACE] {
 
-		c := COLOUR_WHITE
-		if selectedFace == EAST_FACE {
-			c = COLOUR_HIGH
-		}
-
-		v = append(v,
-			Vertex{p: [3]float32{d, -h, -w}, t: [2]float32{block.texpos[EAST_FACE].x + 1.0/TILES_HORZ, block.texpos[EAST_FACE].y + 1.0/TILES_VERT}, n: NORMAL_EAST, c: c},
-			Vertex{p: [3]float32{d, h, -w}, t: [2]float32{block.texpos[EAST_FACE].x + 1.0/TILES_HORZ, block.texpos[EAST_FACE].y + 0.0/TILES_VERT}, n: NORMAL_EAST, c: c},
-			Vertex{p: [3]float32{d, h, w}, t: [2]float32{block.texpos[EAST_FACE].x + 0.0/TILES_HORZ, block.texpos[EAST_FACE].y + 0.0/TILES_VERT}, n: NORMAL_EAST, c: c},
-			Vertex{p: [3]float32{d, -h, w}, t: [2]float32{block.texpos[EAST_FACE].x + 0.0/TILES_HORZ, block.texpos[EAST_FACE].y + 1.0/TILES_VERT}, n: NORMAL_EAST, c: c},
-		)
+		vertexBuffer.AddFace(EAST_FACE, block.textures[EAST_FACE], selectedFace == EAST_FACE,
+			x+d, y-h, z-w, 1.0, 1.0,
+			x+d, y+h, z-w, 1.0, 0.0,
+			x+d, y+h, z+w, 0.0, 0.0,
+			x+d, y-h, z+w, 0.0, 1.0)
 
 	}
 
 	// West Face
 	if visible[WEST_FACE] {
-		c := COLOUR_WHITE
-		if selectedFace == WEST_FACE {
-			c = COLOUR_HIGH
-		}
 
-		v = append(v,
-			Vertex{p: [3]float32{-d, -h, -w}, t: [2]float32{block.texpos[WEST_FACE].x + 0.0/TILES_HORZ, block.texpos[WEST_FACE].y + 1.0/TILES_VERT}, n: NORMAL_WEST, c: c},
-			Vertex{p: [3]float32{-d, -h, w}, t: [2]float32{block.texpos[WEST_FACE].x + 1.0/TILES_HORZ, block.texpos[WEST_FACE].y + 1.0/TILES_VERT}, n: NORMAL_WEST, c: c},
-			Vertex{p: [3]float32{-d, h, w}, t: [2]float32{block.texpos[WEST_FACE].x + 1.0/TILES_HORZ, block.texpos[WEST_FACE].y + 0.0/TILES_VERT}, n: NORMAL_WEST, c: c},
-			Vertex{p: [3]float32{-d, h, -w}, t: [2]float32{block.texpos[WEST_FACE].x + 0.0/TILES_HORZ, block.texpos[WEST_FACE].y + 0.0/TILES_VERT}, n: NORMAL_WEST, c: c},
-		)
-
+		vertexBuffer.AddFace(WEST_FACE, block.textures[WEST_FACE], selectedFace == WEST_FACE,
+			x-d, y-h, z-w, 0.0, 1.0,
+			x-d, y-h, z+w, 1.0, 1.0,
+			x-d, y+h, z+w, 1.0, 0.0,
+			x-d, y+h, z-w, 0.0, 0.0)
 	}
 
 	// North Face
 	if visible[NORTH_FACE] {
-		c := COLOUR_WHITE
-		if selectedFace == NORTH_FACE {
-			c = COLOUR_HIGH
-		}
-
-		v = append(v,
-			Vertex{p: [3]float32{-d, -h, -w}, t: [2]float32{block.texpos[NORTH_FACE].x + 1.0/TILES_HORZ, block.texpos[NORTH_FACE].y + 1.0/TILES_VERT}, n: NORMAL_NORTH, c: c},
-			Vertex{p: [3]float32{-d, h, -w}, t: [2]float32{block.texpos[NORTH_FACE].x + 1.0/TILES_HORZ, block.texpos[NORTH_FACE].y + 0.0/TILES_VERT}, n: NORMAL_NORTH, c: c},
-			Vertex{p: [3]float32{d, h, -w}, t: [2]float32{block.texpos[NORTH_FACE].x + 0.0/TILES_HORZ, block.texpos[NORTH_FACE].y + 0.0/TILES_VERT}, n: NORMAL_NORTH, c: c},
-			Vertex{p: [3]float32{d, -h, -w}, t: [2]float32{block.texpos[NORTH_FACE].x + 0.0/TILES_HORZ, block.texpos[NORTH_FACE].y + 1.0/TILES_VERT}, n: NORMAL_NORTH, c: c},
-		)
+		vertexBuffer.AddFace(NORTH_FACE, block.textures[NORTH_FACE], selectedFace == NORTH_FACE,
+			x-d, y-h, z-w, 1.0, 1.0,
+			x-d, y+h, z-w, 1.0, 0.0,
+			x+d, y+h, z-w, 0.0, 0.0,
+			x+d, y-h, z-w, 0.0, 1.0)
 	}
 
 	// South Face
 	if visible[SOUTH_FACE] {
-		c := COLOUR_WHITE
-		if selectedFace == SOUTH_FACE {
-			c = COLOUR_HIGH
-		}
+		vertexBuffer.AddFace(SOUTH_FACE, block.textures[SOUTH_FACE], selectedFace == SOUTH_FACE,
+			x-d, y-h, z+w, 0.0, 1.0,
+			x+d, y-h, z+w, 1.0, 1.0,
+			x+d, y+h, z+w, 1.0, 0.0,
+			x-d, y+h, z+w, 0.0, 0.0)
 
-		v = append(v,
-			Vertex{p: [3]float32{-d, -h, w}, t: [2]float32{block.texpos[SOUTH_FACE].x + 0.0/TILES_HORZ, block.texpos[SOUTH_FACE].y + 1.0/TILES_VERT}, n: NORMAL_SOUTH, c: c},
-			Vertex{p: [3]float32{d, -h, w}, t: [2]float32{block.texpos[SOUTH_FACE].x + 1.0/TILES_HORZ, block.texpos[SOUTH_FACE].y + 1.0/TILES_VERT}, n: NORMAL_SOUTH, c: c},
-			Vertex{p: [3]float32{d, h, w}, t: [2]float32{block.texpos[SOUTH_FACE].x + 1.0/TILES_HORZ, block.texpos[SOUTH_FACE].y + 0.0/TILES_VERT}, n: NORMAL_SOUTH, c: c},
-			Vertex{p: [3]float32{-d, h, w}, t: [2]float32{block.texpos[SOUTH_FACE].x + 0.0/TILES_HORZ, block.texpos[SOUTH_FACE].y + 0.0/TILES_VERT}, n: NORMAL_SOUTH, c: c},
-		)
 	}
 
 	// Up Face
 	if visible[UP_FACE] {
-
-		c := COLOUR_WHITE
-		if selectedFace == UP_FACE {
-			c = COLOUR_HIGH
-		}
 
 		//  -d/-w   -d/0   -d/+w
 		//
@@ -545,54 +545,40 @@ func Cuboid2(bw float64, bh float64, bd float64, block TerrainBlock, visible [6]
 		// 0.5/1.0    0.5/0.5   0.5/0.0
 		// 1.0/1.0    1.0/0.5   1.0/0.0
 
-		// v = append(v, 
-		// 		Vertex{ p: [3]float32{ d,  h,  w}, t: [2]float32{block.texpos[UP_FACE].x + 1.0/TILES_HORZ, block.texpos[UP_FACE].y + 1.0/TILES_VERT}, n: NORMAL_UP, c: c},
-		// 		Vertex{ p: [3]float32{ d,  h, -w}, t: [2]float32{block.texpos[UP_FACE].x + 1.0/TILES_HORZ, block.texpos[UP_FACE].y + 0.0/TILES_VERT}, n: NORMAL_UP, c: c},
-		// 		Vertex{ p: [3]float32{-d,  h, -w}, t: [2]float32{block.texpos[UP_FACE].x + 0.0/TILES_HORZ, block.texpos[UP_FACE].y + 0.0/TILES_VERT}, n: NORMAL_UP, c: c},
-		// 		Vertex{ p: [3]float32{-d,  h,  w}, t: [2]float32{block.texpos[UP_FACE].x + 0.0/TILES_HORZ, block.texpos[UP_FACE].y + 1.0/TILES_VERT}, n: NORMAL_UP, c: c},
-		// 	)
-		v = append(v,
-			Vertex{p: [3]float32{d, h, -w}, t: [2]float32{block.texpos[UP_FACE].x + 0.0/TILES_HORZ, block.texpos[UP_FACE].y + 1.0/TILES_VERT}, n: NORMAL_UP, c: c},
-			Vertex{p: [3]float32{0, h, -w}, t: [2]float32{block.texpos[UP_FACE].x + 0.0/TILES_HORZ, block.texpos[UP_FACE].y + 0.5/TILES_VERT}, n: NORMAL_UP, c: c},
-			Vertex{p: [3]float32{0, h, 0}, t: [2]float32{block.texpos[UP_FACE].x + 0.5/TILES_HORZ, block.texpos[UP_FACE].y + 0.5/TILES_VERT}, n: NORMAL_UP, c: c},
-			Vertex{p: [3]float32{d, h, 0}, t: [2]float32{block.texpos[UP_FACE].x + 0.5/TILES_HORZ, block.texpos[UP_FACE].y + 1.0/TILES_VERT}, n: NORMAL_UP, c: c},
+		vertexBuffer.AddFace(UP_FACE, block.textures[UP_FACE], selectedFace == UP_FACE,
+			x+d, y+h, z-w, 0.0, 1.0,
+			x+0, y+h, z-w, 0.0, 0.5,
+			x+0, y+h, z+0, 0.5, 0.5,
+			x+d, y+h, z+0, 0.5, 1.0)
 
-			Vertex{p: [3]float32{d, h, 0}, t: [2]float32{block.texpos[UP_FACE].x + 0.5/TILES_HORZ, block.texpos[UP_FACE].y + 1.0/TILES_VERT}, n: NORMAL_UP, c: c},
-			Vertex{p: [3]float32{0, h, 0}, t: [2]float32{block.texpos[UP_FACE].x + 0.5/TILES_HORZ, block.texpos[UP_FACE].y + 0.5/TILES_VERT}, n: NORMAL_UP, c: c},
-			Vertex{p: [3]float32{0, h, w}, t: [2]float32{block.texpos[UP_FACE].x + 1.0/TILES_HORZ, block.texpos[UP_FACE].y + 0.5/TILES_VERT}, n: NORMAL_UP, c: c},
-			Vertex{p: [3]float32{d, h, w}, t: [2]float32{block.texpos[UP_FACE].x + 1.0/TILES_HORZ, block.texpos[UP_FACE].y + 1.0/TILES_VERT}, n: NORMAL_UP, c: c},
+		vertexBuffer.AddFace(UP_FACE, block.textures[UP_FACE], selectedFace == UP_FACE,
+			x+d, y+h, z+0, 0.5, 1.0,
+			x+0, y+h, z+0, 0.5, 0.5,
+			x+0, y+h, z+w, 1.0, 0.5,
+			x+d, y+h, z+w, 1.0, 1.0)
 
-			Vertex{p: [3]float32{0, h, 0}, t: [2]float32{block.texpos[UP_FACE].x + 0.5/TILES_HORZ, block.texpos[UP_FACE].y + 0.5/TILES_VERT}, n: NORMAL_UP, c: c},
-			Vertex{p: [3]float32{-d, h, 0}, t: [2]float32{block.texpos[UP_FACE].x + 0.5/TILES_HORZ, block.texpos[UP_FACE].y + 0.0/TILES_VERT}, n: NORMAL_UP, c: c},
-			Vertex{p: [3]float32{-d, h, w}, t: [2]float32{block.texpos[UP_FACE].x + 1.0/TILES_HORZ, block.texpos[UP_FACE].y + 0.0/TILES_VERT}, n: NORMAL_UP, c: c},
-			Vertex{p: [3]float32{0, h, w}, t: [2]float32{block.texpos[UP_FACE].x + 1.0/TILES_HORZ, block.texpos[UP_FACE].y + 0.5/TILES_VERT}, n: NORMAL_UP, c: c},
+		vertexBuffer.AddFace(UP_FACE, block.textures[UP_FACE], selectedFace == UP_FACE,
+			x+0, y+h, z+0, 0.5, 0.5,
+			x-d, y+h, z+0, 0.5, 0.0,
+			x-d, y+h, z+w, 1.0, 0.0,
+			x+0, y+h, z+w, 1.0, 0.5)
 
-			Vertex{p: [3]float32{0, h, -w}, t: [2]float32{block.texpos[UP_FACE].x + 0.0/TILES_HORZ, block.texpos[UP_FACE].y + 0.5/TILES_VERT}, n: NORMAL_UP, c: c},
-			Vertex{p: [3]float32{-d, h, -w}, t: [2]float32{block.texpos[UP_FACE].x + 0.0/TILES_HORZ, block.texpos[UP_FACE].y + 0.0/TILES_VERT}, n: NORMAL_UP, c: c},
-			Vertex{p: [3]float32{-d, h, 0}, t: [2]float32{block.texpos[UP_FACE].x + 0.5/TILES_HORZ, block.texpos[UP_FACE].y + 0.0/TILES_VERT}, n: NORMAL_UP, c: c},
-			Vertex{p: [3]float32{0, h, 0}, t: [2]float32{block.texpos[UP_FACE].x + 0.5/TILES_HORZ, block.texpos[UP_FACE].y + 0.5/TILES_VERT}, n: NORMAL_UP, c: c},
-		)
-
+		vertexBuffer.AddFace(UP_FACE, block.textures[UP_FACE], selectedFace == UP_FACE,
+			x+0, y+h, z-w, 0.0, 0.5,
+			x-d, y+h, z-w, 0.0, 0.0,
+			x-d, y+h, z+0, 0.5, 0.0,
+			x+0, y+h, z+0, 0.5, 0.5)
 	}
 
 	// Down Face
 	if visible[DOWN_FACE] {
-		c := COLOUR_WHITE
-		if selectedFace == DOWN_FACE {
-			c = COLOUR_HIGH
-		}
-
-		v = append(v,
-			Vertex{p: [3]float32{-d, -h, -w}, t: [2]float32{block.texpos[DOWN_FACE].x + 1.0/TILES_HORZ, block.texpos[DOWN_FACE].y + 1.0/TILES_VERT}, n: NORMAL_DOWN, c: c},
-			Vertex{p: [3]float32{d, -h, -w}, t: [2]float32{block.texpos[DOWN_FACE].x + 0.0/TILES_HORZ, block.texpos[DOWN_FACE].y + 1.0/TILES_VERT}, n: NORMAL_DOWN, c: c},
-			Vertex{p: [3]float32{d, -h, w}, t: [2]float32{block.texpos[DOWN_FACE].x + 0.0/TILES_HORZ, block.texpos[DOWN_FACE].y + 0.0/TILES_VERT}, n: NORMAL_DOWN, c: c},
-			Vertex{p: [3]float32{-d, -h, w}, t: [2]float32{block.texpos[DOWN_FACE].x + 1.0/TILES_HORZ, block.texpos[DOWN_FACE].y + 0.0/TILES_VERT}, n: NORMAL_DOWN, c: c},
-		)
-
+		vertexBuffer.AddFace(DOWN_FACE, block.textures[DOWN_FACE], selectedFace == DOWN_FACE,
+			x-d, y-h, z-w, 1.0, 1.0,
+			x+d, y-h, z-w, 0.0, 1.0,
+			x+d, y-h, z+w, 0.0, 0.0,
+			x-d, y-h, z+w, 1.0, 0.0)
 	}
 
-	RenderQuads(v)
-	terrainTexture.Unbind(gl.TEXTURE_2D)
 }
 
 func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *gl.Texture, ntexture *gl.Texture, stexture *gl.Texture, utexture *gl.Texture, dtexture *gl.Texture, selectedFace uint8) {
@@ -607,10 +593,10 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 		}
 
 		v := []Vertex{
-			Vertex{p: [3]float32{d, -h, -w}, t: [2]float32{1.0, 1.0}, n: NORMAL_EAST, c: c},
-			Vertex{p: [3]float32{d, h, -w}, t: [2]float32{1.0, 0.0}, n: NORMAL_EAST, c: c},
-			Vertex{p: [3]float32{d, h, w}, t: [2]float32{0.0, 0.0}, n: NORMAL_EAST, c: c},
-			Vertex{p: [3]float32{d, -h, w}, t: [2]float32{0.0, 1.0}, n: NORMAL_EAST, c: c},
+			Vertex{p: [3]float32{d, -h, -w}, t: [2]float32{1.0, 1.0}, n: NORMALS[EAST_FACE], c: c},
+			Vertex{p: [3]float32{d, h, -w}, t: [2]float32{1.0, 0.0}, n: NORMALS[EAST_FACE], c: c},
+			Vertex{p: [3]float32{d, h, w}, t: [2]float32{0.0, 0.0}, n: NORMALS[EAST_FACE], c: c},
+			Vertex{p: [3]float32{d, -h, w}, t: [2]float32{0.0, 1.0}, n: NORMALS[EAST_FACE], c: c},
 		}
 
 		etexture.Bind(gl.TEXTURE_2D)
@@ -626,10 +612,10 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 		}
 
 		v := []Vertex{
-			Vertex{p: [3]float32{-d, -h, -w}, t: [2]float32{0.0, 1.0}, n: NORMAL_WEST, c: c},
-			Vertex{p: [3]float32{-d, -h, w}, t: [2]float32{1.0, 1.0}, n: NORMAL_WEST, c: c},
-			Vertex{p: [3]float32{-d, h, w}, t: [2]float32{1.0, 0.0}, n: NORMAL_WEST, c: c},
-			Vertex{p: [3]float32{-d, h, -w}, t: [2]float32{0.0, 0.0}, n: NORMAL_WEST, c: c},
+			Vertex{p: [3]float32{-d, -h, -w}, t: [2]float32{0.0, 1.0}, n: NORMALS[WEST_FACE], c: c},
+			Vertex{p: [3]float32{-d, -h, w}, t: [2]float32{1.0, 1.0}, n: NORMALS[WEST_FACE], c: c},
+			Vertex{p: [3]float32{-d, h, w}, t: [2]float32{1.0, 0.0}, n: NORMALS[WEST_FACE], c: c},
+			Vertex{p: [3]float32{-d, h, -w}, t: [2]float32{0.0, 0.0}, n: NORMALS[WEST_FACE], c: c},
 		}
 
 		wtexture.Bind(gl.TEXTURE_2D)
@@ -646,10 +632,10 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 		}
 
 		v := []Vertex{
-			Vertex{p: [3]float32{-d, -h, -w}, t: [2]float32{1.0, 1.0}, n: NORMAL_NORTH, c: c},
-			Vertex{p: [3]float32{-d, h, -w}, t: [2]float32{1.0, 0.0}, n: NORMAL_NORTH, c: c},
-			Vertex{p: [3]float32{d, h, -w}, t: [2]float32{0.0, 0.0}, n: NORMAL_NORTH, c: c},
-			Vertex{p: [3]float32{d, -h, -w}, t: [2]float32{0.0, 1.0}, n: NORMAL_NORTH, c: c},
+			Vertex{p: [3]float32{-d, -h, -w}, t: [2]float32{1.0, 1.0}, n: NORMALS[NORTH_FACE], c: c},
+			Vertex{p: [3]float32{-d, h, -w}, t: [2]float32{1.0, 0.0}, n: NORMALS[NORTH_FACE], c: c},
+			Vertex{p: [3]float32{d, h, -w}, t: [2]float32{0.0, 0.0}, n: NORMALS[NORTH_FACE], c: c},
+			Vertex{p: [3]float32{d, -h, -w}, t: [2]float32{0.0, 1.0}, n: NORMALS[NORTH_FACE], c: c},
 		}
 
 		ntexture.Bind(gl.TEXTURE_2D)
@@ -666,10 +652,10 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 		}
 
 		v := []Vertex{
-			Vertex{p: [3]float32{-d, -h, w}, t: [2]float32{0.0, 1.0}, n: NORMAL_SOUTH, c: c},
-			Vertex{p: [3]float32{d, -h, w}, t: [2]float32{1.0, 1.0}, n: NORMAL_SOUTH, c: c},
-			Vertex{p: [3]float32{d, h, w}, t: [2]float32{1.0, 0.0}, n: NORMAL_SOUTH, c: c},
-			Vertex{p: [3]float32{-d, h, w}, t: [2]float32{0.0, 0.0}, n: NORMAL_SOUTH, c: c},
+			Vertex{p: [3]float32{-d, -h, w}, t: [2]float32{0.0, 1.0}, n: NORMALS[SOUTH_FACE], c: c},
+			Vertex{p: [3]float32{d, -h, w}, t: [2]float32{1.0, 1.0}, n: NORMALS[SOUTH_FACE], c: c},
+			Vertex{p: [3]float32{d, h, w}, t: [2]float32{1.0, 0.0}, n: NORMALS[SOUTH_FACE], c: c},
+			Vertex{p: [3]float32{-d, h, w}, t: [2]float32{0.0, 0.0}, n: NORMALS[SOUTH_FACE], c: c},
 		}
 
 		stexture.Bind(gl.TEXTURE_2D)
@@ -701,25 +687,25 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 		// 1.0/1.0    1.0/0.5   1.0/0.0
 
 		v := []Vertex{
-			Vertex{p: [3]float32{d, h, -w}, t: [2]float32{0.0, 1.0}, n: NORMAL_UP, c: c},
-			Vertex{p: [3]float32{0, h, -w}, t: [2]float32{0.0, 0.5}, n: NORMAL_UP, c: c},
-			Vertex{p: [3]float32{0, h, 0}, t: [2]float32{0.5, 0.5}, n: NORMAL_UP, c: c},
-			Vertex{p: [3]float32{d, h, 0}, t: [2]float32{0.5, 1.0}, n: NORMAL_UP, c: c},
+			Vertex{p: [3]float32{d, h, -w}, t: [2]float32{0.0, 1.0}, n: NORMALS[UP_FACE], c: c},
+			Vertex{p: [3]float32{0, h, -w}, t: [2]float32{0.0, 0.5}, n: NORMALS[UP_FACE], c: c},
+			Vertex{p: [3]float32{0, h, 0}, t: [2]float32{0.5, 0.5}, n: NORMALS[UP_FACE], c: c},
+			Vertex{p: [3]float32{d, h, 0}, t: [2]float32{0.5, 1.0}, n: NORMALS[UP_FACE], c: c},
 
-			Vertex{p: [3]float32{d, h, 0}, t: [2]float32{0.5, 1.0}, n: NORMAL_UP, c: c},
-			Vertex{p: [3]float32{0, h, 0}, t: [2]float32{0.5, 0.5}, n: NORMAL_UP, c: c},
-			Vertex{p: [3]float32{0, h, w}, t: [2]float32{1.0, 0.5}, n: NORMAL_UP, c: c},
-			Vertex{p: [3]float32{d, h, w}, t: [2]float32{1.0, 1.0}, n: NORMAL_UP, c: c},
+			Vertex{p: [3]float32{d, h, 0}, t: [2]float32{0.5, 1.0}, n: NORMALS[UP_FACE], c: c},
+			Vertex{p: [3]float32{0, h, 0}, t: [2]float32{0.5, 0.5}, n: NORMALS[UP_FACE], c: c},
+			Vertex{p: [3]float32{0, h, w}, t: [2]float32{1.0, 0.5}, n: NORMALS[UP_FACE], c: c},
+			Vertex{p: [3]float32{d, h, w}, t: [2]float32{1.0, 1.0}, n: NORMALS[UP_FACE], c: c},
 
-			Vertex{p: [3]float32{0, h, 0}, t: [2]float32{0.5, 0.5}, n: NORMAL_UP, c: c},
-			Vertex{p: [3]float32{-d, h, 0}, t: [2]float32{0.5, 0.0}, n: NORMAL_UP, c: c},
-			Vertex{p: [3]float32{-d, h, w}, t: [2]float32{1.0, 0.0}, n: NORMAL_UP, c: c},
-			Vertex{p: [3]float32{0, h, w}, t: [2]float32{1.0, 0.5}, n: NORMAL_UP, c: c},
+			Vertex{p: [3]float32{0, h, 0}, t: [2]float32{0.5, 0.5}, n: NORMALS[UP_FACE], c: c},
+			Vertex{p: [3]float32{-d, h, 0}, t: [2]float32{0.5, 0.0}, n: NORMALS[UP_FACE], c: c},
+			Vertex{p: [3]float32{-d, h, w}, t: [2]float32{1.0, 0.0}, n: NORMALS[UP_FACE], c: c},
+			Vertex{p: [3]float32{0, h, w}, t: [2]float32{1.0, 0.5}, n: NORMALS[UP_FACE], c: c},
 
-			Vertex{p: [3]float32{0, h, -w}, t: [2]float32{0.0, 0.5}, n: NORMAL_UP, c: c},
-			Vertex{p: [3]float32{-d, h, -w}, t: [2]float32{0.0, 0.0}, n: NORMAL_UP, c: c},
-			Vertex{p: [3]float32{-d, h, 0}, t: [2]float32{0.5, 0.0}, n: NORMAL_UP, c: c},
-			Vertex{p: [3]float32{0, h, 0}, t: [2]float32{0.5, 0.5}, n: NORMAL_UP, c: c},
+			Vertex{p: [3]float32{0, h, -w}, t: [2]float32{0.0, 0.5}, n: NORMALS[UP_FACE], c: c},
+			Vertex{p: [3]float32{-d, h, -w}, t: [2]float32{0.0, 0.0}, n: NORMALS[UP_FACE], c: c},
+			Vertex{p: [3]float32{-d, h, 0}, t: [2]float32{0.5, 0.0}, n: NORMALS[UP_FACE], c: c},
+			Vertex{p: [3]float32{0, h, 0}, t: [2]float32{0.5, 0.5}, n: NORMALS[UP_FACE], c: c},
 		}
 
 		utexture.Bind(gl.TEXTURE_2D)
@@ -736,10 +722,10 @@ func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *
 		}
 
 		v := []Vertex{
-			Vertex{p: [3]float32{-d, -h, -w}, t: [2]float32{1.0, 1.0}, n: NORMAL_DOWN, c: c},
-			Vertex{p: [3]float32{d, -h, -w}, t: [2]float32{0.0, 1.0}, n: NORMAL_DOWN, c: c},
-			Vertex{p: [3]float32{d, -h, w}, t: [2]float32{0.0, 0.0}, n: NORMAL_DOWN, c: c},
-			Vertex{p: [3]float32{-d, -h, w}, t: [2]float32{1.0, 0.0}, n: NORMAL_DOWN, c: c},
+			Vertex{p: [3]float32{-d, -h, -w}, t: [2]float32{1.0, 1.0}, n: NORMALS[DOWN_FACE], c: c},
+			Vertex{p: [3]float32{d, -h, -w}, t: [2]float32{0.0, 1.0}, n: NORMALS[DOWN_FACE], c: c},
+			Vertex{p: [3]float32{d, -h, w}, t: [2]float32{0.0, 0.0}, n: NORMALS[DOWN_FACE], c: c},
+			Vertex{p: [3]float32{-d, -h, w}, t: [2]float32{1.0, 0.0}, n: NORMALS[DOWN_FACE], c: c},
 		}
 
 		dtexture.Bind(gl.TEXTURE_2D)

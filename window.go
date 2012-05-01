@@ -14,6 +14,7 @@ import (
 )
 
 func Draw(t int64) {
+	gVertexBuffer.Reset()
 
 	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT)
 
@@ -138,7 +139,7 @@ func Draw(t int64) {
 				gl.Rotatef(360*float32(math.Cos(float64(t)/1e10+float64(i))), 0.0, 1.0, 0.0)
 				gl.Rotatef(360*float32(math.Sin(float64(t)/1e10+float64(i))), 0.0, 0.0, 1.0)
 				gl.Scalef(blockscale, blockscale, blockscale)
-				TerrainCube([6]uint16{0, 0, 0, 0, 0, 0}, byte(item), FACE_NONE)
+				TerrainCube(&gVertexBuffer, 0, 0, 0, [6]uint16{0, 0, 0, 0, 0, 0}, byte(item), FACE_NONE)
 			}
 		}
 	} else {
@@ -164,7 +165,7 @@ func Draw(t int64) {
 		gl.End()
 
 		gl.Translatef(float32(viewport.lplane)+margin, float32(viewport.bplane)+consoleHeight+margin-h, 0)
-		consoleFont.Print(fmt.Sprintf("FPS: %5.2f CC: %d", metrics.fps, metrics.cubecount))
+		consoleFont.Print(fmt.Sprintf("FPS: %5.2f CC: %d V: %d", metrics.fps, metrics.cubecount, metrics.vertices))
 		gl.LoadIdentity()
 		gl.Translatef(float32(viewport.lplane)+margin, float32(viewport.bplane)+consoleHeight+margin-2*h, 0)
 		consoleFont.Print(fmt.Sprintf("X: %5.2f Y: %4.2f Z: %5.2f H: %5.2f (%s)", ThePlayer.position[XAXIS], ThePlayer.position[YAXIS], ThePlayer.position[ZAXIS], ThePlayer.heading, HeadingToCompass(ThePlayer.heading)))

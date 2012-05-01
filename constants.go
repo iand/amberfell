@@ -9,7 +9,9 @@ const (
 	GroundLevel = 4
 
 	CHUNK_WIDTH  = 32
-	CHUNK_HEIGHT = 24
+	CHUNK_HEIGHT = 20
+
+	VERTEX_BUFFER_CAPACITY = 150000
 
 	XAXIS = 0
 	YAXIS = 1
@@ -110,12 +112,13 @@ const (
 )
 
 var (
-	NORMAL_EAST  = [3]float32{1.0, 0.0, 0.0}
-	NORMAL_WEST  = [3]float32{-1.0, 0.0, 0.0}
-	NORMAL_NORTH = [3]float32{0.0, 0.0, -1.0}
-	NORMAL_SOUTH = [3]float32{0.0, 0.0, 1.0}
-	NORMAL_UP    = [3]float32{0.0, 1.0, 0.0}
-	NORMAL_DOWN  = [3]float32{0.0, -1.0, 0.0}
+	NORMALS = [6]([3]float32){[3]float32{1.0, 0.0, 0.0},
+		[3]float32{-1.0, 0.0, 0.0},
+		[3]float32{0.0, 0.0, -1.0},
+		[3]float32{0.0, 0.0, 1.0},
+		[3]float32{0.0, 1.0, 0.0},
+		[3]float32{0.0, -1.0, 0.0},
+	}
 
 	COLOUR_WHITE = [4]float32{1.0, 1.0, 1.0, 1.0}
 	COLOUR_HIGH  = [4]float32{96.0 / 255, 208.0 / 255, 96.0 / 255, 1.0}
