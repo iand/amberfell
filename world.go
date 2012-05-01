@@ -580,19 +580,19 @@ func (self *Chunk) Render(selectedBlockFace *BlockFace) {
 					// xw, yw, zw := self.WorldCoords(x, y, z)
 					//neighbours := TheWorld.Neighbours(xw, yw, zw)
 					var neighbours [6]uint16
-					if x == 0 || x == CHUNK_WIDTH-1 || z == 0 || z == CHUNK_WIDTH-1 || y == 0 || y == CHUNK_HEIGHT-1 {
-						neighbours = TheWorld.Neighbours(xw, yw, zw)
-					} else {
+					// if x == 0 || x == CHUNK_WIDTH-1 || z == 0 || z == CHUNK_WIDTH-1 || y == 0 || y == CHUNK_HEIGHT-1 {
+					neighbours = TheWorld.Neighbours(xw, yw, zw)
+					// } else {
 
-						neighbours = [6]uint16{
-							uint16(self.Blocks[blockIndex(x+1, y, z)]),
-							uint16(self.Blocks[blockIndex(x-1, y, z)]),
-							uint16(self.Blocks[blockIndex(x, y, z-1)]),
-							uint16(self.Blocks[blockIndex(x, y, z+1)]),
-							uint16(self.Blocks[blockIndex(x, y+1, z)]),
-							uint16(self.Blocks[blockIndex(x, y-1, z)]),
-						}
-					}
+					// 	neighbours = [6]uint16{
+					// 		uint16(self.Blocks[blockIndex(x+1, y, z)]),
+					// 		uint16(self.Blocks[blockIndex(x-1, y, z)]),
+					// 		uint16(self.Blocks[blockIndex(x, y, z-1)]),
+					// 		uint16(self.Blocks[blockIndex(x, y, z+1)]),
+					// 		uint16(self.Blocks[blockIndex(x, y+1, z)]),
+					// 		uint16(self.Blocks[blockIndex(x, y-1, z)]),
+					// 	}
+					// }
 
 					if TheWorld.HasVisibleFaces(neighbours) {
 

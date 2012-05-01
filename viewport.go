@@ -9,6 +9,7 @@ import (
 	"github.com/banthar/Go-SDL/sdl"
 	"github.com/banthar/gl"
 	"math"
+	// "fmt"
 )
 
 type Viewport struct {
@@ -122,10 +123,12 @@ func (self *Viewport) SelectedBlockFace() *BlockFace {
 	origin := inverseMatrix.Transform(&Vectorf{x, z, -1}, 1)
 	norm := inverseMatrix.Transform(&Vectorf{0, 0, 1}, 0).Normalize()
 
+	// fmt.Printf("origin <%.2f,%.2f,%.2f>\n", origin[0], origin[1], origin[2])
+
 	if origin != nil {
 		pos := IntPosition(ThePlayer.position)
 		ray := Ray{origin, &norm}
-		reach := uint16(5)
+		reach := int16(5)
 
 		// See http://www.dyn-lab.com/articles/pick-selection.html
 		var box *Box = nil
@@ -139,12 +142,14 @@ func (self *Viewport) SelectedBlockFace() *BlockFace {
 
 						if /* ThePlayer.Facing(blockDirection) && */ blockDirection.Magnitude() <= float64(reach) {
 
-							trialDistance := math.Sqrt(math.Pow(float64(pos[XAXIS]+dx)-origin[0], 2) + math.Pow(float64(pos[YAXIS]+dy)-origin[1], 2) + math.Pow(float64(pos[ZAXIS]+dz)-origin[2], 2))
+							posTest := pos.Translate(dx, dy, dz)
+							trialDistance := math.Sqrt(math.Pow(float64(posTest[XAXIS])-origin[0], 2) + math.Pow(float64(posTest[YAXIS])-origin[1], 2) + math.Pow(float64(posTest[ZAXIS])-origin[2], 2))
 							if trialDistance < distance {
-								if TheWorld.At(pos[XAXIS]+dx, pos[YAXIS]+dy, pos[ZAXIS]+dz) != BLOCK_AIR {
+
+								if TheWorld.Atv(posTest) != BLOCK_AIR {
 									trialBox := &Box{
-										&Vectorf{float64(pos[XAXIS]+dx) - 0.5, float64(pos[YAXIS]+dy) - 0.5, float64(pos[ZAXIS]+dz) - 0.5},
-										&Vectorf{float64(pos[XAXIS]+dx) + 0.5, float64(pos[YAXIS]+dy) + 0.5, float64(pos[ZAXIS]+dz) + 0.5}}
+										&Vectorf{float64(posTest[XAXIS]) - 0.5, float64(posTest[YAXIS]) - 0.5, float64(posTest[ZAXIS]) - 0.5},
+										&Vectorf{float64(posTest[XAXIS]) + 0.5, float64(posTest[YAXIS]) + 0.5, float64(posTest[ZAXIS]) + 0.5}}
 
 									hit, trialFace := ray.HitsBox(trialBox)
 									if hit {

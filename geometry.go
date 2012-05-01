@@ -101,6 +101,12 @@ func (self *Vectori) Adjust(dx int16, dy int16, dz int16) {
 	self[ZAXIS] = uint16(int32(self[ZAXIS]) + int32(dz))
 }
 
+func (self *Vectori) Translate(dx int16, dy int16, dz int16) Vectori {
+	return Vectori{uint16(int32(self[XAXIS]) + int32(dx)),
+		uint16(int32(self[YAXIS]) + int32(dy)),
+		uint16(int32(self[ZAXIS]) + int32(dz))}
+}
+
 func (self *Vectori) String() string {
 	return fmt.Sprintf("[x:%d, y:%d, z:%d]", self[XAXIS], self[YAXIS], self[ZAXIS])
 }

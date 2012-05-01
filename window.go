@@ -168,8 +168,12 @@ func Draw(t int64) {
 		consoleFont.Print(fmt.Sprintf("FPS: %5.2f CC: %d V: %d", metrics.fps, metrics.cubecount, metrics.vertices))
 		gl.LoadIdentity()
 		gl.Translatef(float32(viewport.lplane)+margin, float32(viewport.bplane)+consoleHeight+margin-2*h, 0)
-		consoleFont.Print(fmt.Sprintf("X: %5.2f Y: %4.2f Z: %5.2f H: %5.2f (%s)", ThePlayer.position[XAXIS], ThePlayer.position[YAXIS], ThePlayer.position[ZAXIS], ThePlayer.heading, HeadingToCompass(ThePlayer.heading)))
 
+		if selectedBlockFace != nil {
+			consoleFont.Print(fmt.Sprintf("X: %5.2f Y: %4.2f Z: %5.2f H: %5.2f (%s)  [sel:X: %d Y: %d Z: %d F: %d]", ThePlayer.position[XAXIS], ThePlayer.position[YAXIS], ThePlayer.position[ZAXIS], ThePlayer.heading, HeadingToCompass(ThePlayer.heading), selectedBlockFace.pos[XAXIS], selectedBlockFace.pos[YAXIS], selectedBlockFace.pos[ZAXIS], selectedBlockFace.face))
+		} else {
+			consoleFont.Print(fmt.Sprintf("X: %5.2f Y: %4.2f Z: %5.2f H: %5.2f (%s)", ThePlayer.position[XAXIS], ThePlayer.position[YAXIS], ThePlayer.position[ZAXIS], ThePlayer.heading, HeadingToCompass(ThePlayer.heading)))
+		}
 		gl.LoadIdentity()
 		gl.Translatef(float32(viewport.lplane)+margin, float32(viewport.bplane)+consoleHeight+margin-3*h, 0)
 
