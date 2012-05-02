@@ -255,41 +255,6 @@ func (self *World) Neighbours(x uint16, y uint16, z uint16) (neighbours [6]uint1
 	return
 }
 
-// lineRectCollide( line, rect )
-//
-// Checks if an axis-aligned line and a bounding box overlap.
-// line = { z, x1, x2 } or line = { x, z1, z2 }
-// rect = { x, z, size }
-
-func lineRectCollide(line Side, rect Rect) (ret bool) {
-	if line.z != 0 {
-		ret = rect.z > line.z-rect.sizez/2 && rect.z < line.z+rect.sizez/2 && rect.x > line.x1-rect.sizex/2 && rect.x < line.x2+rect.sizex/2
-	} else {
-		ret = rect.x > line.x-rect.sizex/2 && rect.x < line.x+rect.sizex/2 && rect.z > line.z1-rect.sizez/2 && rect.z < line.z2+rect.sizez/2
-	}
-	return
-}
-
-// rectRectCollide( r1, r2 )
-//
-// Checks if two rectangles (x1, y1, x2, y2) overlap.
-
-func rectRectCollide(r1 Side, r2 Side) bool {
-	if r2.x1 >= r1.x1 && r2.x1 <= r1.x2 && r2.z1 >= r1.z1 && r2.z1 <= r1.z2 {
-		return true
-	}
-	if r2.x2 >= r1.x1 && r2.x2 <= r1.x2 && r2.z1 >= r1.z1 && r2.z1 <= r1.z2 {
-		return true
-	}
-	if r2.x2 >= r1.x1 && r2.x2 <= r1.x2 && r2.z2 >= r1.z1 && r2.z2 <= r1.z2 {
-		return true
-	}
-	if r2.x1 >= r1.x1 && r2.x1 <= r1.x2 && r2.z2 >= r1.z1 && r2.z2 <= r1.z2 {
-		return true
-	}
-	return false
-}
-
 func (self *World) ApplyForces(mob Mob, dt float64) {
 	// mobBounds := mob.DesiredBoundingBox(dt)
 	mp := mob.Position()
@@ -417,7 +382,6 @@ func (self *World) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 		c1 = self.GenerateChunk(px, py, pz)
 	}
 	c1.Render(selectedBlockFace)
-	RenderQuadIndex(&c1.vertexBuffer)
 	metrics.vertices += c1.vertexBuffer.vertexCount
 
 	c2, ok := self.chunks[chunkIndex(px+1, py, pz)]
@@ -425,7 +389,6 @@ func (self *World) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 		c2 = self.GenerateChunk(px+1, py, pz)
 	}
 	c2.Render(selectedBlockFace)
-	RenderQuadIndex(&c2.vertexBuffer)
 	metrics.vertices += c2.vertexBuffer.vertexCount
 
 	c3, ok := self.chunks[chunkIndex(px-1, py, pz)]
@@ -433,7 +396,6 @@ func (self *World) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 		c3 = self.GenerateChunk(px-1, py, pz)
 	}
 	c3.Render(selectedBlockFace)
-	RenderQuadIndex(&c3.vertexBuffer)
 	metrics.vertices += c3.vertexBuffer.vertexCount
 
 	c4, ok := self.chunks[chunkIndex(px, py, pz+1)]
@@ -441,7 +403,6 @@ func (self *World) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 		c4 = self.GenerateChunk(px, py, pz+1)
 	}
 	c4.Render(selectedBlockFace)
-	RenderQuadIndex(&c4.vertexBuffer)
 	metrics.vertices += c4.vertexBuffer.vertexCount
 
 	c5, ok := self.chunks[chunkIndex(px, py, pz-1)]
@@ -449,7 +410,6 @@ func (self *World) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 		c5 = self.GenerateChunk(px, py, pz-1)
 	}
 	c5.Render(selectedBlockFace)
-	RenderQuadIndex(&c5.vertexBuffer)
 	metrics.vertices += c5.vertexBuffer.vertexCount
 
 	c6, ok := self.chunks[chunkIndex(px+1, py, pz+1)]
@@ -457,7 +417,6 @@ func (self *World) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 		c6 = self.GenerateChunk(px+1, py, pz+1)
 	}
 	c6.Render(selectedBlockFace)
-	RenderQuadIndex(&c6.vertexBuffer)
 	metrics.vertices += c6.vertexBuffer.vertexCount
 
 	c7, ok := self.chunks[chunkIndex(px+1, py, pz-1)]
@@ -465,7 +424,6 @@ func (self *World) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 		c7 = self.GenerateChunk(px+1, py, pz-1)
 	}
 	c7.Render(selectedBlockFace)
-	RenderQuadIndex(&c7.vertexBuffer)
 	metrics.vertices += c7.vertexBuffer.vertexCount
 
 	c8, ok := self.chunks[chunkIndex(px-1, py, pz+1)]
@@ -473,7 +431,6 @@ func (self *World) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 		c8 = self.GenerateChunk(px-1, py, pz+1)
 	}
 	c8.Render(selectedBlockFace)
-	RenderQuadIndex(&c8.vertexBuffer)
 	metrics.vertices += c8.vertexBuffer.vertexCount
 
 	c9, ok := self.chunks[chunkIndex(px-1, py, pz-1)]
@@ -481,7 +438,6 @@ func (self *World) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 		c9 = self.GenerateChunk(px-1, py, pz-1)
 	}
 	c9.Render(selectedBlockFace)
-	RenderQuadIndex(&c9.vertexBuffer)
 	metrics.vertices += c9.vertexBuffer.vertexCount
 }
 
@@ -545,6 +501,7 @@ func (chunk *Chunk) Init(x uint16, y uint16, z uint16) {
 	chunk.x = x
 	chunk.y = y
 	chunk.z = z
+	chunk.vertexBuffer.texture = terrainTexture
 }
 
 func (chunk *Chunk) At(x uint16, y uint16, z uint16) byte {
@@ -558,59 +515,44 @@ func (chunk *Chunk) Set(x uint16, y uint16, z uint16, b byte) {
 
 func (self *Chunk) Render(selectedBlockFace *BlockFace) {
 
-	if self.clean && !(selectedBlockFace != nil && selectedBlockFace.pos[XAXIS] >= self.x*CHUNK_WIDTH && selectedBlockFace.pos[XAXIS] < (self.x+1)*CHUNK_WIDTH &&
+	if !self.clean || (selectedBlockFace != nil && selectedBlockFace.pos[XAXIS] >= self.x*CHUNK_WIDTH && selectedBlockFace.pos[XAXIS] < (self.x+1)*CHUNK_WIDTH &&
 		selectedBlockFace.pos[YAXIS] >= self.y*CHUNK_HEIGHT && selectedBlockFace.pos[YAXIS] < (self.y+1)*CHUNK_HEIGHT &&
 		selectedBlockFace.pos[ZAXIS] >= self.z*CHUNK_WIDTH && selectedBlockFace.pos[ZAXIS] < (self.z+1)*CHUNK_WIDTH) {
-		return
-	}
-	t := Timer{}
-	t.Start()
-	self.vertexBuffer.Reset()
-	var x, y, z uint16
-	for x = 0; x < CHUNK_WIDTH; x++ {
-		for z = 0; z < CHUNK_WIDTH; z++ {
-			for y = 0; y < CHUNK_HEIGHT; y++ {
+		t := Timer{}
+		t.Start()
+		self.vertexBuffer.Reset()
+		var x, y, z uint16
+		for x = 0; x < CHUNK_WIDTH; x++ {
+			for z = 0; z < CHUNK_WIDTH; z++ {
+				for y = 0; y < CHUNK_HEIGHT; y++ {
 
-				var blockid byte = self.Blocks[blockIndex(x, y, z)]
-				if blockid != 0 {
-					xw := self.x*CHUNK_WIDTH + x
-					yw := self.y*CHUNK_HEIGHT + y
-					zw := self.z*CHUNK_WIDTH + z
+					var blockid byte = self.Blocks[blockIndex(x, y, z)]
+					if blockid != 0 {
+						xw := self.x*CHUNK_WIDTH + x
+						yw := self.y*CHUNK_HEIGHT + y
+						zw := self.z*CHUNK_WIDTH + z
 
-					// xw, yw, zw := self.WorldCoords(x, y, z)
-					//neighbours := TheWorld.Neighbours(xw, yw, zw)
-					var neighbours [6]uint16
-					// if x == 0 || x == CHUNK_WIDTH-1 || z == 0 || z == CHUNK_WIDTH-1 || y == 0 || y == CHUNK_HEIGHT-1 {
-					neighbours = TheWorld.Neighbours(xw, yw, zw)
-					// } else {
+						neighbours := TheWorld.Neighbours(xw, yw, zw)
 
-					// 	neighbours = [6]uint16{
-					// 		uint16(self.Blocks[blockIndex(x+1, y, z)]),
-					// 		uint16(self.Blocks[blockIndex(x-1, y, z)]),
-					// 		uint16(self.Blocks[blockIndex(x, y, z-1)]),
-					// 		uint16(self.Blocks[blockIndex(x, y, z+1)]),
-					// 		uint16(self.Blocks[blockIndex(x, y+1, z)]),
-					// 		uint16(self.Blocks[blockIndex(x, y-1, z)]),
-					// 	}
-					// }
+						if TheWorld.HasVisibleFaces(neighbours) {
 
-					if TheWorld.HasVisibleFaces(neighbours) {
+							selectedFace := uint8(FACE_NONE)
+							if selectedBlockFace != nil && xw == selectedBlockFace.pos[XAXIS] && yw == selectedBlockFace.pos[YAXIS] && zw == selectedBlockFace.pos[ZAXIS] {
+								selectedFace = selectedBlockFace.face
+							}
 
-						selectedFace := uint8(FACE_NONE)
-						if selectedBlockFace != nil && xw == selectedBlockFace.pos[XAXIS] && yw == selectedBlockFace.pos[YAXIS] && zw == selectedBlockFace.pos[ZAXIS] {
-							selectedFace = selectedBlockFace.face
+							TerrainCube(&self.vertexBuffer, float32(xw), float32(yw), float32(zw), neighbours, blockid, selectedFace)
+							metrics.cubecount++
 						}
-
-						TerrainCube(&self.vertexBuffer, float32(xw), float32(yw), float32(zw), neighbours, blockid, selectedFace)
-						metrics.cubecount++
 					}
 				}
 			}
 		}
-	}
 
-	metrics.vertices += self.vertexBuffer.vertexCount
-	self.clean = true
+		metrics.vertices += self.vertexBuffer.vertexCount
+		self.clean = true
+	}
+	self.vertexBuffer.RenderDirect()
 
 	// fmt.Printf("Chunk ticks: %4.0f\n", float64(t.GetTicks())/1e6)
 

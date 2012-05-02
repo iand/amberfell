@@ -56,6 +56,7 @@ type VertexBuffer struct {
 	indices     [VERTEX_BUFFER_CAPACITY]TriangleIndex
 	vertexCount int
 	indexCount  int
+	texture     *gl.Texture
 }
 
 func (self *VertexBuffer) Reset() {
@@ -97,6 +98,17 @@ func (self *VertexBuffer) AddFace(face uint8, texture uint16, selected bool, x1,
 	self.indices[ic] = TriangleIndex{uint32(vc), uint32(vc) + 1, uint32(vc) + 2}
 	self.indices[ic+1] = TriangleIndex{uint32(vc) + 2, uint32(vc) + 3, uint32(vc)}
 	self.indexCount += 2
+}
+
+func (self *VertexBuffer) RenderDirect() {
+	gl.Begin(gl.QUADS)
+	for i := 0; i < self.vertexCount; i++ {
+		gl.Normal3f(self.vertices[i].n[0], self.vertices[i].n[1], self.vertices[i].n[2])
+		gl.TexCoord2f(self.vertices[i].t[0], self.vertices[i].t[1])
+		gl.Color4f(self.vertices[i].c[0], self.vertices[i].c[1], self.vertices[i].c[2], self.vertices[i].c[3])
+		gl.Vertex3f(self.vertices[i].p[0], self.vertices[i].p[1], self.vertices[i].p[2])
+	}
+	gl.End()
 }
 
 func LoadMapTextures() {
@@ -479,17 +491,6 @@ func RenderQuads(v []Vertex) {
 		gl.TexCoord2f(v[i].t[0], v[i].t[1])
 		gl.Color4f(v[i].c[0], v[i].c[1], v[i].c[2], v[i].c[3])
 		gl.Vertex3f(v[i].p[0], v[i].p[1], v[i].p[2])
-	}
-	gl.End()
-}
-
-func RenderQuadIndex(vertexBuffer *VertexBuffer) {
-	gl.Begin(gl.QUADS)
-	for i := 0; i < vertexBuffer.vertexCount; i++ {
-		gl.Normal3f(vertexBuffer.vertices[i].n[0], vertexBuffer.vertices[i].n[1], vertexBuffer.vertices[i].n[2])
-		gl.TexCoord2f(vertexBuffer.vertices[i].t[0], vertexBuffer.vertices[i].t[1])
-		gl.Color4f(vertexBuffer.vertices[i].c[0], vertexBuffer.vertices[i].c[1], vertexBuffer.vertices[i].c[2], vertexBuffer.vertices[i].c[3])
-		gl.Vertex3f(vertexBuffer.vertices[i].p[0], vertexBuffer.vertices[i].p[1], vertexBuffer.vertices[i].p[2])
 	}
 	gl.End()
 }

@@ -411,49 +411,37 @@ func (self *Ray) HitsBox(box *Box) (hit bool, face uint8) {
 
 }
 
-// A point and its distance from another point
-type BoxDistance struct {
-	box      Box
-	face     int
-	distance float64
-	index    int
+// lineRectCollide( line, rect )
+//
+// Checks if an axis-aligned line and a bounding box overlap.
+// line = { z, x1, x2 } or line = { x, z1, z2 }
+// rect = { x, z, size }
+
+func lineRectCollide(line Side, rect Rect) (ret bool) {
+	if line.z != 0 {
+		ret = rect.z > line.z-rect.sizez/2 && rect.z < line.z+rect.sizez/2 && rect.x > line.x1-rect.sizex/2 && rect.x < line.x2+rect.sizex/2
+	} else {
+		ret = rect.x > line.x-rect.sizex/2 && rect.x < line.x+rect.sizex/2 && rect.z > line.z1-rect.sizez/2 && rect.z < line.z2+rect.sizez/2
+	}
+	return
 }
 
-// A queue that orders with nearest first
-type DistanceQueue []*BoxDistance
+// rectRectCollide( r1, r2 )
+//
+// Checks if two rectangles (x1, y1, x2, y2) overlap.
 
-func (self DistanceQueue) Len() int { return len(self) }
-
-func (self DistanceQueue) Less(i, j int) bool {
-	// We want Pop to give us the highest, not lowest, priority so we use greater than here.
-	return self[i].distance < self[j].distance
-}
-
-func (self DistanceQueue) Swap(i, j int) {
-	self[i], self[j] = self[j], self[i]
-	self[i].index = i
-	self[j].index = j
-}
-
-func (self *DistanceQueue) Push(x interface{}) {
-	// Push and Pop use pointer receivers because they modify the slice's length,
-	// not just its contents.
-	// To simplify indexing expressions in these methods, we save a copy of the
-	// slice object. We could instead write (*pq)[i].
-	a := *self
-	n := len(a)
-	a = a[0 : n+1]
-	item := x.(*BoxDistance)
-	item.index = n
-	a[n] = item
-	*self = a
-}
-
-func (self *DistanceQueue) Pop() interface{} {
-	a := *self
-	n := len(a)
-	item := a[n-1]
-	item.index = -1 // for safety
-	*self = a[0 : n-1]
-	return item
+func rectRectCollide(r1 Side, r2 Side) bool {
+	if r2.x1 >= r1.x1 && r2.x1 <= r1.x2 && r2.z1 >= r1.z1 && r2.z1 <= r1.z2 {
+		return true
+	}
+	if r2.x2 >= r1.x1 && r2.x2 <= r1.x2 && r2.z1 >= r1.z1 && r2.z1 <= r1.z2 {
+		return true
+	}
+	if r2.x2 >= r1.x1 && r2.x2 <= r1.x2 && r2.z2 >= r1.z1 && r2.z2 <= r1.z2 {
+		return true
+	}
+	if r2.x1 >= r1.x1 && r2.x1 <= r1.x2 && r2.z2 >= r1.z1 && r2.z2 <= r1.z2 {
+		return true
+	}
+	return false
 }
