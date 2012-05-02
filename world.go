@@ -6,7 +6,7 @@
 package main
 
 import (
-	"fmt"
+	// "fmt"
 	"github.com/banthar/gl"
 	"math"
 	"math/rand"
@@ -612,7 +612,7 @@ func (self *Chunk) Render(selectedBlockFace *BlockFace) {
 	metrics.vertices += self.vertexBuffer.vertexCount
 	self.clean = true
 
-	fmt.Printf("Chunk ticks: %4.0f\n", float64(t.GetTicks())/1e6)
+	// fmt.Printf("Chunk ticks: %4.0f\n", float64(t.GetTicks())/1e6)
 
 }
 
