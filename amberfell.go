@@ -21,14 +21,13 @@ import (
 )
 
 var (
-	flag_cpuprofile       = flag.Bool("cpuprofile", false, "write cpu profile to file")
-	flag_memprofile       = flag.Bool("memprofile", false, "write memory profile to file")
-	DebugMode       bool  = false
-	InventoryMode   bool  = false
-	ViewRadius      int16 = 30
-	TheWorld        *World
-	ThePlayer       *Player
-	viewport        Viewport
+	flag_cpuprofile = flag.Bool("cpuprofile", false, "write cpu profile to file")
+	flag_memprofile = flag.Bool("memprofile", false, "write memory profile to file")
+
+	ViewRadius int16 = 30
+	TheWorld   *World
+	ThePlayer  *Player
+	viewport   Viewport
 
 	timeOfDay float32 = 8
 
@@ -42,8 +41,10 @@ var (
 	TerrainBlocks map[uint16]TerrainBlock
 
 	// HUD elements
-	picker  Picker
-	console Console
+	blockscale float32 = 0.4 // The scale at which to render blocks in the HUD
+	picker     *Picker
+	console    Console
+	inventory  Inventory
 )
 
 func main() {
@@ -87,6 +88,8 @@ func initGame() {
 	viewport.Zoomstd()
 	viewport.Rotx(25)
 	viewport.Roty(70)
+
+	picker = NewPicker()
 
 	sdl.Init(sdl.INIT_VIDEO)
 	if ttf.Init() != 0 {
@@ -173,9 +176,6 @@ func gameLoop() {
 	update150ms.interval = 50 * 1e6
 	update150ms.Start()
 
-	debugModekeyLock := false
-	inventoryModekeyLock := false
-
 	var interactingBlock *InteractingBlockFace
 
 	done := false
@@ -183,6 +183,8 @@ func gameLoop() {
 
 		for e := sdl.PollEvent(); e != nil; e = sdl.PollEvent() {
 			switch e.(type) {
+			case *sdl.QuitEvent:
+				done = true
 			case *sdl.ResizeEvent:
 				re := e.(*sdl.ResizeEvent)
 				screen := sdl.SetVideoMode(int(re.W), int(re.H), 16,
@@ -196,112 +198,87 @@ func gameLoop() {
 
 			case *sdl.MouseButtonEvent:
 				re := e.(*sdl.MouseButtonEvent)
-				if re.Button == 1 && re.State == 1 { // LEFT, DOWN
-					if ThePlayer.CanInteract() {
-						selectedBlockFace := viewport.SelectedBlockFace()
-						if selectedBlockFace != nil {
-							if interactingBlock == nil || interactingBlock.blockFace.pos != selectedBlockFace.pos {
-								interactingBlock = new(InteractingBlockFace)
-								interactingBlock.blockFace = selectedBlockFace
-								interactingBlock.hitCount = 0
+				if inventory.visible {
+					inventory.HandleMouseButton(re)
+				} else {
+
+					if re.Button == 1 && re.State == 1 { // LEFT, DOWN
+						if inventory.visible {
+
+						} else {
+							if ThePlayer.CanInteract() {
+								selectedBlockFace := viewport.SelectedBlockFace()
+								if selectedBlockFace != nil {
+									if interactingBlock == nil || interactingBlock.blockFace.pos != selectedBlockFace.pos {
+										interactingBlock = new(InteractingBlockFace)
+										interactingBlock.blockFace = selectedBlockFace
+										interactingBlock.hitCount = 0
+									}
+									ThePlayer.Interact(interactingBlock)
+								}
+								// println("Click:", re.X, re.Y, re.State, re.Button, re.Which)
 							}
-							ThePlayer.Interact(interactingBlock)
 						}
-						// println("Click:", re.X, re.Y, re.State, re.Button, re.Which)
 					}
 				}
-			case *sdl.QuitEvent:
-				done = true
 			case *sdl.KeyboardEvent:
 				re := e.(*sdl.KeyboardEvent)
 				if re.Keysym.Sym == sdl.K_F3 {
-					if !debugModekeyLock && re.Type == sdl.KEYDOWN {
-						debugModekeyLock = true
-						if DebugMode == true {
-							DebugMode = false
+					if re.Type == sdl.KEYDOWN {
+						if console.visible == true {
+							console.visible = false
 						} else {
-							DebugMode = true
+							console.visible = true
 						}
-					} else if re.Type == sdl.KEYUP {
-						debugModekeyLock = false
 					}
 				}
 				if re.Keysym.Sym == sdl.K_i {
-					if !inventoryModekeyLock && re.Type == sdl.KEYDOWN {
-						inventoryModekeyLock = true
-						if InventoryMode == true {
-							InventoryMode = false
+					if re.Type == sdl.KEYDOWN {
+						if inventory.visible == true {
+							inventory.visible = false
 						} else {
-							InventoryMode = true
+							inventory.visible = true
 						}
-					} else if re.Type == sdl.KEYUP {
-						inventoryModekeyLock = false
 					}
+				}
+
+				if inventory.visible {
+					inventory.HandleKeyboard(re)
 				}
 			}
 		}
 		keys := sdl.GetKeyState()
 
-		if keys[sdl.K_ESCAPE] != 0 {
-			// ShowOverlay = !ShowOverlay
-
-			// Overlay
-
-		}
-		if keys[sdl.K_UP] != 0 {
-			if keys[sdl.K_LCTRL] != 0 || keys[sdl.K_RCTRL] != 0 {
-				viewport.Zoomin()
-			} else {
-				viewport.Rotx(5)
-			}
-		}
-		if keys[sdl.K_DOWN] != 0 {
-			if keys[sdl.K_LCTRL] != 0 || keys[sdl.K_RCTRL] != 0 {
-				viewport.Zoomout()
-			} else {
-				viewport.Rotx(-5)
-			}
-		}
-		if keys[sdl.K_LEFT] != 0 {
-			viewport.Roty(9)
-		}
-		if keys[sdl.K_RIGHT] != 0 {
-			viewport.Roty(-9)
+		if console.visible {
+			console.HandleKeys(keys)
 		}
 
-		ThePlayer.HandleKeys(keys)
-
-		if keys[sdl.K_o] != 0 {
-			timeOfDay += 0.1
-			if timeOfDay > 24 {
-				timeOfDay -= 24
-			}
-		}
-		if keys[sdl.K_l] != 0 {
-			timeOfDay -= 0.1
-			if timeOfDay < 0 {
-				timeOfDay += 24
-			}
+		if inventory.visible {
+			inventory.HandleKeys(keys)
+		} else {
+			viewport.HandleKeys(keys)
+			ThePlayer.HandleKeys(keys)
 		}
 
 		if update150ms.PassedInterval() {
-			debugModekeyLock = false
 
-			// If player is breaking a block then allow them to hold mouse down to continue action
-			if interactingBlock != nil && ThePlayer.currentAction == ACTION_BREAK {
-				mouseState := sdl.GetMouseState(nil, nil)
-				if mouseState == 1 {
-					if ThePlayer.CanInteract() {
-						selectedBlockFace := viewport.SelectedBlockFace()
-						if selectedBlockFace != nil {
-							if interactingBlock == nil || !interactingBlock.blockFace.pos.Equals(&selectedBlockFace.pos) {
-								interactingBlock = new(InteractingBlockFace)
-								interactingBlock.blockFace = selectedBlockFace
-								interactingBlock.hitCount = 0
+			if !inventory.visible {
+				// If player is breaking a block then allow them to hold mouse down to continue action
+				if interactingBlock != nil && ThePlayer.currentAction == ACTION_BREAK {
+					mouseState := sdl.GetMouseState(nil, nil)
+					if mouseState == 1 {
+						if ThePlayer.CanInteract() {
+							selectedBlockFace := viewport.SelectedBlockFace()
+							if selectedBlockFace != nil {
+								if interactingBlock == nil || !interactingBlock.blockFace.pos.Equals(&selectedBlockFace.pos) {
+									interactingBlock = new(InteractingBlockFace)
+									interactingBlock.blockFace = selectedBlockFace
+									interactingBlock.hitCount = 0
+								}
+								ThePlayer.Interact(interactingBlock)
 							}
-							ThePlayer.Interact(interactingBlock)
+							// println("Click:", re.X, re.Y, re.State, re.Button, re.Which)
 						}
-						// println("Click:", re.X, re.Y, re.State, re.Button, re.Which)
 					}
 				}
 			}
@@ -425,12 +402,14 @@ func Draw(t int64) {
 	ThePlayer.Draw(center, selectedBlockFace)
 	TheWorld.Draw(center, selectedBlockFace)
 
-	if !InventoryMode {
-		picker.Draw(t)
+	if inventory.visible {
+		inventory.Draw(t)
 	} else {
+		picker.Draw(t)
 
 	}
-	if DebugMode {
+
+	if console.visible {
 		console.Draw(t)
 	}
 

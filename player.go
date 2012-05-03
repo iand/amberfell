@@ -260,7 +260,9 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 			interactingBlockFace.hitCount++
 			if interactingBlockFace.hitCount >= TerrainBlocks[uint16(blockid)].hitsNeeded {
 				TheWorld.Setv(selectedBlockFace.pos, BLOCK_AIR)
-				self.inventory[blockid]++
+				if TerrainBlocks[uint16(blockid)].collectable {
+					self.inventory[blockid]++
+				}
 				interactingBlockFace.hitCount = 0
 			}
 
@@ -283,5 +285,13 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 			TheWorld.Setv(selectedBlockFace.pos, byte(self.currentItem))
 		}
 	}
+
+}
+
+func (self *Player) HandleMouseButton(re *sdl.MouseButtonEvent) {
+
+}
+
+func (self *Player) HandleKeyboard(re *sdl.KeyboardEvent) {
 
 }

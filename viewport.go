@@ -50,6 +50,10 @@ func (self *Viewport) Reshape(width int, height int) {
 	gl.Ortho(self.lplane, self.rplane, self.bplane, self.tplane, -20, 20)
 	gl.MatrixMode(gl.MODELVIEW)
 	gl.LoadIdentity()
+
+	picker.x = float32(viewport.rplane) - picker.radius + blockscale*0.5
+	picker.y = float32(viewport.bplane) + picker.radius - blockscale*0.5
+
 }
 
 func (self *Viewport) Rotx(angle float64) {
@@ -176,4 +180,27 @@ func (self *Viewport) SelectedBlockFace() *BlockFace {
 
 	return self.selectedBlockFace
 
+}
+
+func (self *Viewport) HandleKeys(keys []uint8) {
+	if keys[sdl.K_UP] != 0 {
+		if keys[sdl.K_LCTRL] != 0 || keys[sdl.K_RCTRL] != 0 {
+			self.Zoomin()
+		} else {
+			self.Rotx(5)
+		}
+	}
+	if keys[sdl.K_DOWN] != 0 {
+		if keys[sdl.K_LCTRL] != 0 || keys[sdl.K_RCTRL] != 0 {
+			self.Zoomout()
+		} else {
+			self.Rotx(-5)
+		}
+	}
+	if keys[sdl.K_LEFT] != 0 {
+		self.Roty(9)
+	}
+	if keys[sdl.K_RIGHT] != 0 {
+		self.Roty(-9)
+	}
 }

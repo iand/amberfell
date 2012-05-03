@@ -30,6 +30,7 @@ type TerrainBlock struct {
 	texpos      [6]TexturePos
 	hitsNeeded  byte
 	transparent bool
+	collectable bool
 }
 
 type Vertex struct {
@@ -236,7 +237,7 @@ func loadTexture(filename string) *gl.Texture {
 
 }
 
-func NewTerrainBlock(id byte, name string, u uint16, d uint16, n uint16, s uint16, e uint16, w uint16, hitsNeeded byte, transparent bool) TerrainBlock {
+func NewTerrainBlock(id byte, name string, u uint16, d uint16, n uint16, s uint16, e uint16, w uint16, hitsNeeded byte, transparent bool, collectable bool) TerrainBlock {
 	return TerrainBlock{id, name,
 		textures[u],
 		textures[d],
@@ -254,18 +255,19 @@ func NewTerrainBlock(id byte, name string, u uint16, d uint16, n uint16, s uint1
 		},
 		hitsNeeded,
 		transparent,
+		collectable,
 	}
 }
 
 func InitTerrainBlocks() {
 	TerrainBlocks = make(map[uint16]TerrainBlock)
-	TerrainBlocks[BLOCK_AIR] = NewTerrainBlock(BLOCK_AIR, "Air", TEXTURE_NONE, TEXTURE_NONE, TEXTURE_NONE, TEXTURE_NONE, TEXTURE_NONE, TEXTURE_NONE, STRENGTH_STONE, true)
-	TerrainBlocks[BLOCK_STONE] = NewTerrainBlock(BLOCK_STONE, "Stone", TEXTURE_STONE, TEXTURE_STONE, TEXTURE_STONE, TEXTURE_STONE, TEXTURE_STONE, TEXTURE_STONE, STRENGTH_STONE, false)
-	TerrainBlocks[BLOCK_DIRT] = NewTerrainBlock(BLOCK_DIRT, "Dirt", TEXTURE_DIRT_TOP, TEXTURE_DIRT, TEXTURE_DIRT, TEXTURE_DIRT, TEXTURE_DIRT, TEXTURE_DIRT, STRENGTH_DIRT, false)
-	TerrainBlocks[BLOCK_TRUNK] = NewTerrainBlock(BLOCK_TRUNK, "trunk", TEXTURE_TRUNK, TEXTURE_TRUNK, TEXTURE_TRUNK, TEXTURE_TRUNK, TEXTURE_TRUNK, TEXTURE_TRUNK, STRENGTH_WOOD, false)
-	TerrainBlocks[BLOCK_LEAVES] = NewTerrainBlock(BLOCK_TRUNK, "trunk", TEXTURE_LEAVES, TEXTURE_LEAVES, TEXTURE_LEAVES, TEXTURE_LEAVES, TEXTURE_LEAVES, TEXTURE_LEAVES, STRENGTH_LEAVES, false)
-	TerrainBlocks[BLOCK_LOG_WALL] = NewTerrainBlock(BLOCK_LOG_WALL, "log wall", TEXTURE_LOG_WALL_TOP, TEXTURE_LOG_WALL_TOP, TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, STRENGTH_WOOD, true)
-	TerrainBlocks[BLOCK_LOG_SLAB] = NewTerrainBlock(BLOCK_LOG_SLAB, "log slab", TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, STRENGTH_WOOD, true)
+	TerrainBlocks[BLOCK_AIR] = NewTerrainBlock(BLOCK_AIR, "Air", TEXTURE_NONE, TEXTURE_NONE, TEXTURE_NONE, TEXTURE_NONE, TEXTURE_NONE, TEXTURE_NONE, STRENGTH_STONE, true, false)
+	TerrainBlocks[BLOCK_STONE] = NewTerrainBlock(BLOCK_STONE, "Stone", TEXTURE_STONE, TEXTURE_STONE, TEXTURE_STONE, TEXTURE_STONE, TEXTURE_STONE, TEXTURE_STONE, STRENGTH_STONE, false, true)
+	TerrainBlocks[BLOCK_DIRT] = NewTerrainBlock(BLOCK_DIRT, "Dirt", TEXTURE_DIRT_TOP, TEXTURE_DIRT, TEXTURE_DIRT, TEXTURE_DIRT, TEXTURE_DIRT, TEXTURE_DIRT, STRENGTH_DIRT, false, true)
+	TerrainBlocks[BLOCK_TRUNK] = NewTerrainBlock(BLOCK_TRUNK, "trunk", TEXTURE_TRUNK, TEXTURE_TRUNK, TEXTURE_TRUNK, TEXTURE_TRUNK, TEXTURE_TRUNK, TEXTURE_TRUNK, STRENGTH_WOOD, false, true)
+	TerrainBlocks[BLOCK_LEAVES] = NewTerrainBlock(BLOCK_TRUNK, "trunk", TEXTURE_LEAVES, TEXTURE_LEAVES, TEXTURE_LEAVES, TEXTURE_LEAVES, TEXTURE_LEAVES, TEXTURE_LEAVES, STRENGTH_LEAVES, false, false)
+	TerrainBlocks[BLOCK_LOG_WALL] = NewTerrainBlock(BLOCK_LOG_WALL, "log wall", TEXTURE_LOG_WALL_TOP, TEXTURE_LOG_WALL_TOP, TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, STRENGTH_WOOD, true, true)
+	TerrainBlocks[BLOCK_LOG_SLAB] = NewTerrainBlock(BLOCK_LOG_SLAB, "log slab", TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, STRENGTH_WOOD, true, true)
 
 }
 

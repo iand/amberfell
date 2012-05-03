@@ -7,6 +7,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/banthar/Go-SDL/sdl"
 	"github.com/banthar/gl"
 	"runtime"
 )
@@ -16,6 +17,7 @@ type Console struct {
 	mem       runtime.MemStats
 	cubecount int
 	vertices  int
+	visible   bool
 }
 
 func (self *Console) Update() {
@@ -74,7 +76,22 @@ func (self *Console) Draw(t int64) {
 		last3[2] = float64(self.mem.PauseNs[index-2]) / 1e6
 	}
 
-	consoleFont.Print(fmt.Sprintf("Mem: %.1f/%.1f   GC: %.1fms [%d: %.1f, %.1f, %.1f]", float64(self.mem.Alloc)/(1024*1024), float64(self.mem.Sys)/(1024*1024), avggc, numgc, last3[0], last3[1], last3[2]))
+	consoleFont.Print(fmt.Sprintf("Mem: %.1f/%.1f   GC: %.1fms [%d: %.1f, %.1f, %.1f] | TOD: %.1f", float64(self.mem.Alloc)/(1024*1024), float64(self.mem.Sys)/(1024*1024), avggc, numgc, last3[0], last3[1], last3[2], timeOfDay))
 
 	gl.PopMatrix()
+}
+
+func (self *Console) HandleKeys(keys []uint8) {
+	if keys[sdl.K_o] != 0 {
+		timeOfDay += 0.1
+		if timeOfDay > 24 {
+			timeOfDay -= 24
+		}
+	}
+	if keys[sdl.K_l] != 0 {
+		timeOfDay -= 0.1
+		if timeOfDay < 0 {
+			timeOfDay += 24
+		}
+	}
 }
