@@ -69,9 +69,9 @@ func NewFont(filename string, size int, c color.Color) *Font {
 
 func (self *Font) Print(str string) {
 	for _, ch := range str {
-		consoleFont.textures[ch].Bind(gl.TEXTURE_2D)
-		h := float32(consoleFont.height) * PIXEL_SCALE
-		w := float32(consoleFont.widths[ch]) * PIXEL_SCALE
+		self.textures[ch].Bind(gl.TEXTURE_2D)
+		h := float32(self.height) * PIXEL_SCALE
+		w := float32(self.widths[ch]) * PIXEL_SCALE
 		gl.Color4ub(255, 255, 255, 255)
 		gl.Begin(gl.QUADS)
 		gl.TexCoord2d(0, 0)
@@ -84,5 +84,6 @@ func (self *Font) Print(str string) {
 		gl.Vertex2f(0, h) // Top Left Of The Texture and Quad
 		gl.End()
 		gl.Translatef(w, 0, 0)
+		self.textures[ch].Unbind(gl.TEXTURE_2D)
 	}
 }

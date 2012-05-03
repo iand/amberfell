@@ -52,11 +52,19 @@ type TriangleIndex struct {
 }
 
 type VertexBuffer struct {
-	vertices    [VERTEX_BUFFER_CAPACITY]Vertex
-	indices     [VERTEX_BUFFER_CAPACITY]TriangleIndex
+	vertices    []Vertex
+	indices     []TriangleIndex
 	vertexCount int
 	indexCount  int
 	texture     *gl.Texture
+}
+
+func NewVertexBuffer(capacity uint32, texture *gl.Texture) *VertexBuffer {
+	var v VertexBuffer
+	v.vertices = make([]Vertex, capacity, capacity)
+	v.indices = make([]TriangleIndex, capacity, capacity)
+	v.texture = texture
+	return &v
 }
 
 func (self *VertexBuffer) Reset() {
@@ -101,6 +109,7 @@ func (self *VertexBuffer) AddFace(face uint8, texture uint16, selected bool, x1,
 }
 
 func (self *VertexBuffer) RenderDirect() {
+	self.texture.Bind(gl.TEXTURE_2D)
 	gl.Begin(gl.QUADS)
 	for i := 0; i < self.vertexCount; i++ {
 		gl.Normal3f(self.vertices[i].n[0], self.vertices[i].n[1], self.vertices[i].n[2])
@@ -109,6 +118,7 @@ func (self *VertexBuffer) RenderDirect() {
 		gl.Vertex3f(self.vertices[i].p[0], self.vertices[i].p[1], self.vertices[i].p[2])
 	}
 	gl.End()
+	self.texture.Unbind(gl.TEXTURE_2D)
 }
 
 func LoadMapTextures() {

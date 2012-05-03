@@ -21,7 +21,7 @@ type World struct {
 type Chunk struct {
 	x, y, z      uint16
 	Blocks       [CHUNK_WIDTH * CHUNK_WIDTH * CHUNK_HEIGHT]byte
-	vertexBuffer VertexBuffer
+	vertexBuffer *VertexBuffer
 	clean        bool
 }
 
@@ -368,8 +368,8 @@ func (self *World) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 		v.Draw(center, selectedBlockFace)
 	}
 
-	metrics.cubecount = 0
-	metrics.vertices = 0
+	console.cubecount = 0
+	console.vertices = 0
 
 	terrainTexture.Bind(gl.TEXTURE_2D)
 
@@ -382,63 +382,63 @@ func (self *World) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 		c1 = self.GenerateChunk(px, py, pz)
 	}
 	c1.Render(selectedBlockFace)
-	metrics.vertices += c1.vertexBuffer.vertexCount
+	console.vertices += c1.vertexBuffer.vertexCount
 
 	c2, ok := self.chunks[chunkIndex(px+1, py, pz)]
 	if !ok {
 		c2 = self.GenerateChunk(px+1, py, pz)
 	}
 	c2.Render(selectedBlockFace)
-	metrics.vertices += c2.vertexBuffer.vertexCount
+	console.vertices += c2.vertexBuffer.vertexCount
 
 	c3, ok := self.chunks[chunkIndex(px-1, py, pz)]
 	if !ok {
 		c3 = self.GenerateChunk(px-1, py, pz)
 	}
 	c3.Render(selectedBlockFace)
-	metrics.vertices += c3.vertexBuffer.vertexCount
+	console.vertices += c3.vertexBuffer.vertexCount
 
 	c4, ok := self.chunks[chunkIndex(px, py, pz+1)]
 	if !ok {
 		c4 = self.GenerateChunk(px, py, pz+1)
 	}
 	c4.Render(selectedBlockFace)
-	metrics.vertices += c4.vertexBuffer.vertexCount
+	console.vertices += c4.vertexBuffer.vertexCount
 
 	c5, ok := self.chunks[chunkIndex(px, py, pz-1)]
 	if !ok {
 		c5 = self.GenerateChunk(px, py, pz-1)
 	}
 	c5.Render(selectedBlockFace)
-	metrics.vertices += c5.vertexBuffer.vertexCount
+	console.vertices += c5.vertexBuffer.vertexCount
 
 	c6, ok := self.chunks[chunkIndex(px+1, py, pz+1)]
 	if !ok {
 		c6 = self.GenerateChunk(px+1, py, pz+1)
 	}
 	c6.Render(selectedBlockFace)
-	metrics.vertices += c6.vertexBuffer.vertexCount
+	console.vertices += c6.vertexBuffer.vertexCount
 
 	c7, ok := self.chunks[chunkIndex(px+1, py, pz-1)]
 	if !ok {
 		c7 = self.GenerateChunk(px+1, py, pz-1)
 	}
 	c7.Render(selectedBlockFace)
-	metrics.vertices += c7.vertexBuffer.vertexCount
+	console.vertices += c7.vertexBuffer.vertexCount
 
 	c8, ok := self.chunks[chunkIndex(px-1, py, pz+1)]
 	if !ok {
 		c8 = self.GenerateChunk(px-1, py, pz+1)
 	}
 	c8.Render(selectedBlockFace)
-	metrics.vertices += c8.vertexBuffer.vertexCount
+	console.vertices += c8.vertexBuffer.vertexCount
 
 	c9, ok := self.chunks[chunkIndex(px-1, py, pz-1)]
 	if !ok {
 		c9 = self.GenerateChunk(px-1, py, pz-1)
 	}
 	c9.Render(selectedBlockFace)
-	metrics.vertices += c9.vertexBuffer.vertexCount
+	console.vertices += c9.vertexBuffer.vertexCount
 }
 
 // Finds the surface level for a given x, z coordinate
@@ -501,7 +501,7 @@ func (chunk *Chunk) Init(x uint16, y uint16, z uint16) {
 	chunk.x = x
 	chunk.y = y
 	chunk.z = z
-	chunk.vertexBuffer.texture = terrainTexture
+	chunk.vertexBuffer = NewVertexBuffer(VERTEX_BUFFER_CAPACITY, terrainTexture)
 }
 
 func (chunk *Chunk) At(x uint16, y uint16, z uint16) byte {
@@ -541,15 +541,15 @@ func (self *Chunk) Render(selectedBlockFace *BlockFace) {
 								selectedFace = selectedBlockFace.face
 							}
 
-							TerrainCube(&self.vertexBuffer, float32(xw), float32(yw), float32(zw), neighbours, blockid, selectedFace)
-							metrics.cubecount++
+							TerrainCube(self.vertexBuffer, float32(xw), float32(yw), float32(zw), neighbours, blockid, selectedFace)
+							console.cubecount++
 						}
 					}
 				}
 			}
 		}
 
-		metrics.vertices += self.vertexBuffer.vertexCount
+		console.vertices += self.vertexBuffer.vertexCount
 		self.clean = true
 	}
 	self.vertexBuffer.RenderDirect()
