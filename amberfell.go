@@ -39,6 +39,8 @@ var (
 	terrainTexture *gl.Texture
 	gVertexBuffer  *VertexBuffer
 
+	TerrainBlocks map[uint16]TerrainBlock
+
 	// HUD elements
 	picker  Picker
 	console Console
@@ -63,7 +65,7 @@ func main() {
 	defer quit()
 
 	initGame()
-	GameLoop()
+	gameLoop()
 
 	if *flag_memprofile {
 		pfile, err := os.Create("amberfell.prof")
@@ -85,9 +87,6 @@ func initGame() {
 	viewport.Zoomstd()
 	viewport.Rotx(25)
 	viewport.Roty(70)
-	// viewport.Transx(-float64(ThePlayer.X()))
-	// viewport.Transy(-float64(ThePlayer.Y()))
-	// viewport.Transz(-float64(ThePlayer.Z()))
 
 	sdl.Init(sdl.INIT_VIDEO)
 	if ttf.Init() != 0 {
@@ -117,16 +116,13 @@ func initGame() {
 	gl.Enable(gl.LIGHT0)
 	gl.Enable(gl.LIGHT1)
 
-	// gl.ColorMaterial ( gl.FRONT_AND_BACK, gl.EMISSION )
-	// gl.ColorMaterial ( gl.FRONT_AND_BACK, gl.AMBIENT_AND_DIFFUSE )
 	gl.Enable(gl.COLOR_MATERIAL)
 
 	gl.MatrixMode(gl.PROJECTION)
 	gl.LoadIdentity()
-	// gl.Ortho(-12.0, 12.0, -12.0, 12.0, -10, 10.0)
+
 	gl.MatrixMode(gl.MODELVIEW)
 	gl.LoadIdentity()
-	// glu.LookAt(0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0)
 
 	gl.ClearDepth(1.0)       // Depth Buffer Setup
 	gl.Enable(gl.DEPTH_TEST) // Enables Depth Testing
@@ -135,11 +131,9 @@ func initGame() {
 	gl.Enable(gl.TEXTURE_2D)
 	LoadMapTextures()
 	LoadPlayerTextures()
-	//LoadTerrainCubes()
 	InitTerrainBlocks()
 
 	consoleFont = NewFont("res/Jura-DemiBold.ttf", 16, color.RGBA{255, 255, 255, 0})
-	// consoleFont = NewFont("res/FreeMono.ttf", 16, color.RGBA{255, 255, 255, 0})
 
 	textures[TEXTURE_PICKER] = loadTexture("res/dial.png")
 	terrainTexture = loadTexture("tiles.png")
@@ -165,7 +159,7 @@ func quit() {
 	println("Thanks for playing.")
 }
 
-func GameLoop() {
+func gameLoop() {
 	var startTime int64 = time.Now().UnixNano()
 	var currentTime, accumulator int64 = 0, 0
 	var t, dt int64 = 0, 1e9 / 40

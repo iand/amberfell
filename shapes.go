@@ -12,11 +12,6 @@ import (
 	"os"
 )
 
-var (
-	TerrainCubes  map[uint16]uint
-	TerrainBlocks map[uint16]TerrainBlock
-)
-
 type TexturePos struct {
 	x float32
 	y float32
@@ -274,71 +269,6 @@ func InitTerrainBlocks() {
 
 }
 
-func LoadTerrainCubes() {
-	TerrainCubes = make(map[uint16]uint)
-	var faces byte
-	for blockid, block := range TerrainBlocks {
-		for faces = 1; faces < 64; faces++ {
-			listid := gl.GenLists(1)
-			if listid == 0 {
-				panic("GenLists return 0")
-			}
-			var etexture, wtexture, ntexture, stexture, utexture, dtexture *gl.Texture
-			if faces&32 == 32 {
-				etexture = block.etexture
-			}
-			if faces&16 == 16 {
-				wtexture = block.wtexture
-			}
-			if faces&8 == 8 {
-				ntexture = block.ntexture
-			}
-			if faces&4 == 4 {
-				stexture = block.stexture
-			}
-			if faces&2 == 2 {
-				utexture = block.utexture
-			}
-			if faces&1 == 1 {
-				dtexture = block.dtexture
-			}
-
-			gl.NewList(listid, gl.COMPILE)
-			Cuboid(1, 1, 1, etexture, wtexture, ntexture, stexture, utexture, dtexture, FACE_NONE)
-			gl.EndList()
-			// CheckGLError()
-
-			var index uint16 = uint16(blockid)<<8 + uint16(faces)
-			TerrainCubes[index] = listid
-		}
-
-	}
-}
-
-func terrainCubeIndex(n bool, s bool, w bool, e bool, u bool, d bool, blockid byte) uint16 {
-	var index uint16 = uint16(blockid) << 8
-	if e {
-		index += 32
-	}
-	if w {
-		index += 16
-	}
-	if n {
-		index += 8
-	}
-	if w {
-		index += 4
-	}
-	if u {
-		index += 2
-	}
-	if d {
-		index += 1
-	}
-
-	return index
-}
-
 func TerrainCube(vertexBuffer *VertexBuffer, x float32, y float32, z float32, neighbours [6]uint16, blockid byte, selectedFace uint8) {
 
 	block := TerrainBlocks[uint16(blockid)]
@@ -585,6 +515,7 @@ func Cuboid2(vertexBuffer *VertexBuffer, x float32, y float32, z float32, bw flo
 }
 
 func Cuboid(bw float64, bh float64, bd float64, etexture *gl.Texture, wtexture *gl.Texture, ntexture *gl.Texture, stexture *gl.Texture, utexture *gl.Texture, dtexture *gl.Texture, selectedFace uint8) {
+
 	w, h, d := float32(bw)/2, float32(bh)/2, float32(bd)/2
 
 	// East face
