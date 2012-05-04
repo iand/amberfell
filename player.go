@@ -252,7 +252,7 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 	}
 
 	selectedBlockFace := interactingBlockFace.blockFace
-	println("Interacting at ", selectedBlockFace.pos.String())
+	// println("Interacting at ", selectedBlockFace.pos.String())
 	switch self.currentAction {
 	case ACTION_BREAK:
 		blockid := TheWorld.Atv(selectedBlockFace.pos)
@@ -268,21 +268,24 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 
 		}
 	case ACTION_ITEM0, ACTION_ITEM1, ACTION_ITEM2, ACTION_ITEM3, ACTION_ITEM4:
-		if selectedBlockFace.face == UP_FACE { // top
-			selectedBlockFace.pos[YAXIS]++
-		} else if selectedBlockFace.face == DOWN_FACE { // bottom
-			selectedBlockFace.pos[YAXIS]--
-		} else if selectedBlockFace.face == SOUTH_FACE { // front
-			selectedBlockFace.pos[ZAXIS]++
-		} else if selectedBlockFace.face == NORTH_FACE { // back
-			selectedBlockFace.pos[ZAXIS]--
-		} else if selectedBlockFace.face == EAST_FACE { // left
-			selectedBlockFace.pos[XAXIS]++
-		} else if selectedBlockFace.face == WEST_FACE { // right
-			selectedBlockFace.pos[XAXIS]--
-		}
-		if TheWorld.Atv(selectedBlockFace.pos) == BLOCK_AIR {
-			TheWorld.Setv(selectedBlockFace.pos, byte(self.currentItem))
+		if self.inventory[self.currentItem] > 0 {
+			if selectedBlockFace.face == UP_FACE { // top
+				selectedBlockFace.pos[YAXIS]++
+			} else if selectedBlockFace.face == DOWN_FACE { // bottom
+				selectedBlockFace.pos[YAXIS]--
+			} else if selectedBlockFace.face == SOUTH_FACE { // front
+				selectedBlockFace.pos[ZAXIS]++
+			} else if selectedBlockFace.face == NORTH_FACE { // back
+				selectedBlockFace.pos[ZAXIS]--
+			} else if selectedBlockFace.face == EAST_FACE { // left
+				selectedBlockFace.pos[XAXIS]++
+			} else if selectedBlockFace.face == WEST_FACE { // right
+				selectedBlockFace.pos[XAXIS]--
+			}
+			if TheWorld.Atv(selectedBlockFace.pos) == BLOCK_AIR {
+				TheWorld.Setv(selectedBlockFace.pos, byte(self.currentItem))
+				self.inventory[self.currentItem]--
+			}
 		}
 	}
 

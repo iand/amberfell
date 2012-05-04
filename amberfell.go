@@ -33,10 +33,11 @@ var (
 
 	WolfModel *mm3dmodel.Model
 
-	consoleFont    *Font
-	textures       map[uint16]*gl.Texture = make(map[uint16]*gl.Texture)
-	terrainTexture *gl.Texture
-	gVertexBuffer  *VertexBuffer
+	consoleFont       *Font
+	inventoryItemFont *Font
+	textures          map[uint16]*gl.Texture = make(map[uint16]*gl.Texture)
+	terrainTexture    *gl.Texture
+	gVertexBuffer     *VertexBuffer
 
 	TerrainBlocks map[uint16]TerrainBlock
 
@@ -137,6 +138,7 @@ func initGame() {
 	InitTerrainBlocks()
 
 	consoleFont = NewFont("res/Jura-DemiBold.ttf", 16, color.RGBA{255, 255, 255, 0})
+	inventoryItemFont = NewFont("res/Jura-DemiBold.ttf", 14, color.RGBA{240, 240, 240, 0})
 
 	textures[TEXTURE_PICKER] = loadTexture("res/dial.png")
 	terrainTexture = loadTexture("tiles.png")
@@ -221,6 +223,7 @@ func gameLoop() {
 						}
 					}
 				}
+
 			case *sdl.KeyboardEvent:
 				re := e.(*sdl.KeyboardEvent)
 				if re.Keysym.Sym == sdl.K_F3 {
@@ -247,6 +250,13 @@ func gameLoop() {
 				}
 			}
 		}
+
+		var mousex, mousey int
+		mousestate := sdl.GetMouseState(&mousex, &mousey)
+		if inventory.visible {
+			inventory.HandleMouse(mousex, mousey, mousestate)
+		}
+
 		keys := sdl.GetKeyState()
 
 		if console.visible {

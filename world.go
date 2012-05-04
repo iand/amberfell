@@ -279,19 +279,19 @@ func (self *World) ApplyForces(mob Mob, dt float64) {
 	// var dx, dz, dy int16
 	// var x,  z int16
 
-	playerRect := Rect{x: float64(mp[XAXIS]) + mob.Velocity()[XAXIS]*dt, z: float64(mp[ZAXIS]) + mob.Velocity()[ZAXIS]*dt, sizex: mob.W(), sizez: mob.D()}
+	playerRect := Rect{x: float64(mp[XAXIS]) + mob.Velocity()[XAXIS]*dt, y: float64(mp[ZAXIS]) + mob.Velocity()[ZAXIS]*dt, sizex: mob.W(), sizey: mob.D()}
 
 	// collisionCandidates := make([]Side, 0)
 
 	if self.Atv(ip.North()) != BLOCK_AIR {
 		if mob.Velocity()[ZAXIS] < 0 && ip.North().HRect().Intersects(playerRect) {
-			mob.Snapz(float64(ip.North()[ZAXIS])+0.5+playerRect.sizez/2, 0)
+			mob.Snapz(float64(ip.North()[ZAXIS])+0.5+playerRect.sizey/2, 0)
 		}
 	}
 
 	if self.Atv(ip.South()) != BLOCK_AIR {
 		if mob.Velocity()[ZAXIS] > 0 && ip.South().HRect().Intersects(playerRect) {
-			mob.Snapz(float64(ip.South()[ZAXIS])-0.5-playerRect.sizez/2, 0)
+			mob.Snapz(float64(ip.South()[ZAXIS])-0.5-playerRect.sizey/2, 0)
 		}
 	}
 

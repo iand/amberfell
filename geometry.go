@@ -14,7 +14,7 @@ type Vectorf [3]float64
 type Vectori [3]uint16
 
 type Rect struct {
-	x, z, sizex, sizez float64
+	x, y, sizex, sizey float64
 }
 
 type Ray struct {
@@ -120,20 +120,24 @@ func (self *Vectori) Equals(b *Vectori) bool {
 }
 
 func (r1 Rect) Intersects(r2 Rect) bool {
-	if r2.x >= r1.x && r2.x <= r1.x+r1.sizex && r2.z >= r1.z && r2.z <= r1.z+r1.sizez {
+	if r2.x >= r1.x && r2.x <= r1.x+r1.sizex && r2.y >= r1.y && r2.y <= r1.y+r1.sizey {
 		return true
 	}
-	if r2.x+r2.sizex >= r1.x && r2.x+r2.sizex <= r1.x+r1.sizex && r2.z >= r1.z && r2.z <= r1.z+r1.sizez {
+	if r2.x+r2.sizex >= r1.x && r2.x+r2.sizex <= r1.x+r1.sizex && r2.y >= r1.y && r2.y <= r1.y+r1.sizey {
 		return true
 	}
-	if r2.x+r2.sizex >= r1.x && r2.x+r2.sizex <= r1.x+r1.sizex && r2.z+r2.sizez >= r1.z && r2.z+r2.sizez <= r1.z+r1.sizez {
+	if r2.x+r2.sizex >= r1.x && r2.x+r2.sizex <= r1.x+r1.sizex && r2.y+r2.sizey >= r1.y && r2.y+r2.sizey <= r1.y+r1.sizey {
 		return true
 	}
-	if r2.x >= r1.x && r2.x <= r1.x+r1.sizex && r2.z+r2.sizez >= r1.z && r2.z+r2.sizez <= r1.z+r1.sizez {
+	if r2.x >= r1.x && r2.x <= r1.x+r1.sizex && r2.y+r2.sizey >= r1.y && r2.y+r2.sizey <= r1.y+r1.sizey {
 		return true
 	}
 	return false
 
+}
+
+func (self *Rect) Contains(x, y float64) bool {
+	return x >= self.x && x < self.x+self.sizex && y >= self.y && y < self.y+self.sizey
 }
 
 // Stored column first like opengl
@@ -419,9 +423,9 @@ func (self *Ray) HitsBox(box *Box) (hit bool, face uint8) {
 
 func lineRectCollide(line Side, rect Rect) (ret bool) {
 	if line.z != 0 {
-		ret = rect.z > line.z-rect.sizez/2 && rect.z < line.z+rect.sizez/2 && rect.x > line.x1-rect.sizex/2 && rect.x < line.x2+rect.sizex/2
+		ret = rect.y > line.y-rect.sizey/2 && rect.y < line.y+rect.sizey/2 && rect.x > line.x1-rect.sizex/2 && rect.x < line.x2+rect.sizex/2
 	} else {
-		ret = rect.x > line.x-rect.sizex/2 && rect.x < line.x+rect.sizex/2 && rect.z > line.z1-rect.sizez/2 && rect.z < line.z2+rect.sizez/2
+		ret = rect.x > line.x-rect.sizex/2 && rect.x < line.x+rect.sizex/2 && rect.y > line.z1-rect.sizey/2 && rect.y < line.z2+rect.sizey/2
 	}
 	return
 }
