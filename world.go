@@ -43,37 +43,35 @@ func (self *World) Init() {
 
 	self.chunks = make(map[uint64]*Chunk)
 
-	xc, yc, zc := chunkCoordsFromWorld(32760, GroundLevel, 32760)
+	xc, yc, zc := chunkCoordsFromWorld(PLAYER_START_X, GroundLevel, PLAYER_START_Z)
 
-	println("1")
 	self.GenerateChunk(xc, yc, zc)
-	println("2")
-	// self.GenerateChunk(0, 0, 1)
-	// self.GenerateChunk(0, 0, -1)
-	// self.GenerateChunk(-1, 0, 0)
-	// self.GenerateChunk(-1, 0, 1)
-	// self.GenerateChunk(-1, 0, -1)
-	// self.GenerateChunk(1, 0, 0)
-	// self.GenerateChunk(1, 0, 1)
-	// self.GenerateChunk(1, 0, -1)
 
-	self.Set(32760, GroundLevel, 32760, 1)   // stone
-	self.Set(32760, GroundLevel+1, 32760, 1) // stone
-	self.Set(32760, GroundLevel+2, 32760, 1) // stone
-	self.Set(32760, GroundLevel+3, 32760, 1) // stone
+	y := self.FindSurface(PLAYER_START_X+1, PLAYER_START_Z)
+	self.Set(PLAYER_START_X+1, y, PLAYER_START_Z, 1)   // stone
+	self.Set(PLAYER_START_X+1, y+1, PLAYER_START_Z, 1) // stone
+	self.Set(PLAYER_START_X+1, y+2, PLAYER_START_Z, 1) // stone
+	self.Set(PLAYER_START_X+1, y+3, PLAYER_START_Z, 1) // stone
+
+	self.Set(PLAYER_START_X-1, y, PLAYER_START_Z, 1)   // stone
+	self.Set(PLAYER_START_X-1, y+1, PLAYER_START_Z, 1) // stone
+	self.Set(PLAYER_START_X-1, y+2, PLAYER_START_Z, 1) // stone
+	self.Set(PLAYER_START_X-1, y+3, PLAYER_START_Z, 1) // stone
+
+	self.Set(PLAYER_START_X, y+3, PLAYER_START_Z, 1) // stone
 
 	var iw, id uint16
 
 	numFeatures := rand.Intn(21)
 	for i := 0; i < numFeatures; i++ {
-		iw, id = self.RandomSquare()
+		iw, id = self.RandomSquare(PLAYER_START_X+1, PLAYER_START_Z, 120)
 
 		self.Set(iw, GroundLevel, id, 1) // stone
 		self.Grow(iw, GroundLevel, id, 45, 45, 45, 40, 40, 40, byte(rand.Intn(2))+1)
 	}
 
 	for i := 0; i < 40; i++ {
-		iw, id = self.RandomSquare()
+		iw, id = self.RandomSquare(PLAYER_START_X+1, PLAYER_START_Z, 120)
 		self.GrowTree(iw, self.FindSurface(iw, id), id)
 	}
 
@@ -145,11 +143,10 @@ func (self *World) Setv(v Vectori, b byte) {
 	chunk.Set(ox, oy, oz, b)
 }
 
-func (self *World) RandomSquare() (x uint16, z uint16) {
-	radius := int(120)
+func (self *World) RandomSquare(x1 uint16, z1 uint16, radius uint16) (x uint16, z uint16) {
 
-	x = uint16(rand.Intn(radius) + 32760 - radius/2)
-	z = uint16(rand.Intn(radius) + 32760 - radius/2)
+	x = uint16(rand.Intn(int(radius))) + x1 - radius/2
+	z = uint16(rand.Intn(int(radius))) + z1 - radius/2
 	return
 }
 

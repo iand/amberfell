@@ -94,4 +94,17 @@ func (self *Console) HandleKeys(keys []uint8) {
 			timeOfDay += 24
 		}
 	}
+
+	if keys[sdl.K_HASH] != 0 && (keys[sdl.K_LCTRL] != 0 || keys[sdl.K_RCTRL] != 0) {
+		for i := uint16(0); i < uint16(len(items)); i++ {
+			if items[i].collectable {
+				if keys[sdl.K_LSHIFT] != 0 || keys[sdl.K_RSHIFT] != 0 {
+					ThePlayer.inventory[i] = 0
+				} else {
+					ThePlayer.inventory[i] = 999
+				}
+			}
+		}
+	}
+
 }

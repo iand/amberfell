@@ -12,25 +12,14 @@ import (
 	"os"
 )
 
-type TexturePos struct {
-	x float32
-	y float32
-}
-
-type TerrainBlock struct {
+type Item struct {
 	id          byte
 	name        string
-	utexture    *gl.Texture
-	dtexture    *gl.Texture
-	ntexture    *gl.Texture
-	stexture    *gl.Texture
-	etexture    *gl.Texture
-	wtexture    *gl.Texture
 	textures    [6]uint16
-	texpos      [6]TexturePos
 	hitsNeeded  byte
 	transparent bool
 	collectable bool
+	placeable   bool
 }
 
 type Vertex struct {
@@ -237,47 +226,35 @@ func loadTexture(filename string) *gl.Texture {
 
 }
 
-func NewTerrainBlock(id byte, name string, u uint16, d uint16, n uint16, s uint16, e uint16, w uint16, hitsNeeded byte, transparent bool, collectable bool) TerrainBlock {
-	return TerrainBlock{id, name,
-		textures[u],
-		textures[d],
-		textures[n],
-		textures[s],
-		textures[e],
-		textures[w],
+func NewItem(id byte, name string, u uint16, d uint16, n uint16, s uint16, e uint16, w uint16, hitsNeeded byte, transparent bool, collectable bool, placeable bool) Item {
+	return Item{id, name,
 		[6]uint16{e, w, n, s, u, d},
-		[6]TexturePos{TexturePos{x: float32((e % TILES_HORZ)) / TILES_HORZ, y: float32((e / TILES_HORZ)) / TILES_VERT},
-			TexturePos{x: float32((w % TILES_HORZ)) / TILES_HORZ, y: float32((w / TILES_HORZ)) / TILES_VERT},
-			TexturePos{x: float32((n % TILES_HORZ)) / TILES_HORZ, y: float32((n / TILES_HORZ)) / TILES_VERT},
-			TexturePos{x: float32((s % TILES_HORZ)) / TILES_HORZ, y: float32((s / TILES_HORZ)) / TILES_VERT},
-			TexturePos{x: float32((u % TILES_HORZ)) / TILES_HORZ, y: float32((u / TILES_HORZ)) / TILES_VERT},
-			TexturePos{x: float32((d % TILES_HORZ)) / TILES_HORZ, y: float32((d / TILES_HORZ)) / TILES_VERT},
-		},
 		hitsNeeded,
 		transparent,
 		collectable,
+		placeable,
 	}
 }
 
-func InitTerrainBlocks() {
-	TerrainBlocks = make(map[uint16]TerrainBlock)
-	TerrainBlocks[BLOCK_AIR] = NewTerrainBlock(BLOCK_AIR, "Air", TEXTURE_NONE, TEXTURE_NONE, TEXTURE_NONE, TEXTURE_NONE, TEXTURE_NONE, TEXTURE_NONE, STRENGTH_STONE, true, false)
-	TerrainBlocks[BLOCK_STONE] = NewTerrainBlock(BLOCK_STONE, "Stone", TEXTURE_STONE, TEXTURE_STONE, TEXTURE_STONE, TEXTURE_STONE, TEXTURE_STONE, TEXTURE_STONE, STRENGTH_STONE, false, true)
-	TerrainBlocks[BLOCK_DIRT] = NewTerrainBlock(BLOCK_DIRT, "Dirt", TEXTURE_DIRT_TOP, TEXTURE_DIRT, TEXTURE_DIRT, TEXTURE_DIRT, TEXTURE_DIRT, TEXTURE_DIRT, STRENGTH_DIRT, false, true)
-	TerrainBlocks[BLOCK_TRUNK] = NewTerrainBlock(BLOCK_TRUNK, "trunk", TEXTURE_TRUNK, TEXTURE_TRUNK, TEXTURE_TRUNK, TEXTURE_TRUNK, TEXTURE_TRUNK, TEXTURE_TRUNK, STRENGTH_WOOD, false, true)
-	TerrainBlocks[BLOCK_LEAVES] = NewTerrainBlock(BLOCK_TRUNK, "trunk", TEXTURE_LEAVES, TEXTURE_LEAVES, TEXTURE_LEAVES, TEXTURE_LEAVES, TEXTURE_LEAVES, TEXTURE_LEAVES, STRENGTH_LEAVES, false, false)
-	TerrainBlocks[BLOCK_LOG_WALL] = NewTerrainBlock(BLOCK_LOG_WALL, "log wall", TEXTURE_LOG_WALL_TOP, TEXTURE_LOG_WALL_TOP, TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, STRENGTH_WOOD, true, true)
-	TerrainBlocks[BLOCK_LOG_SLAB] = NewTerrainBlock(BLOCK_LOG_SLAB, "log slab", TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, STRENGTH_WOOD, true, true)
+func InitItems() {
+	items = make(map[uint16]Item)
+	items[BLOCK_AIR] = NewItem(BLOCK_AIR, "Air", TEXTURE_NONE, TEXTURE_NONE, TEXTURE_NONE, TEXTURE_NONE, TEXTURE_NONE, TEXTURE_NONE, STRENGTH_STONE, true, false, false)
+	items[BLOCK_STONE] = NewItem(BLOCK_STONE, "Stone", TEXTURE_STONE, TEXTURE_STONE, TEXTURE_STONE, TEXTURE_STONE, TEXTURE_STONE, TEXTURE_STONE, STRENGTH_STONE, false, true, true)
+	items[BLOCK_DIRT] = NewItem(BLOCK_DIRT, "Dirt", TEXTURE_DIRT_TOP, TEXTURE_DIRT, TEXTURE_DIRT, TEXTURE_DIRT, TEXTURE_DIRT, TEXTURE_DIRT, STRENGTH_DIRT, false, true, true)
+	items[BLOCK_TRUNK] = NewItem(BLOCK_TRUNK, "Tree trunk", TEXTURE_TRUNK, TEXTURE_TRUNK, TEXTURE_TRUNK, TEXTURE_TRUNK, TEXTURE_TRUNK, TEXTURE_TRUNK, STRENGTH_WOOD, false, true, true)
+	items[BLOCK_LEAVES] = NewItem(BLOCK_TRUNK, "Leaves", TEXTURE_LEAVES, TEXTURE_LEAVES, TEXTURE_LEAVES, TEXTURE_LEAVES, TEXTURE_LEAVES, TEXTURE_LEAVES, STRENGTH_LEAVES, false, false, false)
+	items[BLOCK_LOG_WALL] = NewItem(BLOCK_LOG_WALL, "Log wall", TEXTURE_LOG_WALL_TOP, TEXTURE_LOG_WALL_TOP, TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, STRENGTH_WOOD, true, true, true)
+	items[BLOCK_LOG_SLAB] = NewItem(BLOCK_LOG_SLAB, "Log slab", TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, STRENGTH_WOOD, true, true, true)
 
 }
 
 func TerrainCube(vertexBuffer *VertexBuffer, x float32, y float32, z float32, neighbours [6]uint16, blockid byte, selectedFace uint8) {
 
-	block := TerrainBlocks[uint16(blockid)]
+	block := items[uint16(blockid)]
 	var visible [6]bool
 
 	for i := 0; i < 6; i++ {
-		if TerrainBlocks[neighbours[i]].transparent {
+		if items[neighbours[i]].transparent {
 			visible[i] = true
 		}
 	}
@@ -437,7 +414,7 @@ func RenderQuads(v []Vertex) {
 	gl.End()
 }
 
-func Cuboid2(vertexBuffer *VertexBuffer, x float32, y float32, z float32, bw float64, bh float64, bd float64, block TerrainBlock, visible [6]bool, selectedFace uint8) {
+func Cuboid2(vertexBuffer *VertexBuffer, x float32, y float32, z float32, bw float64, bh float64, bd float64, block Item, visible [6]bool, selectedFace uint8) {
 	w, h, d := float32(bw)/2, float32(bh)/2, float32(bd)/2
 
 	// East face
@@ -710,7 +687,7 @@ func Line(v Vectorf) {
 	gl.End()
 }
 
-func WallSingle(vertexBuffer *VertexBuffer, x float32, y float32, z float32, orient byte, block TerrainBlock, visible [6]bool, selectedFace uint8) {
+func WallSingle(vertexBuffer *VertexBuffer, x float32, y float32, z float32, orient byte, block Item, visible [6]bool, selectedFace uint8) {
 	var p1, p2, p3, p4 float32 = -1.0 / 2, -1.0 / 6, 1.0 / 6, 1.0 / 2
 
 	if visible[EAST_FACE] && (orient == ORIENT_EAST || orient == ORIENT_WEST) {
@@ -775,7 +752,7 @@ func WallSingle(vertexBuffer *VertexBuffer, x float32, y float32, z float32, ori
 
 }
 
-func WallTee(vertexBuffer *VertexBuffer, x float32, y float32, z float32, orient byte, block TerrainBlock, visible [6]bool, selectedFace uint8) {
+func WallTee(vertexBuffer *VertexBuffer, x float32, y float32, z float32, orient byte, block Item, visible [6]bool, selectedFace uint8) {
 	var p1, p2, p3, p4 float32 = -1.0 / 2, -1.0 / 6, 1.0 / 6, 1.0 / 2
 
 	WallSingle(vertexBuffer, x, y, z, orient, block, visible, selectedFace)
@@ -876,7 +853,7 @@ func WallTee(vertexBuffer *VertexBuffer, x float32, y float32, z float32, orient
 
 }
 
-func WallCorner(vertexBuffer *VertexBuffer, x float32, y float32, z float32, orient byte, block TerrainBlock, visible [6]bool, selectedFace uint8) {
+func WallCorner(vertexBuffer *VertexBuffer, x float32, y float32, z float32, orient byte, block Item, visible [6]bool, selectedFace uint8) {
 	var p1, p2, p3, p4 float32 = -1.0 / 2, -1.0 / 6, 1.0 / 6, 1.0 / 2
 
 	if orient == ORIENT_EAST {
@@ -1040,7 +1017,7 @@ func WallCorner(vertexBuffer *VertexBuffer, x float32, y float32, z float32, ori
 
 }
 
-func WallCross(vertexBuffer *VertexBuffer, x float32, y float32, z float32, orient byte, block TerrainBlock, visible [6]bool, selectedFace uint8) {
+func WallCross(vertexBuffer *VertexBuffer, x float32, y float32, z float32, orient byte, block Item, visible [6]bool, selectedFace uint8) {
 	var p1, p2, p3, p4 float32 = -1.0 / 2, -1.0 / 6, 1.0 / 6, 1.0 / 2
 
 	vertexBuffer.AddFace(EAST_FACE, block.textures[EAST_FACE], selectedFace == EAST_FACE,
@@ -1135,7 +1112,7 @@ func WallCross(vertexBuffer *VertexBuffer, x float32, y float32, z float32, orie
 
 }
 
-func SlabSingle(vertexBuffer *VertexBuffer, x float32, y float32, z float32, orient byte, block TerrainBlock, visible [6]bool, selectedFace uint8) {
+func SlabSingle(vertexBuffer *VertexBuffer, x float32, y float32, z float32, orient byte, block Item, visible [6]bool, selectedFace uint8) {
 	var p1, p2, p3, p4 float32 = -1.0 / 2, -1.0 / 6, 1.0 / 6, 1.0 / 2
 
 	_ = p4
@@ -1165,7 +1142,7 @@ func SlabSingle(vertexBuffer *VertexBuffer, x float32, y float32, z float32, ori
 
 }
 
-func SlabLine(vertexBuffer *VertexBuffer, x float32, y float32, z float32, orient byte, block TerrainBlock, visible [6]bool, selectedFace uint8) {
+func SlabLine(vertexBuffer *VertexBuffer, x float32, y float32, z float32, orient byte, block Item, visible [6]bool, selectedFace uint8) {
 	var p1, p2, p3, p4 float32 = -1.0 / 2, -1.0 / 6, 1.0 / 6, 1.0 / 2
 
 	SlabCross(vertexBuffer, x, y, z, ORIENT_EAST, block, visible, selectedFace)
@@ -1222,7 +1199,7 @@ func SlabLine(vertexBuffer *VertexBuffer, x float32, y float32, z float32, orien
 
 }
 
-func SlabCross(vertexBuffer *VertexBuffer, x float32, y float32, z float32, orient byte, block TerrainBlock, visible [6]bool, selectedFace uint8) {
+func SlabCross(vertexBuffer *VertexBuffer, x float32, y float32, z float32, orient byte, block Item, visible [6]bool, selectedFace uint8) {
 	var p1, p2, p3, p4 float32 = -1.0 / 2, -1.0 / 6, 1.0 / 6, 1.0 / 2
 	_ = p2
 
@@ -1264,7 +1241,7 @@ func SlabCross(vertexBuffer *VertexBuffer, x float32, y float32, z float32, orie
 
 }
 
-func SlabCorner(vertexBuffer *VertexBuffer, x float32, y float32, z float32, orient byte, block TerrainBlock, visible [6]bool, selectedFace uint8) {
+func SlabCorner(vertexBuffer *VertexBuffer, x float32, y float32, z float32, orient byte, block Item, visible [6]bool, selectedFace uint8) {
 	var p1, p2, p3, p4 float32 = -1.0 / 2, -1.0 / 6, 1.0 / 6, 1.0 / 2
 
 	SlabCross(vertexBuffer, x, y, z, ORIENT_EAST, block, visible, selectedFace)
@@ -1389,7 +1366,7 @@ func SlabCorner(vertexBuffer *VertexBuffer, x float32, y float32, z float32, ori
 	}
 }
 
-func SlabTee(vertexBuffer *VertexBuffer, x float32, y float32, z float32, orient byte, block TerrainBlock, visible [6]bool, selectedFace uint8) {
+func SlabTee(vertexBuffer *VertexBuffer, x float32, y float32, z float32, orient byte, block Item, visible [6]bool, selectedFace uint8) {
 	var p1, p2, p3, p4 float32 = -1.0 / 2, -1.0 / 6, 1.0 / 6, 1.0 / 2
 
 	SlabLine(vertexBuffer, x, y, z, orient, block, visible, selectedFace)

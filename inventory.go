@@ -175,7 +175,7 @@ func (self *Inventory) DrawItem(t int64, quantity uint16, blockid uint16, r Rect
 	gVertexBuffer.RenderDirect()
 
 	gl.LoadIdentity()
-	gl.Translated(r.x+3*PIXEL_SCALE, r.y+3*PIXEL_SCALE, 0)
+	gl.Translated(r.x+5*PIXEL_SCALE, r.y+2*PIXEL_SCALE, 0)
 	inventoryItemFont.Print(fmt.Sprintf("%d", quantity))
 
 	gl.PopMatrix()
@@ -225,16 +225,37 @@ func (self *Inventory) HandleMouseButton(re *sdl.MouseButtonEvent) {
 		for i := 0; i < len(self.inventoryRects); i++ {
 			if self.inventoryRects[i].Contains(x, y) {
 				if self.inventorySlots[i] != 0 {
-					for j := 0; j < len(self.componentSlots); j++ {
-						if self.componentSlots[j] == self.inventorySlots[i] {
-							return // Already in component slot
+					keys := sdl.GetKeyState()
+					if keys[sdl.K_LCTRL] != 0 || keys[sdl.K_RCTRL] != 0 {
+						// Add to picker
+						// Check to see if this item is already equipped
+						for j := 0; j < 5; j++ {
+							if ThePlayer.equippedItems[j] == self.inventorySlots[i] {
+								return
+							}
 						}
-					}
-					for j := 0; j < len(self.componentSlots); j++ {
-						if self.componentSlots[j] == 0 {
-							self.componentSlots[j] = self.inventorySlots[i]
-							self.UpdateProducts()
-							return
+
+						// Place it in the first empty slot
+						for j := 0; j < 5; j++ {
+							if ThePlayer.equippedItems[j] == ITEM_NONE {
+								ThePlayer.equippedItems[j] = self.inventorySlots[i]
+								return
+							}
+						}
+
+					} else {
+						// Add to component slots
+						for j := 0; j < len(self.componentSlots); j++ {
+							if self.componentSlots[j] == self.inventorySlots[i] {
+								return // Already in component slot
+							}
+						}
+						for j := 0; j < len(self.componentSlots); j++ {
+							if self.componentSlots[j] == 0 {
+								self.componentSlots[j] = self.inventorySlots[i]
+								self.UpdateProducts()
+								return
+							}
 						}
 					}
 

@@ -39,7 +39,7 @@ var (
 	terrainTexture    *gl.Texture
 	gVertexBuffer     *VertexBuffer
 
-	TerrainBlocks map[uint16]TerrainBlock
+	items map[uint16]Item
 
 	// HUD elements
 	blockscale float32 = 0.4 // The scale at which to render blocks in the HUD
@@ -135,7 +135,7 @@ func initGame() {
 	gl.Enable(gl.TEXTURE_2D)
 	LoadMapTextures()
 	LoadPlayerTextures()
-	InitTerrainBlocks()
+	InitItems()
 
 	consoleFont = NewFont("res/Jura-DemiBold.ttf", 16, color.RGBA{255, 255, 255, 0})
 	inventoryItemFont = NewFont("res/Jura-DemiBold.ttf", 14, color.RGBA{240, 240, 240, 0})
@@ -151,7 +151,7 @@ func initGame() {
 	TheWorld.Init()
 
 	ThePlayer = new(Player)
-	ThePlayer.Init(0, 32760, 32760, TheWorld.FindSurface(10, 10))
+	ThePlayer.Init(0, PLAYER_START_X, PLAYER_START_Z)
 
 	viewport.Reshape(int(screen.W), int(screen.H))
 

@@ -28,19 +28,19 @@ type BlockBreakRecord struct {
 	count int
 }
 
-func (self *Player) Init(heading float64, x uint16, z uint16, y uint16) {
+func (self *Player) Init(heading float64, x uint16, z uint16) {
 	self.heading = heading
 	self.position[XAXIS] = float64(x)
-	self.position[YAXIS] = float64(y)
+	self.position[YAXIS] = float64(TheWorld.FindSurface(x, z))
 	self.position[ZAXIS] = float64(z)
 	self.walkingSpeed = 20
 	self.currentAction = ACTION_HAND
 	self.currentItem = ITEM_NONE
 
 	self.equippedItems[0] = BLOCK_DIRT
-	self.equippedItems[1] = BLOCK_STONE
-	self.equippedItems[2] = BLOCK_LOG_WALL
-	self.equippedItems[3] = BLOCK_LOG_SLAB
+	self.equippedItems[1] = ITEM_NONE
+	self.equippedItems[2] = ITEM_NONE
+	self.equippedItems[3] = ITEM_NONE
 	self.equippedItems[4] = ITEM_NONE
 	self.equippedItems[5] = ITEM_NONE
 	self.equippedItems[6] = ITEM_NONE
@@ -258,9 +258,9 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 		blockid := TheWorld.Atv(selectedBlockFace.pos)
 		if blockid != BLOCK_AIR {
 			interactingBlockFace.hitCount++
-			if interactingBlockFace.hitCount >= TerrainBlocks[uint16(blockid)].hitsNeeded {
+			if interactingBlockFace.hitCount >= items[uint16(blockid)].hitsNeeded {
 				TheWorld.Setv(selectedBlockFace.pos, BLOCK_AIR)
-				if TerrainBlocks[uint16(blockid)].collectable {
+				if items[uint16(blockid)].collectable && self.inventory[blockid] < MAX_ITEMS_IN_INVENTORY {
 					self.inventory[blockid]++
 				}
 				interactingBlockFace.hitCount = 0
@@ -268,7 +268,7 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 
 		}
 	case ACTION_ITEM0, ACTION_ITEM1, ACTION_ITEM2, ACTION_ITEM3, ACTION_ITEM4:
-		if self.inventory[self.currentItem] > 0 {
+		if self.inventory[self.currentItem] > 0 && items[self.currentItem].placeable {
 			if selectedBlockFace.face == UP_FACE { // top
 				selectedBlockFace.pos[YAXIS]++
 			} else if selectedBlockFace.face == DOWN_FACE { // bottom
