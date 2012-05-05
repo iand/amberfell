@@ -43,7 +43,7 @@
 			"file": "amberfell.go",
 			"settings":
 			{
-				"buffer_size": 3575,
+				"buffer_size": 10984,
 				"line_ending": "Unix"
 			}
 		},
@@ -51,7 +51,7 @@
 			"file": "player.go",
 			"settings":
 			{
-				"buffer_size": 9712,
+				"buffer_size": 10089,
 				"line_ending": "Unix"
 			}
 		},
@@ -59,15 +59,7 @@
 			"file": "shapes.go",
 			"settings":
 			{
-				"buffer_size": 66885,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "window.go",
-			"settings":
-			{
-				"buffer_size": 7988,
+				"buffer_size": 51878,
 				"line_ending": "Unix"
 			}
 		},
@@ -83,7 +75,7 @@
 			"file": "constants.go",
 			"settings":
 			{
-				"buffer_size": 2673,
+				"buffer_size": 2764,
 				"line_ending": "Unix"
 			}
 		},
@@ -91,33 +83,15 @@
 			"file": "world.go",
 			"settings":
 			{
-				"buffer_size": 15271,
+				"buffer_size": 17338,
 				"line_ending": "Unix"
-			}
-		},
-		{
-			"contents": "Searching 32 files for \"AirNeighbours\"\n\n/home/iand/wip/amberfell/world.go:\n  198  }\n  199  \n  200: func (self *World) AirNeighbours(x int16, z int16, y int16) (n, s, w, e, u, d bool) {\n  201  	neighbours := self.Neighbours(x, y, z)\n  202  \n  ...\n  463  					var blockid byte = self.At(x, y, z)\n  464  					if blockid != 0 {\n  465: 						var n, s, w, e, u, d bool = self.AirNeighbours(x, z, y)\n  466  						if n || s || w || e || u || d {\n  467  \n\n2 matches in 1 file\n\n\nSearching 32 files for \"AirNeighbour\"\n\n/home/iand/wip/amberfell/viewport.go:\n  151  \n  152  									hit, trialFace := ray.HitsBox(trialBox)\n  153: 									if hit /*&& TheWorld.AirNeighbour(pos[XAXIS]+dx, pos[YAXIS]+dy, pos[ZAXIS]+dz, face)*/ {\n  154  										distance = trialDistance\n  155  										box = trialBox\n\n/home/iand/wip/amberfell/world.go:\n  198  }\n  199  \n  200: func (self *World) AirNeighbours(x int16, y int16, z int16) (n, s, w, e, u, d bool) {\n  201  	neighbours := self.Neighbours(x, y, z)\n  202  \n  ...\n  235  \n  236  \n  237: func (self *World) AirNeighbour(x int16, z int16, y int16, face int) bool {\n  238  	if face == UP_FACE && self.ChunkLoadedFor(x, y+1, z) && self.At(x, y+1, z) == BLOCK_AIR {\n  239  		return true\n  ...\n  463  					var blockid byte = self.At(x, y, z)\n  464  					if blockid != 0 {\n  465: 						var n, s, w, e, u, d bool = self.AirNeighbours(x, y, z)\n  466  						if n || s || w || e || u || d {\n  467  \n\n4 matches across 2 files\n\n\nSearching 32 files for \"AirNeighbour\"\n\n/home/iand/wip/amberfell/viewport.go:\n  151  \n  152  									hit, trialFace := ray.HitsBox(trialBox)\n  153: 									if hit /*&& TheWorld.AirNeighbour(pos[XAXIS]+dx, pos[YAXIS]+dy, pos[ZAXIS]+dz, face)*/ {\n  154  										distance = trialDistance\n  155  										box = trialBox\n\n/home/iand/wip/amberfell/world.go:\n  198  }\n  199  \n  200: func (self *World) AirNeighbours(x int16, y int16, z int16) (n, s, w, e, u, d bool) {\n  201  	neighbours := self.Neighbours(x, y, z)\n  202  \n  ...\n  235  \n  236  \n  237: func (self *World) AirNeighbour(x int16, z int16, y int16, face int) bool {\n  238  	if face == UP_FACE && self.ChunkLoadedFor(x, y+1, z) && self.At(x, y+1, z) == BLOCK_AIR {\n  239  		return true\n  ...\n  463  					var blockid byte = self.At(x, y, z)\n  464  					if blockid != 0 {\n  465: 						var n, s, w, e, u, d bool = self.AirNeighbours(x, y, z)\n  466  						if n || s || w || e || u || d {\n  467  \n\n4 matches across 2 files\n",
-			"settings":
-			{
-				"buffer_size": 2425,
-				"line_ending": "Unix",
-				"name": "Find Results",
-				"scratch": true
 			}
 		},
 		{
 			"file": "viewport.go",
 			"settings":
 			{
-				"buffer_size": 5130,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "gameloop.go",
-			"settings":
-			{
-				"buffer_size": 4924,
+				"buffer_size": 5796,
 				"line_ending": "Unix"
 			}
 		},
@@ -125,7 +99,15 @@
 			"file": "geometry_test.go",
 			"settings":
 			{
-				"buffer_size": 6099,
+				"buffer_size": 6105,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "functions_test.go",
+			"settings":
+			{
+				"buffer_size": 634,
 				"line_ending": "Unix"
 			}
 		},
@@ -133,7 +115,47 @@
 			"file": "geometry.go",
 			"settings":
 			{
-				"buffer_size": 13103,
+				"buffer_size": 13492,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "functions.go",
+			"settings":
+			{
+				"buffer_size": 1914,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "picker.go",
+			"settings":
+			{
+				"buffer_size": 2787,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "console.go",
+			"settings":
+			{
+				"buffer_size": 3289,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "inventory.go",
+			"settings":
+			{
+				"buffer_size": 9047,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "fonts.go",
+			"settings":
+			{
+				"buffer_size": 2806,
 				"line_ending": "Unix"
 			}
 		}
@@ -166,12 +188,15 @@
 	},
 	"file_history":
 	[
+		"/home/iand/wip/amberfell/window.go",
+		"/home/iand/wip/amberfell/gameloop.go",
+		"/home/iand/web/talisians.com/www/conf/venus.ini",
+		"/usr/local/go/src/pkg/github.com/kierdavis/go/mm3dmodel/mm3dmodel.go",
 		"/home/iand/wip/amberfell/res/player-texture-guide.txt",
 		"/home/iand/wip/amberfell/amberfell.go",
 		"/home/iand/wip/amberfell/constants.go",
 		"/home/iand/wip/amberfell/amberfell.sublime-workspace",
 		"/home/iand/wip/amberfell/functions.go",
-		"/home/iand/wip/amberfell/gameloop.go",
 		"/home/iand/wip/mc-ogl-shaders/render_experiments/main.py",
 		"/home/iand/wip/mc-ogl-shaders/render_experiments/volume.py",
 		"/home/iand/wip/mc-ogl-shaders/render_experiments/ext/ext.c",
@@ -183,7 +208,6 @@
 		"/home/iand/wip/amberfell/geometry_test.go",
 		"/home/iand/wip/amberfell/timer.go",
 		"/home/iand/wip/amberfell/viewport.go",
-		"/home/iand/wip/amberfell/window.go",
 		"/home/iand/wip/amberfell/fonts.go",
 		"/home/iand/wip/amberfell/wolf.go",
 		"/home/iand/wip/amberfell/world.go",
@@ -291,17 +315,15 @@
 		"/home/iand/bin/craftbukkit/plugins/OtherDrops/includes/overhaul-catballs.yml",
 		"/home/iand/bin/craftbukkit/plugins/OtherDrops/includes/overhaul-zarius.yml",
 		"/home/iand/bin/craftbukkit/plugins/OtherDrops/includes/od-undead_chaos.yml",
-		"/home/iand/bin/craftbukkit/plugins/OtherDrops/includes/od-fix_undroppables.yml",
-		"/home/iand/bin/craftbukkit/plugins/OtherDrops/includes/od-ore_extraction.yml",
-		"/home/iand/bin/craftbukkit/plugins/OtherDrops/includes/od-goldtools-smelt.yml"
+		"/home/iand/bin/craftbukkit/plugins/OtherDrops/includes/od-fix_undroppables.yml"
 	],
 	"find":
 	{
-		"height": 41.0
+		"height": 59.0
 	},
 	"find_in_files":
 	{
-		"height": 0.0,
+		"height": 88.0,
 		"where_history":
 		[
 			"-amberfell",
@@ -313,6 +335,60 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"TerrainBlock",
+			"Rect",
+			"inventoryModekeyLock",
+			"selectionRadius",
+			"Inv",
+			"viewp",
+			"metrics",
+			"push",
+			"VertexBuffer",
+			"self",
+			"bind",
+			"RenderQuadIndex",
+			"wallcorne",
+			"addface",
+			"corner",
+			"AddFace2",
+			"wallsingle",
+			"SlabCross(ORIENT_EAST",
+			", orient",
+			"int16",
+			"GetChunkForBlock",
+			"FindSurface",
+			"generate",
+			"FindSurface",
+			"random",
+			"blockIndex",
+			"chunkIndexFromWorld",
+			"int64",
+			"chunkIndexFromWorld(",
+			"chunkIndexFromWorld(0, 0, 0)",
+			"chunkIndexFromWorld",
+			"chunkIndex(",
+			"GenerateChunk",
+			"chunkIndex",
+			"generate",
+			"chunkIndex",
+			"Set(",
+			"Set",
+			"trans",
+			"chunkIndex",
+			"GenerateChunk",
+			"ChunkLoadedFor",
+			"chunkindex",
+			"NORMAL_DOWN",
+			"NORMAL_UP",
+			"NORMAL_SOUTH",
+			"NORMAL_NORTH",
+			"NORMAL_WEST",
+			"NORMAL_EAST",
+			"TerrainBlock",
+			"vertexBuffer.indices",
+			"vertexBuffer",
+			"vertexData",
+			"v",
 			"block.TexPos(",
 			"block.texpos[WEST_FACE].y+",
 			"block.texpos[NORTH_FACE].y+",
@@ -386,61 +462,7 @@
 			"Heading()",
 			"Heading",
 			"gl.Translate",
-			"%4.2f",
-			"0.5",
-			"0000     ",
-			"0000 ",
-			"r",
-			"c",
-			"IntVector",
-			"selectMode",
-			"cuboi",
-			"checkgl",
-			"case: BLOCK_DIRT",
-			"case: BLOCK_STONE",
-			"Set(",
-			"af.",
-			"tree",
-			"collap",
-			"af.",
-			"player",
-			"af.world",
-			"af.af.world",
-			"world",
-			"bind",
-			"ind",
-			"bind",
-			"unbin",
-			"ortho",
-			"is falling",
-			"Load",
-			"chunks[",
-			"48",
-			"24",
-			"Blocks",
-			"face",
-			"Overlaps",
-			"mapTextures",
-			"scale/2",
-			"blockSize",
-			"af.",
-			"player",
-			"update",
-			"player",
-			"p.",
-			"p *Player",
-			"At(",
-			"Set(",
-			".Set",
-			"enable",
-			"draw",
-			"screenTo",
-			"frus",
-			".current",
-			"rotate",
-			"TODO",
-			"Derivative",
-			"pene"
+			"%4.2f"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -448,6 +470,23 @@
 		"regex": false,
 		"replace_history":
 		[
+			"Item",
+			"console",
+			"self",
+			"AddFace",
+			"SlabCross(vertexBuffer, x, y, z, ORIENT_EAST",
+			", x float32, y float32, z float32, orient",
+			"NORMALS[DOWN_FACE]",
+			"NORMALS[UP_FACE]",
+			"NORMALS[SOUTH_FACE]",
+			"NORMALS[NORTH_FACE]",
+			"NORMALS[WEST_FACE]",
+			"NORMALS[EAST_FACE]",
+			"vertexBuffer.vertices",
+			"vertexBuffer.indices",
+			"vertexBuffer",
+			"v",
+			"vertexData",
 			"[2]float32{block.texpos[",
 			"",
 			", ",
@@ -512,7 +551,7 @@
 	"groups":
 	[
 		{
-			"selected": 2,
+			"selected": 5,
 			"sheets":
 			[
 				{
@@ -520,15 +559,15 @@
 					"file": "amberfell.go",
 					"settings":
 					{
-						"buffer_size": 3575,
+						"buffer_size": 10984,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								3407,
-								3421
+								3187,
+								3187
 							]
 						],
 						"settings":
@@ -537,7 +576,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 1826.0,
+						"translation.y": 2145.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -547,15 +586,15 @@
 					"file": "player.go",
 					"settings":
 					{
-						"buffer_size": 9712,
+						"buffer_size": 10089,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								5195,
-								5195
+								1253,
+								1253
 							]
 						],
 						"settings":
@@ -564,7 +603,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 1950.0,
+						"translation.y": 420.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -574,15 +613,15 @@
 					"file": "shapes.go",
 					"settings":
 					{
-						"buffer_size": 66885,
+						"buffer_size": 51878,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								17653,
-								17653
+								0,
+								0
 							]
 						],
 						"settings":
@@ -591,40 +630,13 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 6615.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
 					"buffer": 3,
-					"file": "window.go",
-					"settings":
-					{
-						"buffer_size": 7988,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								7132,
-								7132
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Go/Go.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 884.0,
-						"translation.y": 2400.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 4,
 					"file": "mob.go",
 					"settings":
 					{
@@ -651,19 +663,19 @@
 					"type": "text"
 				},
 				{
-					"buffer": 5,
+					"buffer": 4,
 					"file": "constants.go",
 					"settings":
 					{
-						"buffer_size": 2673,
+						"buffer_size": 2764,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								349,
-								349
+								302,
+								316
 							]
 						],
 						"settings":
@@ -678,19 +690,19 @@
 					"type": "text"
 				},
 				{
-					"buffer": 6,
+					"buffer": 5,
 					"file": "world.go",
 					"settings":
 					{
-						"buffer_size": 15271,
+						"buffer_size": 17338,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								10533,
-								10533
+								1662,
+								1662
 							]
 						],
 						"settings":
@@ -699,150 +711,71 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 6337.0,
+						"translation.y": 612.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "viewport.go",
+					"settings":
+					{
+						"buffer_size": 5796,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								920,
+								920
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 450.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
 					"buffer": 7,
+					"file": "geometry_test.go",
 					"settings":
 					{
-						"buffer_size": 2425,
+						"buffer_size": 6105,
 						"regions":
 						{
-							"match":
-							{
-								"flags": 112,
-								"regions":
-								[
-									[
-										118,
-										131
-									],
-									[
-										370,
-										383
-									],
-									[
-										647,
-										659
-									],
-									[
-										868,
-										880
-									],
-									[
-										1038,
-										1050
-									],
-									[
-										1344,
-										1356
-									],
-									[
-										1626,
-										1638
-									],
-									[
-										1847,
-										1859
-									],
-									[
-										2017,
-										2029
-									],
-									[
-										2323,
-										2335
-									]
-								],
-								"scope": ""
-							}
 						},
 						"selection":
 						[
 							[
-								1622,
-								1622
+								252,
+								252
 							]
 						],
 						"settings":
 						{
-							"detect_indentation": false,
-							"output_tag": 3,
-							"result_base_dir": "",
-							"result_file_regex": "^([A-Za-z\\\\/<].*):$",
-							"result_line_regex": "^ +([0-9]+):",
-							"scroll_past_end": true,
-							"syntax": "Packages/Default/Find Results.hidden-tmLanguage"
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 735.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
 					"buffer": 8,
-					"file": "viewport.go",
+					"file": "functions_test.go",
 					"settings":
 					{
-						"buffer_size": 5130,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								2421,
-								2421
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Go/Go.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 1365.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 9,
-					"file": "gameloop.go",
-					"settings":
-					{
-						"buffer_size": 4924,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								2883,
-								2883
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Go/Go.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 1273.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 10,
-					"file": "geometry_test.go",
-					"settings":
-					{
-						"buffer_size": 6099,
+						"buffer_size": 634,
 						"regions":
 						{
 						},
@@ -859,25 +792,52 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 9.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
-					"buffer": 11,
+					"buffer": 9,
 					"file": "geometry.go",
 					"settings":
 					{
-						"buffer_size": 13103,
+						"buffer_size": 13492,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								312,
-								312
+								3759,
+								3759
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 1800.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 10,
+					"file": "functions.go",
+					"settings":
+					{
+						"buffer_size": 1914,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								213
 							]
 						],
 						"settings":
@@ -887,6 +847,114 @@
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 11,
+					"file": "picker.go",
+					"settings":
+					{
+						"buffer_size": 2787,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2615,
+								2760
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 1058.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 12,
+					"file": "console.go",
+					"settings":
+					{
+						"buffer_size": 3289,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2994,
+								3044
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 1195.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 13,
+					"file": "inventory.go",
+					"settings":
+					{
+						"buffer_size": 9047,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								5720,
+								5720
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 3225.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 14,
+					"file": "fonts.go",
+					"settings":
+					{
+						"buffer_size": 2806,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2806,
+								2806
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 878.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -927,7 +995,7 @@
 	"menu_visible": true,
 	"output.exec":
 	{
-		"height": 164.0
+		"height": 189.0
 	},
 	"replace":
 	{
@@ -958,6 +1026,6 @@
 	"show_open_files": true,
 	"show_tabs": false,
 	"side_bar_visible": true,
-	"side_bar_width": 286.0,
+	"side_bar_width": 253.0,
 	"status_bar_visible": true
 }

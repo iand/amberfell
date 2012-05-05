@@ -7,7 +7,8 @@ package main
 
 import (
 	// "fmt"
-	"github.com/banthar/gl"
+	// "github.com/banthar/gl"
+	// "github.com/iand/perlin"
 	"math"
 	"math/rand"
 )
@@ -45,6 +46,15 @@ func (self *World) Init() {
 
 	xc, yc, zc := chunkCoordsFromWorld(PLAYER_START_X, GroundLevel, PLAYER_START_Z)
 
+	// var max, min float64
+	// for i:=uint16(0); i < MAP_DIAM;i++ {
+	// 	h := self.StoneHeight(i, 0)
+	// 	if h > max { max = h}
+	// 	if h < min { min = h}
+	// }
+
+	// fmt.Printf("max: %.4f, min: %.4f", max, min)
+
 	self.GenerateChunk(xc, yc, zc)
 
 	y := self.FindSurface(PLAYER_START_X+1, PLAYER_START_Z)
@@ -81,46 +91,87 @@ func (self *World) Init() {
 
 }
 
+// func (self *World) DirtHeight(x uint16, z uint16) float64 {
+// 	return perlin.Noise2D(0.8*float64(x-MAP_DIAM)/(MAP_DIAM), 0.25*float64(z-MAP_DIAM)/(MAP_DIAM), 2, 0.98, 12)
+// }
+
+// func (self *World) StoneHeight(x uint16, z uint16) float64 {
+// 	return perlin.Noise2D(float64(x-MAP_DIAM)/(MAP_DIAM), float64(z-MAP_DIAM)/(MAP_DIAM), 2, 0.98, 12)
+// }
+
 // A chunk is a 24 x 24 x 48 set of blocks
 // x is east/west offset from World Origin
 // z is south/north offset from World Origin
 func (self *World) GenerateChunk(x uint16, y uint16, z uint16) *Chunk {
 	var chunk Chunk
 	chunk.Init(x, y, z)
+	self.chunks[chunkIndex(x, y, z)] = &chunk
+
 	println("Generating chunk at x:", x, " y:", y, " z:", z)
+
+	// xw := x*CHUNK_WIDTH
+	// zw := z*CHUNK_WIDTH
+	yw := y * CHUNK_HEIGHT
+
 	var iw, id, ih uint16
 	for iw = 0; iw < CHUNK_WIDTH; iw++ {
 		for id = 0; id < CHUNK_WIDTH; id++ {
+
+			// dirtHeight := self.DirtHeight(xw+iw, zw+id) * 500
+
+			// stoneHeight := self.StoneHeight(xw+iw, zw+id)
+
+			// if iw == 0 && id == 0 {
+			// 	println("stoneHeight:", stoneHeight, "dirtHeight:", dirtHeight)
+			// }
 			for ih = 0; ih < CHUNK_HEIGHT; ih++ {
-				if chunk.y*CHUNK_HEIGHT+ih <= GroundLevel {
-					chunk.Set(iw, ih, id, 2) // dirt
-				} else {
-					chunk.Set(iw, ih, id, 0) // dirt
+
+				if yw+ih <= GroundLevel {
+					chunk.Set(iw, ih, id, BLOCK_DIRT)
 				}
 			}
+
 		}
 	}
 
-	self.chunks[chunkIndex(x, y, z)] = &chunk
+	// for iw = 0; iw < CHUNK_WIDTH; iw++ {
+	// 	for id = 0; id < CHUNK_WIDTH; id++ {
+	// 		dirtHeight := self.DirtHeight(xw+iw, zw+id) * 500
+	// 		stoneHeight := self.StoneHeight(xw+iw, zw+id)
+	// 		if uint16(dirtHeight) <  yw + CHUNK_HEIGHT && uint16(dirtHeight) > yw {
+	// 			if stoneHeight > 0.45 {
+	// 				self.GrowTree(xw+iw, self.FindSurface(xw+iw, zw+id), zw+id)
+	// 			}
+	// 		}
+	// 	}
+	// }
+
 	return &chunk
 
 }
 
 // Gets the chunk for a given x/z block coordinate
-// x = 0, z = 0 is in the top left of the home chunk
 func (self *World) GetChunkForBlock(x uint16, y uint16, z uint16) (*Chunk, uint16, uint16, uint16) {
 	cx, cy, cz := chunkCoordsFromWorld(x, y, z)
 
-	chunk, ok := self.chunks[chunkIndex(cx, cy, cz)]
-	if !ok {
-		chunk = self.GenerateChunk(cx, cy, cz)
-	}
+	chunk := self.GetChunk(cx, cy, cz)
 
 	ox := x - cx*CHUNK_WIDTH
 	oy := y - cy*CHUNK_HEIGHT
 	oz := z - cz*CHUNK_WIDTH
 
 	return chunk, ox, oy, oz
+
+}
+
+// Gets the chunk for a given x/z block coordinate
+// x = 0, z = 0 is in the top left of the home chunk
+func (self *World) GetChunk(cx uint16, cy uint16, cz uint16) *Chunk {
+	chunk, ok := self.chunks[chunkIndex(cx, cy, cz)]
+	if !ok {
+		chunk = self.GenerateChunk(cx, cy, cz)
+	}
+	return chunk
 
 }
 
@@ -155,7 +206,7 @@ func (self *World) RandomSquare(x1 uint16, z1 uint16, radius uint16) (x uint16, 
 // up/down = +/- y
 
 func (self *World) Grow(x uint16, y uint16, z uint16, n int, s int, w int, e int, u int, d int, texture byte) {
-	if y > 0 && x < MAP_RADIUS && self.At(x+1, y-1, z) != 0 && rand.Intn(100) < e {
+	if y > 0 && x < MAP_DIAM && self.At(x+1, y-1, z) != 0 && rand.Intn(100) < e {
 		self.Set(x+1, y, z, texture)
 		self.Grow(x+1, y, z, n, s, 0, e-2, u, d, texture)
 	}
@@ -163,7 +214,7 @@ func (self *World) Grow(x uint16, y uint16, z uint16, n int, s int, w int, e int
 		self.Set(x-1, y, z, texture)
 		self.Grow(x-1, y, z, n, s, w-2, 0, u, d, texture)
 	}
-	if y > 0 && z < MAP_RADIUS && self.At(x, y-1, z+1) != 0 && rand.Intn(100) < s {
+	if y > 0 && z < MAP_DIAM && self.At(x, y-1, z+1) != 0 && rand.Intn(100) < s {
 		self.Set(x, y, z+1, texture)
 		self.Grow(x, y, z+1, 0, s-2, w, e, u, d, texture)
 	}
@@ -171,7 +222,7 @@ func (self *World) Grow(x uint16, y uint16, z uint16, n int, s int, w int, e int
 		self.Set(x, y, z-1, texture)
 		self.Grow(x, y, z-1, n-2, 0, w, e, u, d, texture)
 	}
-	if y < MAP_RADIUS && rand.Intn(100) < u {
+	if y < MAP_DIAM && rand.Intn(100) < u {
 		self.Set(x, y+1, z, texture)
 		self.Grow(x, y+1, z, n, s, w, e, u-2, 0, texture)
 	}
@@ -213,41 +264,41 @@ func (self *World) HasVisibleFaces(neighbours [6]uint16) bool {
 
 func (self *World) Neighbours(x uint16, y uint16, z uint16) (neighbours [6]uint16) {
 
-	if self.ChunkLoadedFor(x-1, y, z) {
-		neighbours[WEST_FACE] = uint16(self.At(x-1, y, z))
-	} else {
-		neighbours[WEST_FACE] = BLOCK_AIR
-	}
+	// if self.ChunkLoadedFor(x-1, y, z) {
+	neighbours[WEST_FACE] = uint16(self.At(x-1, y, z))
+	// } else {
+	// 	neighbours[WEST_FACE] = BLOCK_AIR
+	// }
 
-	if self.ChunkLoadedFor(x+1, y, z) {
-		neighbours[EAST_FACE] = uint16(self.At(x+1, y, z))
-	} else {
-		neighbours[EAST_FACE] = BLOCK_AIR
-	}
+	// if self.ChunkLoadedFor(x+1, y, z) {
+	neighbours[EAST_FACE] = uint16(self.At(x+1, y, z))
+	// } else {
+	// 	neighbours[EAST_FACE] = BLOCK_AIR
+	// }
 
-	if self.ChunkLoadedFor(x, y, z-1) {
-		neighbours[NORTH_FACE] = uint16(self.At(x, y, z-1))
-	} else {
-		neighbours[NORTH_FACE] = BLOCK_AIR
-	}
+	// if self.ChunkLoadedFor(x, y, z-1) {
+	neighbours[NORTH_FACE] = uint16(self.At(x, y, z-1))
+	// } else {
+	// 	neighbours[NORTH_FACE] = BLOCK_AIR
+	// }
 
-	if self.ChunkLoadedFor(x, y, z+1) {
-		neighbours[SOUTH_FACE] = uint16(self.At(x, y, z+1))
-	} else {
-		neighbours[SOUTH_FACE] = BLOCK_AIR
-	}
+	// if self.ChunkLoadedFor(x, y, z+1) {
+	neighbours[SOUTH_FACE] = uint16(self.At(x, y, z+1))
+	// } else {
+	// 	neighbours[SOUTH_FACE] = BLOCK_AIR
+	// }
 
-	if self.ChunkLoadedFor(x, y+1, z) {
-		neighbours[UP_FACE] = uint16(self.At(x, y+1, z))
-	} else {
-		neighbours[UP_FACE] = BLOCK_AIR
-	}
+	// if self.ChunkLoadedFor(x, y+1, z) {
+	neighbours[UP_FACE] = uint16(self.At(x, y+1, z))
+	// } else {
+	// 	neighbours[UP_FACE] = BLOCK_AIR
+	// }
 
-	if self.ChunkLoadedFor(x, y-1, z) {
-		neighbours[DOWN_FACE] = uint16(self.At(x, y-1, z))
-	} else {
-		neighbours[DOWN_FACE] = BLOCK_AIR
-	}
+	// if self.ChunkLoadedFor(x, y-1, z) {
+	neighbours[DOWN_FACE] = uint16(self.At(x, y-1, z))
+	// } else {
+	// 	neighbours[DOWN_FACE] = BLOCK_AIR
+	// }
 
 	return
 }
@@ -368,74 +419,52 @@ func (self *World) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 	console.cubecount = 0
 	console.vertices = 0
 
-	terrainTexture.Bind(gl.TEXTURE_2D)
-
 	px := uint16(center[XAXIS]) / CHUNK_WIDTH
 	py := uint16(center[YAXIS]) / CHUNK_HEIGHT
 	pz := uint16(center[ZAXIS]) / CHUNK_WIDTH
 
-	c1, ok := self.chunks[chunkIndex(px, py, pz)]
-	if !ok {
-		c1 = self.GenerateChunk(px, py, pz)
-	}
-	c1.Render(selectedBlockFace)
-	console.vertices += c1.vertexBuffer.vertexCount
+	done := make(map[[3]uint16]bool)
 
-	c2, ok := self.chunks[chunkIndex(px+1, py, pz)]
-	if !ok {
-		c2 = self.GenerateChunk(px+1, py, pz)
-	}
-	c2.Render(selectedBlockFace)
-	console.vertices += c2.vertexBuffer.vertexCount
+	for i := uint16(0); i < 3; i++ {
+		for j := uint16(0); j < 3; j++ {
+			for k := uint16(0); k < 2; k++ {
+				if !done[[3]uint16{px + i, py + k, pz + j}] {
+					self.GetChunk(px+i, py+k, pz+j).Render(selectedBlockFace)
+					done[[3]uint16{px + i, py + k, pz + j}] = true
+				}
+				if !done[[3]uint16{px + i, py + k, pz - j}] {
+					self.GetChunk(px+i, py+k, pz-j).Render(selectedBlockFace)
+					done[[3]uint16{px + i, py + k, pz - j}] = true
+				}
+				if !done[[3]uint16{px - i, py + k, pz + j}] {
+					self.GetChunk(px-i, py+k, pz+j).Render(selectedBlockFace)
+					done[[3]uint16{px - i, py + k, pz + j}] = true
+				}
+				if !done[[3]uint16{px - i, py + k, pz - j}] {
+					self.GetChunk(px-i, py+k, pz-j).Render(selectedBlockFace)
+					done[[3]uint16{px - i, py + k, pz - j}] = true
+				}
+				if !done[[3]uint16{px + i, py - k, pz + j}] {
+					self.GetChunk(px+i, py-k, pz+j).Render(selectedBlockFace)
+					done[[3]uint16{px + i, py - k, pz + j}] = true
+				}
+				if !done[[3]uint16{px + i, py - k, pz - j}] {
+					self.GetChunk(px+i, py-k, pz-j).Render(selectedBlockFace)
+					done[[3]uint16{px + i, py - k, pz - j}] = true
+				}
+				if !done[[3]uint16{px - i, py - k, pz + j}] {
+					self.GetChunk(px-i, py-k, pz+j).Render(selectedBlockFace)
+					done[[3]uint16{px - i, py - k, pz + j}] = true
+				}
+				if !done[[3]uint16{px - i, py - k, pz + j}] {
+					self.GetChunk(px-i, py-k, pz-j).Render(selectedBlockFace)
+					done[[3]uint16{px - i, py - k, pz + j}] = true
+				}
+			}
 
-	c3, ok := self.chunks[chunkIndex(px-1, py, pz)]
-	if !ok {
-		c3 = self.GenerateChunk(px-1, py, pz)
+		}
 	}
-	c3.Render(selectedBlockFace)
-	console.vertices += c3.vertexBuffer.vertexCount
 
-	c4, ok := self.chunks[chunkIndex(px, py, pz+1)]
-	if !ok {
-		c4 = self.GenerateChunk(px, py, pz+1)
-	}
-	c4.Render(selectedBlockFace)
-	console.vertices += c4.vertexBuffer.vertexCount
-
-	c5, ok := self.chunks[chunkIndex(px, py, pz-1)]
-	if !ok {
-		c5 = self.GenerateChunk(px, py, pz-1)
-	}
-	c5.Render(selectedBlockFace)
-	console.vertices += c5.vertexBuffer.vertexCount
-
-	c6, ok := self.chunks[chunkIndex(px+1, py, pz+1)]
-	if !ok {
-		c6 = self.GenerateChunk(px+1, py, pz+1)
-	}
-	c6.Render(selectedBlockFace)
-	console.vertices += c6.vertexBuffer.vertexCount
-
-	c7, ok := self.chunks[chunkIndex(px+1, py, pz-1)]
-	if !ok {
-		c7 = self.GenerateChunk(px+1, py, pz-1)
-	}
-	c7.Render(selectedBlockFace)
-	console.vertices += c7.vertexBuffer.vertexCount
-
-	c8, ok := self.chunks[chunkIndex(px-1, py, pz+1)]
-	if !ok {
-		c8 = self.GenerateChunk(px-1, py, pz+1)
-	}
-	c8.Render(selectedBlockFace)
-	console.vertices += c8.vertexBuffer.vertexCount
-
-	c9, ok := self.chunks[chunkIndex(px-1, py, pz-1)]
-	if !ok {
-		c9 = self.GenerateChunk(px-1, py, pz-1)
-	}
-	c9.Render(selectedBlockFace)
-	console.vertices += c9.vertexBuffer.vertexCount
 }
 
 // Finds the surface level for a given x, z coordinate
