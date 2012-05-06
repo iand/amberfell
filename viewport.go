@@ -47,7 +47,7 @@ func (self *Viewport) Reshape(width int, height int) {
 	self.tplane = 3 * viewHeight / 4
 
 	// println("self.lplane:", self.lplane, "self.rplane", self.rplane)
-	gl.Ortho(self.lplane, self.rplane, self.bplane, self.tplane, -20, 40)
+	gl.Ortho(self.lplane, self.rplane, self.bplane, self.tplane, -40, 40)
 	gl.MatrixMode(gl.MODELVIEW)
 	gl.LoadIdentity()
 
@@ -61,8 +61,8 @@ func (self *Viewport) Rotx(angle float64) {
 	self.rotx += angle
 	if self.rotx > 75 {
 		self.rotx = 75
-	} else if self.rotx < 15 {
-		self.rotx = 15
+	} else if self.rotx < 5 {
+		self.rotx = 5
 	}
 	// self.Recalc()
 }

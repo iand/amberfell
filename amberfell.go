@@ -24,13 +24,16 @@ var (
 	flag_cpuprofile = flag.Bool("cpuprofile", false, "write cpu profile to file")
 	flag_memprofile = flag.Bool("memprofile", false, "write memory profile to file")
 
-	ViewRadius int16 = 30
+	viewRadius int16 = 30
+	viewRadiusy int16 = 10
 	TheWorld   *World
 	ThePlayer  *Player
 	viewport   Viewport
 
 	timeOfDay float32 = 8
 
+	worldSeed = int64(16)
+	treeLine = uint16(math.Trunc(5.0 * float64(CHUNK_HEIGHT/6.0)))
 	WolfModel *mm3dmodel.Model
 
 	consoleFont       *Font
@@ -38,6 +41,7 @@ var (
 	textures          map[uint16]*gl.Texture = make(map[uint16]*gl.Texture)
 	terrainTexture    *gl.Texture
 	gVertexBuffer     *VertexBuffer
+	terrainBuffer     *VertexBuffer
 
 	items map[uint16]Item
 
@@ -46,6 +50,7 @@ var (
 	picker     *Picker
 	console    Console
 	inventory  Inventory
+
 )
 
 func main() {

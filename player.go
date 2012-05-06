@@ -31,7 +31,7 @@ type BlockBreakRecord struct {
 func (self *Player) Init(heading float64, x uint16, z uint16) {
 	self.heading = heading
 	self.position[XAXIS] = float64(x)
-	self.position[YAXIS] = float64(TheWorld.FindSurface(x, z))
+	self.position[YAXIS] = float64(TheWorld.GroundLevel(x, z))
 	self.position[ZAXIS] = float64(z)
 	self.walkingSpeed = 20
 	self.currentAction = ACTION_HAND

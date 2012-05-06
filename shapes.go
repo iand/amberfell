@@ -58,7 +58,7 @@ func (self *VertexBuffer) Reset() {
 }
 
 func (self *VertexBuffer) AddFace(face uint8, texture uint16, selected bool, x1, y1, z1, tx1, ty1, x2, y2, z2, tx2, ty2 float32) {
-	if self.vertexCount >= VERTEX_BUFFER_CAPACITY+4 {
+	if self.vertexCount >= VERTEX_BUFFER_CAPACITY-4 {
 		// TODO: log a warning about overflowing buffer
 		return
 	}
