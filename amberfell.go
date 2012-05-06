@@ -32,7 +32,7 @@ var (
 	timeOfDay float32 = 8
 
 	worldSeed = int64(16)
-	treeLine = uint16(math.Trunc(5.0 * float64(CHUNK_HEIGHT/6.0)))
+	treeLine  = uint16(math.Trunc(5.0 * float64(CHUNK_HEIGHT/6.0)))
 	WolfModel *mm3dmodel.Model
 
 	consoleFont       *Font
@@ -49,7 +49,6 @@ var (
 	picker     *Picker
 	console    Console
 	inventory  Inventory
-
 )
 
 func main() {

@@ -210,7 +210,7 @@ func (self *Viewport) HandleKeys(keys []uint8) {
 	if keys[sdl.K_RIGHT] != 0 {
 		if keys[sdl.K_LCTRL] != 0 || keys[sdl.K_RCTRL] != 0 {
 			viewRadius += 4
-		
+
 		} else {
 			self.Roty(-9)
 		}

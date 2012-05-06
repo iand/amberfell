@@ -14,8 +14,8 @@ import (
 )
 
 type World struct {
-	mobs        []Mob
-	chunks      map[uint64]*Chunk
+	mobs   []Mob
+	chunks map[uint64]*Chunk
 }
 
 type Chunk struct {
@@ -43,7 +43,7 @@ func (self *World) Init() {
 
 	self.chunks = make(map[uint64]*Chunk)
 
-	xc, yc, zc := chunkCoordsFromWorld(PLAYER_START_X, self.GroundLevel(PLAYER_START_X,PLAYER_START_Z), PLAYER_START_Z)
+	xc, yc, zc := chunkCoordsFromWorld(PLAYER_START_X, self.GroundLevel(PLAYER_START_X, PLAYER_START_Z), PLAYER_START_Z)
 
 	// var max, min float64
 	// for i:=uint16(0); i < MAP_DIAM;i++ {
@@ -55,13 +55,12 @@ func (self *World) Init() {
 	// fmt.Printf("max: %.4f, min: %.4f", max, min)
 
 	self.GenerateChunk(xc, yc, zc)
-	for x := xc-10; x < xc+10; x++ {
-		for z := zc-10; z < zc+10; z++ {
+	for x := xc - 10; x < xc+10; x++ {
+		for z := zc - 10; z < zc+10; z++ {
 			self.GenerateChunk(x, yc, z)
 
 		}
 	}
-
 
 	y := self.GroundLevel(PLAYER_START_X+1, PLAYER_START_Z)
 	self.Set(PLAYER_START_X+1, y, PLAYER_START_Z, 1)   // stone
@@ -97,13 +96,12 @@ func (self *World) Init() {
 
 }
 
-
 func (self *World) GroundLevel(x uint16, z uint16) uint16 {
 	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(8*NOISE_SCALE), float64(z-MAP_DIAM)/(8*NOISE_SCALE), worldSeed, 0.4, 4)
-	ground := uint16(noise  * (CHUNK_HEIGHT/3.0) + CHUNK_HEIGHT/2.0)
+	ground := uint16(noise*(CHUNK_HEIGHT/3.0) + CHUNK_HEIGHT/2.0)
 	if ground > CHUNK_HEIGHT {
 		ground = CHUNK_HEIGHT
-	} 
+	}
 	return ground
 }
 
@@ -111,8 +109,10 @@ func (self *World) SoilThickness(x uint16, z uint16) uint16 {
 	// return perlin.Noise2D(float64(x-MAP_DIAM)/(16*NOISE_SCALE), float64(z-MAP_DIAM)/(16*NOISE_SCALE), 1, 0.65, 8)
 	// return perlin.Noise2D(float64(x-MAP_DIAM)/(NOISE_SCALE), float64(z-MAP_DIAM)/(NOISE_SCALE), 1, 0.65, 8) // very rugged
 	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(NOISE_SCALE), float64(z-MAP_DIAM)/(NOISE_SCALE), worldSeed, 0.6, 8)
-	if noise < -1 { noise = -1 }
-	return uint16(noise * 4 + 4)
+	if noise < -1 {
+		noise = -1
+	}
+	return uint16(noise*4 + 4)
 }
 
 func (self *World) Precipitation(x uint16, z uint16) float64 {
@@ -127,12 +127,13 @@ func (self *World) Drainage(x uint16, z uint16) float64 {
 
 func (self *World) Rocks(x uint16, z uint16) uint16 {
 	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(16*NOISE_SCALE), float64(z-MAP_DIAM)/(16*NOISE_SCALE), worldSeed, 0.999, 8)
-	noise = noise * 12 - 20
+	noise = noise*12 - 20
 
-	if noise < 0 { noise = 0}
+	if noise < 0 {
+		noise = 0
+	}
 	return uint16(noise)
 }
-
 
 func (self *World) Feature1(x uint16, z uint16) float64 {
 	return perlin.Noise2D(float64(x-MAP_DIAM)/(30*NOISE_SCALE), float64(z-MAP_DIAM)/(90*NOISE_SCALE), worldSeed, 0.99, 10)
@@ -142,11 +143,6 @@ func (self *World) Feature2(x uint16, z uint16) float64 {
 	return perlin.Noise2D(float64(x-MAP_DIAM)/(90*NOISE_SCALE), float64(z-MAP_DIAM)/(30*NOISE_SCALE), worldSeed, 0.99, 10)
 }
 
-
-
-
-
-
 func (self *World) GenerateChunk(cx uint16, cy uint16, cz uint16) *Chunk {
 	var chunk Chunk
 	chunk.Init(cx, cy, cz)
@@ -154,13 +150,13 @@ func (self *World) GenerateChunk(cx uint16, cy uint16, cz uint16) *Chunk {
 
 	println("Generating chunk at x:", cx, " y:", cy, " z:", cz)
 
-	xw := cx*CHUNK_WIDTH
-	zw := cz*CHUNK_WIDTH
+	xw := cx * CHUNK_WIDTH
+	zw := cz * CHUNK_WIDTH
 
 	for x := uint16(0); x < CHUNK_WIDTH; x++ {
 		for z := uint16(0); z < CHUNK_WIDTH; z++ {
 			ground := self.GroundLevel(x+xw, z+zw)
-			soil := uint16(float64(self.SoilThickness(x+xw, z+zw)) * 1 -(float64(ground)/CHUNK_HEIGHT))
+			soil := uint16(float64(self.SoilThickness(x+xw, z+zw))*1 - (float64(ground) / CHUNK_HEIGHT))
 
 			if soil > ground {
 				soil = ground
@@ -169,16 +165,13 @@ func (self *World) GenerateChunk(cx uint16, cy uint16, cz uint16) *Chunk {
 			for y := uint16(0); y < ground-soil; y++ {
 				chunk.Set(x, y, z, BLOCK_STONE)
 			}
-			for y := ground-soil; y < ground; y++ {
+			for y := ground - soil; y < ground; y++ {
 				chunk.Set(x, y, z, BLOCK_DIRT)
 			}
 
 			for y := ground; y < ground+self.Rocks(x+xw, z+zw); y++ {
 				chunk.Set(x, y, z, BLOCK_STONE)
 			}
-
-			
-
 
 		}
 	}
@@ -191,12 +184,12 @@ func (self *World) GenerateChunk(cx uint16, cy uint16, cz uint16) *Chunk {
 				if y > 1 && y < treeLine && chunk.At(x-xw, y-1, z-zw) == BLOCK_DIRT {
 					self.GrowTree(x, y, z)
 
-				}	
+				}
 			} else {
 				feature1 := self.Feature1(x, z)
 				feature2 := self.Feature2(x, z)
 
-				if  feature1 > 0.8 && feature2 > 0.8 {
+				if feature1 > 0.8 && feature2 > 0.8 {
 					self.Set(x, y, z, BLOCK_STONE)
 					self.Set(x, y+1, z, BLOCK_STONE)
 					self.Set(x, y+2, z, BLOCK_STONE)
@@ -215,10 +208,9 @@ func (self *World) GenerateChunk(cx uint16, cy uint16, cz uint16) *Chunk {
 					self.Set(x, y+1, z, BLOCK_STONE)
 					self.Set(x, y+2, z, BLOCK_STONE)
 				}
-			} 
+			}
 		}
 	}
-
 
 	return &chunk
 
@@ -240,7 +232,6 @@ func (self *World) FindSurface(x uint16, z uint16) uint16 {
 
 	return y
 }
-
 
 // Gets the chunk for a given x/z block coordinate
 func (self *World) GetChunkForBlock(x uint16, y uint16, z uint16) (*Chunk, uint16, uint16, uint16) {
@@ -519,7 +510,6 @@ func (self *World) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 	console.cubecount = 0
 	console.vertices = 0
 
-
 	pxmin, _, pzmin := chunkCoordsFromWorld(uint16(center[XAXIS]-float64(viewRadius)), uint16(center[YAXIS]), uint16(center[ZAXIS]-float64(viewRadius)))
 	pxmax, _, pzmax := chunkCoordsFromWorld(uint16(center[XAXIS]+float64(viewRadius)), uint16(center[YAXIS]), uint16(center[ZAXIS]+float64(viewRadius)))
 
@@ -528,8 +518,6 @@ func (self *World) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 			self.GetChunk(px, 0, pz).Render(selectedBlockFace)
 		}
 	}
-
-
 
 }
 
