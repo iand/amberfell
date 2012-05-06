@@ -55,6 +55,13 @@ func (self *World) Init() {
 	// fmt.Printf("max: %.4f, min: %.4f", max, min)
 
 	self.GenerateChunk(xc, yc, zc)
+	for x := xc-10; x < xc+10; x++ {
+		for z := zc-10; z < zc+10; z++ {
+			self.GenerateChunk(x, yc, z)
+
+		}
+	}
+
 
 	y := self.GroundLevel(PLAYER_START_X+1, PLAYER_START_Z)
 	self.Set(PLAYER_START_X+1, y, PLAYER_START_Z, 1)   // stone
@@ -92,7 +99,7 @@ func (self *World) Init() {
 
 
 func (self *World) GroundLevel(x uint16, z uint16) uint16 {
-	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(8*CHUNK_WIDTH), float64(z-MAP_DIAM)/(8*CHUNK_WIDTH), worldSeed, 0.4, 4)
+	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(8*NOISE_SCALE), float64(z-MAP_DIAM)/(8*NOISE_SCALE), worldSeed, 0.4, 4)
 	ground := uint16(noise  * (CHUNK_HEIGHT/3.0) + CHUNK_HEIGHT/2.0)
 	if ground > CHUNK_HEIGHT {
 		ground = CHUNK_HEIGHT
@@ -101,30 +108,40 @@ func (self *World) GroundLevel(x uint16, z uint16) uint16 {
 }
 
 func (self *World) SoilThickness(x uint16, z uint16) uint16 {
-	// return perlin.Noise2D(float64(x-MAP_DIAM)/(16*CHUNK_WIDTH), float64(z-MAP_DIAM)/(16*CHUNK_WIDTH), 1, 0.65, 8)
-	// return perlin.Noise2D(float64(x-MAP_DIAM)/(CHUNK_WIDTH), float64(z-MAP_DIAM)/(CHUNK_WIDTH), 1, 0.65, 8) // very rugged
-	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(CHUNK_WIDTH), float64(z-MAP_DIAM)/(CHUNK_WIDTH), worldSeed, 0.6, 8)
+	// return perlin.Noise2D(float64(x-MAP_DIAM)/(16*NOISE_SCALE), float64(z-MAP_DIAM)/(16*NOISE_SCALE), 1, 0.65, 8)
+	// return perlin.Noise2D(float64(x-MAP_DIAM)/(NOISE_SCALE), float64(z-MAP_DIAM)/(NOISE_SCALE), 1, 0.65, 8) // very rugged
+	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(NOISE_SCALE), float64(z-MAP_DIAM)/(NOISE_SCALE), worldSeed, 0.6, 8)
 	if noise < -1 { noise = -1 }
 	return uint16(noise * 4 + 4)
 }
 
 func (self *World) Precipitation(x uint16, z uint16) float64 {
-	// return perlin.Noise2D(float64(x-MAP_DIAM)/(16*CHUNK_WIDTH), float64(z-MAP_DIAM)/(16*CHUNK_WIDTH), 1, 0.65, 8)
-	// return perlin.Noise2D(float64(x-MAP_DIAM)/(CHUNK_WIDTH), float64(z-MAP_DIAM)/(CHUNK_WIDTH), 1, 0.65, 8) // very rugged
-	return perlin.Noise2D(float64(x-MAP_DIAM)/(CHUNK_WIDTH), float64(z-MAP_DIAM)/(CHUNK_WIDTH), worldSeed, 0.6, 12)
+	// return perlin.Noise2D(float64(x-MAP_DIAM)/(16*NOISE_SCALE), float64(z-MAP_DIAM)/(16*NOISE_SCALE), 1, 0.65, 8)
+	// return perlin.Noise2D(float64(x-MAP_DIAM)/(NOISE_SCALE), float64(z-MAP_DIAM)/(NOISE_SCALE), 1, 0.65, 8) // very rugged
+	return perlin.Noise2D(float64(x-MAP_DIAM)/(NOISE_SCALE), float64(z-MAP_DIAM)/(NOISE_SCALE), worldSeed, 0.6, 12)
 }
 
 func (self *World) Drainage(x uint16, z uint16) float64 {
-	return perlin.Noise2D(float64(x-MAP_DIAM)/(6*CHUNK_WIDTH), float64(z-MAP_DIAM)/(6*CHUNK_WIDTH), worldSeed, 0.4, 12)
+	return perlin.Noise2D(float64(x-MAP_DIAM)/(6*NOISE_SCALE), float64(z-MAP_DIAM)/(6*NOISE_SCALE), worldSeed, 0.4, 12)
 }
 
 func (self *World) Rocks(x uint16, z uint16) uint16 {
-	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(16*CHUNK_WIDTH), float64(z-MAP_DIAM)/(16*CHUNK_WIDTH), worldSeed, 0.999, 8)
+	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(16*NOISE_SCALE), float64(z-MAP_DIAM)/(16*NOISE_SCALE), worldSeed, 0.999, 8)
 	noise = noise * 12 - 20
 
 	if noise < 0 { noise = 0}
 	return uint16(noise)
 }
+
+
+func (self *World) Feature1(x uint16, z uint16) float64 {
+	return perlin.Noise2D(float64(x-MAP_DIAM)/(30*NOISE_SCALE), float64(z-MAP_DIAM)/(90*NOISE_SCALE), worldSeed, 0.99, 10)
+}
+
+func (self *World) Feature2(x uint16, z uint16) float64 {
+	return perlin.Noise2D(float64(x-MAP_DIAM)/(90*NOISE_SCALE), float64(z-MAP_DIAM)/(30*NOISE_SCALE), worldSeed, 0.99, 10)
+}
+
 
 
 
@@ -166,16 +183,39 @@ func (self *World) GenerateChunk(cx uint16, cy uint16, cz uint16) *Chunk {
 		}
 	}
 
-	for x := uint16(0); x < CHUNK_WIDTH; x++ {
-		for z := uint16(0); z < CHUNK_WIDTH; z++ {
-			if self.Precipitation(x+xw, z+zw) > 0.4 && rand.Intn(100) < 5 {
-				y := self.FindSurface(x+xw, z+zw)
-				if y > 1 && y < treeLine && chunk.At(x, y-1, z) == BLOCK_DIRT {
-					self.GrowTree(x+xw, y, z+zw)
+	for x := uint16(xw); x < xw+CHUNK_WIDTH; x++ {
+		for z := uint16(zw); z < zw+CHUNK_WIDTH; z++ {
+			y := self.FindSurface(x, z)
+			if self.Precipitation(x, z) > TREE_PRECIPITATION_MIN && rand.Intn(100) < TREE_DENSITY_PCT {
+
+				if y > 1 && y < treeLine && chunk.At(x-xw, y-1, z-zw) == BLOCK_DIRT {
+					self.GrowTree(x, y, z)
 
 				}	
-			}
+			} else {
+				feature1 := self.Feature1(x, z)
+				feature2 := self.Feature2(x, z)
 
+				if  feature1 > 0.8 && feature2 > 0.8 {
+					self.Set(x, y, z, BLOCK_STONE)
+					self.Set(x, y+1, z, BLOCK_STONE)
+					self.Set(x, y+2, z, BLOCK_STONE)
+					self.Set(x, y+3, z, BLOCK_STONE)
+					self.Set(x, y+4, z, BLOCK_STONE)
+					self.Set(x, y+5, z, BLOCK_STONE)
+					self.Set(x, y+6, z, BLOCK_STONE)
+				} else if feature1 > 0.7 && feature2 > 0.7 {
+					self.Set(x, y, z, BLOCK_STONE)
+					self.Set(x, y+1, z, BLOCK_STONE)
+					self.Set(x, y+2, z, BLOCK_STONE)
+					self.Set(x, y+3, z, BLOCK_STONE)
+					self.Set(x, y+4, z, BLOCK_STONE)
+				} else if feature1 > 0.6 && feature2 > 0.6 {
+					self.Set(x, y, z, BLOCK_STONE)
+					self.Set(x, y+1, z, BLOCK_STONE)
+					self.Set(x, y+2, z, BLOCK_STONE)
+				}
+			} 
 		}
 	}
 

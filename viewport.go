@@ -198,9 +198,21 @@ func (self *Viewport) HandleKeys(keys []uint8) {
 		}
 	}
 	if keys[sdl.K_LEFT] != 0 {
-		self.Roty(9)
+		if keys[sdl.K_LCTRL] != 0 || keys[sdl.K_RCTRL] != 0 {
+			viewRadius -= 4
+			if viewRadius < 8 {
+				viewRadius = 8
+			}
+		} else {
+			self.Roty(9)
+		}
 	}
 	if keys[sdl.K_RIGHT] != 0 {
-		self.Roty(-9)
+		if keys[sdl.K_LCTRL] != 0 || keys[sdl.K_RCTRL] != 0 {
+			viewRadius += 4
+		
+		} else {
+			self.Roty(-9)
+		}
 	}
 }

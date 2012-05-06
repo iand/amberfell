@@ -25,7 +25,6 @@ var (
 	flag_memprofile = flag.Bool("memprofile", false, "write memory profile to file")
 
 	viewRadius int16 = 30
-	viewRadiusy int16 = 10
 	TheWorld   *World
 	ThePlayer  *Player
 	viewport   Viewport
