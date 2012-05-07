@@ -363,7 +363,6 @@ func (self *Inventory) ShowTooltip(x, y float64, str string) {
 	h, w := inventoryItemFont.Measure(str)
 
 	pad := 4 * PIXEL_SCALE
-	fmt.Printf("Tooltip: x=%.2f, y=%.2f, w=%.2f, h=%.2f\n", x, y, w, h)
 	gl.PushMatrix()
 
 	gl.LoadIdentity()

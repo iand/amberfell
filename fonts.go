@@ -90,7 +90,8 @@ func (self *Font) Measure(str string) (h, w float64) {
 	h = float64(self.height) * PIXEL_SCALE
 
 	for _, ch := range str {
-		w += float64(self.widths[ch]) * PIXEL_SCALE
+		w += float64(self.widths[ch])
 	}
+	w *= PIXEL_SCALE
 	return
 }
