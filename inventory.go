@@ -243,21 +243,7 @@ func (self *Inventory) HandleMouseButton(re *sdl.MouseButtonEvent) {
 				if self.inventorySlots[i] != 0 {
 					keys := sdl.GetKeyState()
 					if keys[sdl.K_LCTRL] != 0 || keys[sdl.K_RCTRL] != 0 {
-						// Add to picker
-						// Check to see if this item is already equipped
-						for j := 0; j < 5; j++ {
-							if ThePlayer.equippedItems[j] == self.inventorySlots[i] {
-								return
-							}
-						}
-
-						// Place it in the first empty slot
-						for j := 0; j < 5; j++ {
-							if ThePlayer.equippedItems[j] == ITEM_NONE {
-								ThePlayer.equippedItems[j] = self.inventorySlots[i]
-								return
-							}
-						}
+						ThePlayer.EquipItem(self.inventorySlots[i])
 
 					} else {
 						// Add to component slots
@@ -310,6 +296,16 @@ func (self *Inventory) HandleMouseButton(re *sdl.MouseButtonEvent) {
 				return
 			}
 		}
+
+		hit, pos := picker.HitTest(x, y)
+		if hit && pos > 2 {
+			keys := sdl.GetKeyState()
+			if keys[sdl.K_LCTRL] != 0 || keys[sdl.K_RCTRL] != 0 {
+				// Remove from picker
+				ThePlayer.equippedItems[uint16(pos)-3] = ITEM_NONE
+			}
+		}
+
 	}
 
 	// type MouseButtonEvent struct {
@@ -331,20 +327,54 @@ func (self *Inventory) HandleMouse(mousex int, mousey int, mousestate uint8) {
 	for i := 0; i < len(self.inventoryRects); i++ {
 		if self.inventoryRects[i].Contains(x, y) {
 			itemid = self.inventorySlots[i]
+			break
 		}
 	}
-	for i := 0; i < len(self.componentRects); i++ {
-		if self.componentRects[i].Contains(x, y) {
-			itemid = self.componentSlots[i]
-		}
-	}
-	for i := 0; i < len(self.productRects); i++ {
-		if self.productRects[i].Contains(x, y) {
-			if self.productSlots[i] != nil {
-				itemid = self.productSlots[i].product.item
+	if itemid == 0 {
+		for i := 0; i < len(self.componentRects); i++ {
+			if self.componentRects[i].Contains(x, y) {
+				itemid = self.componentSlots[i]
+				break
 			}
 		}
 	}
+
+	if itemid == 0 {
+		for i := 0; i < len(self.productRects); i++ {
+			if self.productRects[i].Contains(x, y) {
+				if self.productSlots[i] != nil {
+					itemid = self.productSlots[i].product.item
+					break
+				}
+			}
+		}
+	}
+
+	if itemid == 0 {
+		hit, pos := picker.HitTest(x, y)
+		if hit {
+			if pos > 2 {
+				itemid = uint16(pos) - 3
+			}
+
+		}
+
+		for i := 0; i < 5; i++ {
+			angle := -(float64(i) + 1.5) * math.Pi / 4
+			ix := float64(picker.x) - float64(picker.actionItemRadius)*math.Sin(angle)
+			iy := float64(picker.y) + float64(picker.actionItemRadius)*math.Cos(angle)
+			if x > ix-float64(picker.selectionRadius) && x < ix+float64(picker.selectionRadius) &&
+				y > iy-float64(picker.selectionRadius) && y < iy+float64(picker.selectionRadius) {
+
+				itemid = ThePlayer.equippedItems[i]
+				break
+
+			}
+
+		}
+
+	}
+
 	if itemid != 0 {
 		self.ShowTooltip(x, y, items[itemid].name)
 	}

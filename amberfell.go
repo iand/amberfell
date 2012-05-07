@@ -37,6 +37,7 @@ var (
 
 	consoleFont       *Font
 	inventoryItemFont *Font
+	pauseFont         *Font
 	textures          map[uint16]*gl.Texture = make(map[uint16]*gl.Texture)
 	terrainTexture    *gl.Texture
 	gVertexBuffer     *VertexBuffer
@@ -49,6 +50,7 @@ var (
 	picker     *Picker
 	console    Console
 	inventory  Inventory
+	pause      Pause
 )
 
 func main() {
@@ -140,6 +142,7 @@ func initGame() {
 	LoadPlayerTextures()
 	InitItems()
 
+	pauseFont = NewFont("res/Jura-DemiBold.ttf", 48, color.RGBA{255, 255, 255, 0})
 	consoleFont = NewFont("res/Jura-DemiBold.ttf", 16, color.RGBA{255, 255, 255, 0})
 	inventoryItemFont = NewFont("res/Jura-DemiBold.ttf", 14, color.RGBA{240, 240, 240, 0})
 
@@ -206,29 +209,42 @@ func gameLoop() {
 				if inventory.visible {
 					inventory.HandleMouseButton(re)
 				} else {
+					picker.HandleMouseButton(re)
 
 					if re.Button == 1 && re.State == 1 { // LEFT, DOWN
-						if inventory.visible {
-
-						} else {
-							if ThePlayer.CanInteract() {
-								selectedBlockFace := viewport.SelectedBlockFace()
-								if selectedBlockFace != nil {
-									if interactingBlock == nil || interactingBlock.blockFace.pos != selectedBlockFace.pos {
-										interactingBlock = new(InteractingBlockFace)
-										interactingBlock.blockFace = selectedBlockFace
-										interactingBlock.hitCount = 0
-									}
-									ThePlayer.Interact(interactingBlock)
+						if ThePlayer.CanInteract() {
+							selectedBlockFace := viewport.SelectedBlockFace()
+							if selectedBlockFace != nil {
+								if interactingBlock == nil || interactingBlock.blockFace.pos != selectedBlockFace.pos {
+									interactingBlock = new(InteractingBlockFace)
+									interactingBlock.blockFace = selectedBlockFace
+									interactingBlock.hitCount = 0
 								}
-								// println("Click:", re.X, re.Y, re.State, re.Button, re.Which)
+								ThePlayer.Interact(interactingBlock)
 							}
+							// println("Click:", re.X, re.Y, re.State, re.Button, re.Which)
 						}
 					}
 				}
 
 			case *sdl.KeyboardEvent:
 				re := e.(*sdl.KeyboardEvent)
+
+				if re.Keysym.Sym == sdl.K_ESCAPE {
+					if re.Type == sdl.KEYDOWN {
+						inventory.visible = false
+						if pause.visible {
+							pause.visible = false
+							update500ms.Unpause()
+							update150ms.Unpause()
+						} else {
+							pause.visible = true
+							update500ms.Pause()
+							update150ms.Pause()
+						}
+					}
+				}
+
 				if re.Keysym.Sym == sdl.K_F3 {
 					if re.Type == sdl.KEYDOWN {
 						if console.visible == true {
@@ -238,18 +254,21 @@ func gameLoop() {
 						}
 					}
 				}
-				if re.Keysym.Sym == sdl.K_i {
-					if re.Type == sdl.KEYDOWN {
-						if inventory.visible == true {
-							inventory.visible = false
-						} else {
-							inventory.visible = true
+
+				if !pause.visible {
+					if re.Keysym.Sym == sdl.K_i {
+						if re.Type == sdl.KEYDOWN {
+							if inventory.visible == true {
+								inventory.visible = false
+							} else {
+								inventory.visible = true
+							}
 						}
 					}
-				}
 
-				if inventory.visible {
-					inventory.HandleKeyboard(re)
+					if inventory.visible {
+						inventory.HandleKeyboard(re)
+					}
 				}
 			}
 		}
@@ -260,11 +279,14 @@ func gameLoop() {
 			console.HandleKeys(keys)
 		}
 
-		if inventory.visible {
+		if pause.visible {
+			pause.HandleKeys(keys)
+		} else if inventory.visible {
 			inventory.HandleKeys(keys)
 		} else {
 			viewport.HandleKeys(keys)
 			ThePlayer.HandleKeys(keys)
+			picker.HandleKeys(keys)
 		}
 
 		if update150ms.PassedInterval() {
@@ -304,27 +326,28 @@ func gameLoop() {
 			update500ms.Start()
 		}
 
-		newTime := time.Now().UnixNano()
-		deltaTime := newTime - currentTime
-		currentTime = newTime
-		if deltaTime > 1e9/4 {
-			deltaTime = 1e9 / 4
+		if !pause.visible {
+			newTime := time.Now().UnixNano()
+			deltaTime := newTime - currentTime
+			currentTime = newTime
+			if deltaTime > 1e9/4 {
+				deltaTime = 1e9 / 4
+			}
+
+			accumulator += deltaTime
+
+			for accumulator > dt {
+				accumulator -= dt
+
+				TheWorld.ApplyForces(ThePlayer, float64(dt)/1e9)
+
+				ThePlayer.Update(float64(dt) / 1e9)
+				TheWorld.Simulate(float64(dt) / 1e9)
+
+				computeFrame++
+				t += dt
+			}
 		}
-
-		accumulator += deltaTime
-
-		for accumulator > dt {
-			accumulator -= dt
-
-			TheWorld.ApplyForces(ThePlayer, float64(dt)/1e9)
-
-			ThePlayer.Update(float64(dt) / 1e9)
-			TheWorld.Simulate(float64(dt) / 1e9)
-
-			computeFrame++
-			t += dt
-		}
-
 		//interpolate(previous, current, accumulator/dt)
 
 		Draw(currentTime - startTime)
@@ -409,7 +432,9 @@ func Draw(t int64) {
 	ThePlayer.Draw(center, selectedBlockFace)
 	TheWorld.Draw(center, selectedBlockFace)
 
-	if inventory.visible {
+	if pause.visible {
+		pause.Draw(t)
+	} else if inventory.visible {
 		inventory.Draw(t)
 	} else {
 		picker.Draw(t)

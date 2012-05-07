@@ -7,17 +7,20 @@ package main
 
 import (
 	"fmt"
+	"github.com/banthar/Go-SDL/sdl"
 	"github.com/banthar/gl"
 	"math"
 )
 
 type Picker struct {
-	x, y, radius float32
+	x, y, radius, actionItemRadius, selectionRadius float32
 }
 
 func NewPicker() *Picker {
 	var p Picker
 	p.radius = float32(90) * PIXEL_SCALE
+	p.actionItemRadius = p.radius - blockscale*1.5
+	p.selectionRadius = blockscale * 1.2
 	return &p
 }
 
@@ -52,22 +55,18 @@ func (self *Picker) DrawItemHighlight(t int64, position uint8) {
 	gl.PushMatrix()
 	gl.LoadIdentity()
 
-	selectionRadius := blockscale * 1.2
-	actionItemRadius := self.radius - blockscale*1.5
-
 	actionItemAngle := -(float64(position) - 1.5) * math.Pi / 4
 	gl.Begin(gl.TRIANGLE_FAN)
 	gl.Color4ub(0, 0, 0, 228)
-	gl.Vertex2f(self.x-actionItemRadius*float32(math.Sin(actionItemAngle)), self.y+actionItemRadius*float32(math.Cos(actionItemAngle)))
+	gl.Vertex2f(self.x-self.actionItemRadius*float32(math.Sin(actionItemAngle)), self.y+self.actionItemRadius*float32(math.Cos(actionItemAngle)))
 	for angle := float64(0); angle <= 2*math.Pi; angle += math.Pi / 2 / 10 {
-		gl.Vertex2f(self.x-actionItemRadius*float32(math.Sin(actionItemAngle))-float32(math.Sin(angle))*selectionRadius, self.y+actionItemRadius*float32(math.Cos(actionItemAngle))+float32(math.Cos(angle))*selectionRadius)
+		gl.Vertex2f(self.x-self.actionItemRadius*float32(math.Sin(actionItemAngle))-float32(math.Sin(angle))*self.selectionRadius, self.y+self.actionItemRadius*float32(math.Cos(actionItemAngle))+float32(math.Cos(angle))*self.selectionRadius)
 	}
 	gl.End()
 	gl.PopMatrix()
 }
 
 func (self *Picker) DrawPlayerItems(t int64) {
-	actionItemRadius := self.radius - blockscale*1.5
 
 	gl.PushMatrix()
 	gl.LoadIdentity()
@@ -78,8 +77,8 @@ func (self *Picker) DrawPlayerItems(t int64) {
 		if item != ITEM_NONE {
 			angle := -(float64(i) + 1.5) * math.Pi / 4
 			gl.LoadIdentity()
-			x := self.x - actionItemRadius*float32(math.Sin(angle))
-			y := self.y + actionItemRadius*float32(math.Cos(angle))
+			x := self.x - self.actionItemRadius*float32(math.Sin(angle))
+			y := self.y + self.actionItemRadius*float32(math.Cos(angle))
 			gl.Translatef(x, y, 0)
 
 			gl.Rotatef(360*float32(math.Sin(float64(t)/1e10+float64(i))), 1.0, 0.0, 0.0)
@@ -98,4 +97,59 @@ func (self *Picker) DrawPlayerItems(t int64) {
 	}
 	gl.PopMatrix()
 
+}
+
+// x and y are in screen2d coords
+func (self *Picker) HitTest(x, y float64) (bool, int) {
+
+	for i := 0; i < 8; i++ {
+		angle := -(float64(i) - 1.5) * math.Pi / 4
+		ix := float64(picker.x) - float64(picker.actionItemRadius)*math.Sin(angle)
+		iy := float64(picker.y) + float64(picker.actionItemRadius)*math.Cos(angle)
+		if x > ix-float64(picker.selectionRadius) && x < ix+float64(picker.selectionRadius) &&
+			y > iy-float64(picker.selectionRadius) && y < iy+float64(picker.selectionRadius) {
+
+			return true, i
+		}
+
+	}
+
+	return false, 0
+}
+
+func (self *Picker) HandleMouseButton(re *sdl.MouseButtonEvent) {
+	if re.Button == 1 && re.State == 1 { // LEFT, DOWN
+		x, y := viewport.ScreenCoordsToWorld2D(re.X, re.Y)
+		hit, pos := self.HitTest(x, y)
+		if hit {
+			ThePlayer.SelectAction(pos)
+		}
+	}
+}
+
+func (self *Picker) HandleKeys(keys []uint8) {
+	if keys[sdl.K_1] != 0 {
+		ThePlayer.SelectAction(0)
+	}
+	if keys[sdl.K_2] != 0 {
+		ThePlayer.SelectAction(1)
+	}
+	if keys[sdl.K_3] != 0 {
+		ThePlayer.SelectAction(2)
+	}
+	if keys[sdl.K_4] != 0 {
+		ThePlayer.SelectAction(3)
+	}
+	if keys[sdl.K_5] != 0 {
+		ThePlayer.SelectAction(4)
+	}
+	if keys[sdl.K_6] != 0 {
+		ThePlayer.SelectAction(5)
+	}
+	if keys[sdl.K_7] != 0 {
+		ThePlayer.SelectAction(6)
+	}
+	if keys[sdl.K_8] != 0 {
+		ThePlayer.SelectAction(7)
+	}
 }

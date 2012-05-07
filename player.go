@@ -37,7 +37,7 @@ func (self *Player) Init(heading float64, x uint16, z uint16) {
 	self.currentAction = ACTION_HAND
 	self.currentItem = ITEM_NONE
 
-	self.equippedItems[0] = BLOCK_DIRT
+	self.equippedItems[0] = ITEM_NONE
 	self.equippedItems[1] = ITEM_NONE
 	self.equippedItems[2] = ITEM_NONE
 	self.equippedItems[3] = ITEM_NONE
@@ -168,38 +168,6 @@ func (player *Player) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 }
 
 func (self *Player) HandleKeys(keys []uint8) {
-	if keys[sdl.K_1] != 0 {
-		self.currentAction = ACTION_HAND
-		self.currentItem = ITEM_NONE
-	}
-	if keys[sdl.K_2] != 0 {
-		self.currentAction = ACTION_BREAK
-		self.currentItem = ITEM_NONE
-	}
-	if keys[sdl.K_3] != 0 {
-		self.currentAction = ACTION_WEAPON
-		self.currentItem = ITEM_NONE
-	}
-	if keys[sdl.K_4] != 0 {
-		self.currentAction = ACTION_ITEM0
-		self.currentItem = self.equippedItems[0]
-	}
-	if keys[sdl.K_5] != 0 {
-		self.currentAction = ACTION_ITEM1
-		self.currentItem = self.equippedItems[1]
-	}
-	if keys[sdl.K_6] != 0 {
-		self.currentAction = ACTION_ITEM2
-		self.currentItem = self.equippedItems[2]
-	}
-	if keys[sdl.K_7] != 0 {
-		self.currentAction = ACTION_ITEM3
-		self.currentItem = self.equippedItems[3]
-	}
-	if keys[sdl.K_8] != 0 {
-		self.currentAction = ACTION_ITEM4
-		self.currentItem = self.equippedItems[4]
-	}
 
 	if keys[sdl.K_w] != 0 {
 		if !self.IsFalling() {
@@ -284,6 +252,9 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 				TheWorld.Setv(selectedBlockFace.pos, BLOCK_AIR)
 				if items[uint16(blockid)].collectable && self.inventory[blockid] < MAX_ITEMS_IN_INVENTORY {
 					self.inventory[blockid]++
+					if items[uint16(blockid)].placeable {
+						self.EquipItem(uint16(blockid))
+					}
 				}
 				interactingBlockFace.hitCount = 0
 			}
@@ -318,5 +289,53 @@ func (self *Player) HandleMouseButton(re *sdl.MouseButtonEvent) {
 }
 
 func (self *Player) HandleKeyboard(re *sdl.KeyboardEvent) {
+
+}
+
+func (self *Player) SelectAction(action int) {
+	switch action {
+	case 0:
+		self.currentAction = ACTION_HAND
+		self.currentItem = ITEM_NONE
+	case 1:
+		self.currentAction = ACTION_BREAK
+		self.currentItem = ITEM_NONE
+	case 2:
+		self.currentAction = ACTION_WEAPON
+		self.currentItem = ITEM_NONE
+	case 3:
+		self.currentAction = ACTION_ITEM0
+		self.currentItem = self.equippedItems[0]
+	case 4:
+		self.currentAction = ACTION_ITEM1
+		self.currentItem = self.equippedItems[1]
+	case 5:
+		self.currentAction = ACTION_ITEM2
+		self.currentItem = self.equippedItems[2]
+	case 6:
+		self.currentAction = ACTION_ITEM3
+		self.currentItem = self.equippedItems[3]
+	case 7:
+		self.currentAction = ACTION_ITEM4
+		self.currentItem = self.equippedItems[4]
+	}
+}
+
+func (self *Player) EquipItem(itemid uint16) {
+
+	// Check to see if this item is already equipped
+	for j := 0; j < 5; j++ {
+		if self.equippedItems[j] == itemid {
+			return
+		}
+	}
+
+	// Place it in the first empty slot
+	for j := 0; j < 5; j++ {
+		if self.equippedItems[j] == ITEM_NONE {
+			self.equippedItems[j] = itemid
+			return
+		}
+	}
 
 }

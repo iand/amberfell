@@ -31,13 +31,14 @@ func NewFont(filename string, size int, c color.Color) *Font {
 	}
 	defer extfont.Close()
 
-	font.height = extfont.Ascent()
+	font.height = extfont.LineSkip()
 
 	for _, ch := range "abcdefghijklmnopqrdstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 :;@'<>,.?/~#{}[]!£$%^&*()_-+=\"\\|" {
 		_, _, _, _, advance, err := extfont.GlyphMetrics(uint16(ch))
 		if err != 0 {
 			panic("Could not get glyph metrics")
 		}
+
 		// Create a bitmap with width=advance, height=font.height
 		surface := sdl.CreateRGBSurface(sdl.SWSURFACE|sdl.SRCALPHA, advance, font.height, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000)
 		//surface.FillRect(&sdl.Rect{0,0, uint16(advance), uint16(font.height)}, 0x0)
