@@ -46,12 +46,6 @@ func (self *World) Init() {
 	xc, yc, zc := chunkCoordsFromWorld(PLAYER_START_X, self.GroundLevel(PLAYER_START_X, PLAYER_START_Z), PLAYER_START_Z)
 
 	self.GenerateChunk(xc, yc, zc)
-	for x := xc - 2; x < xc+2; x++ {
-		for z := zc - 2; z < zc+2; z++ {
-			self.GenerateChunk(x, yc, z)
-
-		}
-	}
 
 	// wolf := new(Wolf)
 	// wolf.Init(200, 25, 19, float32(self.FindSurface(25, 19)))
@@ -466,9 +460,6 @@ func (self *World) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 		v.Draw(center, selectedBlockFace)
 	}
 
-	console.cubecount = 0
-	console.vertices = 0
-
 	pxmin, _, pzmin := chunkCoordsFromWorld(uint16(center[XAXIS]-float64(viewRadius)), uint16(center[YAXIS]), uint16(center[ZAXIS]-float64(viewRadius)))
 	pxmax, _, pzmax := chunkCoordsFromWorld(uint16(center[XAXIS]+float64(viewRadius)), uint16(center[YAXIS]), uint16(center[ZAXIS]+float64(viewRadius)))
 
@@ -536,8 +527,7 @@ func (chunk *Chunk) Set(x uint16, y uint16, z uint16, b byte) {
 	chunk.clean = false
 }
 
-func (self *Chunk) Render(selectedBlockFace *BlockFace) {
-
+func (self *Chunk) PreRender(selectedBlockFace *BlockFace) {
 	if !self.clean || (selectedBlockFace != nil && selectedBlockFace.pos[XAXIS] >= self.x*CHUNK_WIDTH && selectedBlockFace.pos[XAXIS] < (self.x+1)*CHUNK_WIDTH &&
 		selectedBlockFace.pos[YAXIS] >= self.y*CHUNK_HEIGHT && selectedBlockFace.pos[YAXIS] < (self.y+1)*CHUNK_HEIGHT &&
 		selectedBlockFace.pos[ZAXIS] >= self.z*CHUNK_WIDTH && selectedBlockFace.pos[ZAXIS] < (self.z+1)*CHUNK_WIDTH) {
@@ -565,7 +555,6 @@ func (self *Chunk) Render(selectedBlockFace *BlockFace) {
 							}
 
 							TerrainCube(self.vertexBuffer, float32(xw), float32(yw), float32(zw), neighbours, blockid, selectedFace)
-							console.cubecount++
 						}
 					}
 				}
@@ -574,7 +563,12 @@ func (self *Chunk) Render(selectedBlockFace *BlockFace) {
 
 		self.clean = true
 	}
-	console.vertices += self.vertexBuffer.vertexCount
+
+}
+
+func (self *Chunk) Render(selectedBlockFace *BlockFace) {
+	self.PreRender(selectedBlockFace)
+
 	self.vertexBuffer.RenderDirect()
 
 	// fmt.Printf("Chunk ticks: %4.0f\n", float64(t.GetTicks())/1e6)

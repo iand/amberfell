@@ -13,11 +13,11 @@ import (
 )
 
 type Console struct {
-	fps       float64
-	mem       runtime.MemStats
-	cubecount int
-	vertices  int
-	visible   bool
+	fps            float64
+	mem            runtime.MemStats
+	vertices       int
+	culledVertices int
+	visible        bool
 }
 
 func (self *Console) Update() {
@@ -51,7 +51,7 @@ func (self *Console) Draw(t int64) {
 	gl.End()
 
 	gl.Translatef(float32(viewport.lplane)+margin, float32(viewport.bplane)+consoleHeight+margin-h, 0)
-	consoleFont.Print(fmt.Sprintf("FPS: %5.2f CC: %d V: %d", self.fps, self.cubecount, self.vertices))
+	consoleFont.Print(fmt.Sprintf("FPS: %5.2f V: %d (%d) CH: %d M: %d", self.fps, self.vertices, self.culledVertices, len(TheWorld.chunks), len(TheWorld.mobs)))
 	gl.LoadIdentity()
 	gl.Translatef(float32(viewport.lplane)+margin, float32(viewport.bplane)+consoleHeight+margin-2*h, 0)
 

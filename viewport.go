@@ -105,33 +105,57 @@ func ModelMatrix() *Matrix4 {
 	return NewIdentity().Scale(viewport.scale).Rotatex(viewport.rotx).Rotatey(viewport.roty-ThePlayer.Heading()).Rotatez(viewport.rotz).Translation(-ThePlayer.position[XAXIS], -ThePlayer.position[YAXIS], -ThePlayer.position[ZAXIS])
 }
 
-func (self *Viewport) SelectedBlockFace() *BlockFace {
+func (self *Viewport) ProjectPoint(p *Vectorf) (point *Vectorf, normal *Vectorf) {
 	var pm32 []float32 = make([]float32, 16)
+	gl.GetFloatv(gl.PROJECTION_MATRIX, pm32)
+	var projectionMatrix64 *Matrix4 = NewMatrix(float64(pm32[0]), float64(pm32[1]), float64(pm32[2]), float64(pm32[3]), float64(pm32[4]), float64(pm32[5]), float64(pm32[6]), float64(pm32[7]), float64(pm32[8]), float64(pm32[9]), float64(pm32[10]), float64(pm32[11]), float64(pm32[12]), float64(pm32[13]), float64(pm32[14]), float64(pm32[15]))
+	inverseMatrix, _ := projectionMatrix64.Multiply(ModelMatrix()).Inverse()
+	point = inverseMatrix.Transform(p, 1)
+	normalv := inverseMatrix.Transform(&Vectorf{0, 0, 1}, 0).Normalize()
+	return point, &normalv
+}
+
+func (self *Viewport) ClipPlanes() *[6][4]float32 {
+
+	var pm32 []float64 = make([]float64, 16)
+	gl.GetDoublev(gl.PROJECTION_MATRIX, pm32)
+	var projectionMatrix64 *Matrix4 = NewMatrix(pm32[0], pm32[1], pm32[2], pm32[3], pm32[4], pm32[5], pm32[6], pm32[7], pm32[8], pm32[9], pm32[10], pm32[11], pm32[12], pm32[13], pm32[14], pm32[15])
+	mvpmatrix := projectionMatrix64.Multiply(ModelMatrix())
+
+	var planes32 [6][4]float32
+	planes64 := [6][4]float64{
+		[4]float64{mvpmatrix[3] + mvpmatrix[0], mvpmatrix[7] + mvpmatrix[4], mvpmatrix[11] + mvpmatrix[8], mvpmatrix[15] + mvpmatrix[12]},
+		[4]float64{mvpmatrix[3] - mvpmatrix[0], mvpmatrix[7] - mvpmatrix[4], mvpmatrix[11] - mvpmatrix[8], mvpmatrix[15] - mvpmatrix[12]},
+		[4]float64{mvpmatrix[3] + mvpmatrix[1], mvpmatrix[7] + mvpmatrix[5], mvpmatrix[11] + mvpmatrix[9], mvpmatrix[15] + mvpmatrix[13]},
+		[4]float64{mvpmatrix[3] - mvpmatrix[1], mvpmatrix[7] - mvpmatrix[5], mvpmatrix[11] - mvpmatrix[9], mvpmatrix[15] - mvpmatrix[13]},
+		[4]float64{mvpmatrix[3] + mvpmatrix[2], mvpmatrix[7] + mvpmatrix[6], mvpmatrix[11] + mvpmatrix[10], mvpmatrix[15] + mvpmatrix[14]},
+		[4]float64{mvpmatrix[3] - mvpmatrix[2], mvpmatrix[7] - mvpmatrix[6], mvpmatrix[11] - mvpmatrix[10], mvpmatrix[15] - mvpmatrix[14]},
+	}
+
+	for p := 0; p < 6; p++ {
+		length := math.Sqrt(math.Pow(planes64[p][0], 2) + math.Pow(planes64[p][1], 2) + math.Pow(planes64[p][2], 2) + math.Pow(planes64[p][3], 2))
+		planes32[p] = [4]float32{float32(planes64[p][0] / length), float32(planes64[p][1] / length), float32(planes64[p][2] / length), float32(planes64[p][3] / length)}
+	}
+
+	return &planes32
+}
+
+func (self *Viewport) SelectedBlockFace() *BlockFace {
 	var newmousex, newmousey int
 	_ = sdl.GetMouseState(&newmousex, &newmousey)
-
-	// if self.selectionDirty || newmousex != self.mousex || newmousey != self.mousey {
 
 	self.selectedBlockFace = nil
 	self.mousex = newmousex
 	self.mousey = newmousey
 
-	gl.GetFloatv(gl.PROJECTION_MATRIX, pm32)
-	var projectionMatrix64 *Matrix4 = NewMatrix(float64(pm32[0]), float64(pm32[1]), float64(pm32[2]), float64(pm32[3]), float64(pm32[4]), float64(pm32[5]), float64(pm32[6]), float64(pm32[7]), float64(pm32[8]), float64(pm32[9]), float64(pm32[10]), float64(pm32[11]), float64(pm32[12]), float64(pm32[13]), float64(pm32[14]), float64(pm32[15]))
-
-	inverseMatrix, _ := projectionMatrix64.Multiply(ModelMatrix()).Inverse()
-
 	x := (float64(self.mousex) - float64(self.screenWidth)/2) / (float64(self.screenWidth) / 2)
 	z := (float64(self.screenHeight)/2 - float64(self.mousey)) / (float64(self.screenHeight) / 2)
 
-	origin := inverseMatrix.Transform(&Vectorf{x, z, -1}, 1)
-	norm := inverseMatrix.Transform(&Vectorf{0, 0, 1}, 0).Normalize()
-
-	// fmt.Printf("origin <%.2f,%.2f,%.2f>\n", origin[0], origin[1], origin[2])
+	origin, norm := self.ProjectPoint(&Vectorf{x, z, -1})
 
 	if origin != nil {
 		pos := IntPosition(ThePlayer.position)
-		ray := Ray{origin, &norm}
+		ray := Ray{origin, norm}
 		reach := int16(5)
 
 		// See http://www.dyn-lab.com/articles/pick-selection.html

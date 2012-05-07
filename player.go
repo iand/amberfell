@@ -174,8 +174,8 @@ func (self *Player) HandleKeys(keys []uint8) {
 			self.velocity[XAXIS] = math.Cos(self.Heading()*math.Pi/180) * self.walkingSpeed
 			self.velocity[ZAXIS] = -math.Sin(self.Heading()*math.Pi/180) * self.walkingSpeed
 		} else {
-			self.velocity[XAXIS] = math.Cos(self.Heading()*math.Pi/180) * self.walkingSpeed / 3
-			self.velocity[ZAXIS] = -math.Sin(self.Heading()*math.Pi/180) * self.walkingSpeed / 3
+			self.velocity[XAXIS] = math.Cos(self.Heading()*math.Pi/180) * self.walkingSpeed
+			self.velocity[ZAXIS] = -math.Sin(self.Heading()*math.Pi/180) * self.walkingSpeed
 		}
 
 	}
@@ -184,8 +184,8 @@ func (self *Player) HandleKeys(keys []uint8) {
 			self.velocity[XAXIS] = -math.Cos(self.Heading()*math.Pi/180) * self.walkingSpeed / 2
 			self.velocity[ZAXIS] = math.Sin(self.Heading()*math.Pi/180) * self.walkingSpeed / 2
 		} else {
-			self.velocity[XAXIS] = -math.Cos(self.Heading()*math.Pi/180) * self.walkingSpeed / 6
-			self.velocity[ZAXIS] = math.Sin(self.Heading()*math.Pi/180) * self.walkingSpeed / 6
+			self.velocity[XAXIS] = -math.Cos(self.Heading()*math.Pi/180) * self.walkingSpeed / 2
+			self.velocity[ZAXIS] = math.Sin(self.Heading()*math.Pi/180) * self.walkingSpeed / 2
 		}
 
 	}
@@ -213,6 +213,7 @@ func (self *Player) HandleKeys(keys []uint8) {
 
 	if keys[sdl.K_a] != 0 {
 		self.Rotate(22.5 / 2)
+
 		// viewport.Roty(-22.5 / 2)
 	}
 

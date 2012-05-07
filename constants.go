@@ -8,7 +8,7 @@ package main
 const (
 	// GroundLevel = 807
 
-	CHUNK_WIDTH  = 12
+	CHUNK_WIDTH  = 8
 	CHUNK_HEIGHT = 128
 
 	MAP_DIAM       = 64000

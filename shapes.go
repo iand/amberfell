@@ -6,6 +6,7 @@
 package main
 
 import (
+	// "fmt"
 	"github.com/banthar/gl"
 	"image"
 	_ "image/png"
@@ -94,13 +95,45 @@ func (self *VertexBuffer) AddFace(face uint8, texture uint16, selected bool, x1,
 }
 
 func (self *VertexBuffer) RenderDirect() {
+
+	planes32 := viewport.ClipPlanes()
+	cutoff := float32(-0.00006) // magic!
+
 	self.texture.Bind(gl.TEXTURE_2D)
 	gl.Begin(gl.QUADS)
-	for i := 0; i < self.vertexCount; i++ {
-		gl.Normal3f(self.vertices[i].n[0], self.vertices[i].n[1], self.vertices[i].n[2])
-		gl.TexCoord2f(self.vertices[i].t[0], self.vertices[i].t[1])
-		gl.Color4f(self.vertices[i].c[0], self.vertices[i].c[1], self.vertices[i].c[2], self.vertices[i].c[3])
-		gl.Vertex3f(self.vertices[i].p[0], self.vertices[i].p[1], self.vertices[i].p[2])
+	for i := 0; i < self.vertexCount; i += 4 {
+
+		draw := true
+		// Cull back faces
+		// Use dot product of front viewport plane with normal of face
+		dot := planes32[5][0]*self.vertices[i].n[0] + planes32[5][1]*self.vertices[i].n[1] + planes32[5][2]*self.vertices[i].n[2]
+		if dot <= 0 {
+			draw = false
+		} else {
+			for p := 0; p < 6; p++ {
+				dist1 := planes32[p][0]*self.vertices[i].p[0] + planes32[p][1]*self.vertices[i].p[1] + planes32[p][2]*self.vertices[i+1].p[2] + planes32[p][3]
+				dist2 := planes32[p][0]*self.vertices[i+1].p[0] + planes32[p][1]*self.vertices[i+2].p[1] + planes32[p][2]*self.vertices[i+2].p[2] + planes32[p][3]
+				dist3 := planes32[p][0]*self.vertices[i+2].p[0] + planes32[p][1]*self.vertices[i+3].p[1] + planes32[p][2]*self.vertices[i+3].p[2] + planes32[p][3]
+				dist4 := planes32[p][0]*self.vertices[i+3].p[0] + planes32[p][1]*self.vertices[i+4].p[1] + planes32[p][2]*self.vertices[i+4].p[2] + planes32[p][3]
+
+				if dist1 <= cutoff && dist2 <= cutoff && dist3 <= cutoff && dist4 <= cutoff {
+					draw = false
+					break
+				}
+			}
+		}
+
+		if draw {
+			for j := i; j < i+4; j++ {
+				gl.Normal3f(self.vertices[j].n[0], self.vertices[j].n[1], self.vertices[j].n[2])
+				gl.TexCoord2f(self.vertices[j].t[0], self.vertices[j].t[1])
+				gl.Color4f(self.vertices[j].c[0], self.vertices[j].c[1], self.vertices[j].c[2], self.vertices[j].c[3])
+				gl.Vertex3f(self.vertices[j].p[0], self.vertices[j].p[1], self.vertices[j].p[2])
+			}
+			console.vertices += 4
+		} else {
+			console.culledVertices += 4
+		}
 	}
 	gl.End()
 	self.texture.Unbind(gl.TEXTURE_2D)

@@ -311,6 +311,7 @@ func gameLoop() {
 					}
 				}
 			}
+
 			update150ms.Start()
 		}
 
@@ -324,6 +325,29 @@ func gameLoop() {
 
 			drawFrame, computeFrame = 0, 0
 			update500ms.Start()
+
+			center := ThePlayer.Position()
+			pxmin, _, pzmin := chunkCoordsFromWorld(uint16(center[XAXIS]-float64(viewRadius)), uint16(center[YAXIS]), uint16(center[ZAXIS]-float64(viewRadius)))
+			pxmax, _, pzmax := chunkCoordsFromWorld(uint16(center[XAXIS]+float64(viewRadius)), uint16(center[YAXIS]), uint16(center[ZAXIS]+float64(viewRadius)))
+
+			done := false
+			for px := pxmin - 2; px <= pxmax+2; px++ {
+				for pz := pzmin - 2; pz <= pzmax+2; pz++ {
+					if px < pxmin || px > pxmax || pz < pzmin || pz > pzmax {
+						chunk := TheWorld.GetChunk(px, 0, pz)
+						if !chunk.clean {
+							// chunk.PreRender(nil)
+						}
+						if done {
+							break
+						}
+					}
+				}
+				if done {
+					break
+				}
+			}
+
 		}
 
 		if !pause.visible {
@@ -357,6 +381,9 @@ func gameLoop() {
 }
 
 func Draw(t int64) {
+	console.culledVertices = 0
+	console.vertices = 0
+
 	gVertexBuffer.Reset()
 
 	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT)
