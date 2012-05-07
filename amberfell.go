@@ -184,6 +184,10 @@ func gameLoop() {
 	update150ms.interval = 50 * 1e6
 	update150ms.Start()
 
+	update2000ms := new(Timer)
+	update2000ms.interval = 2000 * 1e6
+	update2000ms.Start()
+
 	var interactingBlock *InteractingBlockFace
 
 	done := false
@@ -235,10 +239,12 @@ func gameLoop() {
 						inventory.visible = false
 						if pause.visible {
 							pause.visible = false
+							update2000ms.Unpause()
 							update500ms.Unpause()
 							update150ms.Unpause()
 						} else {
 							pause.visible = true
+							update2000ms.Pause()
 							update500ms.Pause()
 							update150ms.Pause()
 						}
@@ -312,6 +318,41 @@ func gameLoop() {
 				}
 			}
 
+			// Load some chunks around where the player is headed
+			center := ThePlayer.Position()
+			px, _, pz := chunkCoordsFromWorld(uint16(center[XAXIS]), uint16(center[YAXIS]), uint16(center[ZAXIS]))
+
+			d := 0
+			r := uint16(viewRadius / CHUNK_WIDTH)
+			rmax := r + 1
+			startTicks := time.Now().UnixNano()
+			for time.Now().UnixNano()-startTicks < 20*1e6 && r < rmax {
+				switch d {
+				case 0:
+					TheWorld.GetChunk(px+r, 0, pz)
+				case 1:
+					TheWorld.GetChunk(px+r, 0, pz+r)
+				case 2:
+					TheWorld.GetChunk(px+r, 0, pz-r)
+				case 3:
+					TheWorld.GetChunk(px-r, 0, pz)
+				case 4:
+					TheWorld.GetChunk(px-r, 0, pz+r)
+				case 5:
+					TheWorld.GetChunk(px-r, 0, pz-r)
+				case 6:
+					TheWorld.GetChunk(px, 0, pz+r)
+				case 7:
+					TheWorld.GetChunk(px, 0, pz-r)
+
+				}
+				d++
+				if d > 7 {
+					d = 0
+					r++
+				}
+			}
+
 			update150ms.Start()
 		}
 
@@ -326,28 +367,21 @@ func gameLoop() {
 			drawFrame, computeFrame = 0, 0
 			update500ms.Start()
 
+		}
+
+		if update2000ms.PassedInterval() {
 			center := ThePlayer.Position()
 			pxmin, _, pzmin := chunkCoordsFromWorld(uint16(center[XAXIS]-float64(viewRadius)), uint16(center[YAXIS]), uint16(center[ZAXIS]-float64(viewRadius)))
 			pxmax, _, pzmax := chunkCoordsFromWorld(uint16(center[XAXIS]+float64(viewRadius)), uint16(center[YAXIS]), uint16(center[ZAXIS]+float64(viewRadius)))
 
-			done := false
-			for px := pxmin - 2; px <= pxmax+2; px++ {
-				for pz := pzmin - 2; pz <= pzmax+2; pz++ {
-					if px < pxmin || px > pxmax || pz < pzmin || pz > pzmax {
-						chunk := TheWorld.GetChunk(px, 0, pz)
-						if !chunk.clean {
-							// chunk.PreRender(nil)
-						}
-						if done {
-							break
-						}
-					}
-				}
-				if done {
-					break
+			// Cull chunks more than 10 chunks away from view radius
+			for chunkIndex, chunk := range TheWorld.chunks {
+				if chunk.x > pxmax+6 || chunk.x < pxmin-6 || chunk.z > pzmax+6 || chunk.z < pzmin-6 {
+					delete(TheWorld.chunks, chunkIndex)
 				}
 			}
 
+			update2000ms.Start()
 		}
 
 		if !pause.visible {

@@ -13,11 +13,12 @@ import (
 )
 
 type Console struct {
-	fps            float64
-	mem            runtime.MemStats
-	vertices       int
-	culledVertices int
-	visible        bool
+	fps                 float64
+	mem                 runtime.MemStats
+	vertices            int
+	culledVertices      int
+	visible             bool
+	chunkGenerationTime int64
 }
 
 func (self *Console) Update() {
@@ -76,7 +77,7 @@ func (self *Console) Draw(t int64) {
 		last3[2] = float64(self.mem.PauseNs[index-2]) / 1e6
 	}
 
-	consoleFont.Print(fmt.Sprintf("Mem: %.1f/%.1f   GC: %.1fms [%d: %.1f, %.1f, %.1f] | TOD: %.1f", float64(self.mem.Alloc)/(1024*1024), float64(self.mem.Sys)/(1024*1024), avggc, numgc, last3[0], last3[1], last3[2], timeOfDay))
+	consoleFont.Print(fmt.Sprintf("Mem: %.1f/%.1f   GC: %.1fms [%d: %.1f, %.1f, %.1f] ChGen: %.1fms | TOD: %.1f", float64(self.mem.Alloc)/(1024*1024), float64(self.mem.Sys)/(1024*1024), avggc, numgc, last3[0], last3[1], last3[2], float64(self.chunkGenerationTime)/1e6, timeOfDay))
 
 	gl.PopMatrix()
 }

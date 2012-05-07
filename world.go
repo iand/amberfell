@@ -11,6 +11,7 @@ import (
 	"github.com/iand/perlin"
 	"math"
 	"math/rand"
+	"time"
 )
 
 type World struct {
@@ -19,7 +20,7 @@ type World struct {
 }
 
 type Chunk struct {
-	x, y, z      uint16
+	x, z         uint16
 	Blocks       [CHUNK_WIDTH * CHUNK_WIDTH * CHUNK_HEIGHT]byte
 	vertexBuffer *VertexBuffer
 	clean        bool
@@ -97,6 +98,7 @@ func (self *World) Feature2(x uint16, z uint16) float64 {
 }
 
 func (self *World) GenerateChunk(cx uint16, cy uint16, cz uint16) *Chunk {
+	startTicks := time.Now().UnixNano()
 	var chunk Chunk
 	chunk.Init(cx, cy, cz)
 	self.chunks[chunkIndex(cx, cy, cz)] = &chunk
@@ -143,28 +145,29 @@ func (self *World) GenerateChunk(cx uint16, cy uint16, cz uint16) *Chunk {
 				feature2 := self.Feature2(x, z)
 
 				if feature1 > 0.8 && feature2 > 0.8 {
-					self.Set(x, y, z, BLOCK_STONE)
-					self.Set(x, y+1, z, BLOCK_STONE)
-					self.Set(x, y+2, z, BLOCK_STONE)
-					self.Set(x, y+3, z, BLOCK_STONE)
-					self.Set(x, y+4, z, BLOCK_STONE)
-					self.Set(x, y+5, z, BLOCK_STONE)
-					self.Set(x, y+6, z, BLOCK_STONE)
-				} else if feature1 > 0.7 && feature2 > 0.7 {
-					self.Set(x, y, z, BLOCK_STONE)
-					self.Set(x, y+1, z, BLOCK_STONE)
-					self.Set(x, y+2, z, BLOCK_STONE)
-					self.Set(x, y+3, z, BLOCK_STONE)
-					self.Set(x, y+4, z, BLOCK_STONE)
-				} else if feature1 > 0.6 && feature2 > 0.6 {
-					self.Set(x, y, z, BLOCK_STONE)
-					self.Set(x, y+1, z, BLOCK_STONE)
-					self.Set(x, y+2, z, BLOCK_STONE)
+					// 	self.Set(x, y, z, BLOCK_STONE)
+					// 	self.Set(x, y+1, z, BLOCK_STONE)
+					// 	self.Set(x, y+2, z, BLOCK_STONE)
+					// 	self.Set(x, y+3, z, BLOCK_STONE)
+					// 	self.Set(x, y+4, z, BLOCK_STONE)
+					// 	self.Set(x, y+5, z, BLOCK_STONE)
+					// 	self.Set(x, y+6, z, BLOCK_STONE)
+					// } else if feature1 > 0.7 && feature2 > 0.7 {
+					// 	self.Set(x, y, z, BLOCK_STONE)
+					// 	self.Set(x, y+1, z, BLOCK_STONE)
+					// 	self.Set(x, y+2, z, BLOCK_STONE)
+					// 	self.Set(x, y+3, z, BLOCK_STONE)
+					// 	self.Set(x, y+4, z, BLOCK_STONE)
+					// } else if feature1 > 0.6 && feature2 > 0.6 {
+					// 	self.Set(x, y, z, BLOCK_STONE)
+					// 	self.Set(x, y+1, z, BLOCK_STONE)
+					// 	self.Set(x, y+2, z, BLOCK_STONE)
 				}
 			}
 		}
 	}
 
+	console.chunkGenerationTime = time.Now().UnixNano() - startTicks
 	return &chunk
 
 }
@@ -507,13 +510,13 @@ func blockIndex(x uint16, y uint16, z uint16) uint16 {
 func (c Chunk) WorldCoords(x uint16, y uint16, z uint16) (xw uint16, yw uint16, zw uint16) {
 	xw = c.x*CHUNK_WIDTH + x
 	zw = c.z*CHUNK_WIDTH + z
-	yw = c.y*CHUNK_HEIGHT + y
+	yw = y
 	return
 }
 
 func (chunk *Chunk) Init(x uint16, y uint16, z uint16) {
 	chunk.x = x
-	chunk.y = y
+	// chunk.y = y
 	chunk.z = z
 	chunk.vertexBuffer = NewVertexBuffer(VERTEX_BUFFER_CAPACITY, terrainTexture)
 }
@@ -529,7 +532,7 @@ func (chunk *Chunk) Set(x uint16, y uint16, z uint16, b byte) {
 
 func (self *Chunk) PreRender(selectedBlockFace *BlockFace) {
 	if !self.clean || (selectedBlockFace != nil && selectedBlockFace.pos[XAXIS] >= self.x*CHUNK_WIDTH && selectedBlockFace.pos[XAXIS] < (self.x+1)*CHUNK_WIDTH &&
-		selectedBlockFace.pos[YAXIS] >= self.y*CHUNK_HEIGHT && selectedBlockFace.pos[YAXIS] < (self.y+1)*CHUNK_HEIGHT &&
+		/*selectedBlockFace.pos[YAXIS] >= self.y*CHUNK_HEIGHT && selectedBlockFace.pos[YAXIS] < (self.y+1)*CHUNK_HEIGHT && */
 		selectedBlockFace.pos[ZAXIS] >= self.z*CHUNK_WIDTH && selectedBlockFace.pos[ZAXIS] < (self.z+1)*CHUNK_WIDTH) {
 		t := Timer{}
 		t.Start()
@@ -542,7 +545,7 @@ func (self *Chunk) PreRender(selectedBlockFace *BlockFace) {
 					var blockid byte = self.Blocks[blockIndex(x, y, z)]
 					if blockid != 0 {
 						xw := self.x*CHUNK_WIDTH + x
-						yw := self.y*CHUNK_HEIGHT + y
+						yw := y
 						zw := self.z*CHUNK_WIDTH + z
 
 						neighbours := TheWorld.Neighbours(xw, yw, zw)
