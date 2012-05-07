@@ -45,50 +45,13 @@ func (self *World) Init() {
 
 	xc, yc, zc := chunkCoordsFromWorld(PLAYER_START_X, self.GroundLevel(PLAYER_START_X, PLAYER_START_Z), PLAYER_START_Z)
 
-	// var max, min float64
-	// for i:=uint16(0); i < MAP_DIAM;i++ {
-	// 	h := self.StoneHeight(i, 0)
-	// 	if h > max { max = h}
-	// 	if h < min { min = h}
-	// }
-
-	// fmt.Printf("max: %.4f, min: %.4f", max, min)
-
 	self.GenerateChunk(xc, yc, zc)
-	for x := xc - 10; x < xc+10; x++ {
-		for z := zc - 10; z < zc+10; z++ {
+	for x := xc - 2; x < xc+2; x++ {
+		for z := zc - 2; z < zc+2; z++ {
 			self.GenerateChunk(x, yc, z)
 
 		}
 	}
-
-	y := self.GroundLevel(PLAYER_START_X+1, PLAYER_START_Z)
-	self.Set(PLAYER_START_X+1, y, PLAYER_START_Z, 1)   // stone
-	self.Set(PLAYER_START_X+1, y+1, PLAYER_START_Z, 1) // stone
-	self.Set(PLAYER_START_X+1, y+2, PLAYER_START_Z, 1) // stone
-	self.Set(PLAYER_START_X+1, y+3, PLAYER_START_Z, 1) // stone
-
-	self.Set(PLAYER_START_X-1, y, PLAYER_START_Z, 1)   // stone
-	self.Set(PLAYER_START_X-1, y+1, PLAYER_START_Z, 1) // stone
-	self.Set(PLAYER_START_X-1, y+2, PLAYER_START_Z, 1) // stone
-	self.Set(PLAYER_START_X-1, y+3, PLAYER_START_Z, 1) // stone
-
-	self.Set(PLAYER_START_X, y+3, PLAYER_START_Z, 1) // stone
-
-	// var iw, id uint16
-
-	// numFeatures := rand.Intn(21)
-	// for i := 0; i < numFeatures; i++ {
-	// 	iw, id = self.RandomSquare(PLAYER_START_X+1, PLAYER_START_Z, 120)
-
-	// 	self.Set(iw, GroundLevel, id, 1) // stone
-	// 	self.Grow(iw, GroundLevel, id, 45, 45, 45, 40, 40, 40, byte(rand.Intn(2))+1)
-	// }
-
-	// for i := 0; i < 40; i++ {
-	// 	iw, id = self.RandomSquare(PLAYER_START_X+1, PLAYER_START_Z, 120)
-	// 	self.GrowTree(iw, self.GroundLevel(iw, id), id)
-	// }
 
 	// wolf := new(Wolf)
 	// wolf.Init(200, 25, 19, float32(self.FindSurface(25, 19)))
@@ -106,8 +69,6 @@ func (self *World) GroundLevel(x uint16, z uint16) uint16 {
 }
 
 func (self *World) SoilThickness(x uint16, z uint16) uint16 {
-	// return perlin.Noise2D(float64(x-MAP_DIAM)/(16*NOISE_SCALE), float64(z-MAP_DIAM)/(16*NOISE_SCALE), 1, 0.65, 8)
-	// return perlin.Noise2D(float64(x-MAP_DIAM)/(NOISE_SCALE), float64(z-MAP_DIAM)/(NOISE_SCALE), 1, 0.65, 8) // very rugged
 	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(NOISE_SCALE), float64(z-MAP_DIAM)/(NOISE_SCALE), worldSeed, 0.6, 8)
 	if noise < -1 {
 		noise = -1
@@ -116,8 +77,6 @@ func (self *World) SoilThickness(x uint16, z uint16) uint16 {
 }
 
 func (self *World) Precipitation(x uint16, z uint16) float64 {
-	// return perlin.Noise2D(float64(x-MAP_DIAM)/(16*NOISE_SCALE), float64(z-MAP_DIAM)/(16*NOISE_SCALE), 1, 0.65, 8)
-	// return perlin.Noise2D(float64(x-MAP_DIAM)/(NOISE_SCALE), float64(z-MAP_DIAM)/(NOISE_SCALE), 1, 0.65, 8) // very rugged
 	return perlin.Noise2D(float64(x-MAP_DIAM)/(NOISE_SCALE), float64(z-MAP_DIAM)/(NOISE_SCALE), worldSeed, 0.6, 12)
 }
 

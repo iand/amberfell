@@ -254,12 +254,6 @@ func gameLoop() {
 			}
 		}
 
-		var mousex, mousey int
-		mousestate := sdl.GetMouseState(&mousex, &mousey)
-		if inventory.visible {
-			inventory.HandleMouse(mousex, mousey, mousestate)
-		}
-
 		keys := sdl.GetKeyState()
 
 		if console.visible {

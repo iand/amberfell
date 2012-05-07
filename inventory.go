@@ -121,6 +121,10 @@ func (self *Inventory) Draw(t int64) {
 		}
 	}
 
+	var mousex, mousey int
+	mousestate := sdl.GetMouseState(&mousex, &mousey)
+	self.HandleMouse(mousex, mousey, mousestate)
+
 	gl.PopMatrix()
 }
 
@@ -183,10 +187,23 @@ func (self *Inventory) DrawItem(t int64, quantity uint16, blockid uint16, r Rect
 }
 
 func (self *Inventory) HasRecipeComponents(recipe *Recipe) bool {
+	componentCount := 0
+
+	for k := 0; k < len(self.componentSlots); k++ {
+		if self.componentSlots[k] != 0 {
+			componentCount++
+		}
+	}
+
+	if componentCount != len(recipe.components) {
+		return false
+	}
+
 	for j := 0; j < len(recipe.components); j++ {
 		gotComponent := false
 		for k := 0; k < len(self.componentSlots); k++ {
-			if self.componentSlots[k] == recipe.components[j].item && ThePlayer.inventory[recipe.components[j].item] >= recipe.components[j].quantity {
+			if self.componentSlots[k] == recipe.components[j].item &&
+				ThePlayer.inventory[recipe.components[j].item] >= recipe.components[j].quantity {
 				gotComponent = true
 				break
 			}
@@ -219,8 +236,7 @@ func (self *Inventory) UpdateProducts() {
 
 func (self *Inventory) HandleMouseButton(re *sdl.MouseButtonEvent) {
 	if re.Button == 1 && re.State == 1 { // LEFT, DOWN
-		x := (float64(viewport.lplane) + float64(re.X)*PIXEL_SCALE)
-		y := (float64(viewport.tplane) - float64(re.Y)*PIXEL_SCALE)
+		x, y := viewport.ScreenCoordsToWorld2D(re.X, re.Y)
 
 		for i := 0; i < len(self.inventoryRects); i++ {
 			if self.inventoryRects[i].Contains(x, y) {
@@ -309,35 +325,29 @@ func (self *Inventory) HandleMouseButton(re *sdl.MouseButtonEvent) {
 
 func (self *Inventory) HandleMouse(mousex int, mousey int, mousestate uint8) {
 
-	x := (float64(viewport.lplane) + float64(mousex)*PIXEL_SCALE)
-	y := (float64(viewport.tplane) - float64(mousey)*PIXEL_SCALE)
+	x, y := viewport.ScreenCoordsToWorld2D(uint16(mousex), uint16(mousey))
+	itemid := uint16(0)
 
 	for i := 0; i < len(self.inventoryRects); i++ {
 		if self.inventoryRects[i].Contains(x, y) {
-			// println("Inventory Hit: ", i)
+			itemid = self.inventorySlots[i]
 		}
 	}
 	for i := 0; i < len(self.componentRects); i++ {
 		if self.componentRects[i].Contains(x, y) {
-			// println("Component Hit: ", i)
+			itemid = self.componentSlots[i]
 		}
 	}
 	for i := 0; i < len(self.productRects); i++ {
 		if self.productRects[i].Contains(x, y) {
-			// println("Product Hit: ", i)
+			if self.productSlots[i] != nil {
+				itemid = self.productSlots[i].product.item
+			}
 		}
 	}
-
-	// type MouseMotionEvent struct {
-	// 	Type  uint8
-	// 	Which uint8
-	// 	State uint8
-	// 	Pad0  [1]byte
-	// 	X     uint16
-	// 	Y     uint16
-	// 	Xrel  int16
-	// 	Yrel  int16
-	// }
+	if itemid != 0 {
+		self.ShowTooltip(x, y, items[itemid].name)
+	}
 
 }
 
@@ -347,4 +357,26 @@ func (self *Inventory) HandleKeyboard(re *sdl.KeyboardEvent) {
 
 func (self *Inventory) HandleKeys(keys []uint8) {
 
+}
+
+func (self *Inventory) ShowTooltip(x, y float64, str string) {
+	h, w := inventoryItemFont.Measure(str)
+
+	pad := 4 * PIXEL_SCALE
+	fmt.Printf("Tooltip: x=%.2f, y=%.2f, w=%.2f, h=%.2f\n", x, y, w, h)
+	gl.PushMatrix()
+
+	gl.LoadIdentity()
+	gl.Color4ub(0, 0, 0, 255)
+	gl.Begin(gl.QUADS)
+	gl.Vertex2d(x, y)
+	gl.Vertex2d(x+w+pad, y)
+	gl.Vertex2d(x+w+pad, y+h)
+	gl.Vertex2d(x, y+h)
+	gl.End()
+
+	gl.Translated(x+pad/2, y+pad/2, 0)
+	inventoryItemFont.Print(str)
+
+	gl.PopMatrix()
 }

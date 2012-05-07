@@ -216,3 +216,10 @@ func (self *Viewport) HandleKeys(keys []uint8) {
 		}
 	}
 }
+
+func (self *Viewport) ScreenCoordsToWorld2D(sx, sy uint16) (x, y float64) {
+	x = (float64(self.lplane) + float64(sx)*PIXEL_SCALE)
+	y = (float64(self.tplane) - float64(sy)*PIXEL_SCALE)
+
+	return
+}
