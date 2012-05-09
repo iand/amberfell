@@ -22,28 +22,6 @@ type Inventory struct {
 	productRects   [18]Rect
 }
 
-type ItemQuantity struct {
-	item     uint16
-	quantity uint16
-}
-
-type Recipe struct {
-	product    ItemQuantity
-	components []ItemQuantity
-}
-
-var handmadeRecipes = []Recipe{
-	Recipe{product: ItemQuantity{BLOCK_LOG_WALL, 1},
-		components: []ItemQuantity{
-			ItemQuantity{BLOCK_TRUNK, 1},
-		}},
-
-	Recipe{product: ItemQuantity{BLOCK_LOG_SLAB, 1},
-		components: []ItemQuantity{
-			ItemQuantity{BLOCK_TRUNK, 1},
-		}},
-}
-
 func (self *Inventory) Draw(t int64) {
 	gl.MatrixMode(gl.MODELVIEW)
 	gl.PushMatrix()
@@ -175,8 +153,8 @@ func (self *Inventory) DrawItem(t int64, quantity uint16, blockid uint16, r Rect
 	gl.Rotatef(360*float32(math.Sin(float64(t)/1e10+float64(i))), 0.0, 0.0, 1.0)
 	gl.Scalef(blocksize, blocksize, blocksize)
 	gVertexBuffer.Reset()
-	TerrainCube(gVertexBuffer, 0, 0, 0, [6]uint16{0, 0, 0, 0, 0, 0}, byte(blockid), FACE_NONE)
-	gVertexBuffer.RenderDirect()
+	TerrainCube(gVertexBuffer, 0, 0, 0, [6]uint16{0, 0, 0, 0, 0, 0}, blockid, FACE_NONE)
+	gVertexBuffer.RenderDirect(false)
 
 	gl.LoadIdentity()
 	gl.Translated(r.x+5*PIXEL_SCALE, r.y+2*PIXEL_SCALE, 0)

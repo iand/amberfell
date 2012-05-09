@@ -55,47 +55,62 @@ func (self *World) Init() {
 }
 
 func (self *World) GroundLevel(x uint16, z uint16) uint16 {
-	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(8*NOISE_SCALE), float64(z-MAP_DIAM)/(8*NOISE_SCALE), worldSeed, 0.4, 4)
-	ground := uint16(noise*(CHUNK_HEIGHT/3.0) + CHUNK_HEIGHT/2.0)
-	if ground > CHUNK_HEIGHT {
-		ground = CHUNK_HEIGHT
+	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(4*NOISE_SCALE), float64(z-MAP_DIAM)/(4*NOISE_SCALE), worldSeed, 1.4, 1.2, 4)
+	if noise > 1.0 {
+		noise = 1.0
 	}
+	if noise < -1.0 {
+		noise = -1.0
+	}
+	if noise < 0 {
+		noise /= 10
+	}
+
+	ground := uint16((CHUNK_HEIGHT/2)*(noise+0.1)/1.1 + CHUNK_HEIGHT/3.0)
 	return ground
 }
 
 func (self *World) SoilThickness(x uint16, z uint16) uint16 {
-	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(NOISE_SCALE), float64(z-MAP_DIAM)/(NOISE_SCALE), worldSeed, 0.6, 8)
-	if noise < -1 {
-		noise = -1
+	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(NOISE_SCALE), float64(z-MAP_DIAM)/(NOISE_SCALE), worldSeed, 1.8, 1.6, 8)
+	if noise > 1.0 {
+		noise = 1.0
 	}
+	if noise < -1.0 {
+		noise = -1.0
+	}
+
 	return uint16(noise*4 + 4)
 }
 
 func (self *World) Precipitation(x uint16, z uint16) float64 {
-	return perlin.Noise2D(float64(x-MAP_DIAM)/(NOISE_SCALE), float64(z-MAP_DIAM)/(NOISE_SCALE), worldSeed, 0.6, 12)
+	return perlin.Noise2D(float64(x-MAP_DIAM)/(NOISE_SCALE), float64(z-MAP_DIAM)/(NOISE_SCALE), worldSeed, 2.0, 0.6, 1)
 }
 
-func (self *World) Drainage(x uint16, z uint16) float64 {
-	return perlin.Noise2D(float64(x-MAP_DIAM)/(6*NOISE_SCALE), float64(z-MAP_DIAM)/(6*NOISE_SCALE), worldSeed, 0.4, 12)
-}
+// func (self *World) Drainage(x uint16, z uint16) float64 {
+// 	return perlin.Noise2D(float64(x-MAP_DIAM)/(6*NOISE_SCALE), float64(z-MAP_DIAM)/(6*NOISE_SCALE), worldSeed, 0.4, 12)
+// }
 
 func (self *World) Rocks(x uint16, z uint16) uint16 {
-	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(16*NOISE_SCALE), float64(z-MAP_DIAM)/(16*NOISE_SCALE), worldSeed, 0.999, 8)
-	noise = noise*12 - 20
-
-	if noise < 0 {
+	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(4*NOISE_SCALE), float64(z-MAP_DIAM)/(4*NOISE_SCALE), worldSeed, 1.9, 3.0, 12)
+	if noise > 1.0 {
+		noise = 1.0
+	}
+	if noise < 0.4 {
 		noise = 0
 	}
+
+	noise = noise * 9
+
 	return uint16(noise)
 }
 
-func (self *World) Feature1(x uint16, z uint16) float64 {
-	return perlin.Noise2D(float64(x-MAP_DIAM)/(30*NOISE_SCALE), float64(z-MAP_DIAM)/(90*NOISE_SCALE), worldSeed, 0.99, 10)
-}
+// func (self *World) Feature1(x uint16, z uint16) float64 {
+// 	return perlin.Noise2D(float64(x-MAP_DIAM)/(30*NOISE_SCALE), float64(z-MAP_DIAM)/(90*NOISE_SCALE), worldSeed, 0.99, 10)
+// }
 
-func (self *World) Feature2(x uint16, z uint16) float64 {
-	return perlin.Noise2D(float64(x-MAP_DIAM)/(90*NOISE_SCALE), float64(z-MAP_DIAM)/(30*NOISE_SCALE), worldSeed, 0.99, 10)
-}
+// func (self *World) Feature2(x uint16, z uint16) float64 {
+// 	return perlin.Noise2D(float64(x-MAP_DIAM)/(90*NOISE_SCALE), float64(z-MAP_DIAM)/(30*NOISE_SCALE), worldSeed, 0.99, 10)
+// }
 
 func (self *World) GenerateChunk(cx uint16, cy uint16, cz uint16) *Chunk {
 	startTicks := time.Now().UnixNano()
@@ -111,21 +126,27 @@ func (self *World) GenerateChunk(cx uint16, cy uint16, cz uint16) *Chunk {
 	for x := uint16(0); x < CHUNK_WIDTH; x++ {
 		for z := uint16(0); z < CHUNK_WIDTH; z++ {
 			ground := self.GroundLevel(x+xw, z+zw)
-			soil := uint16(float64(self.SoilThickness(x+xw, z+zw))*1 - (float64(ground) / CHUNK_HEIGHT))
+			soil := ground + uint16(float64(self.SoilThickness(x+xw, z+zw))*(1-((float64(ground)-CHUNK_HEIGHT/2)/(2*CHUNK_HEIGHT))))
 
-			if soil > ground {
-				soil = ground
+			rocks := ground + self.Rocks(x+xw, z+zw)
+
+			upper := ground
+
+			if rocks > upper {
+				upper = rocks
 			}
 
-			for y := uint16(0); y < ground-soil; y++ {
-				chunk.Set(x, y, z, BLOCK_STONE)
-			}
-			for y := ground - soil; y < ground; y++ {
-				chunk.Set(x, y, z, BLOCK_DIRT)
+			if soil > upper {
+				upper = soil
 			}
 
-			for y := ground; y < ground+self.Rocks(x+xw, z+zw); y++ {
-				chunk.Set(x, y, z, BLOCK_STONE)
+			for y := uint16(0); y < upper; y++ {
+				if y >= rocks && y <= soil {
+					chunk.Set(x, y, z, BLOCK_DIRT)
+				} else {
+					chunk.Set(x, y, z, BLOCK_STONE)
+				}
+
 			}
 
 		}
@@ -141,28 +162,28 @@ func (self *World) GenerateChunk(cx uint16, cy uint16, cz uint16) *Chunk {
 
 				}
 			} else {
-				feature1 := self.Feature1(x, z)
-				feature2 := self.Feature2(x, z)
+				// feature1 := self.Feature1(x, z)
+				// feature2 := self.Feature2(x, z)
 
-				if feature1 > 0.8 && feature2 > 0.8 {
-					// 	self.Set(x, y, z, BLOCK_STONE)
-					// 	self.Set(x, y+1, z, BLOCK_STONE)
-					// 	self.Set(x, y+2, z, BLOCK_STONE)
-					// 	self.Set(x, y+3, z, BLOCK_STONE)
-					// 	self.Set(x, y+4, z, BLOCK_STONE)
-					// 	self.Set(x, y+5, z, BLOCK_STONE)
-					// 	self.Set(x, y+6, z, BLOCK_STONE)
-					// } else if feature1 > 0.7 && feature2 > 0.7 {
-					// 	self.Set(x, y, z, BLOCK_STONE)
-					// 	self.Set(x, y+1, z, BLOCK_STONE)
-					// 	self.Set(x, y+2, z, BLOCK_STONE)
-					// 	self.Set(x, y+3, z, BLOCK_STONE)
-					// 	self.Set(x, y+4, z, BLOCK_STONE)
-					// } else if feature1 > 0.6 && feature2 > 0.6 {
-					// 	self.Set(x, y, z, BLOCK_STONE)
-					// 	self.Set(x, y+1, z, BLOCK_STONE)
-					// 	self.Set(x, y+2, z, BLOCK_STONE)
-				}
+				// if feature1 > 0.8 && feature2 > 0.8 {
+				// 	// 	self.Set(x, y, z, BLOCK_STONE)
+				// 	// 	self.Set(x, y+1, z, BLOCK_STONE)
+				// 	// 	self.Set(x, y+2, z, BLOCK_STONE)
+				// 	// 	self.Set(x, y+3, z, BLOCK_STONE)
+				// 	// 	self.Set(x, y+4, z, BLOCK_STONE)
+				// 	// 	self.Set(x, y+5, z, BLOCK_STONE)
+				// 	// 	self.Set(x, y+6, z, BLOCK_STONE)
+				// 	// } else if feature1 > 0.7 && feature2 > 0.7 {
+				// 	// 	self.Set(x, y, z, BLOCK_STONE)
+				// 	// 	self.Set(x, y+1, z, BLOCK_STONE)
+				// 	// 	self.Set(x, y+2, z, BLOCK_STONE)
+				// 	// 	self.Set(x, y+3, z, BLOCK_STONE)
+				// 	// 	self.Set(x, y+4, z, BLOCK_STONE)
+				// 	// } else if feature1 > 0.6 && feature2 > 0.6 {
+				// 	// 	self.Set(x, y, z, BLOCK_STONE)
+				// 	// 	self.Set(x, y+1, z, BLOCK_STONE)
+				// 	// 	self.Set(x, y+2, z, BLOCK_STONE)
+				// }
 			}
 		}
 	}
@@ -542,7 +563,7 @@ func (self *Chunk) PreRender(selectedBlockFace *BlockFace) {
 			for z = 0; z < CHUNK_WIDTH; z++ {
 				for y = 0; y < CHUNK_HEIGHT; y++ {
 
-					var blockid byte = self.Blocks[blockIndex(x, y, z)]
+					var blockid uint16 = uint16(self.Blocks[blockIndex(x, y, z)])
 					if blockid != 0 {
 						xw := self.x*CHUNK_WIDTH + x
 						yw := y
@@ -572,7 +593,7 @@ func (self *Chunk) PreRender(selectedBlockFace *BlockFace) {
 func (self *Chunk) Render(selectedBlockFace *BlockFace) {
 	self.PreRender(selectedBlockFace)
 
-	self.vertexBuffer.RenderDirect()
+	self.vertexBuffer.RenderDirect(true)
 
 	// fmt.Printf("Chunk ticks: %4.0f\n", float64(t.GetTicks())/1e6)
 

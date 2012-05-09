@@ -17,7 +17,7 @@ const (
 	NOISE_SCALE    = 16
 
 	TREE_PRECIPITATION_MIN = 0.2 //0.44
-	TREE_DENSITY_PCT       = 2
+	TREE_DENSITY_PCT       = 5
 
 	VERTEX_BUFFER_CAPACITY = 20000
 
@@ -49,6 +49,7 @@ const (
 	ORIENT_SOUTH = 2
 	ORIENT_WEST  = 3
 
+	MAX_ITEMS      = 4096
 	BLOCK_AIR      = 0
 	BLOCK_STONE    = 1
 	BLOCK_DIRT     = 2
@@ -56,6 +57,9 @@ const (
 	BLOCK_LEAVES   = 4
 	BLOCK_LOG_WALL = 5
 	BLOCK_LOG_SLAB = 6
+
+	ITEM_NONE     = MAX_ITEMS - 1
+	ITEM_FIREWOOD = 512
 
 	ACTION_HAND   = 0
 	ACTION_BREAK  = 1
@@ -65,8 +69,6 @@ const (
 	ACTION_ITEM2  = 5
 	ACTION_ITEM3  = 6
 	ACTION_ITEM4  = 7
-
-	ITEM_NONE = 4096
 
 	// Terrain block textures
 	TEXTURE_NONE         = 0

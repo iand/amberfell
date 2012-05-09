@@ -20,7 +20,7 @@ type Player struct {
 	currentAction uint8
 	currentItem   uint16
 	equippedItems [7]uint16
-	inventory     [255]uint16
+	inventory     [MAX_ITEMS]uint16
 }
 
 type BlockBreakRecord struct {
@@ -251,10 +251,13 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 			interactingBlockFace.hitCount++
 			if interactingBlockFace.hitCount >= items[uint16(blockid)].hitsNeeded {
 				TheWorld.Setv(selectedBlockFace.pos, BLOCK_AIR)
-				if items[uint16(blockid)].collectable && self.inventory[blockid] < MAX_ITEMS_IN_INVENTORY {
-					self.inventory[blockid]++
-					if items[uint16(blockid)].placeable {
-						self.EquipItem(uint16(blockid))
+				if items[uint16(blockid)].drops != nil {
+					droppedItem := items[uint16(blockid)].drops.item
+					if self.inventory[droppedItem] < MAX_ITEMS_IN_INVENTORY {
+						self.inventory[droppedItem]++
+						if items[uint16(droppedItem)].placeable {
+							self.EquipItem(uint16(droppedItem))
+						}
 					}
 				}
 				interactingBlockFace.hitCount = 0
@@ -276,7 +279,7 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 			} else if selectedBlockFace.face == WEST_FACE { // right
 				selectedBlockFace.pos[XAXIS]--
 			}
-			if TheWorld.Atv(selectedBlockFace.pos) == BLOCK_AIR {
+			if TheWorld.Atv(selectedBlockFace.pos) == BLOCK_AIR && self.currentItem < 256 {
 				TheWorld.Setv(selectedBlockFace.pos, byte(self.currentItem))
 				self.inventory[self.currentItem]--
 			}

@@ -6,10 +6,10 @@
 package main
 
 import (
+	"fmt"
 	"github.com/banthar/Go-SDL/sdl"
 	"github.com/banthar/gl"
 	"math"
-	// "fmt"
 )
 
 type Viewport struct {
@@ -35,8 +35,6 @@ func (self *Viewport) Reshape(width int, height int) {
 	self.screenHeight = height
 
 	gl.Viewport(0, 0, width, height)
-	gl.MatrixMode(gl.PROJECTION)
-	gl.LoadIdentity()
 
 	viewWidth := float64(self.screenWidth) / float64(SCREEN_SCALE)
 	viewHeight := float64(self.screenHeight) / float64(SCREEN_SCALE)
@@ -46,8 +44,11 @@ func (self *Viewport) Reshape(width int, height int) {
 	self.bplane = -viewHeight / 4
 	self.tplane = 3 * viewHeight / 4
 
-	// println("self.lplane:", self.lplane, "self.rplane", self.rplane)
+	println("self.lplane:", self.lplane, "self.rplane", self.rplane)
+	gl.MatrixMode(gl.PROJECTION)
+	gl.LoadIdentity()
 	gl.Ortho(self.lplane, self.rplane, self.bplane, self.tplane, -40, 40)
+
 	gl.MatrixMode(gl.MODELVIEW)
 	gl.LoadIdentity()
 
@@ -85,7 +86,7 @@ func (self *Viewport) Zoomstd() {
 
 func (self *Viewport) Zoomin() {
 	self.selectionDirty = false
-	self.scale += 0.2
+	self.scale += 0.1
 	if self.scale > 3 {
 		self.scale = 3
 	}
@@ -94,7 +95,7 @@ func (self *Viewport) Zoomin() {
 
 func (self *Viewport) Zoomout() {
 	self.selectionDirty = false
-	self.scale -= 0.2
+	self.scale -= 0.1
 	if self.scale < 0.2 {
 		self.scale = 0.2
 	}
@@ -121,8 +122,8 @@ func (self *Viewport) ClipPlanes() *[6][4]float32 {
 	gl.GetDoublev(gl.PROJECTION_MATRIX, pm32)
 	var projectionMatrix64 *Matrix4 = NewMatrix(pm32[0], pm32[1], pm32[2], pm32[3], pm32[4], pm32[5], pm32[6], pm32[7], pm32[8], pm32[9], pm32[10], pm32[11], pm32[12], pm32[13], pm32[14], pm32[15])
 	mvpmatrix := projectionMatrix64.Multiply(ModelMatrix())
+	// mvpmatrix := ModelMatrix()
 
-	var planes32 [6][4]float32
 	planes64 := [6][4]float64{
 		[4]float64{mvpmatrix[3] + mvpmatrix[0], mvpmatrix[7] + mvpmatrix[4], mvpmatrix[11] + mvpmatrix[8], mvpmatrix[15] + mvpmatrix[12]},
 		[4]float64{mvpmatrix[3] - mvpmatrix[0], mvpmatrix[7] - mvpmatrix[4], mvpmatrix[11] - mvpmatrix[8], mvpmatrix[15] - mvpmatrix[12]},
@@ -132,6 +133,7 @@ func (self *Viewport) ClipPlanes() *[6][4]float32 {
 		[4]float64{mvpmatrix[3] - mvpmatrix[2], mvpmatrix[7] - mvpmatrix[6], mvpmatrix[11] - mvpmatrix[10], mvpmatrix[15] - mvpmatrix[14]},
 	}
 
+	var planes32 [6][4]float32
 	for p := 0; p < 6; p++ {
 		length := math.Sqrt(math.Pow(planes64[p][0], 2) + math.Pow(planes64[p][1], 2) + math.Pow(planes64[p][2], 2) + math.Pow(planes64[p][3], 2))
 		planes32[p] = [4]float32{float32(planes64[p][0] / length), float32(planes64[p][1] / length), float32(planes64[p][2] / length), float32(planes64[p][3] / length)}
@@ -239,6 +241,35 @@ func (self *Viewport) HandleKeys(keys []uint8) {
 			self.Roty(-9)
 		}
 	}
+
+	if keys[sdl.K_SLASH] != 0 {
+
+		var pm32 []float64 = make([]float64, 16)
+		gl.GetDoublev(gl.PROJECTION_MATRIX, pm32)
+		var projectionMatrix64 *Matrix4 = NewMatrix(pm32[0], pm32[1], pm32[2], pm32[3], pm32[4], pm32[5], pm32[6], pm32[7], pm32[8], pm32[9], pm32[10], pm32[11], pm32[12], pm32[13], pm32[14], pm32[15])
+		mvpmatrix := projectionMatrix64.Multiply(ModelMatrix())
+		// mvpmatrix := ModelMatrix()
+
+		planes64 := [6][4]float64{
+			[4]float64{mvpmatrix[3] + mvpmatrix[0], mvpmatrix[7] + mvpmatrix[4], mvpmatrix[11] + mvpmatrix[8], mvpmatrix[15] + mvpmatrix[12]},
+			[4]float64{mvpmatrix[3] - mvpmatrix[0], mvpmatrix[7] - mvpmatrix[4], mvpmatrix[11] - mvpmatrix[8], mvpmatrix[15] - mvpmatrix[12]},
+			[4]float64{mvpmatrix[3] + mvpmatrix[1], mvpmatrix[7] + mvpmatrix[5], mvpmatrix[11] + mvpmatrix[9], mvpmatrix[15] + mvpmatrix[13]},
+			[4]float64{mvpmatrix[3] - mvpmatrix[1], mvpmatrix[7] - mvpmatrix[5], mvpmatrix[11] - mvpmatrix[9], mvpmatrix[15] - mvpmatrix[13]},
+			[4]float64{mvpmatrix[3] + mvpmatrix[2], mvpmatrix[7] + mvpmatrix[6], mvpmatrix[11] + mvpmatrix[10], mvpmatrix[15] + mvpmatrix[14]},
+			[4]float64{mvpmatrix[3] - mvpmatrix[2], mvpmatrix[7] - mvpmatrix[6], mvpmatrix[11] - mvpmatrix[10], mvpmatrix[15] - mvpmatrix[14]},
+		}
+
+		var planes32 [6][4]float32
+		for p := 0; p < 6; p++ {
+			length := math.Sqrt(math.Pow(planes64[p][0], 2) + math.Pow(planes64[p][1], 2) + math.Pow(planes64[p][2], 2) + math.Pow(planes64[p][3], 2))
+			fmt.Printf("Length: %d: %0.2f\n", p, length)
+			planes32[p] = [4]float32{float32(planes64[p][0] / length), float32(planes64[p][1] / length), float32(planes64[p][2] / length), float32(planes64[p][3] / length)}
+
+			fmt.Printf("Plane: %d: [%0.6f, %0.6f, %0.6f, %0.6f]\n", p, planes32[p][0], planes32[p][1], planes32[p][2], planes32[p][3])
+
+		}
+	}
+
 }
 
 func (self *Viewport) ScreenCoordsToWorld2D(sx, sy uint16) (x, y float64) {

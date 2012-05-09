@@ -86,8 +86,8 @@ func (self *Picker) DrawPlayerItems(t int64) {
 			gl.Rotatef(360*float32(math.Sin(float64(t)/1e10+float64(i))), 0.0, 0.0, 1.0)
 			gl.Scalef(blockscale, blockscale, blockscale)
 			gVertexBuffer.Reset()
-			TerrainCube(gVertexBuffer, 0, 0, 0, [6]uint16{0, 0, 0, 0, 0, 0}, byte(item), FACE_NONE)
-			gVertexBuffer.RenderDirect()
+			TerrainCube(gVertexBuffer, 0, 0, 0, [6]uint16{0, 0, 0, 0, 0, 0}, item, FACE_NONE)
+			gVertexBuffer.RenderDirect(false)
 
 			gl.LoadIdentity()
 			gl.Translatef(x-17*PIXEL_SCALE, y-19*PIXEL_SCALE, 20)

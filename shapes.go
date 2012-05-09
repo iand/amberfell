@@ -6,22 +6,12 @@
 package main
 
 import (
-	// "fmt"
+	//	"fmt"
 	"github.com/banthar/gl"
 	"image"
 	_ "image/png"
 	"os"
 )
-
-type Item struct {
-	id          byte
-	name        string
-	textures    [6]uint16
-	hitsNeeded  byte
-	transparent bool
-	collectable bool
-	placeable   bool
-}
 
 type Vertex struct {
 	p       [3]float32 // Position
@@ -94,48 +84,60 @@ func (self *VertexBuffer) AddFace(face uint8, texture uint16, selected bool, x1,
 	self.indexCount += 2
 }
 
-func (self *VertexBuffer) RenderDirect() {
-
-	planes32 := viewport.ClipPlanes()
-	cutoff := float32(-0.00006) // magic!
-
+func (self *VertexBuffer) RenderDirect(clip bool) {
 	self.texture.Bind(gl.TEXTURE_2D)
-	gl.Begin(gl.QUADS)
-	for i := 0; i < self.vertexCount; i += 4 {
 
-		draw := true
-		// Cull back faces
-		// Use dot product of front viewport plane with normal of face
-		dot := planes32[5][0]*self.vertices[i].n[0] + planes32[5][1]*self.vertices[i].n[1] + planes32[5][2]*self.vertices[i].n[2]
-		if dot <= 0 {
-			draw = false
-		} else {
-			for p := 0; p < 6; p++ {
-				dist1 := planes32[p][0]*self.vertices[i].p[0] + planes32[p][1]*self.vertices[i].p[1] + planes32[p][2]*self.vertices[i+1].p[2] + planes32[p][3]
-				dist2 := planes32[p][0]*self.vertices[i+1].p[0] + planes32[p][1]*self.vertices[i+2].p[1] + planes32[p][2]*self.vertices[i+2].p[2] + planes32[p][3]
-				dist3 := planes32[p][0]*self.vertices[i+2].p[0] + planes32[p][1]*self.vertices[i+3].p[1] + planes32[p][2]*self.vertices[i+3].p[2] + planes32[p][3]
-				dist4 := planes32[p][0]*self.vertices[i+3].p[0] + planes32[p][1]*self.vertices[i+4].p[1] + planes32[p][2]*self.vertices[i+4].p[2] + planes32[p][3]
+	if clip {
+		cutoff := float32(-0.00006) // magic!
 
-				if dist1 <= cutoff && dist2 <= cutoff && dist3 <= cutoff && dist4 <= cutoff {
-					draw = false
-					break
+		planes32 := viewport.ClipPlanes()
+
+		gl.Begin(gl.QUADS)
+		for i := 0; i < self.vertexCount; i += 4 {
+			draw := true
+			// Cull back faces
+			// Use dot product of front viewport plane with normal of face
+			dot := planes32[5][0]*self.vertices[i].n[0] + planes32[5][1]*self.vertices[i].n[1] + planes32[5][2]*self.vertices[i].n[2]
+			if dot <= 0 {
+				draw = false
+			} else {
+				for p := 0; p < 6; p++ {
+					dist1 := planes32[p][0]*self.vertices[i].p[0] + planes32[p][1]*self.vertices[i].p[1] + planes32[p][2]*self.vertices[i+1].p[2] + planes32[p][3]
+					dist2 := planes32[p][0]*self.vertices[i+1].p[0] + planes32[p][1]*self.vertices[i+2].p[1] + planes32[p][2]*self.vertices[i+2].p[2] + planes32[p][3]
+					dist3 := planes32[p][0]*self.vertices[i+2].p[0] + planes32[p][1]*self.vertices[i+3].p[1] + planes32[p][2]*self.vertices[i+3].p[2] + planes32[p][3]
+					dist4 := planes32[p][0]*self.vertices[i+3].p[0] + planes32[p][1]*self.vertices[i+4].p[1] + planes32[p][2]*self.vertices[i+4].p[2] + planes32[p][3]
+					if dist1 <= cutoff && dist2 <= cutoff && dist3 <= cutoff && dist4 <= cutoff {
+						draw = false
+						break
+					}
 				}
 			}
-		}
 
-		if draw {
-			for j := i; j < i+4; j++ {
-				gl.Normal3f(self.vertices[j].n[0], self.vertices[j].n[1], self.vertices[j].n[2])
-				gl.TexCoord2f(self.vertices[j].t[0], self.vertices[j].t[1])
-				gl.Color4f(self.vertices[j].c[0], self.vertices[j].c[1], self.vertices[j].c[2], self.vertices[j].c[3])
-				gl.Vertex3f(self.vertices[j].p[0], self.vertices[j].p[1], self.vertices[j].p[2])
+			if draw {
+				for j := i; j < i+4; j++ {
+					gl.Normal3f(self.vertices[j].n[0], self.vertices[j].n[1], self.vertices[j].n[2])
+					gl.TexCoord2f(self.vertices[j].t[0], self.vertices[j].t[1])
+					gl.Color4f(self.vertices[j].c[0], self.vertices[j].c[1], self.vertices[j].c[2], self.vertices[j].c[3])
+					gl.Vertex3f(self.vertices[j].p[0], self.vertices[j].p[1], self.vertices[j].p[2])
+				}
+				console.vertices += 4
+			} else {
+				console.culledVertices += 4
 			}
-			console.vertices += 4
-		} else {
-			console.culledVertices += 4
 		}
+		gl.End()
+	} else {
+		gl.Begin(gl.QUADS)
+		for i := 0; i < self.vertexCount; i++ {
+			gl.Normal3f(self.vertices[i].n[0], self.vertices[i].n[1], self.vertices[i].n[2])
+			gl.TexCoord2f(self.vertices[i].t[0], self.vertices[i].t[1])
+			gl.Color4f(self.vertices[i].c[0], self.vertices[i].c[1], self.vertices[i].c[2], self.vertices[i].c[3])
+			gl.Vertex3f(self.vertices[i].p[0], self.vertices[i].p[1], self.vertices[i].p[2])
+		}
+		gl.End()
+
 	}
-	gl.End()
+
 	self.texture.Unbind(gl.TEXTURE_2D)
 }
 
@@ -259,29 +261,7 @@ func loadTexture(filename string) *gl.Texture {
 
 }
 
-func NewItem(id byte, name string, u uint16, d uint16, n uint16, s uint16, e uint16, w uint16, hitsNeeded byte, transparent bool, collectable bool, placeable bool) Item {
-	return Item{id, name,
-		[6]uint16{e, w, n, s, u, d},
-		hitsNeeded,
-		transparent,
-		collectable,
-		placeable,
-	}
-}
-
-func InitItems() {
-	items = make(map[uint16]Item)
-	items[BLOCK_AIR] = NewItem(BLOCK_AIR, "Air", TEXTURE_NONE, TEXTURE_NONE, TEXTURE_NONE, TEXTURE_NONE, TEXTURE_NONE, TEXTURE_NONE, STRENGTH_STONE, true, false, false)
-	items[BLOCK_STONE] = NewItem(BLOCK_STONE, "Stone", TEXTURE_STONE, TEXTURE_STONE, TEXTURE_STONE, TEXTURE_STONE, TEXTURE_STONE, TEXTURE_STONE, STRENGTH_STONE, false, true, true)
-	items[BLOCK_DIRT] = NewItem(BLOCK_DIRT, "Dirt", TEXTURE_DIRT_TOP, TEXTURE_DIRT, TEXTURE_DIRT, TEXTURE_DIRT, TEXTURE_DIRT, TEXTURE_DIRT, STRENGTH_DIRT, false, true, true)
-	items[BLOCK_TRUNK] = NewItem(BLOCK_TRUNK, "Tree trunk", TEXTURE_TRUNK, TEXTURE_TRUNK, TEXTURE_TRUNK, TEXTURE_TRUNK, TEXTURE_TRUNK, TEXTURE_TRUNK, STRENGTH_WOOD, false, true, true)
-	items[BLOCK_LEAVES] = NewItem(BLOCK_TRUNK, "Leaves", TEXTURE_LEAVES, TEXTURE_LEAVES, TEXTURE_LEAVES, TEXTURE_LEAVES, TEXTURE_LEAVES, TEXTURE_LEAVES, STRENGTH_LEAVES, false, false, false)
-	items[BLOCK_LOG_WALL] = NewItem(BLOCK_LOG_WALL, "Log wall", TEXTURE_LOG_WALL_TOP, TEXTURE_LOG_WALL_TOP, TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, STRENGTH_WOOD, true, true, true)
-	items[BLOCK_LOG_SLAB] = NewItem(BLOCK_LOG_SLAB, "Log slab", TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, TEXTURE_LOG_WALL, STRENGTH_WOOD, true, true, true)
-
-}
-
-func TerrainCube(vertexBuffer *VertexBuffer, x float32, y float32, z float32, neighbours [6]uint16, blockid byte, selectedFace uint8) {
+func TerrainCube(vertexBuffer *VertexBuffer, x float32, y float32, z float32, neighbours [6]uint16, blockid uint16, selectedFace uint8) {
 
 	block := items[uint16(blockid)]
 	var visible [6]bool
