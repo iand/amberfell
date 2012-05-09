@@ -17,10 +17,12 @@ type Player struct {
 	Bounce float64
 	// position      Vectorf
 	// velocity      Vectorf
-	currentAction uint8
-	currentItem   uint16
-	equippedItems [7]uint16
-	inventory     [MAX_ITEMS]uint16
+	currentAction     uint8
+	currentItem       uint16
+	equippedItems     [7]uint16
+	inventory         [MAX_ITEMS]uint16
+	distanceTravelled float64
+	distanceFromStart uint16
 }
 
 type BlockBreakRecord struct {
@@ -31,7 +33,7 @@ type BlockBreakRecord struct {
 func (self *Player) Init(heading float64, x uint16, z uint16) {
 	self.heading = heading
 	self.position[XAXIS] = float64(x)
-	self.position[YAXIS] = float64(TheWorld.GroundLevel(x, z))
+	self.position[YAXIS] = float64(TheWorld.FindSurface(x, z))
 	self.position[ZAXIS] = float64(z)
 	self.walkingSpeed = 20
 	self.currentAction = ACTION_HAND
@@ -249,7 +251,7 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 		blockid := TheWorld.Atv(selectedBlockFace.pos)
 		if blockid != BLOCK_AIR {
 			interactingBlockFace.hitCount++
-			if interactingBlockFace.hitCount >= items[uint16(blockid)].hitsNeeded {
+			if items[uint16(blockid)].hitsNeeded != STRENGTH_UNBREAKABLE && interactingBlockFace.hitCount >= items[uint16(blockid)].hitsNeeded {
 				TheWorld.Setv(selectedBlockFace.pos, BLOCK_AIR)
 				if items[uint16(blockid)].drops != nil {
 					droppedItem := items[uint16(blockid)].drops.item
@@ -280,8 +282,40 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 				selectedBlockFace.pos[XAXIS]--
 			}
 			if TheWorld.Atv(selectedBlockFace.pos) == BLOCK_AIR && self.currentItem < 256 {
-				TheWorld.Setv(selectedBlockFace.pos, byte(self.currentItem))
+				blockid := byte(self.currentItem)
+				if blockid == BLOCK_CAMPFIRE {
+					// Add a light source
+
+					light := LightSource{Vectorf{float64(selectedBlockFace.pos[XAXIS]), float64(selectedBlockFace.pos[YAXIS]), float64(selectedBlockFace.pos[ZAXIS])}, CAMPFIRE_INTENSITY}
+					campfire := CampFire{0, 10}
+					for i := 0; i < len(lightSources); i++ {
+						if lightSources[i] == nil {
+							lightSources[i] = &light
+							campfire.lightSourceIndex = i
+							break
+						}
+					}
+					if campfire.lightSourceIndex == 0 {
+						lightSources = append(lightSources, &light)
+						campfire.lightSourceIndex = len(lightSources) - 1
+					}
+
+					added := false
+					for i := 0; i < len(campfires); i++ {
+						if campfires[i] == nil {
+							campfires[i] = &campfire
+							added = true
+							break
+						}
+					}
+					if !added {
+						campfires = append(campfires, &campfire)
+					}
+				}
+
+				TheWorld.Setv(selectedBlockFace.pos, blockid)
 				self.inventory[self.currentItem]--
+
 			}
 		}
 	}
@@ -342,4 +376,9 @@ func (self *Player) EquipItem(itemid uint16) {
 		}
 	}
 
+}
+
+func (self *Player) Update(dt float64) {
+	self.distanceTravelled += dt * math.Sqrt(math.Pow(self.velocity[XAXIS], 2)+math.Pow(self.velocity[ZAXIS], 2))
+	self.MobData.Update(dt)
 }

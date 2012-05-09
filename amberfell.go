@@ -29,7 +29,7 @@ var (
 	ThePlayer  *Player
 	viewport   Viewport
 
-	timeOfDay float32 = 8
+	timeOfDay float32 = 21
 
 	worldSeed = int64(16)
 	treeLine  = uint16(math.Trunc(5.0 * float64(CHUNK_HEIGHT/6.0)))
@@ -44,6 +44,10 @@ var (
 	terrainBuffer     *VertexBuffer
 
 	items map[uint16]Item
+
+	// World elements
+	lightSources []*LightSource = make([]*LightSource, 20)
+	campfires    []*CampFire    = make([]*CampFire, 20)
 
 	// HUD elements
 	blockscale float32 = 0.4 // The scale at which to render blocks in the HUD
@@ -359,10 +363,9 @@ func gameLoop() {
 		if update500ms.PassedInterval() {
 			console.fps = float64(drawFrame) / (float64(update500ms.GetTicks()) / float64(1e9))
 			console.Update()
-			timeOfDay += 0.02
-			if timeOfDay > 24 {
-				timeOfDay -= 24
-			}
+
+			UpdateTimeOfDay()
+			UpdateCampfires()
 
 			drawFrame, computeFrame = 0, 0
 			update500ms.Start()
@@ -379,6 +382,12 @@ func gameLoop() {
 				if chunk.x > pxmax+6 || chunk.x < pxmin-6 || chunk.z > pzmax+6 || chunk.z < pzmin-6 {
 					delete(TheWorld.chunks, chunkIndex)
 				}
+			}
+
+			// Update player stats
+			distanceFromStart := uint16(math.Sqrt(math.Pow(center[XAXIS]-float64(PLAYER_START_X), 2) + math.Pow(center[ZAXIS]-float64(PLAYER_START_Z), 2)))
+			if distanceFromStart > ThePlayer.distanceFromStart {
+				ThePlayer.distanceFromStart = distanceFromStart
 			}
 
 			update2000ms.Start()
@@ -510,4 +519,24 @@ func Draw(t int64) {
 	gl.Flush()
 	sdl.GL_SwapBuffers()
 	// runtime.GC()
+}
+
+func UpdateTimeOfDay() {
+	timeOfDay += 0.02
+	if timeOfDay > 24 {
+		timeOfDay -= 24
+	}
+}
+
+func UpdateCampfires() {
+	// Age any campfires
+	for i := 0; i < len(campfires); i++ {
+		if campfires[i] != nil {
+			campfires[i].life -= 0.02
+			if campfires[i].life <= 0 {
+				lightSources[campfires[i].lightSourceIndex] = nil
+				campfires[i] = nil
+			}
+		}
+	}
 }

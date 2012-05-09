@@ -12,8 +12,8 @@ const (
 	CHUNK_HEIGHT = 128
 
 	MAP_DIAM       = 64000
-	PLAYER_START_X = 31767 //MAP_DIAM / 2
-	PLAYER_START_Z = 32009 //MAP_DIAM / 2
+	PLAYER_START_X = 31445 //32011 // 31767 //MAP_DIAM / 2
+	PLAYER_START_Z = 32137 //31058 // 32009 //MAP_DIAM / 2
 	NOISE_SCALE    = 16
 
 	TREE_PRECIPITATION_MIN = 0.2 //0.44
@@ -35,6 +35,9 @@ const (
 	PIXEL_SCALE  = 1.0 / SCREEN_SCALE // Width of one pixel in world coordinate units
 
 	KEY_DEBOUNCE_DELAY = 3e8 // nanoseconds
+
+	CAMPFIRE_INTENSITY = 6
+	MAX_LIGHT_LEVEL    = 12
 
 	FACE_NONE  = 6 // 
 	EAST_FACE  = 0 // +ve x
@@ -58,6 +61,13 @@ const (
 	BLOCK_LOG_WALL = 5
 	BLOCK_LOG_SLAB = 6
 
+	BLOCK_AMBERFELL    = 7
+	BLOCK_COAL         = 8
+	BLOCK_COPPER       = 9
+	BLOCK_IRON         = 10
+	BLOCK_CARVED_STONE = 11
+	BLOCK_CAMPFIRE     = 12
+
 	ITEM_NONE     = MAX_ITEMS - 1
 	ITEM_FIREWOOD = 512
 
@@ -72,6 +82,7 @@ const (
 
 	// Terrain block textures
 	TEXTURE_NONE         = 0
+	TEXTURE_CARVED_STONE = 16
 	TEXTURE_STONE        = 17
 	TEXTURE_STONE_TOP    = 1
 	TEXTURE_DIRT         = 18
@@ -82,6 +93,12 @@ const (
 	TEXTURE_LEAVES_TOP   = 20
 	TEXTURE_LOG_WALL     = 21
 	TEXTURE_LOG_WALL_TOP = 5
+
+	TEXTURE_COAL          = 7
+	TEXTURE_COPPER        = 8
+	TEXTURE_IRON          = 9
+	TEXTURE_AMBERFELL_TOP = 6
+	TEXTURE_AMBERFELL     = 22
 
 	// Player textures
 
@@ -116,11 +133,12 @@ const (
 	TEXTURE_PICKER = 5000
 
 	// Strength of materials
-	STRENGTH_STONE  = 20
-	STRENGTH_DIRT   = 3
-	STRENGTH_WOOD   = 5
-	STRENGTH_LEAVES = 1
-	STRENGTH_IRON   = 50
+	STRENGTH_STONE       = 20
+	STRENGTH_DIRT        = 3
+	STRENGTH_WOOD        = 5
+	STRENGTH_LEAVES      = 1
+	STRENGTH_IRON        = 50
+	STRENGTH_UNBREAKABLE = 255
 )
 
 var (
@@ -132,6 +150,20 @@ var (
 		[3]float32{0.0, -1.0, 0.0},
 	}
 
+	LIGHT_LEVELS = [13]([4]float32){[4]float32{0, 0, 0, 1},
+		[4]float32{0.04, 0.04, 0.04, 1.0},
+		[4]float32{0.12, 0.12, 0.12, 1.0},
+		[4]float32{0.20, 0.20, 0.20, 1.0},
+		[4]float32{0.28, 0.28, 0.28, 1.0},
+		[4]float32{0.36, 0.36, 0.36, 1.0},
+		[4]float32{0.44, 0.44, 0.44, 1.0},
+		[4]float32{0.52, 0.52, 0.52, 1.0},
+		[4]float32{0.60, 0.60, 0.60, 1.0},
+		[4]float32{0.68, 0.68, 0.68, 1.0},
+		[4]float32{0.76, 0.76, 0.76, 1.0},
+		[4]float32{0.84, 0.84, 0.84, 1.0},
+		[4]float32{0.92, 0.92, 0.92, 1.0},
+	}
 	COLOUR_WHITE = [4]float32{1.0, 1.0, 1.0, 1.0}
 	COLOUR_HIGH  = [4]float32{96.0 / 255, 208.0 / 255, 96.0 / 255, 1.0}
 )

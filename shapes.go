@@ -14,11 +14,11 @@ import (
 )
 
 type Vertex struct {
-	p       [3]float32 // Position
-	t       [2]float32 // Texture coordinate
-	n       [3]float32 // Normal
-	c       [4]float32 // Colour
-	padding [16]byte
+	p [3]float32 // Position
+	t [2]float32 // Texture coordinate
+	n [3]float32 // Normal
+	c [4]float32 // Colour
+	e [4]float32 // Emissive light
 }
 
 type TriangleIndex struct {
@@ -58,23 +58,43 @@ func (self *VertexBuffer) AddFace(face uint8, texture uint16, selected bool, x1,
 	if selected {
 		c = COLOUR_HIGH
 	}
+
+	n64 := Vectorf{float64(NORMALS[face][0]), float64(NORMALS[face][1]), float64(NORMALS[face][2])}
+	lightLevel := 0
+	pos := Vectorf{float64(x1), float64(y1), float64(z1)}
+	for _, lightSource := range lightSources {
+		if lightSource != nil {
+			distance := uint16(pos.Minus(lightSource.pos).Magnitude())
+			dir := lightSource.pos.Minus(pos)
+			if distance < 2 || dir.Dot(n64) > 0 {
+				if distance <= lightSource.intensity {
+					lightLevel += int(lightSource.intensity - distance)
+				}
+			}
+		}
+	}
+	if lightLevel > MAX_LIGHT_LEVEL {
+		lightLevel = MAX_LIGHT_LEVEL
+	}
+	e := LIGHT_LEVELS[lightLevel]
+
 	vc := self.vertexCount
 
 	if x1 == x2 {
-		self.vertices[vc] = Vertex{p: [3]float32{x1, y1, z1}, t: [2]float32{(float32((texture % TILES_HORZ)) + tx1) / TILES_HORZ, (float32((texture / TILES_HORZ)) + ty1) / TILES_VERT}, n: NORMALS[face], c: c}
-		self.vertices[vc+1] = Vertex{p: [3]float32{x1, y1, z2}, t: [2]float32{(float32((texture % TILES_HORZ)) + tx2) / TILES_HORZ, (float32((texture / TILES_HORZ)) + ty1) / TILES_VERT}, n: NORMALS[face], c: c}
-		self.vertices[vc+2] = Vertex{p: [3]float32{x1, y2, z2}, t: [2]float32{(float32((texture % TILES_HORZ)) + tx2) / TILES_HORZ, (float32((texture / TILES_HORZ)) + ty2) / TILES_VERT}, n: NORMALS[face], c: c}
-		self.vertices[vc+3] = Vertex{p: [3]float32{x1, y2, z1}, t: [2]float32{(float32((texture % TILES_HORZ)) + tx1) / TILES_HORZ, (float32((texture / TILES_HORZ)) + ty2) / TILES_VERT}, n: NORMALS[face], c: c}
+		self.vertices[vc] = Vertex{p: [3]float32{x1, y1, z1}, t: [2]float32{(float32((texture % TILES_HORZ)) + tx1) / TILES_HORZ, (float32((texture / TILES_HORZ)) + ty1) / TILES_VERT}, n: NORMALS[face], c: c, e: e}
+		self.vertices[vc+1] = Vertex{p: [3]float32{x1, y1, z2}, t: [2]float32{(float32((texture % TILES_HORZ)) + tx2) / TILES_HORZ, (float32((texture / TILES_HORZ)) + ty1) / TILES_VERT}, n: NORMALS[face], c: c, e: e}
+		self.vertices[vc+2] = Vertex{p: [3]float32{x1, y2, z2}, t: [2]float32{(float32((texture % TILES_HORZ)) + tx2) / TILES_HORZ, (float32((texture / TILES_HORZ)) + ty2) / TILES_VERT}, n: NORMALS[face], c: c, e: e}
+		self.vertices[vc+3] = Vertex{p: [3]float32{x1, y2, z1}, t: [2]float32{(float32((texture % TILES_HORZ)) + tx1) / TILES_HORZ, (float32((texture / TILES_HORZ)) + ty2) / TILES_VERT}, n: NORMALS[face], c: c, e: e}
 	} else if y1 == y2 {
-		self.vertices[vc] = Vertex{p: [3]float32{x1, y1, z1}, t: [2]float32{(float32((texture % TILES_HORZ)) + tx1) / TILES_HORZ, (float32((texture / TILES_HORZ)) + ty1) / TILES_VERT}, n: NORMALS[face], c: c}
-		self.vertices[vc+1] = Vertex{p: [3]float32{x1, y1, z2}, t: [2]float32{(float32((texture % TILES_HORZ)) + tx1) / TILES_HORZ, (float32((texture / TILES_HORZ)) + ty2) / TILES_VERT}, n: NORMALS[face], c: c}
-		self.vertices[vc+2] = Vertex{p: [3]float32{x2, y1, z2}, t: [2]float32{(float32((texture % TILES_HORZ)) + tx2) / TILES_HORZ, (float32((texture / TILES_HORZ)) + ty2) / TILES_VERT}, n: NORMALS[face], c: c}
-		self.vertices[vc+3] = Vertex{p: [3]float32{x2, y1, z1}, t: [2]float32{(float32((texture % TILES_HORZ)) + tx2) / TILES_HORZ, (float32((texture / TILES_HORZ)) + ty1) / TILES_VERT}, n: NORMALS[face], c: c}
+		self.vertices[vc] = Vertex{p: [3]float32{x1, y1, z1}, t: [2]float32{(float32((texture % TILES_HORZ)) + tx1) / TILES_HORZ, (float32((texture / TILES_HORZ)) + ty1) / TILES_VERT}, n: NORMALS[face], c: c, e: e}
+		self.vertices[vc+1] = Vertex{p: [3]float32{x1, y1, z2}, t: [2]float32{(float32((texture % TILES_HORZ)) + tx1) / TILES_HORZ, (float32((texture / TILES_HORZ)) + ty2) / TILES_VERT}, n: NORMALS[face], c: c, e: e}
+		self.vertices[vc+2] = Vertex{p: [3]float32{x2, y1, z2}, t: [2]float32{(float32((texture % TILES_HORZ)) + tx2) / TILES_HORZ, (float32((texture / TILES_HORZ)) + ty2) / TILES_VERT}, n: NORMALS[face], c: c, e: e}
+		self.vertices[vc+3] = Vertex{p: [3]float32{x2, y1, z1}, t: [2]float32{(float32((texture % TILES_HORZ)) + tx2) / TILES_HORZ, (float32((texture / TILES_HORZ)) + ty1) / TILES_VERT}, n: NORMALS[face], c: c, e: e}
 	} else {
-		self.vertices[vc] = Vertex{p: [3]float32{x1, y1, z1}, t: [2]float32{(float32((texture % TILES_HORZ)) + tx1) / TILES_HORZ, (float32((texture / TILES_HORZ)) + ty1) / TILES_VERT}, n: NORMALS[face], c: c}
-		self.vertices[vc+1] = Vertex{p: [3]float32{x1, y2, z1}, t: [2]float32{(float32((texture % TILES_HORZ)) + tx1) / TILES_HORZ, (float32((texture / TILES_HORZ)) + ty2) / TILES_VERT}, n: NORMALS[face], c: c}
-		self.vertices[vc+2] = Vertex{p: [3]float32{x2, y2, z1}, t: [2]float32{(float32((texture % TILES_HORZ)) + tx2) / TILES_HORZ, (float32((texture / TILES_HORZ)) + ty2) / TILES_VERT}, n: NORMALS[face], c: c}
-		self.vertices[vc+3] = Vertex{p: [3]float32{x2, y1, z1}, t: [2]float32{(float32((texture % TILES_HORZ)) + tx2) / TILES_HORZ, (float32((texture / TILES_HORZ)) + ty1) / TILES_VERT}, n: NORMALS[face], c: c}
+		self.vertices[vc] = Vertex{p: [3]float32{x1, y1, z1}, t: [2]float32{(float32((texture % TILES_HORZ)) + tx1) / TILES_HORZ, (float32((texture / TILES_HORZ)) + ty1) / TILES_VERT}, n: NORMALS[face], c: c, e: e}
+		self.vertices[vc+1] = Vertex{p: [3]float32{x1, y2, z1}, t: [2]float32{(float32((texture % TILES_HORZ)) + tx1) / TILES_HORZ, (float32((texture / TILES_HORZ)) + ty2) / TILES_VERT}, n: NORMALS[face], c: c, e: e}
+		self.vertices[vc+2] = Vertex{p: [3]float32{x2, y2, z1}, t: [2]float32{(float32((texture % TILES_HORZ)) + tx2) / TILES_HORZ, (float32((texture / TILES_HORZ)) + ty2) / TILES_VERT}, n: NORMALS[face], c: c, e: e}
+		self.vertices[vc+3] = Vertex{p: [3]float32{x2, y1, z1}, t: [2]float32{(float32((texture % TILES_HORZ)) + tx2) / TILES_HORZ, (float32((texture / TILES_HORZ)) + ty1) / TILES_VERT}, n: NORMALS[face], c: c, e: e}
 	}
 
 	self.vertexCount += 4
@@ -118,6 +138,8 @@ func (self *VertexBuffer) RenderDirect(clip bool) {
 					gl.Normal3f(self.vertices[j].n[0], self.vertices[j].n[1], self.vertices[j].n[2])
 					gl.TexCoord2f(self.vertices[j].t[0], self.vertices[j].t[1])
 					gl.Color4f(self.vertices[j].c[0], self.vertices[j].c[1], self.vertices[j].c[2], self.vertices[j].c[3])
+
+					gl.Materialfv(gl.FRONT, gl.EMISSION, []float32{self.vertices[j].e[0], self.vertices[j].e[1], self.vertices[j].e[2], self.vertices[j].e[3]})
 					gl.Vertex3f(self.vertices[j].p[0], self.vertices[j].p[1], self.vertices[j].p[2])
 				}
 				console.vertices += 4

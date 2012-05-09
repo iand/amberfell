@@ -56,7 +56,7 @@ func (self *Console) Draw(t int64) {
 	gl.LoadIdentity()
 	gl.Translatef(float32(viewport.lplane)+margin, float32(viewport.bplane)+consoleHeight+margin-2*h, 0)
 
-	consoleFont.Print(fmt.Sprintf("X: %5.2f Y: %4.2f Z: %5.2f H: %5.2f (%s)", ThePlayer.position[XAXIS], ThePlayer.position[YAXIS], ThePlayer.position[ZAXIS], ThePlayer.heading, HeadingToCompass(ThePlayer.heading)))
+	consoleFont.Print(fmt.Sprintf("X: %5.2f Y: %4.2f Z: %5.2f H: %5.2f (%s) D: %0.1f (%d)", ThePlayer.position[XAXIS], ThePlayer.position[YAXIS], ThePlayer.position[ZAXIS], ThePlayer.heading, HeadingToCompass(ThePlayer.heading), ThePlayer.distanceTravelled, ThePlayer.distanceFromStart))
 
 	gl.LoadIdentity()
 	gl.Translatef(float32(viewport.lplane)+margin, float32(viewport.bplane)+consoleHeight+margin-3*h, 0)

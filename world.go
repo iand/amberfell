@@ -40,6 +40,16 @@ type InteractingBlockFace struct {
 	hitCount  uint8
 }
 
+type LightSource struct {
+	pos       Vectorf
+	intensity uint16
+}
+
+type CampFire struct {
+	lightSourceIndex int
+	life             float64
+}
+
 func (self *World) Init() {
 
 	self.chunks = make(map[uint64]*Chunk)
@@ -79,7 +89,7 @@ func (self *World) SoilThickness(x uint16, z uint16) uint16 {
 		noise = -1.0
 	}
 
-	return uint16(noise*4 + 4)
+	return uint16(noise*3.5 + 3.5)
 }
 
 func (self *World) Precipitation(x uint16, z uint16) float64 {
@@ -91,15 +101,57 @@ func (self *World) Precipitation(x uint16, z uint16) float64 {
 // }
 
 func (self *World) Rocks(x uint16, z uint16) uint16 {
-	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(4*NOISE_SCALE), float64(z-MAP_DIAM)/(4*NOISE_SCALE), worldSeed, 1.9, 3.0, 12)
+	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(NOISE_SCALE/2), float64(z-MAP_DIAM)/(NOISE_SCALE/2), worldSeed, 1.5, 3.0, 12)
 	if noise > 1.0 {
 		noise = 1.0
 	}
-	if noise < 0.4 {
+	if noise < 0.8 {
 		noise = 0
 	}
 
-	noise = noise * 9
+	noise = noise * 5
+
+	return uint16(noise)
+}
+
+func (self *World) Coal(x uint16, z uint16) uint16 {
+	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(NOISE_SCALE), float64(z-MAP_DIAM)/(NOISE_SCALE), worldSeed, 1.9, 3.5, 12)
+	if noise > 1.0 {
+		noise = 1.0
+	}
+	if noise < 0.55 {
+		noise = 0
+	}
+
+	noise = noise * 4
+
+	return uint16(noise)
+}
+
+func (self *World) Iron(x uint16, z uint16) uint16 {
+	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(NOISE_SCALE), float64(z-MAP_DIAM)/(NOISE_SCALE), worldSeed, 1.95, 4.1, 6)
+	if noise > 1.0 {
+		noise = 1.0
+	}
+	if noise < 0.55 {
+		noise = 0
+	}
+
+	noise = noise * 3
+
+	return uint16(noise)
+}
+
+func (self *World) Copper(x uint16, z uint16) uint16 {
+	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(NOISE_SCALE), float64(z-MAP_DIAM)/(NOISE_SCALE), worldSeed, 1.99, 4.2, 6)
+	if noise > 1.0 {
+		noise = 1.0
+	}
+	if noise < 0.55 {
+		noise = 0
+	}
+
+	noise = noise * 3
 
 	return uint16(noise)
 }
@@ -123,12 +175,13 @@ func (self *World) GenerateChunk(cx uint16, cy uint16, cz uint16) *Chunk {
 	xw := cx * CHUNK_WIDTH
 	zw := cz * CHUNK_WIDTH
 
+	standingStoneProb := 0.0
 	for x := uint16(0); x < CHUNK_WIDTH; x++ {
 		for z := uint16(0); z < CHUNK_WIDTH; z++ {
 			ground := self.GroundLevel(x+xw, z+zw)
 			soil := ground + uint16(float64(self.SoilThickness(x+xw, z+zw))*(1-((float64(ground)-CHUNK_HEIGHT/2)/(2*CHUNK_HEIGHT))))
 
-			rocks := ground + self.Rocks(x+xw, z+zw)
+			rocks := ground // + self.Rocks(x+xw, z+zw)
 
 			upper := ground
 
@@ -149,12 +202,46 @@ func (self *World) GenerateChunk(cx uint16, cy uint16, cz uint16) *Chunk {
 
 			}
 
+			coal := self.Coal(x+xw, z+zw)
+			for y := ground - 1; y > ground-coal && y > 0; y-- {
+				chunk.Set(x, y, z, BLOCK_COAL)
+			}
+			if coal > 0 {
+				standingStoneProb += 0.000001
+			}
+
+			iron := self.Iron(x+xw, z+zw)
+			for y := ground - 1; y > ground-iron && y > 0; y-- {
+				chunk.Set(x, y, z, BLOCK_IRON)
+			}
+			if iron > 0 {
+				standingStoneProb += 0.00001
+			}
+
+			copper := self.Copper(x+xw, z+zw)
+			for y := ground - 1; y > ground-copper && y > 0; y-- {
+				chunk.Set(x, y, z, BLOCK_COPPER)
+			}
+			if copper > 0 {
+				standingStoneProb += 0.00001
+			}
+
 		}
 	}
 
 	for x := uint16(xw); x < xw+CHUNK_WIDTH; x++ {
 		for z := uint16(zw); z < zw+CHUNK_WIDTH; z++ {
 			y := self.FindSurface(x, z)
+
+			if rand.Float64() < standingStoneProb {
+				println("Standing stone: ", standingStoneProb)
+				// Place a standing stone
+				standingStoneProb = 0
+				chunk.Set(x-xw, y, z-zw, BLOCK_STONE)
+				chunk.Set(x-xw, y+1, z-zw, BLOCK_STONE)
+				chunk.Set(x-xw, y+2, z-zw, BLOCK_CARVED_STONE)
+			}
+
 			if self.Precipitation(x, z) > TREE_PRECIPITATION_MIN && rand.Intn(100) < TREE_DENSITY_PCT {
 
 				if y > 1 && y < treeLine && chunk.At(x-xw, y-1, z-zw) == BLOCK_DIRT {
@@ -495,6 +582,109 @@ func (self *World) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 
 }
 
+func (self *World) GrowTree(x uint16, y uint16, z uint16) {
+	self.Set(x, y, z, BLOCK_TRUNK)
+	self.Set(x, y+1, z, BLOCK_TRUNK)
+	self.Set(x, y+2, z, BLOCK_TRUNK)
+	self.Set(x, y+3, z, BLOCK_TRUNK)
+	self.Set(x+1, y+3, z, BLOCK_LEAVES)
+	self.Set(x-1, y+3, z, BLOCK_LEAVES)
+	self.Set(x, y+3, z+1, BLOCK_LEAVES)
+	self.Set(x, y+3, z-1, BLOCK_LEAVES)
+
+	self.GrowBranch(x, y+3, z, NORTH_FACE, 50)
+	self.GrowBranch(x, y+3, z, EAST_FACE, 50)
+	self.GrowBranch(x, y+3, z, WEST_FACE, 50)
+	self.GrowBranch(x, y+3, z, SOUTH_FACE, 50)
+
+	if rand.Intn(100) < 50 {
+		self.Set(x, y+4, z, BLOCK_TRUNK)
+		self.Set(x, y+5, z, BLOCK_TRUNK)
+		self.GrowBranch(x, y+5, z, NORTH_FACE, 50)
+		self.GrowBranch(x, y+5, z, EAST_FACE, 50)
+		self.GrowBranch(x, y+5, z, WEST_FACE, 50)
+		self.GrowBranch(x, y+5, z, SOUTH_FACE, 50)
+	}
+
+	if rand.Intn(100) < 30 {
+		self.Set(x, y+6, z, BLOCK_TRUNK)
+		self.Set(x, y+7, z, BLOCK_TRUNK)
+		self.GrowBranch(x, y+7, z, NORTH_FACE, 50)
+		self.GrowBranch(x, y+7, z, EAST_FACE, 50)
+		self.GrowBranch(x, y+7, z, WEST_FACE, 50)
+		self.GrowBranch(x, y+7, z, SOUTH_FACE, 50)
+	}
+}
+
+func (self *World) GrowBranch(x uint16, y uint16, z uint16, face uint8, chance int) {
+	newx, newy, newz := x, y, z
+	if face == NORTH_FACE {
+		newz = z - 1
+	} else if face == SOUTH_FACE {
+		newz = z + 1
+	} else if face == WEST_FACE {
+		newx = x - 1
+	} else if face == EAST_FACE {
+		newx = x + 1
+	} else if face == UP_FACE {
+		newy = y + 1
+	} else if face == DOWN_FACE {
+		newy = y - 1
+	}
+	if rand.Intn(100) < chance {
+		self.Set(newx, newy, newz, BLOCK_TRUNK)
+		if face != SOUTH_FACE {
+			if rand.Intn(100) < 50 {
+				self.GrowBranch(newx, newy, newz, NORTH_FACE, chance/3)
+			} else {
+				self.Set(newx, newy, newz-1, BLOCK_LEAVES)
+			}
+		}
+
+		if face != NORTH_FACE {
+			if rand.Intn(100) < 50 {
+				self.GrowBranch(newx, newy, newz, SOUTH_FACE, chance/3)
+			} else {
+				self.Set(newx, newy, newz+1, BLOCK_LEAVES)
+			}
+		}
+
+		if face != EAST_FACE {
+			if rand.Intn(100) < 50 {
+				self.GrowBranch(newx, newy, newz, WEST_FACE, chance/3)
+			} else {
+				self.Set(newx-1, newy, newz, BLOCK_LEAVES)
+			}
+		}
+
+		if face != WEST_FACE {
+			if rand.Intn(100) < 50 {
+				self.GrowBranch(newx, newy, newz, EAST_FACE, chance/3)
+			} else {
+				self.Set(newx+1, newy, newz, BLOCK_LEAVES)
+			}
+		}
+
+		if face != DOWN_FACE {
+			if rand.Intn(100) < 30 {
+				self.GrowBranch(newx, newy, newz, UP_FACE, chance/3)
+			} else {
+				self.Set(newx, newy+1, newz, BLOCK_LEAVES)
+			}
+		}
+		if face != UP_FACE {
+			if rand.Intn(100) < 50 {
+				self.GrowBranch(newx, newy, newz, DOWN_FACE, chance/3)
+			} else {
+				self.Set(newx, newy-1, newz, BLOCK_LEAVES)
+			}
+		}
+	} else {
+		self.Set(newx, newy, newz, BLOCK_LEAVES)
+
+	}
+}
+
 func chunkCoordsFromWorld(x uint16, y uint16, z uint16) (cx uint16, cy uint16, cz uint16) {
 	cx = uint16(math.Floor(float64(x) / CHUNK_WIDTH))
 	cy = uint16(math.Floor(float64(y) / CHUNK_HEIGHT))
@@ -597,107 +787,4 @@ func (self *Chunk) Render(selectedBlockFace *BlockFace) {
 
 	// fmt.Printf("Chunk ticks: %4.0f\n", float64(t.GetTicks())/1e6)
 
-}
-
-func (self *World) GrowTree(x uint16, y uint16, z uint16) {
-	self.Set(x, y, z, BLOCK_TRUNK)
-	self.Set(x, y+1, z, BLOCK_TRUNK)
-	self.Set(x, y+2, z, BLOCK_TRUNK)
-	self.Set(x, y+3, z, BLOCK_TRUNK)
-	self.Set(x+1, y+3, z, BLOCK_LEAVES)
-	self.Set(x-1, y+3, z, BLOCK_LEAVES)
-	self.Set(x, y+3, z+1, BLOCK_LEAVES)
-	self.Set(x, y+3, z-1, BLOCK_LEAVES)
-
-	self.GrowBranch(x, y+3, z, NORTH_FACE, 50)
-	self.GrowBranch(x, y+3, z, EAST_FACE, 50)
-	self.GrowBranch(x, y+3, z, WEST_FACE, 50)
-	self.GrowBranch(x, y+3, z, SOUTH_FACE, 50)
-
-	if rand.Intn(100) < 50 {
-		self.Set(x, y+4, z, BLOCK_TRUNK)
-		self.Set(x, y+5, z, BLOCK_TRUNK)
-		self.GrowBranch(x, y+5, z, NORTH_FACE, 50)
-		self.GrowBranch(x, y+5, z, EAST_FACE, 50)
-		self.GrowBranch(x, y+5, z, WEST_FACE, 50)
-		self.GrowBranch(x, y+5, z, SOUTH_FACE, 50)
-	}
-
-	if rand.Intn(100) < 30 {
-		self.Set(x, y+6, z, BLOCK_TRUNK)
-		self.Set(x, y+7, z, BLOCK_TRUNK)
-		self.GrowBranch(x, y+7, z, NORTH_FACE, 50)
-		self.GrowBranch(x, y+7, z, EAST_FACE, 50)
-		self.GrowBranch(x, y+7, z, WEST_FACE, 50)
-		self.GrowBranch(x, y+7, z, SOUTH_FACE, 50)
-	}
-}
-
-func (self *World) GrowBranch(x uint16, y uint16, z uint16, face uint8, chance int) {
-	newx, newy, newz := x, y, z
-	if face == NORTH_FACE {
-		newz = z - 1
-	} else if face == SOUTH_FACE {
-		newz = z + 1
-	} else if face == WEST_FACE {
-		newx = x - 1
-	} else if face == EAST_FACE {
-		newx = x + 1
-	} else if face == UP_FACE {
-		newy = y + 1
-	} else if face == DOWN_FACE {
-		newy = y - 1
-	}
-	if rand.Intn(100) < chance {
-		self.Set(newx, newy, newz, BLOCK_TRUNK)
-		if face != SOUTH_FACE {
-			if rand.Intn(100) < 50 {
-				self.GrowBranch(newx, newy, newz, NORTH_FACE, chance/3)
-			} else {
-				self.Set(newx, newy, newz-1, BLOCK_LEAVES)
-			}
-		}
-
-		if face != NORTH_FACE {
-			if rand.Intn(100) < 50 {
-				self.GrowBranch(newx, newy, newz, SOUTH_FACE, chance/3)
-			} else {
-				self.Set(newx, newy, newz+1, BLOCK_LEAVES)
-			}
-		}
-
-		if face != EAST_FACE {
-			if rand.Intn(100) < 50 {
-				self.GrowBranch(newx, newy, newz, WEST_FACE, chance/3)
-			} else {
-				self.Set(newx-1, newy, newz, BLOCK_LEAVES)
-			}
-		}
-
-		if face != WEST_FACE {
-			if rand.Intn(100) < 50 {
-				self.GrowBranch(newx, newy, newz, EAST_FACE, chance/3)
-			} else {
-				self.Set(newx+1, newy, newz, BLOCK_LEAVES)
-			}
-		}
-
-		if face != DOWN_FACE {
-			if rand.Intn(100) < 30 {
-				self.GrowBranch(newx, newy, newz, UP_FACE, chance/3)
-			} else {
-				self.Set(newx, newy+1, newz, BLOCK_LEAVES)
-			}
-		}
-		if face != UP_FACE {
-			if rand.Intn(100) < 50 {
-				self.GrowBranch(newx, newy, newz, DOWN_FACE, chance/3)
-			} else {
-				self.Set(newx, newy-1, newz, BLOCK_LEAVES)
-			}
-		}
-	} else {
-		self.Set(newx, newy, newz, BLOCK_LEAVES)
-
-	}
 }

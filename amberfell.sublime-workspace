@@ -43,7 +43,7 @@
 			"file": "amberfell.go",
 			"settings":
 			{
-				"buffer_size": 10984,
+				"buffer_size": 13536,
 				"line_ending": "Unix"
 			}
 		},
@@ -51,7 +51,7 @@
 			"file": "player.go",
 			"settings":
 			{
-				"buffer_size": 10089,
+				"buffer_size": 11716,
 				"line_ending": "Unix"
 			}
 		},
@@ -59,7 +59,15 @@
 			"file": "shapes.go",
 			"settings":
 			{
-				"buffer_size": 51878,
+				"buffer_size": 51813,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "items.go",
+			"settings":
+			{
+				"buffer_size": 4334,
 				"line_ending": "Unix"
 			}
 		},
@@ -75,23 +83,25 @@
 			"file": "constants.go",
 			"settings":
 			{
-				"buffer_size": 2764,
+				"buffer_size": 3273,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "world.go",
+			"contents": "Searching 37 files for \"MAP_RADIUS\"\n\n/home/iand/wip/amberfell/constants.go:\n   12  	CHUNK_HEIGHT = 10\n   13  \n   14: 	MAP_RADIUS     = 64000\n   15  	PLAYER_START_X = 32760\n   16  	PLAYER_START_Z = 32760\n\n/home/iand/wip/amberfell/world.go:\n   49  \n   50  	var max, min float64\n   51: 	for i:=uint16(0); i < MAP_RADIUS*2;i++ {\n   52  		h := self.StoneHeight(i, PLAYER_START_Z)\n   53  		if h > max { max = h}\n   ..\n   96  \n   97  func (self *World) DirtHeight(x uint16, z uint16) float64 {\n   98: 	return perlin.Noise2D(0.25*float64(x-MAP_RADIUS)/(MAP_RADIUS), 0.25*float64(z-MAP_RADIUS)/(MAP_RADIUS), 2, 0.8, 1)\n   99  }\n  100  \n  101  func (self *World) StoneHeight(x uint16, z uint16) float64 {\n  102: 	return perlin.Noise2D(float64(x-MAP_RADIUS)/(MAP_RADIUS), float64(z-MAP_RADIUS)/(MAP_RADIUS), 2, 0.8, 1)\n  103  }\n  104  \n  ...\n  201  \n  202  func (self *World) Grow(x uint16, y uint16, z uint16, n int, s int, w int, e int, u int, d int, texture byte) {\n  203: 	if y > 0 && x < MAP_RADIUS && self.At(x+1, y-1, z) != 0 && rand.Intn(100) < e {\n  204  		self.Set(x+1, y, z, texture)\n  205  		self.Grow(x+1, y, z, n, s, 0, e-2, u, d, texture)\n  ...\n  209  		self.Grow(x-1, y, z, n, s, w-2, 0, u, d, texture)\n  210  	}\n  211: 	if y > 0 && z < MAP_RADIUS && self.At(x, y-1, z+1) != 0 && rand.Intn(100) < s {\n  212  		self.Set(x, y, z+1, texture)\n  213  		self.Grow(x, y, z+1, 0, s-2, w, e, u, d, texture)\n  ...\n  217  		self.Grow(x, y, z-1, n-2, 0, w, e, u, d, texture)\n  218  	}\n  219: 	if y < MAP_RADIUS && rand.Intn(100) < u {\n  220  		self.Set(x, y+1, z, texture)\n  221  		self.Grow(x, y+1, z, n, s, w, e, u-2, 0, texture)\n\n13 matches across 2 files\n\n\nSearching 37 files for \"MAP_RADIUS\"\n\n/home/iand/wip/amberfell/world.go:\n   49  \n   50  	var max, min float64\n   51: 	for i:=uint16(0); i < MAP_RADIUS*2;i++ {\n   52  		h := self.StoneHeight(i, PLAYER_START_Z)\n   53  		if h > max { max = h}\n   ..\n   96  \n   97  func (self *World) DirtHeight(x uint16, z uint16) float64 {\n   98: 	return perlin.Noise2D(0.25*float64(x-MAP_RADIUS)/(MAP_RADIUS), 0.25*float64(z-MAP_RADIUS)/(MAP_RADIUS), 2, 0.8, 1)\n   99  }\n  100  \n  101  func (self *World) StoneHeight(x uint16, z uint16) float64 {\n  102: 	return perlin.Noise2D(float64(x-MAP_RADIUS)/(MAP_RADIUS), float64(z-MAP_RADIUS)/(MAP_RADIUS), 2, 0.8, 1)\n  103  }\n  104  \n  ...\n  201  \n  202  func (self *World) Grow(x uint16, y uint16, z uint16, n int, s int, w int, e int, u int, d int, texture byte) {\n  203: 	if y > 0 && x < MAP_RADIUS && self.At(x+1, y-1, z) != 0 && rand.Intn(100) < e {\n  204  		self.Set(x+1, y, z, texture)\n  205  		self.Grow(x+1, y, z, n, s, 0, e-2, u, d, texture)\n  ...\n  209  		self.Grow(x-1, y, z, n, s, w-2, 0, u, d, texture)\n  210  	}\n  211: 	if y > 0 && z < MAP_RADIUS && self.At(x, y-1, z+1) != 0 && rand.Intn(100) < s {\n  212  		self.Set(x, y, z+1, texture)\n  213  		self.Grow(x, y, z+1, 0, s-2, w, e, u, d, texture)\n  ...\n  217  		self.Grow(x, y, z-1, n-2, 0, w, e, u, d, texture)\n  218  	}\n  219: 	if y < MAP_RADIUS && rand.Intn(100) < u {\n  220  		self.Set(x, y+1, z, texture)\n  221  		self.Grow(x, y+1, z, n, s, w, e, u-2, 0, texture)\n\n12 matches in 1 file\n\n\nSearching 37 files for \"console.ver\"\n\n/home/iand/wip/amberfell/world.go:\n  416  \n  417  	console.cubecount = 0\n  418: 	console.vertices = 0\n  419  \n  420  	px := uint16(center[XAXIS]) / CHUNK_WIDTH\n  ...\n  574  		}\n  575  \n  576: 		console.vertices += self.vertexBuffer.vertexCount\n  577  		self.clean = true\n  578  	}\n\n2 matches in 1 file\n\n\nSearching 37 files for \"Reset\"\n\n/home/iand/wip/amberfell/amberfell.go:\n  342  \n  343  func Draw(t int64) {\n  344: 	gVertexBuffer.Reset()\n  345  \n  346  	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT)\n\n/home/iand/wip/amberfell/inventory.go:\n  171  	gl.Rotatef(360*float32(math.Sin(float64(t)/1e10+float64(i))), 0.0, 0.0, 1.0)\n  172  	gl.Scalef(blocksize, blocksize, blocksize)\n  173: 	gVertexBuffer.Reset()\n  174  	TerrainCube(gVertexBuffer, 0, 0, 0, [6]uint16{0, 0, 0, 0, 0, 0}, byte(blockid), FACE_NONE)\n  175  	gVertexBuffer.RenderDirect()\n\n/home/iand/wip/amberfell/picker.go:\n   87  			gl.Rotatef(360*float32(math.Sin(float64(t)/1e10+float64(i))), 0.0, 0.0, 1.0)\n   88  			gl.Scalef(blockscale, blockscale, blockscale)\n   89: 			gVertexBuffer.Reset()\n   90  			TerrainCube(gVertexBuffer, 0, 0, 0, [6]uint16{0, 0, 0, 0, 0, 0}, byte(item), FACE_NONE)\n   91  			gVertexBuffer.RenderDirect()\n\n/home/iand/wip/amberfell/shapes.go:\n   53  }\n   54  \n   55: func (self *VertexBuffer) Reset() {\n   56  	self.vertexCount = 0\n   57  	self.indexCount = 0\n\n/home/iand/wip/amberfell/world.go:\n  435  	console.vertices = 0\n  436  \n  437: 	terrainBuffer.Reset()\n  438  \n  439  	pxmin, _, pzmin := chunkCoordsFromWorld(uint16(center[XAXIS]-float64(viewRadius)), uint16(center[YAXIS]), uint16(center[ZAXIS]-float64(viewRadius)))\n  ...\n  578  		t := Timer{}\n  579  		t.Start()\n  580: 		//self.vertexBuffer.Reset()\n  581  		var x, y, z uint16\n  582  		for x = 0; x < CHUNK_WIDTH; x++ {\n\n6 matches across 5 files\n\n\nSearching 39 files for \"cubecount\"\n\n/home/iand/wip/amberfell/console.go:\n   16  	fps       float64\n   17  	mem       runtime.MemStats\n   18: 	cubecount int\n   19  	vertices  int\n   20  	culledVertices  int\n   ..\n   53  \n   54  	gl.Translatef(float32(viewport.lplane)+margin, float32(viewport.bplane)+consoleHeight+margin-h, 0)\n   55: 	consoleFont.Print(fmt.Sprintf(\"FPS: %5.2f CC: %d V: %d (%d)\", self.fps, self.cubecount, self.vertices, self.culledVertices))\n   56  	gl.LoadIdentity()\n   57  	gl.Translatef(float32(viewport.lplane)+margin, float32(viewport.bplane)+consoleHeight+margin-2*h, 0)\n\n/home/iand/wip/amberfell/world.go:\n  563  \n  564  							TerrainCube(self.vertexBuffer, float32(xw), float32(yw), float32(zw), neighbours, blockid, selectedFace)\n  565: 							console.cubecount++\n  566  						}\n  567  					}\n\n3 matches across 2 files\n\n\nSearching 39 files for \"byte(\" (whole word)\n\n/home/iand/wip/amberfell/inventory.go:\n  192  	gl.Scalef(blocksize, blocksize, blocksize)\n  193  	gVertexBuffer.Reset()\n  194: 	TerrainCube(gVertexBuffer, 0, 0, 0, [6]uint16{0, 0, 0, 0, 0, 0}, byte(blockid), FACE_NONE)\n  195  	gVertexBuffer.RenderDirect(false)\n  196  \n\n/home/iand/wip/amberfell/picker.go:\n   87  			gl.Scalef(blockscale, blockscale, blockscale)\n   88  			gVertexBuffer.Reset()\n   89: 			TerrainCube(gVertexBuffer, 0, 0, 0, [6]uint16{0, 0, 0, 0, 0, 0}, byte(item), FACE_NONE)\n   90  			gVertexBuffer.RenderDirect(false)\n   91  \n\n/home/iand/wip/amberfell/player.go:\n  278  			}\n  279  			if TheWorld.Atv(selectedBlockFace.pos) == BLOCK_AIR {\n  280: 				TheWorld.Setv(selectedBlockFace.pos, byte(self.currentItem))\n  281  				self.inventory[self.currentItem]--\n  282  			}\n\n3 matches across 3 files\n\n\nSearching 39 files for \"byte(\" (whole word)\n\n/home/iand/wip/amberfell/inventory.go:\n  192  	gl.Scalef(blocksize, blocksize, blocksize)\n  193  	gVertexBuffer.Reset()\n  194: 	TerrainCube(gVertexBuffer, 0, 0, 0, [6]uint16{0, 0, 0, 0, 0, 0}, byte(blockid), FACE_NONE)\n  195  	gVertexBuffer.RenderDirect(false)\n  196  \n\n/home/iand/wip/amberfell/picker.go:\n   87  			gl.Scalef(blockscale, blockscale, blockscale)\n   88  			gVertexBuffer.Reset()\n   89: 			TerrainCube(gVertexBuffer, 0, 0, 0, [6]uint16{0, 0, 0, 0, 0, 0}, byte(item), FACE_NONE)\n   90  			gVertexBuffer.RenderDirect(false)\n   91  \n\n/home/iand/wip/amberfell/player.go:\n  278  			}\n  279  			if TheWorld.Atv(selectedBlockFace.pos) == BLOCK_AIR && self.currentItem < 256 {\n  280: 				TheWorld.Setv(selectedBlockFace.pos, byte(self.currentItem))\n  281  				self.inventory[self.currentItem]--\n  282  			}\n\n3 matches across 3 files\n\n\nSearching 39 files for \"byte(\" (whole word)\n\n/home/iand/wip/amberfell/inventory.go:\n  192  	gl.Scalef(blocksize, blocksize, blocksize)\n  193  	gVertexBuffer.Reset()\n  194: 	TerrainCube(gVertexBuffer, 0, 0, 0, [6]uint16{0, 0, 0, 0, 0, 0}, byte(blockid), FACE_NONE)\n  195  	gVertexBuffer.RenderDirect(false)\n  196  \n\n/home/iand/wip/amberfell/player.go:\n  278  			}\n  279  			if TheWorld.Atv(selectedBlockFace.pos) == BLOCK_AIR && self.currentItem < 256 {\n  280: 				TheWorld.Setv(selectedBlockFace.pos, byte(self.currentItem))\n  281  				self.inventory[self.currentItem]--\n  282  			}\n\n2 matches across 2 files\n",
 			"settings":
 			{
-				"buffer_size": 17338,
-				"line_ending": "Unix"
+				"buffer_size": 8207,
+				"line_ending": "Unix",
+				"name": "Find Results",
+				"scratch": true
 			}
 		},
 		{
 			"file": "viewport.go",
 			"settings":
 			{
-				"buffer_size": 5796,
+				"buffer_size": 9632,
 				"line_ending": "Unix"
 			}
 		},
@@ -131,7 +141,7 @@
 			"file": "picker.go",
 			"settings":
 			{
-				"buffer_size": 2787,
+				"buffer_size": 4135,
 				"line_ending": "Unix"
 			}
 		},
@@ -139,7 +149,7 @@
 			"file": "console.go",
 			"settings":
 			{
-				"buffer_size": 3289,
+				"buffer_size": 3546,
 				"line_ending": "Unix"
 			}
 		},
@@ -147,7 +157,15 @@
 			"file": "inventory.go",
 			"settings":
 			{
-				"buffer_size": 9047,
+				"buffer_size": 9727,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "pause.go",
+			"settings":
+			{
+				"buffer_size": 1538,
 				"line_ending": "Unix"
 			}
 		},
@@ -155,7 +173,15 @@
 			"file": "fonts.go",
 			"settings":
 			{
-				"buffer_size": 2806,
+				"buffer_size": 2968,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "world.go",
+			"settings":
+			{
+				"buffer_size": 20458,
 				"line_ending": "Unix"
 			}
 		}
@@ -188,6 +214,11 @@
 	},
 	"file_history":
 	[
+		"/home/iand/wip/tmp/image.go",
+		"/home/iand/gocode/src/github.com/iand/perlin/perlin.go",
+		"/home/iand/.config/sublime-text-2/Packages/GoSublime/CHANGELOG.md",
+		"/home/iand/wip/amberfell/world.go",
+		"/home/iand/wip/perlin/perlin.go",
 		"/home/iand/wip/amberfell/window.go",
 		"/home/iand/wip/amberfell/gameloop.go",
 		"/home/iand/web/talisians.com/www/conf/venus.ini",
@@ -210,7 +241,6 @@
 		"/home/iand/wip/amberfell/viewport.go",
 		"/home/iand/wip/amberfell/fonts.go",
 		"/home/iand/wip/amberfell/wolf.go",
-		"/home/iand/wip/amberfell/world.go",
 		"/home/iand/wip/amberfell/player.go",
 		"/home/iand/wip/amberfell/scene.go",
 		"/home/iand/wip/amberfell/vector_test.go",
@@ -311,15 +341,11 @@
 		"/home/iand/bin/craftbukkit/plugins/TempleCraft/config.yml",
 		"/home/iand/bin/craftbukkit/plugins/SecureChests/config.yml",
 		"/home/iand/bin/craftbukkit/plugins/EpicQuest/quests.yml",
-		"/home/iand/bin/craftbukkit/plugins/OtherDrops/includes/od-random_examples.yml",
-		"/home/iand/bin/craftbukkit/plugins/OtherDrops/includes/overhaul-catballs.yml",
-		"/home/iand/bin/craftbukkit/plugins/OtherDrops/includes/overhaul-zarius.yml",
-		"/home/iand/bin/craftbukkit/plugins/OtherDrops/includes/od-undead_chaos.yml",
-		"/home/iand/bin/craftbukkit/plugins/OtherDrops/includes/od-fix_undroppables.yml"
+		"/home/iand/bin/craftbukkit/plugins/OtherDrops/includes/od-random_examples.yml"
 	],
 	"find":
 	{
-		"height": 59.0
+		"height": 63.0
 	},
 	"find_in_files":
 	{
@@ -335,6 +361,46 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"byte(",
+			"render",
+			", octave",
+			"j",
+			"ticks",
+			"chunklo",
+			"update20000ms",
+			"CHUNK_WIDTH",
+			"generate",
+			"chunkFrom",
+			"render",
+			"cubecount",
+			"update",
+			"vertjces",
+			"i",
+			"ThePlayer",
+			"selectionR",
+			"action",
+			"HandleMouse",
+			"CHUNK_WIDTH",
+			"growtr",
+			"preci",
+			"intn",
+			"render",
+			"Reset",
+			"findsurf",
+			"chunkFrom",
+			"groundle",
+			"vertices",
+			"console.ver",
+			"render",
+			"groundl",
+			"growtre",
+			"genera",
+			"dir",
+			"MAP_RADIUS",
+			"getchun",
+			"height",
+			"getchun",
+			"neigh",
 			"TerrainBlock",
 			"Rect",
 			"inventoryModekeyLock",
@@ -422,47 +488,7 @@
 			"update",
 			"gl.LIGHT1",
 			"Equals",
-			"Vectori",
-			"TRUNK",
-			"CHUNK_WIDTH",
-			"TRUNK",
-			"currentAction",
-			"radius",
-			"&textures",
-			"MapTextures",
-			"currentTime",
-			"t",
-			"gl.Color",
-			"gl.Color4ub(96, 208, 96, 255)",
-			"Color",
-			"color",
-			"self.",
-			"'a'",
-			"SCREEN_SCALE",
-			"MapTextures",
-			"]",
-			"CreateRGB",
-			"screen",
-			"96, 208, 96, 64",
-			"64, 192, 64, 255",
-			"64, 192, 64, 64",
-			"DebugMode",
-			"64, 192, 192, 64",
-			"ThePlayer",
-			"w",
-			"p",
-			"world",
-			"select",
-			"transl",
-			"look",
-			"Vectori",
-			"feedback",
-			"Set(",
-			"matrixmo",
-			"Heading()",
-			"Heading",
-			"gl.Translate",
-			"%4.2f"
+			"Vectori"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -470,6 +496,14 @@
 		"regex": false,
 		"replace_history":
 		[
+			"",
+			"i",
+			"update2000ms",
+			"vertices",
+			"j",
+			"self",
+			"NOISE_SCALE",
+			"MAP_DIAM",
 			"Item",
 			"console",
 			"self",
@@ -545,13 +579,13 @@
 		"reverse": false,
 		"show_context": true,
 		"use_buffer2": true,
-		"whole_word": false,
+		"whole_word": true,
 		"wrap": true
 	},
 	"groups":
 	[
 		{
-			"selected": 5,
+			"selected": 0,
 			"sheets":
 			[
 				{
@@ -559,15 +593,15 @@
 					"file": "amberfell.go",
 					"settings":
 					{
-						"buffer_size": 10984,
+						"buffer_size": 13536,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								3187,
-								3187
+								732,
+								732
 							]
 						],
 						"settings":
@@ -576,7 +610,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 2145.0,
+						"translation.y": 53.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -586,15 +620,15 @@
 					"file": "player.go",
 					"settings":
 					{
-						"buffer_size": 10089,
+						"buffer_size": 11716,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1253,
-								1253
+								8896,
+								8896
 							]
 						],
 						"settings":
@@ -603,7 +637,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 420.0,
+						"translation.y": 3720.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -613,7 +647,7 @@
 					"file": "shapes.go",
 					"settings":
 					{
-						"buffer_size": 51878,
+						"buffer_size": 51813,
 						"regions":
 						{
 						},
@@ -637,6 +671,33 @@
 				},
 				{
 					"buffer": 3,
+					"file": "items.go",
+					"settings":
+					{
+						"buffer_size": 4334,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								3257,
+								3275
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 465.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 4,
 					"file": "mob.go",
 					"settings":
 					{
@@ -647,8 +708,8 @@
 						"selection":
 						[
 							[
-								0,
-								0
+								2781,
+								2801
 							]
 						],
 						"settings":
@@ -657,52 +718,25 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 4,
-					"file": "constants.go",
-					"settings":
-					{
-						"buffer_size": 2764,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								302,
-								316
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Go/Go.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 1440.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
 					"buffer": 5,
-					"file": "world.go",
+					"file": "constants.go",
 					"settings":
 					{
-						"buffer_size": 17338,
+						"buffer_size": 3273,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1662,
-								1662
+								1437,
+								1437
 							]
 						],
 						"settings":
@@ -711,25 +745,240 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 612.0,
+						"translation.y": 562.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
 					"buffer": 6,
+					"settings":
+					{
+						"buffer_size": 8207,
+						"regions":
+						{
+							"match":
+							{
+								"flags": 112,
+								"regions":
+								[
+									[
+										118,
+										128
+									],
+									[
+										306,
+										316
+									],
+									[
+										532,
+										542
+									],
+									[
+										545,
+										555
+									],
+									[
+										573,
+										583
+									],
+									[
+										586,
+										596
+									],
+									[
+										735,
+										745
+									],
+									[
+										748,
+										758
+									],
+									[
+										771,
+										781
+									],
+									[
+										784,
+										794
+									],
+									[
+										982,
+										992
+									],
+									[
+										1242,
+										1252
+									],
+									[
+										1493,
+										1503
+									],
+									[
+										1793,
+										1803
+									],
+									[
+										2019,
+										2029
+									],
+									[
+										2032,
+										2042
+									],
+									[
+										2060,
+										2070
+									],
+									[
+										2073,
+										2083
+									],
+									[
+										2222,
+										2232
+									],
+									[
+										2235,
+										2245
+									],
+									[
+										2258,
+										2268
+									],
+									[
+										2271,
+										2281
+									],
+									[
+										2469,
+										2479
+									],
+									[
+										2729,
+										2739
+									],
+									[
+										2980,
+										2990
+									],
+									[
+										3255,
+										3266
+									],
+									[
+										3368,
+										3379
+									],
+									[
+										3607,
+										3612
+									],
+									[
+										3905,
+										3910
+									],
+									[
+										4253,
+										4258
+									],
+									[
+										4485,
+										4490
+									],
+									[
+										4647,
+										4652
+									],
+									[
+										4896,
+										4901
+									],
+									[
+										5145,
+										5154
+									],
+									[
+										5415,
+										5424
+									],
+									[
+										5783,
+										5792
+									],
+									[
+										6090,
+										6095
+									],
+									[
+										6366,
+										6371
+									],
+									[
+										6602,
+										6607
+									],
+									[
+										6950,
+										6955
+									],
+									[
+										7226,
+										7231
+									],
+									[
+										7488,
+										7493
+									],
+									[
+										7836,
+										7841
+									],
+									[
+										8099,
+										8104
+									]
+								],
+								"scope": ""
+							}
+						},
+						"selection":
+						[
+							[
+								7179,
+								7179
+							]
+						],
+						"settings":
+						{
+							"detect_indentation": false,
+							"output_tag": 8,
+							"result_base_dir": "",
+							"result_file_regex": "^([A-Za-z\\\\/<].*):$",
+							"result_line_regex": "^ +([0-9]+):",
+							"scroll_past_end": true,
+							"syntax": "Packages/Default/Find Results.hidden-tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 3041.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 7,
 					"file": "viewport.go",
 					"settings":
 					{
-						"buffer_size": 5796,
+						"buffer_size": 9632,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								920,
-								920
+								2238,
+								2238
 							]
 						],
 						"settings":
@@ -738,13 +987,13 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 450.0,
+						"translation.y": 1262.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
-					"buffer": 7,
+					"buffer": 8,
 					"file": "geometry_test.go",
 					"settings":
 					{
@@ -771,7 +1020,7 @@
 					"type": "text"
 				},
 				{
-					"buffer": 8,
+					"buffer": 9,
 					"file": "functions_test.go",
 					"settings":
 					{
@@ -798,7 +1047,7 @@
 					"type": "text"
 				},
 				{
-					"buffer": 9,
+					"buffer": 10,
 					"file": "geometry.go",
 					"settings":
 					{
@@ -809,8 +1058,8 @@
 						"selection":
 						[
 							[
-								3759,
-								3759
+								1128,
+								1161
 							]
 						],
 						"settings":
@@ -819,13 +1068,13 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 1800.0,
+						"translation.y": 517.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
-					"buffer": 10,
+					"buffer": 11,
 					"file": "functions.go",
 					"settings":
 					{
@@ -836,8 +1085,8 @@
 						"selection":
 						[
 							[
-								0,
-								213
+								744,
+								744
 							]
 						],
 						"settings":
@@ -852,19 +1101,19 @@
 					"type": "text"
 				},
 				{
-					"buffer": 11,
+					"buffer": 12,
 					"file": "picker.go",
 					"settings":
 					{
-						"buffer_size": 2787,
+						"buffer_size": 4135,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2615,
-								2760
+								2547,
+								2547
 							]
 						],
 						"settings":
@@ -873,52 +1122,25 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 1058.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 12,
-					"file": "console.go",
-					"settings":
-					{
-						"buffer_size": 3289,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								2994,
-								3044
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Go/Go.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 1195.0,
+						"translation.y": 1104.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
 					"buffer": 13,
-					"file": "inventory.go",
+					"file": "console.go",
 					"settings":
 					{
-						"buffer_size": 9047,
+						"buffer_size": 3546,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								5720,
-								5720
+								1956,
+								1956
 							]
 						],
 						"settings":
@@ -927,25 +1149,25 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 3225.0,
+						"translation.y": 465.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
 					"buffer": 14,
-					"file": "fonts.go",
+					"file": "inventory.go",
 					"settings":
 					{
-						"buffer_size": 2806,
+						"buffer_size": 9727,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2806,
-								2806
+								0,
+								0
 							]
 						],
 						"settings":
@@ -954,7 +1176,88 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 878.0,
+						"translation.y": 11.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 15,
+					"file": "pause.go",
+					"settings":
+					{
+						"buffer_size": 1538,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 225.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 16,
+					"file": "fonts.go",
+					"settings":
+					{
+						"buffer_size": 2968,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 17,
+					"file": "world.go",
+					"settings":
+					{
+						"buffer_size": 20458,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								5317,
+								5317
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 3308.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -968,7 +1271,7 @@
 	},
 	"input":
 	{
-		"height": 30.0
+		"height": 31.0
 	},
 	"layout":
 	{
@@ -995,7 +1298,7 @@
 	"menu_visible": true,
 	"output.exec":
 	{
-		"height": 189.0
+		"height": 187.0
 	},
 	"replace":
 	{
