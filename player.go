@@ -35,7 +35,7 @@ func (self *Player) Init(heading float64, x uint16, z uint16) {
 	self.position[XAXIS] = float64(x)
 	self.position[YAXIS] = float64(TheWorld.FindSurface(x, z))
 	self.position[ZAXIS] = float64(z)
-	self.walkingSpeed = 20
+	self.walkingSpeed = 14
 	self.currentAction = ACTION_HAND
 	self.currentItem = ITEM_NONE
 
@@ -49,9 +49,9 @@ func (self *Player) Init(heading float64, x uint16, z uint16) {
 
 }
 
-func (self *Player) W() float64 { return 0.8 }
-func (self *Player) H() float64 { return 2.0 }
-func (self *Player) D() float64 { return 0.6 }
+func (self *Player) W() float64 { return 2*0.25 + 2*0.75*0.25 } // torso width + 2 arm widths
+func (self *Player) H() float64 { return 8*0.25 + 0.25 }        // body+hat 
+func (self *Player) D() float64 { return 0.25 }                 // torso depth
 
 func (self *Player) Act(dt float64) {
 	// noop
@@ -59,6 +59,7 @@ func (self *Player) Act(dt float64) {
 
 func (player *Player) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 
+	pos := Vectorf{player.position[XAXIS], player.position[YAXIS], player.position[ZAXIS]}
 	gl.PushMatrix()
 
 	gl.Translatef(float32(player.position[XAXIS]), float32(player.position[YAXIS]), float32(player.position[ZAXIS]))
@@ -67,6 +68,7 @@ func (player *Player) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 
 	// Translate to top of ground block
 	gl.Translatef(0.0, -0.5, 0.0)
+	pos[YAXIS] += -0.5
 
 	// From http://www.realcolorwheel.com/human.htm
 	headHeight := float64(0.25)
@@ -89,58 +91,79 @@ func (player *Player) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 
 	var legAngle, torsoAngle, leftArmAngle, rightArmAngle, step float64
 
-	if player.velocity[YAXIS] != 0 {
-		legAngle = 20
-		leftArmAngle = 120
-		rightArmAngle = 120
-	} else {
-		legAngle = 40 * (math.Abs(player.velocity[XAXIS]) + math.Abs(player.velocity[ZAXIS])) / player.walkingSpeed * math.Sin(player.walkSequence)
-		torsoAngle = -math.Abs(legAngle / 6)
-		leftArmAngle = -legAngle * 1.2
-		rightArmAngle = legAngle * 1.2
-		step = headHeight * 0.1 * math.Pow(math.Sin(player.walkSequence), 2)
-	}
+	// if player.velocity[YAXIS] != 0 {
+	// 	legAngle = 20
+	// 	leftArmAngle = 120
+	// 	rightArmAngle = 120
+	// } else {
+	legAngle = 40 * (math.Abs(player.velocity[XAXIS]) + math.Abs(player.velocity[ZAXIS])) / player.walkingSpeed * math.Sin(player.walkSequence)
+	torsoAngle = -math.Abs(legAngle / 6)
+	leftArmAngle = -legAngle * 1.2
+	rightArmAngle = legAngle * 1.2
+	step = headHeight * 0.1 * math.Pow(math.Sin(player.walkSequence), 2)
+	// }
 
 	gl.Translated(0.0, step, 0)
+	pos[YAXIS] += step
 
 	// Translate to top of leg
 	gl.Translated(0.0, legHeight, 0)
+	pos[YAXIS] += legHeight
 
 	// Translate to centre of leg
 	gl.Rotated(legAngle, 0.0, 0.0, 1.0)
 	gl.Translated(0.0, -legHeight/2, (legWidth+0.25*headHeight)/2)
-	Cuboid(legWidth, legHeight, legDepth, textures[TEXTURE_LEG], textures[TEXTURE_LEG], textures[TEXTURE_LEG_SIDE], textures[TEXTURE_LEG_SIDE], textures[32], textures[32], FACE_NONE)
+	pos[YAXIS] += -legHeight / 2
+	pos[ZAXIS] += (legWidth + 0.25*headHeight) / 2
+	Cuboid(pos, legWidth, legHeight, legDepth, textures[TEXTURE_LEG], textures[TEXTURE_LEG], textures[TEXTURE_LEG_SIDE], textures[TEXTURE_LEG_SIDE], textures[32], textures[32], FACE_NONE)
 	gl.Translated(0.0, legHeight/2, -(legWidth+0.25*headHeight)/2)
+	pos[YAXIS] += legHeight / 2
+	pos[ZAXIS] += -(legWidth + 0.25*headHeight) / 2
 	gl.Rotated(-legAngle, 0.0, 0.0, 1.0)
 
 	gl.Rotated(-legAngle, 0.0, 0.0, 1.0)
 	gl.Translated(0.0, -legHeight/2, -(legWidth+0.25*headHeight)/2)
-	Cuboid(legWidth, legHeight, legDepth, textures[TEXTURE_LEG], textures[TEXTURE_LEG], textures[TEXTURE_LEG_SIDE], textures[TEXTURE_LEG_SIDE], textures[32], textures[32], FACE_NONE)
+	pos[YAXIS] += -legHeight / 2
+	pos[ZAXIS] += -(legWidth + 0.25*headHeight) / 2
+	Cuboid(pos, legWidth, legHeight, legDepth, textures[TEXTURE_LEG], textures[TEXTURE_LEG], textures[TEXTURE_LEG_SIDE], textures[TEXTURE_LEG_SIDE], textures[32], textures[32], FACE_NONE)
 	gl.Translated(0.0, legHeight/2, (legWidth+0.25*headHeight)/2)
+	pos[YAXIS] += legHeight / 2
+	pos[ZAXIS] += (legWidth + 0.25*headHeight) / 2
 	gl.Rotated(+legAngle, 0.0, 0.0, 1.0)
 
 	gl.Rotated(torsoAngle, 0.0, 0.0, 1.0)
 	// Translate to centre of torso
 	gl.Translated(0.0, torsoHeight/2, 0.0)
-	Cuboid(torsoWidth, torsoHeight, torsoDepth, textures[TEXTURE_TORSO_FRONT], textures[TEXTURE_TORSO_BACK], textures[TEXTURE_TORSO_LEFT], textures[TEXTURE_TORSO_RIGHT], textures[TEXTURE_TORSO_TOP], textures[TEXTURE_TORSO_TOP], FACE_NONE)
+	pos[YAXIS] += torsoHeight / 2
+	Cuboid(pos, torsoWidth, torsoHeight, torsoDepth, textures[TEXTURE_TORSO_FRONT], textures[TEXTURE_TORSO_BACK], textures[TEXTURE_TORSO_LEFT], textures[TEXTURE_TORSO_RIGHT], textures[TEXTURE_TORSO_TOP], textures[TEXTURE_TORSO_TOP], FACE_NONE)
 
 	// Translate to shoulders
 	gl.Translated(0.0, torsoHeight/2, 0.0)
+	pos[YAXIS] += torsoHeight / 2
 
 	gl.Rotated(leftArmAngle, 0.0, 0.0, 1.0)
 	gl.Translated(0.0, -armHeight/2, torsoWidth/2+armWidth/2)
-	Cuboid(armWidth, armHeight, armDepth, textures[TEXTURE_ARM], textures[TEXTURE_ARM], textures[TEXTURE_ARM], textures[TEXTURE_ARM], textures[TEXTURE_ARM_TOP], textures[TEXTURE_HAND], FACE_NONE)
+	pos[YAXIS] += -armHeight / 2
+	pos[ZAXIS] += torsoWidth/2 + armWidth/2
+	Cuboid(pos, armWidth, armHeight, armDepth, textures[TEXTURE_ARM], textures[TEXTURE_ARM], textures[TEXTURE_ARM], textures[TEXTURE_ARM], textures[TEXTURE_ARM_TOP], textures[TEXTURE_HAND], FACE_NONE)
 	gl.Translated(0.0, armHeight/2, -torsoWidth/2-armWidth/2)
+	pos[YAXIS] += armHeight / 2
+	pos[ZAXIS] += -torsoWidth/2 + armWidth/2
 	gl.Rotated(-leftArmAngle, 0.0, 0.0, 1.0)
 
 	gl.Rotated(rightArmAngle, 0.0, 0.0, 1.0)
 	gl.Translated(0.0, -armHeight/2, -torsoWidth/2-armWidth/2)
-	Cuboid(armWidth, armHeight, armDepth, textures[TEXTURE_ARM], textures[TEXTURE_ARM], textures[TEXTURE_ARM], textures[TEXTURE_ARM], textures[TEXTURE_ARM_TOP], textures[TEXTURE_HAND], FACE_NONE)
+	pos[YAXIS] += -armHeight / 2
+	pos[ZAXIS] += -torsoWidth/2 + armWidth/2
+	Cuboid(pos, armWidth, armHeight, armDepth, textures[TEXTURE_ARM], textures[TEXTURE_ARM], textures[TEXTURE_ARM], textures[TEXTURE_ARM], textures[TEXTURE_ARM_TOP], textures[TEXTURE_HAND], FACE_NONE)
 	gl.Translated(0.0, armHeight/2, torsoWidth/2+armWidth/2)
+	pos[YAXIS] += armHeight / 2
+	pos[ZAXIS] += torsoWidth/2 + armWidth/2
 	gl.Rotated(-rightArmAngle, 0.0, 0.0, 1.0)
 
 	// Translate to centre of head
 	gl.Translated(0.0, neckHeight+headHeight/2, 0.0)
+	pos[YAXIS] += neckHeight + headHeight/2
 
 	if selectedBlockFace != nil {
 		blockPos := selectedBlockFace.pos.Vectorf()
@@ -157,14 +180,16 @@ func (player *Player) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 		}
 	}
 
-	Cuboid(headHeight, headHeight, headHeight, textures[TEXTURE_HEAD_FRONT], textures[TEXTURE_HEAD_BACK], textures[TEXTURE_HEAD_LEFT], textures[TEXTURE_HEAD_RIGHT], nil, textures[TEXTURE_HEAD_BOTTOM], FACE_NONE)
+	Cuboid(pos, headHeight, headHeight, headHeight, textures[TEXTURE_HEAD_FRONT], textures[TEXTURE_HEAD_BACK], textures[TEXTURE_HEAD_LEFT], textures[TEXTURE_HEAD_RIGHT], nil, textures[TEXTURE_HEAD_BOTTOM], FACE_NONE)
 
 	// Translate to hat brim
 	gl.Translated(0.0, headHeight/2+brimHeight/2, 0.0)
-	Cuboid(brimWidth, brimHeight, brimDepth, textures[TEXTURE_BRIM], textures[TEXTURE_BRIM], textures[TEXTURE_BRIM], textures[TEXTURE_BRIM], textures[TEXTURE_BRIM], textures[TEXTURE_BRIM], FACE_NONE)
+	pos[YAXIS] += headHeight/2 + brimHeight/2
+	Cuboid(pos, brimWidth, brimHeight, brimDepth, textures[TEXTURE_BRIM], textures[TEXTURE_BRIM], textures[TEXTURE_BRIM], textures[TEXTURE_BRIM], textures[TEXTURE_BRIM], textures[TEXTURE_BRIM], FACE_NONE)
 
 	gl.Translated(0.0, brimHeight/2+hatHeight/2, 0.0)
-	Cuboid(hatHeight, hatHeight, hatHeight, textures[TEXTURE_HAT_FRONT], textures[TEXTURE_HAT_BACK], textures[TEXTURE_HAT_LEFT], textures[TEXTURE_HAT_RIGHT], textures[TEXTURE_HAT_TOP], nil, FACE_NONE)
+	pos[YAXIS] += headHeight/2 + brimHeight/2
+	Cuboid(pos, hatHeight, hatHeight, hatHeight, textures[TEXTURE_HAT_FRONT], textures[TEXTURE_HAT_BACK], textures[TEXTURE_HAT_LEFT], textures[TEXTURE_HAT_RIGHT], textures[TEXTURE_HAT_TOP], nil, FACE_NONE)
 
 	gl.PopMatrix()
 }
@@ -172,9 +197,9 @@ func (player *Player) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 func (self *Player) HandleKeys(keys []uint8) {
 
 	if keys[sdl.K_w] != 0 {
-		if !self.IsFalling() {
-			self.velocity[XAXIS] = math.Cos(self.Heading()*math.Pi/180) * self.walkingSpeed
-			self.velocity[ZAXIS] = -math.Sin(self.Heading()*math.Pi/180) * self.walkingSpeed
+		if self.IsFalling() {
+			// self.velocity[XAXIS] = math.Cos(self.Heading()*math.Pi/180) * self.walkingSpeed
+			// self.velocity[ZAXIS] = -math.Sin(self.Heading()*math.Pi/180) * self.walkingSpeed
 		} else {
 			self.velocity[XAXIS] = math.Cos(self.Heading()*math.Pi/180) * self.walkingSpeed
 			self.velocity[ZAXIS] = -math.Sin(self.Heading()*math.Pi/180) * self.walkingSpeed
@@ -182,9 +207,9 @@ func (self *Player) HandleKeys(keys []uint8) {
 
 	}
 	if keys[sdl.K_s] != 0 {
-		if !self.IsFalling() {
-			self.velocity[XAXIS] = -math.Cos(self.Heading()*math.Pi/180) * self.walkingSpeed / 2
-			self.velocity[ZAXIS] = math.Sin(self.Heading()*math.Pi/180) * self.walkingSpeed / 2
+		if self.IsFalling() {
+			// self.velocity[XAXIS] = -math.Cos(self.Heading()*math.Pi/180) * self.walkingSpeed / 2
+			// self.velocity[ZAXIS] = math.Sin(self.Heading()*math.Pi/180) * self.walkingSpeed / 2
 		} else {
 			self.velocity[XAXIS] = -math.Cos(self.Heading()*math.Pi/180) * self.walkingSpeed / 2
 			self.velocity[ZAXIS] = math.Sin(self.Heading()*math.Pi/180) * self.walkingSpeed / 2
@@ -193,22 +218,22 @@ func (self *Player) HandleKeys(keys []uint8) {
 	}
 
 	if keys[sdl.K_q] != 0 {
-		if !self.IsFalling() {
-			self.velocity[XAXIS] = math.Cos((self.Heading()+90)*math.Pi/180) * self.walkingSpeed
-			self.velocity[ZAXIS] = -math.Sin((self.Heading()+90)*math.Pi/180) * self.walkingSpeed
-		} else {
+		if self.IsFalling() {
 			self.velocity[XAXIS] = math.Cos((self.Heading()+90)*math.Pi/180) * self.walkingSpeed / 3
 			self.velocity[ZAXIS] = -math.Sin((self.Heading()+90)*math.Pi/180) * self.walkingSpeed / 3
+		} else {
+			self.velocity[XAXIS] = math.Cos((self.Heading()+90)*math.Pi/180) * self.walkingSpeed
+			self.velocity[ZAXIS] = -math.Sin((self.Heading()+90)*math.Pi/180) * self.walkingSpeed
 		}
 
 	}
 	if keys[sdl.K_e] != 0 {
-		if !self.IsFalling() {
-			self.velocity[XAXIS] = -math.Cos((self.Heading()+90)*math.Pi/180) * self.walkingSpeed / 2
-			self.velocity[ZAXIS] = math.Sin((self.Heading()+90)*math.Pi/180) * self.walkingSpeed / 2
-		} else {
+		if self.IsFalling() {
 			self.velocity[XAXIS] = -math.Cos((self.Heading()+90)*math.Pi/180) * self.walkingSpeed / 6
 			self.velocity[ZAXIS] = math.Sin((self.Heading()+90)*math.Pi/180) * self.walkingSpeed / 6
+		} else {
+			self.velocity[XAXIS] = -math.Cos((self.Heading()+90)*math.Pi/180) * self.walkingSpeed / 2
+			self.velocity[ZAXIS] = math.Sin((self.Heading()+90)*math.Pi/180) * self.walkingSpeed / 2
 		}
 
 	}

@@ -93,6 +93,7 @@ const (
 	TEXTURE_LEAVES_TOP   = 20
 	TEXTURE_LOG_WALL     = 21
 	TEXTURE_LOG_WALL_TOP = 5
+	TEXTURE_FIRE         = 4
 
 	TEXTURE_COAL          = 7
 	TEXTURE_COPPER        = 8

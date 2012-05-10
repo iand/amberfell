@@ -73,7 +73,7 @@ func (self *World) GroundLevel(x uint16, z uint16) uint16 {
 		noise = -1.0
 	}
 	if noise < 0 {
-		noise /= 10
+		noise /= 15
 	}
 
 	ground := uint16((CHUNK_HEIGHT/2)*(noise+0.1)/1.1 + CHUNK_HEIGHT/3.0)
@@ -81,7 +81,7 @@ func (self *World) GroundLevel(x uint16, z uint16) uint16 {
 }
 
 func (self *World) SoilThickness(x uint16, z uint16) uint16 {
-	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(NOISE_SCALE), float64(z-MAP_DIAM)/(NOISE_SCALE), worldSeed, 1.8, 1.6, 8)
+	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(2*NOISE_SCALE), float64(z-MAP_DIAM)/(2*NOISE_SCALE), worldSeed, 1.8, 1.6, 8)
 	if noise > 1.0 {
 		noise = 1.0
 	}
@@ -470,17 +470,13 @@ func (self *World) ApplyForces(mob Mob, dt float64) {
 	// Gravity
 	if mob.IsFalling() {
 		// println("is falling")
-		mob.Setvx(mob.Velocity()[XAXIS] / 1.001)
-		mob.Setvy(mob.Velocity()[YAXIS] - 15*dt)
-		mob.Setvz(mob.Velocity()[ZAXIS] / 1.001)
+		mob.Setvx(mob.Velocity()[XAXIS] / (1.0 + 2*dt))
+		mob.Setvy(mob.Velocity()[YAXIS] - 18*dt)
+		mob.Setvz(mob.Velocity()[ZAXIS] / (1.0 + 2*dt))
 	} else {
-		mob.Setvx(mob.Velocity()[XAXIS] / 1.2)
-		//mob.Setvy(0)
-		mob.Setvz(mob.Velocity()[ZAXIS] / 1.2)
+		mob.Setvx(mob.Velocity()[XAXIS] / (1.0 + 12*dt))
+		mob.Setvz(mob.Velocity()[ZAXIS] / (1.0 + 12*dt))
 	}
-
-	// var dx, dz, dy int16
-	// var x,  z int16
 
 	playerRect := Rect{x: float64(mp[XAXIS]) + mob.Velocity()[XAXIS]*dt, y: float64(mp[ZAXIS]) + mob.Velocity()[ZAXIS]*dt, sizex: mob.W(), sizey: mob.D()}
 

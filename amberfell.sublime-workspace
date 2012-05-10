@@ -43,7 +43,7 @@
 			"file": "amberfell.go",
 			"settings":
 			{
-				"buffer_size": 13536,
+				"buffer_size": 14030,
 				"line_ending": "Unix"
 			}
 		},
@@ -51,7 +51,7 @@
 			"file": "player.go",
 			"settings":
 			{
-				"buffer_size": 11716,
+				"buffer_size": 12608,
 				"line_ending": "Unix"
 			}
 		},
@@ -59,7 +59,7 @@
 			"file": "shapes.go",
 			"settings":
 			{
-				"buffer_size": 51813,
+				"buffer_size": 52655,
 				"line_ending": "Unix"
 			}
 		},
@@ -67,7 +67,7 @@
 			"file": "items.go",
 			"settings":
 			{
-				"buffer_size": 4334,
+				"buffer_size": 4598,
 				"line_ending": "Unix"
 			}
 		},
@@ -83,7 +83,7 @@
 			"file": "constants.go",
 			"settings":
 			{
-				"buffer_size": 3273,
+				"buffer_size": 3960,
 				"line_ending": "Unix"
 			}
 		},
@@ -101,7 +101,7 @@
 			"file": "viewport.go",
 			"settings":
 			{
-				"buffer_size": 9632,
+				"buffer_size": 9625,
 				"line_ending": "Unix"
 			}
 		},
@@ -181,7 +181,7 @@
 			"file": "world.go",
 			"settings":
 			{
-				"buffer_size": 20458,
+				"buffer_size": 20585,
 				"line_ending": "Unix"
 			}
 		}
@@ -349,7 +349,7 @@
 	},
 	"find_in_files":
 	{
-		"height": 88.0,
+		"height": 0.0,
 		"where_history":
 		[
 			"-amberfell",
@@ -585,7 +585,7 @@
 	"groups":
 	[
 		{
-			"selected": 0,
+			"selected": 1,
 			"sheets":
 			[
 				{
@@ -593,15 +593,15 @@
 					"file": "amberfell.go",
 					"settings":
 					{
-						"buffer_size": 13536,
+						"buffer_size": 14030,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								732,
-								732
+								13760,
+								13760
 							]
 						],
 						"settings":
@@ -610,7 +610,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 53.0,
+						"translation.y": 7594.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -620,34 +620,7 @@
 					"file": "player.go",
 					"settings":
 					{
-						"buffer_size": 11716,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								8896,
-								8896
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Go/Go.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 3720.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 2,
-					"file": "shapes.go",
-					"settings":
-					{
-						"buffer_size": 51813,
+						"buffer_size": 12608,
 						"regions":
 						{
 						},
@@ -670,19 +643,19 @@
 					"type": "text"
 				},
 				{
-					"buffer": 3,
-					"file": "items.go",
+					"buffer": 2,
+					"file": "shapes.go",
 					"settings":
 					{
-						"buffer_size": 4334,
+						"buffer_size": 52655,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								3257,
-								3275
+								1787,
+								1787
 							]
 						],
 						"settings":
@@ -691,6 +664,33 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
+						"translation.y": 713.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "items.go",
+					"settings":
+					{
+						"buffer_size": 4598,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								3727,
+								3727
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 1040.0,
 						"translation.y": 465.0,
 						"zoom_level": 1.0
 					},
@@ -708,8 +708,8 @@
 						"selection":
 						[
 							[
-								2781,
-								2801
+								1414,
+								1414
 							]
 						],
 						"settings":
@@ -718,7 +718,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 1440.0,
+						"translation.y": 367.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -728,15 +728,15 @@
 					"file": "constants.go",
 					"settings":
 					{
-						"buffer_size": 3273,
+						"buffer_size": 3960,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1437,
-								1437
+								978,
+								978
 							]
 						],
 						"settings":
@@ -745,7 +745,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 562.0,
+						"translation.y": 480.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -970,15 +970,15 @@
 					"file": "viewport.go",
 					"settings":
 					{
-						"buffer_size": 9632,
+						"buffer_size": 9625,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2238,
-								2238
+								0,
+								0
 							]
 						],
 						"settings":
@@ -1058,8 +1058,8 @@
 						"selection":
 						[
 							[
-								1128,
-								1161
+								1407,
+								1416
 							]
 						],
 						"settings":
@@ -1068,7 +1068,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 517.0,
+						"translation.y": 982.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -1240,15 +1240,15 @@
 					"file": "world.go",
 					"settings":
 					{
-						"buffer_size": 20458,
+						"buffer_size": 20585,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								5317,
-								5317
+								12270,
+								12270
 							]
 						],
 						"settings":
@@ -1257,7 +1257,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 3308.0,
+						"translation.y": 7260.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"

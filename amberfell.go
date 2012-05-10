@@ -29,7 +29,7 @@ var (
 	ThePlayer  *Player
 	viewport   Viewport
 
-	timeOfDay float32 = 21
+	timeOfDay float32 = 9
 
 	worldSeed = int64(16)
 	treeLine  = uint16(math.Trunc(5.0 * float64(CHUNK_HEIGHT/6.0)))
@@ -40,6 +40,7 @@ var (
 	pauseFont         *Font
 	textures          map[uint16]*gl.Texture = make(map[uint16]*gl.Texture)
 	terrainTexture    *gl.Texture
+	itemsTexture      *gl.Texture
 	gVertexBuffer     *VertexBuffer
 	terrainBuffer     *VertexBuffer
 
@@ -142,7 +143,7 @@ func initGame() {
 	gl.Hint(gl.PERSPECTIVE_CORRECTION_HINT, gl.FASTEST)
 
 	gl.Enable(gl.TEXTURE_2D)
-	LoadMapTextures()
+	//	LoadMapTextures()
 	LoadPlayerTextures()
 	InitItems()
 
@@ -152,10 +153,11 @@ func initGame() {
 
 	textures[TEXTURE_PICKER] = loadTexture("res/dial.png")
 	terrainTexture = loadTexture("tiles.png")
+	itemsTexture = loadTexture("res/items.png")
 
 	gVertexBuffer = NewVertexBuffer(10000, terrainTexture)
 
-	WolfModel = LoadModel("res/wolf.mm3d")
+	//WolfModel = LoadModel("res/wolf.mm3d")
 
 	TheWorld = new(World)
 	TheWorld.Init()
@@ -322,41 +324,6 @@ func gameLoop() {
 				}
 			}
 
-			// Load some chunks around where the player is headed
-			center := ThePlayer.Position()
-			px, _, pz := chunkCoordsFromWorld(uint16(center[XAXIS]), uint16(center[YAXIS]), uint16(center[ZAXIS]))
-
-			d := 0
-			r := uint16(viewRadius / CHUNK_WIDTH)
-			rmax := r + 1
-			startTicks := time.Now().UnixNano()
-			for time.Now().UnixNano()-startTicks < 20*1e6 && r < rmax {
-				switch d {
-				case 0:
-					TheWorld.GetChunk(px+r, 0, pz)
-				case 1:
-					TheWorld.GetChunk(px+r, 0, pz+r)
-				case 2:
-					TheWorld.GetChunk(px+r, 0, pz-r)
-				case 3:
-					TheWorld.GetChunk(px-r, 0, pz)
-				case 4:
-					TheWorld.GetChunk(px-r, 0, pz+r)
-				case 5:
-					TheWorld.GetChunk(px-r, 0, pz-r)
-				case 6:
-					TheWorld.GetChunk(px, 0, pz+r)
-				case 7:
-					TheWorld.GetChunk(px, 0, pz-r)
-
-				}
-				d++
-				if d > 7 {
-					d = 0
-					r++
-				}
-			}
-
 			update150ms.Start()
 		}
 
@@ -366,6 +333,7 @@ func gameLoop() {
 
 			UpdateTimeOfDay()
 			UpdateCampfires()
+			PreloadChunks(200)
 
 			drawFrame, computeFrame = 0, 0
 			update500ms.Start()
@@ -373,23 +341,8 @@ func gameLoop() {
 		}
 
 		if update2000ms.PassedInterval() {
-			center := ThePlayer.Position()
-			pxmin, _, pzmin := chunkCoordsFromWorld(uint16(center[XAXIS]-float64(viewRadius)), uint16(center[YAXIS]), uint16(center[ZAXIS]-float64(viewRadius)))
-			pxmax, _, pzmax := chunkCoordsFromWorld(uint16(center[XAXIS]+float64(viewRadius)), uint16(center[YAXIS]), uint16(center[ZAXIS]+float64(viewRadius)))
-
-			// Cull chunks more than 10 chunks away from view radius
-			for chunkIndex, chunk := range TheWorld.chunks {
-				if chunk.x > pxmax+6 || chunk.x < pxmin-6 || chunk.z > pzmax+6 || chunk.z < pzmin-6 {
-					delete(TheWorld.chunks, chunkIndex)
-				}
-			}
-
-			// Update player stats
-			distanceFromStart := uint16(math.Sqrt(math.Pow(center[XAXIS]-float64(PLAYER_START_X), 2) + math.Pow(center[ZAXIS]-float64(PLAYER_START_Z), 2)))
-			if distanceFromStart > ThePlayer.distanceFromStart {
-				ThePlayer.distanceFromStart = distanceFromStart
-			}
-
+			CullChunks()
+			UpdatePlayerStats()
 			update2000ms.Start()
 		}
 
@@ -539,4 +492,58 @@ func UpdateCampfires() {
 			}
 		}
 	}
+}
+
+func PreloadChunks(maxtime int64) {
+
+	if !ThePlayer.IsMoving() {
+		// Load some chunks around where the player is headed
+		norm := ThePlayer.Normal()
+		center := ThePlayer.Position()
+		px, _, pz := chunkCoordsFromWorld(uint16(center[XAXIS]), uint16(center[YAXIS]), uint16(center[ZAXIS]))
+
+		d := 0
+		r := uint16(viewRadius/CHUNK_WIDTH) + 1
+		rmax := r + 4
+		startTicks := time.Now().UnixNano()
+		for time.Now().UnixNano()-startTicks < maxtime*1e6 && r < rmax {
+			switch d {
+			case 0:
+				TheWorld.GetChunk(uint16(float64(px)+float64(r)*norm[XAXIS]), 0, pz).PreRender(nil)
+			case 1:
+				TheWorld.GetChunk(px, 0, uint16(float64(pz)+float64(r)*norm[ZAXIS])).PreRender(nil)
+			case 2:
+				TheWorld.GetChunk(uint16(float64(px)+float64(r)*norm[XAXIS]), 0, uint16(float64(pz)+float64(r)*norm[ZAXIS])).PreRender(nil)
+
+			}
+			d++
+			if d > 2 {
+				d = 0
+				r++
+			}
+		}
+	}
+}
+func CullChunks() {
+	center := ThePlayer.Position()
+	pxmin, _, pzmin := chunkCoordsFromWorld(uint16(center[XAXIS]-float64(viewRadius)), uint16(center[YAXIS]), uint16(center[ZAXIS]-float64(viewRadius)))
+	pxmax, _, pzmax := chunkCoordsFromWorld(uint16(center[XAXIS]+float64(viewRadius)), uint16(center[YAXIS]), uint16(center[ZAXIS]+float64(viewRadius)))
+
+	// Cull chunks more than 10 chunks away from view radius
+	for chunkIndex, chunk := range TheWorld.chunks {
+		if chunk.x > pxmax+6 || chunk.x < pxmin-6 || chunk.z > pzmax+6 || chunk.z < pzmin-6 {
+			delete(TheWorld.chunks, chunkIndex)
+		}
+	}
+
+}
+
+func UpdatePlayerStats() {
+	center := ThePlayer.Position()
+	// Update player stats
+	distanceFromStart := uint16(math.Sqrt(math.Pow(center[XAXIS]-float64(PLAYER_START_X), 2) + math.Pow(center[ZAXIS]-float64(PLAYER_START_Z), 2)))
+	if distanceFromStart > ThePlayer.distanceFromStart {
+		ThePlayer.distanceFromStart = distanceFromStart
+	}
+
 }

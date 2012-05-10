@@ -47,7 +47,7 @@ func (self *Viewport) Reshape(width int, height int) {
 	println("self.lplane:", self.lplane, "self.rplane", self.rplane)
 	gl.MatrixMode(gl.PROJECTION)
 	gl.LoadIdentity()
-	gl.Ortho(self.lplane, self.rplane, self.bplane, self.tplane, -40, 40)
+	gl.Ortho(self.lplane, self.rplane, self.bplane, self.tplane, -60, 60)
 
 	gl.MatrixMode(gl.MODELVIEW)
 	gl.LoadIdentity()

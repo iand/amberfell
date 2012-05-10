@@ -29,6 +29,9 @@ func (self *MobData) Position() Vectorf { return self.position }
 
 func (self *MobData) SetFalling(b bool) { self.falling = b }
 func (self *MobData) IsFalling() bool   { return self.falling }
+func (self *MobData) IsMoving() bool {
+	return self.velocity[XAXIS] != 0 || self.velocity[YAXIS] != 0 || self.velocity[ZAXIS] != 0
+}
 
 func (self *MobData) Rotate(angle float64) {
 	self.heading += angle
