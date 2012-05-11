@@ -43,7 +43,7 @@
 			"file": "amberfell.go",
 			"settings":
 			{
-				"buffer_size": 14030,
+				"buffer_size": 14248,
 				"line_ending": "Unix"
 			}
 		},
@@ -51,7 +51,7 @@
 			"file": "player.go",
 			"settings":
 			{
-				"buffer_size": 12608,
+				"buffer_size": 13646,
 				"line_ending": "Unix"
 			}
 		},
@@ -59,7 +59,7 @@
 			"file": "shapes.go",
 			"settings":
 			{
-				"buffer_size": 52655,
+				"buffer_size": 56280,
 				"line_ending": "Unix"
 			}
 		},
@@ -67,7 +67,7 @@
 			"file": "items.go",
 			"settings":
 			{
-				"buffer_size": 4598,
+				"buffer_size": 3713,
 				"line_ending": "Unix"
 			}
 		},
@@ -75,7 +75,7 @@
 			"file": "mob.go",
 			"settings":
 			{
-				"buffer_size": 3625,
+				"buffer_size": 3749,
 				"line_ending": "Unix"
 			}
 		},
@@ -83,7 +83,7 @@
 			"file": "constants.go",
 			"settings":
 			{
-				"buffer_size": 3960,
+				"buffer_size": 3922,
 				"line_ending": "Unix"
 			}
 		},
@@ -181,7 +181,7 @@
 			"file": "world.go",
 			"settings":
 			{
-				"buffer_size": 20585,
+				"buffer_size": 20573,
 				"line_ending": "Unix"
 			}
 		}
@@ -361,6 +361,15 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"ren",
+			"slabcross",
+			"block.textures[UP_FACE]",
+			"block.textures[DOWN_FACE]",
+			"block.textures[SOUTH_FACE]",
+			"block.textures[NORTH_FACE]",
+			"block.textures[WEST_FACE]",
+			"block.textures[EAST_FACE]",
+			"textures[",
 			"byte(",
 			"render",
 			", octave",
@@ -479,16 +488,7 @@
 			"-ppp",
 			"ppp",
 			"slabline",
-			"1",
-			"Slab",
-			"AirNeighbour",
-			"AirNeighbours",
-			"tesselate",
-			"fps",
-			"update",
-			"gl.LIGHT1",
-			"Equals",
-			"Vectori"
+			"1"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -496,6 +496,8 @@
 		"regex": false,
 		"replace_history":
 		[
+			"block.texture2",
+			"block.texture1",
 			"",
 			"i",
 			"update2000ms",
@@ -579,13 +581,13 @@
 		"reverse": false,
 		"show_context": true,
 		"use_buffer2": true,
-		"whole_word": true,
+		"whole_word": false,
 		"wrap": true
 	},
 	"groups":
 	[
 		{
-			"selected": 1,
+			"selected": 2,
 			"sheets":
 			[
 				{
@@ -593,15 +595,15 @@
 					"file": "amberfell.go",
 					"settings":
 					{
-						"buffer_size": 14030,
+						"buffer_size": 14248,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								13760,
-								13760
+								1953,
+								1953
 							]
 						],
 						"settings":
@@ -610,7 +612,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 7594.0,
+						"translation.y": 1395.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -620,15 +622,15 @@
 					"file": "player.go",
 					"settings":
 					{
-						"buffer_size": 12608,
+						"buffer_size": 13646,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								5006,
+								5006
 							]
 						],
 						"settings":
@@ -637,7 +639,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 1976.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -647,15 +649,15 @@
 					"file": "shapes.go",
 					"settings":
 					{
-						"buffer_size": 52655,
+						"buffer_size": 56280,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1787,
-								1787
+								6534,
+								6534
 							]
 						],
 						"settings":
@@ -663,8 +665,8 @@
 							"syntax": "Packages/Go/Go.tmLanguage",
 							"translate_tabs_to_spaces": false
 						},
-						"translation.x": 0.0,
-						"translation.y": 713.0,
+						"translation.x": 396.0,
+						"translation.y": 1916.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -674,15 +676,15 @@
 					"file": "items.go",
 					"settings":
 					{
-						"buffer_size": 4598,
+						"buffer_size": 3713,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								3727,
-								3727
+								2868,
+								2868
 							]
 						],
 						"settings":
@@ -690,8 +692,8 @@
 							"syntax": "Packages/Go/Go.tmLanguage",
 							"translate_tabs_to_spaces": false
 						},
-						"translation.x": 1040.0,
-						"translation.y": 465.0,
+						"translation.x": 0.0,
+						"translation.y": 533.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -701,15 +703,15 @@
 					"file": "mob.go",
 					"settings":
 					{
-						"buffer_size": 3625,
+						"buffer_size": 3749,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1414,
-								1414
+								973,
+								973
 							]
 						],
 						"settings":
@@ -717,8 +719,8 @@
 							"syntax": "Packages/Go/Go.tmLanguage",
 							"translate_tabs_to_spaces": false
 						},
-						"translation.x": 0.0,
-						"translation.y": 367.0,
+						"translation.x": 71.0,
+						"translation.y": 8.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -728,15 +730,15 @@
 					"file": "constants.go",
 					"settings":
 					{
-						"buffer_size": 3960,
+						"buffer_size": 3922,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								978,
-								978
+								2092,
+								2104
 							]
 						],
 						"settings":
@@ -745,7 +747,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 480.0,
+						"translation.y": 1102.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -977,8 +979,8 @@
 						"selection":
 						[
 							[
-								0,
-								0
+								1307,
+								1307
 							]
 						],
 						"settings":
@@ -987,7 +989,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 1262.0,
+						"translation.y": 701.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -1112,8 +1114,8 @@
 						"selection":
 						[
 							[
-								2547,
-								2547
+								2668,
+								2011
 							]
 						],
 						"settings":
@@ -1166,8 +1168,8 @@
 						"selection":
 						[
 							[
-								0,
-								0
+								1659,
+								1659
 							]
 						],
 						"settings":
@@ -1176,7 +1178,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 11.0,
+						"translation.y": 930.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -1240,15 +1242,15 @@
 					"file": "world.go",
 					"settings":
 					{
-						"buffer_size": 20585,
+						"buffer_size": 20573,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								12270,
-								12270
+								1738,
+								1738
 							]
 						],
 						"settings":
@@ -1257,7 +1259,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 7260.0,
+						"translation.y": 938.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"

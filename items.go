@@ -87,4 +87,9 @@ var handmadeRecipes = []Recipe{
 		components: []ItemQuantity{
 			ItemQuantity{BLOCK_LOG_SLAB, 1},
 		}},
+
+	Recipe{product: ItemQuantity{BLOCK_CAMPFIRE, 1},
+		components: []ItemQuantity{
+			ItemQuantity{ITEM_FIREWOOD, 3},
+		}},
 }

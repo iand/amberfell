@@ -39,6 +39,8 @@ const (
 	CAMPFIRE_INTENSITY = 6
 	MAX_LIGHT_LEVEL    = 12
 
+	CAMPFIRE_DURATION = 1
+
 	FACE_NONE  = 6 // 
 	EAST_FACE  = 0 // +ve x
 	WEST_FACE  = 1 // -ve x

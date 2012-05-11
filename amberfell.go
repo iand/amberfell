@@ -6,6 +6,7 @@
 package main
 
 import (
+	"container/list"
 	"flag"
 	"fmt"
 	"github.com/banthar/Go-SDL/sdl"
@@ -47,8 +48,8 @@ var (
 	items map[uint16]Item
 
 	// World elements
-	lightSources []*LightSource = make([]*LightSource, 20)
-	campfires    []*CampFire    = make([]*CampFire, 20)
+	lightSources = list.New()
+	campfires    = list.New()
 
 	// HUD elements
 	blockscale float32 = 0.4 // The scale at which to render blocks in the HUD
@@ -166,6 +167,7 @@ func initGame() {
 	ThePlayer.Init(0, PLAYER_START_X, PLAYER_START_Z)
 
 	viewport.Reshape(int(screen.W), int(screen.H))
+	PreloadChunks(1000)
 
 }
 
@@ -333,7 +335,7 @@ func gameLoop() {
 
 			UpdateTimeOfDay()
 			UpdateCampfires()
-			PreloadChunks(200)
+			PreloadChunks(120)
 
 			drawFrame, computeFrame = 0, 0
 			update500ms.Start()
@@ -414,7 +416,7 @@ func Draw(t int64) {
 	gl.Materialfv(gl.FRONT, gl.SPECULAR, []float32{0.1, 0.1, 0.1, 1})
 	gl.Materialfv(gl.FRONT, gl.SHININESS, []float32{0.0, 0.0, 0.0, 1})
 	var daylightIntensity float32 = 0.45
-	var nighttimeIntensity float32 = 0.01
+	var nighttimeIntensity float32 = 0.15
 	if timeOfDay < 5 || timeOfDay > 21 {
 		gl.LightModelfv(gl.LIGHT_MODEL_AMBIENT, []float32{0.2, 0.2, 0.2, 1})
 		daylightIntensity = 0.01
@@ -434,20 +436,20 @@ func Draw(t int64) {
 	gl.Lightfv(gl.LIGHT0, gl.SPECULAR, []float32{daylightIntensity, daylightIntensity, daylightIntensity, 1})
 
 	// Torch
-	ambient := float32(0.6)
-	specular := float32(0.6)
-	diffuse := float32(1)
+	// ambient := float32(0.6)
+	// specular := float32(0.6)
+	// diffuse := float32(1)
 
-	gl.Lightfv(gl.LIGHT1, gl.POSITION, []float32{float32(ThePlayer.position[XAXIS]), float32(ThePlayer.position[YAXIS] + 1), float32(ThePlayer.position[ZAXIS]), 1})
-	gl.Lightfv(gl.LIGHT1, gl.AMBIENT, []float32{ambient, ambient, ambient, 1})
-	gl.Lightfv(gl.LIGHT1, gl.SPECULAR, []float32{specular, specular, specular, 1})
-	gl.Lightfv(gl.LIGHT1, gl.DIFFUSE, []float32{diffuse, diffuse, diffuse, 1})
-	gl.Lightf(gl.LIGHT1, gl.CONSTANT_ATTENUATION, 1.5)
-	gl.Lightf(gl.LIGHT1, gl.LINEAR_ATTENUATION, 0.5)
-	gl.Lightf(gl.LIGHT1, gl.QUADRATIC_ATTENUATION, 0.01)
-	gl.Lightf(gl.LIGHT1, gl.SPOT_CUTOFF, 35)
-	gl.Lightf(gl.LIGHT1, gl.SPOT_EXPONENT, 2.0)
-	gl.Lightfv(gl.LIGHT1, gl.SPOT_DIRECTION, []float32{float32(math.Cos(ThePlayer.Heading() * math.Pi / 180)), float32(-0.7), -float32(math.Sin(ThePlayer.Heading() * math.Pi / 180))})
+	// gl.Lightfv(gl.LIGHT1, gl.POSITION, []float32{float32(ThePlayer.position[XAXIS]), float32(ThePlayer.position[YAXIS] + 1), float32(ThePlayer.position[ZAXIS]), 1})
+	// gl.Lightfv(gl.LIGHT1, gl.AMBIENT, []float32{ambient, ambient, ambient, 1})
+	// gl.Lightfv(gl.LIGHT1, gl.SPECULAR, []float32{specular, specular, specular, 1})
+	// gl.Lightfv(gl.LIGHT1, gl.DIFFUSE, []float32{diffuse, diffuse, diffuse, 1})
+	// gl.Lightf(gl.LIGHT1, gl.CONSTANT_ATTENUATION, 1.5)
+	// gl.Lightf(gl.LIGHT1, gl.LINEAR_ATTENUATION, 0.5)
+	// gl.Lightf(gl.LIGHT1, gl.QUADRATIC_ATTENUATION, 0.01)
+	// gl.Lightf(gl.LIGHT1, gl.SPOT_CUTOFF, 35)
+	// gl.Lightf(gl.LIGHT1, gl.SPOT_EXPONENT, 2.0)
+	// gl.Lightfv(gl.LIGHT1, gl.SPOT_DIRECTION, []float32{float32(math.Cos(ThePlayer.Heading() * math.Pi / 180)), float32(-0.7), -float32(math.Sin(ThePlayer.Heading() * math.Pi / 180))})
 
 	gl.RenderMode(gl.RENDER)
 
@@ -483,46 +485,66 @@ func UpdateTimeOfDay() {
 
 func UpdateCampfires() {
 	// Age any campfires
-	for i := 0; i < len(campfires); i++ {
-		if campfires[i] != nil {
-			campfires[i].life -= 0.02
-			if campfires[i].life <= 0 {
-				lightSources[campfires[i].lightSourceIndex] = nil
-				campfires[i] = nil
-			}
+
+	for e := campfires.Front(); e != nil; e = e.Next() {
+		campfire := e.Value.(*CampFire)
+		campfire.life -= 0.02
+		if campfire.life <= 0 {
+			lightSource := campfire.lightSourceElem.Value.(*LightSource)
+			pos := IntPosition(lightSource.pos)
+			TheWorld.Setv(pos, BLOCK_AIR)
+			TheWorld.InvalidateRadius(pos[XAXIS], pos[ZAXIS], CAMPFIRE_INTENSITY)
+
+			lightSources.Remove(campfire.lightSourceElem)
+			campfires.Remove(e)
 		}
 	}
 }
 
 func PreloadChunks(maxtime int64) {
+	startTicks := time.Now().UnixNano()
+	center := ThePlayer.Position()
+	// pxmin, _, pzmin := chunkCoordsFromWorld(uint16(center[XAXIS]-float64(viewRadius)), uint16(center[YAXIS]), uint16(center[ZAXIS]-float64(viewRadius)))
+	// pxmax, _, pzmax := chunkCoordsFromWorld(uint16(center[XAXIS]+float64(viewRadius)), uint16(center[YAXIS]), uint16(center[ZAXIS]+float64(viewRadius)))
 
-	if !ThePlayer.IsMoving() {
-		// Load some chunks around where the player is headed
-		norm := ThePlayer.Normal()
-		center := ThePlayer.Position()
-		px, _, pz := chunkCoordsFromWorld(uint16(center[XAXIS]), uint16(center[YAXIS]), uint16(center[ZAXIS]))
+	// for px := pxmin; px <= pxmax; px++ {
+	// 	for pz := pzmin; pz <= pzmax; pz++ {
+	// 		TheWorld.GetChunk(px, 0, pz).PreRender(nil)
+	// 		if time.Now().UnixNano()-startTicks > maxtime*1e6 {
+	// 			return
+	// 		}
 
-		d := 0
-		r := uint16(viewRadius/CHUNK_WIDTH) + 1
-		rmax := r + 4
-		startTicks := time.Now().UnixNano()
-		for time.Now().UnixNano()-startTicks < maxtime*1e6 && r < rmax {
-			switch d {
-			case 0:
-				TheWorld.GetChunk(uint16(float64(px)+float64(r)*norm[XAXIS]), 0, pz).PreRender(nil)
-			case 1:
-				TheWorld.GetChunk(px, 0, uint16(float64(pz)+float64(r)*norm[ZAXIS])).PreRender(nil)
-			case 2:
-				TheWorld.GetChunk(uint16(float64(px)+float64(r)*norm[XAXIS]), 0, uint16(float64(pz)+float64(r)*norm[ZAXIS])).PreRender(nil)
+	// 	}
+	// }
 
-			}
-			d++
-			if d > 2 {
-				d = 0
+	//if !ThePlayer.IsMoving() {
+	// Load some chunks around where the player is headed
+	// center := ThePlayer.Position()
+	px, _, pz := chunkCoordsFromWorld(uint16(center[XAXIS]), uint16(center[YAXIS]), uint16(center[ZAXIS]))
+
+	r := 1
+	rmax := int(viewRadius/CHUNK_WIDTH) + 2
+
+	x := -r
+	z := -r
+
+	for time.Now().UnixNano()-startTicks < maxtime*1e6 && r < rmax {
+		TheWorld.GetChunk(uint16(int(px)+x), 0, uint16(int(pz)+z)).PreRender(nil)
+		TheWorld.GetChunk(uint16(int(px)-x), 0, uint16(int(pz)-z)).PreRender(nil)
+		if z == r {
+			if x == r {
 				r++
+				x = -r
+				z = -r
+			} else {
+				x++
 			}
+		} else {
+			z++
 		}
+
 	}
+	//}
 }
 func CullChunks() {
 	center := ThePlayer.Position()

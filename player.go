@@ -251,7 +251,7 @@ func (self *Player) HandleKeys(keys []uint8) {
 
 	if keys[sdl.K_SPACE] != 0 {
 		if !self.IsFalling() {
-			self.velocity[YAXIS] = 4
+			self.velocity[YAXIS] = 9
 		}
 	}
 
@@ -312,30 +312,13 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 					// Add a light source
 
 					light := LightSource{Vectorf{float64(selectedBlockFace.pos[XAXIS]), float64(selectedBlockFace.pos[YAXIS]), float64(selectedBlockFace.pos[ZAXIS])}, CAMPFIRE_INTENSITY}
-					campfire := CampFire{0, 10}
-					for i := 0; i < len(lightSources); i++ {
-						if lightSources[i] == nil {
-							lightSources[i] = &light
-							campfire.lightSourceIndex = i
-							break
-						}
-					}
-					if campfire.lightSourceIndex == 0 {
-						lightSources = append(lightSources, &light)
-						campfire.lightSourceIndex = len(lightSources) - 1
-					}
+					lightElem := lightSources.PushBack(&light)
 
-					added := false
-					for i := 0; i < len(campfires); i++ {
-						if campfires[i] == nil {
-							campfires[i] = &campfire
-							added = true
-							break
-						}
-					}
-					if !added {
-						campfires = append(campfires, &campfire)
-					}
+					campfire := CampFire{lightElem, CAMPFIRE_DURATION}
+					campfires.PushBack(&campfire)
+
+					TheWorld.InvalidateRadius(selectedBlockFace.pos[XAXIS], selectedBlockFace.pos[ZAXIS], uint16(CAMPFIRE_INTENSITY))
+
 				}
 
 				TheWorld.Setv(selectedBlockFace.pos, blockid)

@@ -1606,14 +1606,14 @@ func Pile(vertexBuffer *VertexBuffer, x float32, y float32, z float32, orient by
 func LightLevel(pos Vectorf, normal [3]float32) [4]float32 {
 	n64 := Vectorf{float64(normal[0]), float64(normal[1]), float64(normal[2])}
 	lightLevel := 0
-	for _, lightSource := range lightSources {
-		if lightSource != nil {
-			distance := uint16(pos.Minus(lightSource.pos).Magnitude())
-			dir := lightSource.pos.Minus(pos)
-			if distance < 2 || dir.Dot(n64) > 0 {
-				if distance <= lightSource.intensity {
-					lightLevel += int(lightSource.intensity - distance)
-				}
+
+	for e := lightSources.Front(); e != nil; e = e.Next() {
+		lightSource := e.Value.(*LightSource)
+		distance := uint16(pos.Minus(lightSource.pos).Magnitude())
+		dir := lightSource.pos.Minus(pos)
+		if distance < 2 || dir.Dot(n64) > 0 {
+			if distance <= lightSource.intensity {
+				lightLevel += int(lightSource.intensity - distance)
 			}
 		}
 	}
