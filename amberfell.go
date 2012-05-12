@@ -258,12 +258,12 @@ func gameLoop() {
 				}
 
 				if re.Keysym.Sym == sdl.K_F3 && re.Type == sdl.KEYDOWN {
-					console.visible = ! console.visible
+					console.visible = !console.visible
 				}
 
 				if !pause.visible {
 					if re.Keysym.Sym == sdl.K_i && re.Type == sdl.KEYDOWN {
-						inventory.visible = ! inventory.visible
+						inventory.visible = !inventory.visible
 					}
 
 					if inventory.visible {

@@ -493,7 +493,7 @@ func (self *World) InvalidateRadius(x uint16, z uint16, r uint16) {
 		}
 	}
 
-	for i, _ := range chunks {
+	for i := range chunks {
 		chunk, ok := self.chunks[i]
 		if ok {
 			chunk.clean = false
