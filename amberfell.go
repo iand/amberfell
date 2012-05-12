@@ -242,42 +242,28 @@ func gameLoop() {
 			case *sdl.KeyboardEvent:
 				re := e.(*sdl.KeyboardEvent)
 
-				if re.Keysym.Sym == sdl.K_ESCAPE {
-					if re.Type == sdl.KEYDOWN {
-						inventory.visible = false
-						if pause.visible {
-							pause.visible = false
-							update2000ms.Unpause()
-							update500ms.Unpause()
-							update150ms.Unpause()
-						} else {
-							pause.visible = true
-							update2000ms.Pause()
-							update500ms.Pause()
-							update150ms.Pause()
-						}
+				if re.Keysym.Sym == sdl.K_ESCAPE && re.Type == sdl.KEYDOWN {
+					inventory.visible = false
+					if pause.visible {
+						pause.visible = false
+						update2000ms.Unpause()
+						update500ms.Unpause()
+						update150ms.Unpause()
+					} else {
+						pause.visible = true
+						update2000ms.Pause()
+						update500ms.Pause()
+						update150ms.Pause()
 					}
 				}
 
-				if re.Keysym.Sym == sdl.K_F3 {
-					if re.Type == sdl.KEYDOWN {
-						if console.visible == true {
-							console.visible = false
-						} else {
-							console.visible = true
-						}
-					}
+				if re.Keysym.Sym == sdl.K_F3 && re.Type == sdl.KEYDOWN {
+					console.visible = ! console.visible
 				}
 
 				if !pause.visible {
-					if re.Keysym.Sym == sdl.K_i {
-						if re.Type == sdl.KEYDOWN {
-							if inventory.visible == true {
-								inventory.visible = false
-							} else {
-								inventory.visible = true
-							}
-						}
+					if re.Keysym.Sym == sdl.K_i && re.Type == sdl.KEYDOWN {
+						inventory.visible = ! inventory.visible
 					}
 
 					if inventory.visible {
@@ -308,8 +294,7 @@ func gameLoop() {
 			if !inventory.visible {
 				// If player is breaking a block then allow them to hold mouse down to continue action
 				if interactingBlock != nil && ThePlayer.currentAction == ACTION_BREAK {
-					mouseState := sdl.GetMouseState(nil, nil)
-					if mouseState == 1 {
+					if mouseState := sdl.GetMouseState(nil, nil); mouseState == 1 {
 						if ThePlayer.CanInteract() {
 							selectedBlockFace := viewport.SelectedBlockFace()
 							if selectedBlockFace != nil {
