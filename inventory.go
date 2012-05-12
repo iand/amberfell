@@ -326,7 +326,7 @@ func (self *Inventory) HandleMouse(mousex int, mousey int, mousestate uint8) {
 	}
 
 	if itemid == 0 {
-		
+
 		if hit, pos := picker.HitTest(x, y); hit && pos > 2 {
 			itemid = uint16(pos) - 3
 		}
