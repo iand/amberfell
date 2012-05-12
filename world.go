@@ -16,8 +16,9 @@ import (
 )
 
 type World struct {
-	mobs   []Mob
-	chunks map[uint64]*Chunk
+	mobs      []Mob
+	chunks    map[uint64]*Chunk
+	amberfell map[uint64][2]uint16
 }
 
 type Chunk struct {
@@ -85,11 +86,12 @@ func blockIndex(x uint16, y uint16, z uint16) uint16 {
 func (self *World) Init() {
 
 	self.chunks = make(map[uint64]*Chunk)
+	self.amberfell = make(map[uint64][2]uint16)
 
 	xc, yc, zc := chunkCoordsFromWorld(PLAYER_START_X, self.GroundLevel(PLAYER_START_X, PLAYER_START_Z), PLAYER_START_Z)
 
+	self.GenerateAmberfell()
 	self.GenerateChunk(xc, yc, zc)
-
 	// wolf := new(Wolf)
 	// wolf.Init(200, 25, 19, float32(self.FindSurface(25, 19)))
 	// self.mobs = append(self.mobs, wolf)
@@ -98,6 +100,9 @@ func (self *World) Init() {
 
 func (self *World) GroundLevel(x uint16, z uint16) uint16 {
 	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(4*NOISE_SCALE), float64(z-MAP_DIAM)/(4*NOISE_SCALE), worldSeed, 1.4, 1.2, 4)
+	if noise > 0.85 {
+		noise = noise + (1.0-noise)*0.5
+	}
 	if noise > 1.0 {
 		noise = 1.0
 	}
@@ -107,7 +112,6 @@ func (self *World) GroundLevel(x uint16, z uint16) uint16 {
 	if noise < 0 {
 		noise /= 15
 	}
-
 	ground := uint16((CHUNK_HEIGHT/2)*(noise+0.1)/1.1 + CHUNK_HEIGHT/3.0)
 	return ground
 }
@@ -165,7 +169,7 @@ func (self *World) Iron(x uint16, z uint16) uint16 {
 	if noise > 1.0 {
 		noise = 1.0
 	}
-	if noise < 0.59 {
+	if noise < 0.56 {
 		noise = 0
 	}
 
@@ -175,11 +179,11 @@ func (self *World) Iron(x uint16, z uint16) uint16 {
 }
 
 func (self *World) Copper(x uint16, z uint16) uint16 {
-	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(NOISE_SCALE/2.5), float64(z-MAP_DIAM)/(NOISE_SCALE/2.5), worldSeed, 3.1, 2.6, 6)
+	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(NOISE_SCALE/2.5), float64(z-MAP_DIAM)/(NOISE_SCALE/2.5), worldSeed, 3.1, 2.0, 6)
 	if noise > 1.0 {
 		noise = 1.0
 	}
-	if noise < 0.57 {
+	if noise < 0.54 {
 		noise = 0
 	}
 
@@ -188,19 +192,37 @@ func (self *World) Copper(x uint16, z uint16) uint16 {
 	return uint16(noise)
 }
 
-// func (self *World) Feature1(x uint16, z uint16) float64 {
-// 	return perlin.Noise2D(float64(x-MAP_DIAM)/(30*NOISE_SCALE), float64(z-MAP_DIAM)/(90*NOISE_SCALE), worldSeed, 0.99, 10)
-// }
+func (self *World) Feature1(x uint16, z uint16) float64 {
+	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(NOISE_SCALE/4), float64(z-MAP_DIAM)/(NOISE_SCALE/4), worldSeed, 6, 8, 14)
+	if noise > 1.0 {
+		noise = 1.0
+	}
+	if noise < -1.0 {
+		noise = -1.0
+	}
+	return noise
+}
 
-// func (self *World) Feature2(x uint16, z uint16) float64 {
-// 	return perlin.Noise2D(float64(x-MAP_DIAM)/(90*NOISE_SCALE), float64(z-MAP_DIAM)/(30*NOISE_SCALE), worldSeed, 0.99, 10)
-// }
+func (self *World) Feature2(x uint16, z uint16) float64 {
+	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(NOISE_SCALE/4), float64(z-MAP_DIAM)/(NOISE_SCALE/4), worldSeed, 3, 5, 7)
+	if noise > 1.0 {
+		noise = 1.0
+	}
+	if noise < -1.0 {
+		noise = -1.0
+	}
+	return noise
+}
 
 func (self *World) GenerateChunk(cx uint16, cy uint16, cz uint16) *Chunk {
 	startTicks := time.Now().UnixNano()
 	var chunk Chunk
 	chunk.Init(cx, cy, cz)
-	self.chunks[chunkIndex(cx, cy, cz)] = &chunk
+	index := chunkIndex(cx, cy, cz)
+
+	self.chunks[index] = &chunk
+
+	amberfellCoords, hasAmberfell := self.amberfell[index]
 
 	xw := cx * CHUNK_WIDTH
 	zw := cz * CHUNK_WIDTH
@@ -210,10 +232,6 @@ func (self *World) GenerateChunk(cx uint16, cy uint16, cz uint16) *Chunk {
 		for z := uint16(0); z < CHUNK_WIDTH; z++ {
 			ground := self.GroundLevel(x+xw, z+zw)
 			soil := ground + uint16(float64(self.SoilThickness(x+xw, z+zw))*(1-((float64(ground)-CHUNK_HEIGHT/2)/(2*CHUNK_HEIGHT))))
-
-			if console.nosoil {
-				soil = 0
-			}
 
 			rocks := ground // + self.Rocks(x+xw, z+zw)
 
@@ -227,58 +245,73 @@ func (self *World) GenerateChunk(cx uint16, cy uint16, cz uint16) *Chunk {
 				upper = soil
 			}
 
-			for y := uint16(0); y < upper; y++ {
-				if y >= rocks && y <= soil {
-					chunk.Set(x, y, z, BLOCK_DIRT)
-				} else {
-					chunk.Set(x, y, z, BLOCK_STONE)
+			if hasAmberfell && amberfellCoords[0] == x && amberfellCoords[1] == z {
+				for y := uint16(0); y < upper; y++ {
+					chunk.Set(x, y, z, BLOCK_AMBERFELL)
+				}
+			} else {
+				for y := uint16(0); y < upper; y++ {
+					if y >= rocks && y <= soil {
+						chunk.Set(x, y, z, BLOCK_DIRT)
+					} else {
+						chunk.Set(x, y, z, BLOCK_STONE)
+					}
+
+				}
+				coal := self.Coal(x+xw, z+zw)
+				surface := upper
+				if coal < 3 {
+					surface--
+				}
+				for y := surface; y > surface-coal && y > 0; y-- {
+					chunk.Set(x, y, z, BLOCK_COAL)
+				}
+				if coal > 0 {
+					chunk.standingStoneProb += 0.000001
+				}
+
+				iron := self.Iron(x+xw, z+zw)
+				surface = upper
+				if iron < 3 {
+					surface--
+				}
+				for y := surface; y > surface-iron && y > 0; y-- {
+					chunk.Set(x, y, z, BLOCK_IRON)
+				}
+				if iron > 0 {
+					chunk.standingStoneProb += 0.00001
+				}
+
+				copper := self.Copper(x+xw, z+zw)
+				surface = upper - 1
+				if copper < 3 {
+					surface--
+				}
+				for y := surface; y > surface-copper && y > 0; y-- {
+					chunk.Set(x, y, z, BLOCK_COPPER)
+				}
+				if copper > 0 {
+					chunk.standingStoneProb += 0.00001
+				}
+
+				// Burn the grass around an amberfell source
+				if hasAmberfell && chunk.At(x, upper-1, z) == BLOCK_DIRT {
+					dist := (amberfellCoords[0]-x)*(amberfellCoords[0]-x) + (amberfellCoords[1]-z)*(amberfellCoords[1]-z)
+					if dist <= 4 {
+						chunk.Set(x, upper-1, z, BLOCK_BURNT_GRASS)
+					}
 				}
 
 			}
-
-			coal := self.Coal(x+xw, z+zw)
-			surface := upper - 1
-			if coal < 3 {
-				surface--
-			}
-			for y := surface; y > surface-coal && y > 0; y-- {
-				chunk.Set(x, y, z, BLOCK_COAL)
-			}
-			if coal > 0 {
-				chunk.standingStoneProb += 0.000001
-			}
-
-			iron := self.Iron(x+xw, z+zw)
-			surface = upper - 1
-			if iron < 3 {
-				surface--
-			}
-			for y := surface; y > surface-iron && y > 0; y-- {
-				chunk.Set(x, y, z, BLOCK_IRON)
-			}
-			if iron > 0 {
-				chunk.standingStoneProb += 0.00001
-			}
-
-			copper := self.Copper(x+xw, z+zw)
-			surface = upper - 1
-			if copper < 3 {
-				surface--
-			}
-			for y := surface; y > surface-copper && y > 0; y-- {
-				chunk.Set(x, y, z, BLOCK_COPPER)
-			}
-			if copper > 0 {
-				chunk.standingStoneProb += 0.00001
-			}
-
 		}
 	}
 
 	self.GenerateChunkFeatures(&chunk)
 
 	console.chunkGenerationTime = time.Now().UnixNano() - startTicks
-	println("Generating chunk at x:", cx, " y:", cy, " z:", cz, " in ", console.chunkGenerationTime/1e6)
+	if console.visible {
+		println("Generating chunk at x:", cx, " y:", cy, " z:", cz, " in ", console.chunkGenerationTime/1e6)
+	}
 	return &chunk
 
 }
@@ -327,34 +360,60 @@ func (self *World) GenerateChunkFeatures(chunk *Chunk) {
 
 					}
 				} else {
-					// feature1 := self.Feature1(x, z)
-					// feature2 := self.Feature2(x, z)
+					feature1 := self.Feature1(x, z)
+					feature2 := self.Feature2(x, z)
 
-					// if feature1 > 0.8 && feature2 > 0.8 {
-					// 	// 	self.Set(x, y, z, BLOCK_STONE)
-					// 	// 	self.Set(x, y+1, z, BLOCK_STONE)
-					// 	// 	self.Set(x, y+2, z, BLOCK_STONE)
-					// 	// 	self.Set(x, y+3, z, BLOCK_STONE)
-					// 	// 	self.Set(x, y+4, z, BLOCK_STONE)
-					// 	// 	self.Set(x, y+5, z, BLOCK_STONE)
-					// 	// 	self.Set(x, y+6, z, BLOCK_STONE)
-					// 	// } else if feature1 > 0.7 && feature2 > 0.7 {
-					// 	// 	self.Set(x, y, z, BLOCK_STONE)
-					// 	// 	self.Set(x, y+1, z, BLOCK_STONE)
-					// 	// 	self.Set(x, y+2, z, BLOCK_STONE)
-					// 	// 	self.Set(x, y+3, z, BLOCK_STONE)
-					// 	// 	self.Set(x, y+4, z, BLOCK_STONE)
-					// 	// } else if feature1 > 0.6 && feature2 > 0.6 {
-					// 	// 	self.Set(x, y, z, BLOCK_STONE)
-					// 	// 	self.Set(x, y+1, z, BLOCK_STONE)
-					// 	// 	self.Set(x, y+2, z, BLOCK_STONE)
-					// }
+					if feature1 > 0.8 && feature2 > 0.8 {
+						self.Set(x, y, z, BLOCK_LEAVES)
+						self.Set(x, y+1, z, BLOCK_LEAVES)
+						self.Set(x, y+2, z, BLOCK_LEAVES)
+						self.Set(x, y+3, z, BLOCK_LEAVES)
+						self.Set(x, y+4, z, BLOCK_LEAVES)
+						self.Set(x, y+5, z, BLOCK_LEAVES)
+						self.Set(x, y+6, z, BLOCK_LEAVES)
+					} else if feature1 > 0.7 && feature2 > 0.7 {
+						self.Set(x, y, z, BLOCK_LEAVES)
+						self.Set(x, y+1, z, BLOCK_LEAVES)
+						self.Set(x, y+2, z, BLOCK_LEAVES)
+						self.Set(x, y+3, z, BLOCK_LEAVES)
+						self.Set(x, y+4, z, BLOCK_LEAVES)
+					} else if feature1 > 0.6 && feature2 > 0.6 {
+						self.Set(x, y, z, BLOCK_STONE)
+						self.Set(x, y+1, z, BLOCK_LEAVES)
+						self.Set(x, y+2, z, BLOCK_LEAVES)
+					}
 				}
 			}
 		}
 
 		chunk.featuresLoaded = true
 	}
+}
+
+func (self *World) GenerateAmberfell() {
+	for x := uint16(0); x < MAP_DIAM; x += 256 {
+		for z := uint16(0); z < MAP_DIAM; z += 256 {
+			pos := uint16(rand.Float64() * 256 * 256)
+
+			xw := x + pos%256
+			zw := z + pos/256
+
+			if xw > PLAYER_START_X-250 && xw < PLAYER_START_X+250 &&
+				zw > PLAYER_START_Z-250 && zw < PLAYER_START_Z+250 {
+
+				println("Amberfell: ", xw, zw)
+			}
+
+			index := chunkIndexFromWorld(xw, 0, zw)
+			cx, _, cz := chunkCoordsFromindex(index)
+
+			xo := xw - cx*CHUNK_WIDTH
+			zo := zw - cz*CHUNK_WIDTH
+			self.amberfell[index] = [2]uint16{xo, zo}
+
+		}
+	}
+
 }
 
 func (self *World) FindSurface(x uint16, z uint16) uint16 {
@@ -474,7 +533,7 @@ func (self *World) Grow(x uint16, y uint16, z uint16, n int, s int, w int, e int
 	}
 }
 
-func (self *World) HasVisibleFaces(neighbours [6]uint16) bool {
+func (self *World) HasVisibleFaces(neighbours [18]uint16) bool {
 
 	switch neighbours[WEST_FACE] {
 	case BLOCK_AIR, BLOCK_LOG_WALL, BLOCK_LOG_SLAB:
@@ -504,51 +563,47 @@ func (self *World) HasVisibleFaces(neighbours [6]uint16) bool {
 	return false
 }
 
+func (self *World) ApproxBlockAt(x uint16, y uint16, z uint16) uint16 {
+	if self.ChunkLoadedFor(x, y, z) {
+		return uint16(self.At(x, y, z))
+	} else if self.GroundLevel(x, z) > y {
+		return BLOCK_DIRT
+	}
+	return BLOCK_AIR
+}
+
 func (self *World) Neighbours(x uint16, y uint16, z uint16) (neighbours [6]uint16) {
+	neighbours[WEST_FACE] = self.ApproxBlockAt(x-1, y, z)
+	neighbours[EAST_FACE] = self.ApproxBlockAt(x+1, y, z)
+	neighbours[NORTH_FACE] = self.ApproxBlockAt(x, y, z-1)
+	neighbours[SOUTH_FACE] = self.ApproxBlockAt(x, y, z+1)
+	neighbours[DOWN_FACE] = self.ApproxBlockAt(x, y-1, z)
+	neighbours[UP_FACE] = self.ApproxBlockAt(x, y+1, z)
+	return
+}
 
-	if self.ChunkLoadedFor(x-1, y, z) {
-		neighbours[WEST_FACE] = uint16(self.At(x-1, y, z))
-	} else if self.GroundLevel(x-1, z) > y {
-		neighbours[WEST_FACE] = BLOCK_DIRT
-	} else {
-		neighbours[WEST_FACE] = BLOCK_AIR
-	}
+func (self *World) AllNeighbours(x uint16, y uint16, z uint16) (neighbours [18]uint16) {
+	neighbours[WEST_FACE] = self.ApproxBlockAt(x-1, y, z)
+	neighbours[EAST_FACE] = self.ApproxBlockAt(x+1, y, z)
+	neighbours[NORTH_FACE] = self.ApproxBlockAt(x, y, z-1)
+	neighbours[SOUTH_FACE] = self.ApproxBlockAt(x, y, z+1)
+	neighbours[DOWN_FACE] = self.ApproxBlockAt(x, y-1, z)
+	neighbours[UP_FACE] = self.ApproxBlockAt(x, y+1, z)
 
-	if self.ChunkLoadedFor(x+1, y, z) {
-		neighbours[EAST_FACE] = uint16(self.At(x+1, y, z))
-	} else if self.GroundLevel(x+1, z) > y {
-		neighbours[EAST_FACE] = BLOCK_DIRT
-	} else {
-		neighbours[EAST_FACE] = BLOCK_AIR
-	}
+	// neighbours[DIR_NE] = self.ApproxBlockAt(x+1, y, z-1)
+	// neighbours[DIR_SE] = self.ApproxBlockAt(x+1, y, z+1)
+	// neighbours[DIR_SW] = self.ApproxBlockAt(x-1, y, z+1)
+	// neighbours[DIR_NW] = self.ApproxBlockAt(x-1, y, z-1)
 
-	if self.ChunkLoadedFor(x, y, z-1) {
-		neighbours[NORTH_FACE] = uint16(self.At(x, y, z-1))
-	} else if self.GroundLevel(x, z-1) > y {
-		neighbours[NORTH_FACE] = BLOCK_DIRT
-	} else {
-		neighbours[NORTH_FACE] = BLOCK_AIR
-	}
+	// neighbours[DIR_UN]  = self.ApproxBlockAt(x  , y+1, z-1)
+	// neighbours[DIR_UE]  = self.ApproxBlockAt(x+1, y+1, z)
+	// neighbours[DIR_US]  = self.ApproxBlockAt(x  , y+1, z+1)
+	// neighbours[DIR_UW]  = self.ApproxBlockAt(x-1, y+1, z)
 
-	if self.ChunkLoadedFor(x, y, z+1) {
-		neighbours[SOUTH_FACE] = uint16(self.At(x, y, z+1))
-	} else if self.GroundLevel(x, z+1) > y {
-		neighbours[SOUTH_FACE] = BLOCK_DIRT
-	} else {
-		neighbours[SOUTH_FACE] = BLOCK_AIR
-	}
-
-	if self.ChunkLoadedFor(x, y+1, z) {
-		neighbours[UP_FACE] = uint16(self.At(x, y+1, z))
-	} else {
-		neighbours[UP_FACE] = BLOCK_AIR
-	}
-
-	if self.ChunkLoadedFor(x, y-1, z) {
-		neighbours[DOWN_FACE] = uint16(self.At(x, y-1, z))
-	} else {
-		neighbours[DOWN_FACE] = BLOCK_AIR
-	}
+	// neighbours[DIR_DN]  = self.ApproxBlockAt(x  , y-1, z-1)
+	// neighbours[DIR_DE]  = self.ApproxBlockAt(x+1, y-1, z)
+	// neighbours[DIR_DS]  = self.ApproxBlockAt(x  , y-1, z+1)
+	// neighbours[DIR_DW]  = self.ApproxBlockAt(x-1, y-1, z)
 
 	return
 }
@@ -827,7 +882,7 @@ func (self *Chunk) PreRender(selectedBlockFace *BlockFace) {
 						yw := y
 						zw := self.z*CHUNK_WIDTH + z
 
-						neighbours := TheWorld.Neighbours(xw, yw, zw)
+						neighbours := TheWorld.AllNeighbours(xw, yw, zw)
 
 						if TheWorld.HasVisibleFaces(neighbours) {
 

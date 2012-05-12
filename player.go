@@ -198,8 +198,8 @@ func (self *Player) HandleKeys(keys []uint8) {
 
 	if keys[sdl.K_w] != 0 {
 		if self.IsFalling() {
-			// self.velocity[XAXIS] = math.Cos(self.Heading()*math.Pi/180) * self.walkingSpeed
-			// self.velocity[ZAXIS] = -math.Sin(self.Heading()*math.Pi/180) * self.walkingSpeed
+			self.velocity[XAXIS] = math.Cos(self.Heading()*math.Pi/180) * self.walkingSpeed / 2
+			self.velocity[ZAXIS] = -math.Sin(self.Heading()*math.Pi/180) * self.walkingSpeed / 2
 		} else {
 			self.velocity[XAXIS] = math.Cos(self.Heading()*math.Pi/180) * self.walkingSpeed
 			self.velocity[ZAXIS] = -math.Sin(self.Heading()*math.Pi/180) * self.walkingSpeed
@@ -208,8 +208,8 @@ func (self *Player) HandleKeys(keys []uint8) {
 	}
 	if keys[sdl.K_s] != 0 {
 		if self.IsFalling() {
-			// self.velocity[XAXIS] = -math.Cos(self.Heading()*math.Pi/180) * self.walkingSpeed / 2
-			// self.velocity[ZAXIS] = math.Sin(self.Heading()*math.Pi/180) * self.walkingSpeed / 2
+			self.velocity[XAXIS] = -math.Cos(self.Heading()*math.Pi/180) * self.walkingSpeed / 4
+			self.velocity[ZAXIS] = math.Sin(self.Heading()*math.Pi/180) * self.walkingSpeed / 4
 		} else {
 			self.velocity[XAXIS] = -math.Cos(self.Heading()*math.Pi/180) * self.walkingSpeed / 2
 			self.velocity[ZAXIS] = math.Sin(self.Heading()*math.Pi/180) * self.walkingSpeed / 2
@@ -251,7 +251,7 @@ func (self *Player) HandleKeys(keys []uint8) {
 
 	if keys[sdl.K_SPACE] != 0 {
 		if !self.IsFalling() {
-			self.velocity[YAXIS] = 9
+			self.velocity[YAXIS] = 7
 		}
 	}
 

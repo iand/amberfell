@@ -110,7 +110,13 @@ func (self *Console) HandleKeys(keys []uint8) {
 	}
 
 	if keys[sdl.K_m] != 0 && (keys[sdl.K_LCTRL] != 0 || keys[sdl.K_RCTRL] != 0) {
-		self.nosoil = true
+
+		if self.nosoil {
+			self.nosoil = false
+		} else {
+			self.nosoil = true
+		}
+
 	}
 
 }

@@ -32,7 +32,7 @@ var (
 
 	timeOfDay float32 = 9
 
-	worldSeed = int64(16)
+	worldSeed = int64(20000)
 	treeLine  = uint16(math.Trunc(5.0 * float64(CHUNK_HEIGHT/6.0)))
 	WolfModel *mm3dmodel.Model
 
@@ -326,6 +326,7 @@ func gameLoop() {
 				}
 			}
 
+			PreloadChunks(50)
 			update150ms.Start()
 		}
 
@@ -335,7 +336,7 @@ func gameLoop() {
 
 			UpdateTimeOfDay()
 			UpdateCampfires()
-			PreloadChunks(120)
+			PreloadChunks(220)
 
 			drawFrame, computeFrame = 0, 0
 			update500ms.Start()

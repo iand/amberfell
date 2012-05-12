@@ -12,8 +12,8 @@ const (
 	CHUNK_HEIGHT = 128
 
 	MAP_DIAM       = 64000
-	PLAYER_START_X = 31445 //32011 // 31767 //MAP_DIAM / 2
-	PLAYER_START_Z = 32137 //31058 // 32009 //MAP_DIAM / 2
+	PLAYER_START_X = 31972 //31768 //31559 //31445 //32011 // 31767 //MAP_DIAM / 2
+	PLAYER_START_Z = 31450 //31621 //31488 //32137 //31058 // 32009 //MAP_DIAM / 2
 	NOISE_SCALE    = 16
 
 	TREE_PRECIPITATION_MIN = 0.2 //0.44
@@ -41,13 +41,26 @@ const (
 
 	CAMPFIRE_DURATION = 1
 
-	FACE_NONE  = 6 // 
-	EAST_FACE  = 0 // +ve x
-	WEST_FACE  = 1 // -ve x
-	NORTH_FACE = 2 // -ve z
-	SOUTH_FACE = 3 // +ve z
-	UP_FACE    = 4 // +ve y
-	DOWN_FACE  = 5 // -ve y
+	FACE_NONE  = 19 // 
+	EAST_FACE  = 0  // +ve x
+	WEST_FACE  = 1  // -ve x
+	NORTH_FACE = 2  // -ve z
+	SOUTH_FACE = 3  // +ve z
+	UP_FACE    = 4  // +ve y
+	DOWN_FACE  = 5  // -ve y
+
+	DIR_NE = 6
+	DIR_SE = 7
+	DIR_SW = 8
+	DIR_NW = 9
+	DIR_UN = 10
+	DIR_UE = 11
+	DIR_US = 12
+	DIR_UW = 13
+	DIR_DN = 14
+	DIR_DE = 15
+	DIR_DS = 16
+	DIR_DW = 17
 
 	ORIENT_EAST  = 0
 	ORIENT_NORTH = 1
@@ -69,6 +82,7 @@ const (
 	BLOCK_IRON         = 10
 	BLOCK_CARVED_STONE = 11
 	BLOCK_CAMPFIRE     = 12
+	BLOCK_BURNT_GRASS  = 13
 
 	ITEM_NONE     = MAX_ITEMS - 1
 	ITEM_FIREWOOD = 512
@@ -102,6 +116,7 @@ const (
 	TEXTURE_IRON          = 9
 	TEXTURE_AMBERFELL_TOP = 6
 	TEXTURE_AMBERFELL     = 22
+	TEXTURE_BURNT_GRASS   = 10
 
 	// Player textures
 
@@ -168,5 +183,13 @@ var (
 		[4]float32{0.92, 0.92, 0.92, 1.0},
 	}
 	COLOUR_WHITE = [4]float32{1.0, 1.0, 1.0, 1.0}
-	COLOUR_HIGH  = [4]float32{96.0 / 255, 208.0 / 255, 96.0 / 255, 1.0}
+	COLOURS      = [5][4]float32{
+		[4]float32{1.0, 1.0, 1.0, 1.0},
+		[4]float32{0.7, 0.7, 0.7, 1.0},
+		[4]float32{0.55, 0.55, 0.55, 1.0},
+		[4]float32{0.4, 0.4, 0.4, 1.0},
+		[4]float32{0.2, 0.2, 0.2, 1.0},
+	}
+
+	COLOUR_HIGH = [4]float32{96.0 / 255, 208.0 / 255, 96.0 / 255, 1.0}
 )

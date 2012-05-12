@@ -153,7 +153,7 @@ func (self *Inventory) DrawItem(t int64, quantity uint16, blockid uint16, r Rect
 	gl.Rotatef(360*float32(math.Sin(float64(t)/1e10+float64(i))), 0.0, 0.0, 1.0)
 	gl.Scalef(blocksize, blocksize, blocksize)
 	gVertexBuffer.Reset()
-	TerrainCube(gVertexBuffer, 0, 0, 0, [6]uint16{0, 0, 0, 0, 0, 0}, blockid, FACE_NONE)
+	TerrainCube(gVertexBuffer, 0, 0, 0, [18]uint16{}, blockid, FACE_NONE)
 	gVertexBuffer.RenderDirect(false)
 
 	gl.LoadIdentity()
