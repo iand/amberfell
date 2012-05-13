@@ -269,7 +269,11 @@ func loadTexture(filename string) *gl.Texture {
 
 }
 
-func TerrainCube(vertexBuffer *VertexBuffer, x float32, y float32, z float32, neighbours [18]uint16, blockid uint16, selectedFace uint8) {
+func TerrainCube(vertexBuffer *VertexBuffer, pos Vectori, neighbours [18]uint16, blockid uint16, selectedFace uint8) {
+
+	x := float32(pos[XAXIS])
+	y := float32(pos[YAXIS])
+	z := float32(pos[ZAXIS])
 
 	block := items[uint16(blockid)]
 	var visible [6]bool
@@ -1709,12 +1713,12 @@ func LightLevel(pos Vectorf, normal [3]float32) [4]float32 {
 	n64 := Vectorf{float64(normal[0]), float64(normal[1]), float64(normal[2])}
 	lightLevel := 0
 
-	for _, lightSource := range lightSources {
-		distance := uint16(pos.Minus(lightSource.pos).Magnitude())
-		dir := lightSource.pos.Minus(pos)
-		if distance < 2 || dir.Dot(n64) > 0 {
-			if distance <= lightSource.intensity {
-				lightLevel += int(lightSource.intensity - distance)
+	for lspos, lightSource := range TheWorld.lightSources {
+		posdiff := Vectorf{float64(lspos[XAXIS]), float64(lspos[YAXIS]), float64(lspos[ZAXIS])}.Minus(pos)
+		distance := uint16(posdiff.Magnitude())
+		if distance < 2 || posdiff.Dot(n64) > 0 {
+			if distance <= lightSource.Intensity() {
+				lightLevel += int(lightSource.Intensity() - distance)
 			}
 		}
 	}

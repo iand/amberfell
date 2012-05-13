@@ -46,10 +46,6 @@ var (
 
 	items map[uint16]Item
 
-	// World elements
-	lightSources = []*LightSource{}
-	campFires    = []*CampFire{}
-
 	// HUD elements
 	blockscale float32 = 0.4 // The scale at which to render blocks in the HUD
 	picker     *Picker
@@ -159,8 +155,7 @@ func initGame() {
 
 	//WolfModel = LoadModel("res/wolf.mm3d")
 
-	TheWorld = new(World)
-	TheWorld.Init()
+	TheWorld = NewWorld()
 
 	ThePlayer = new(Player)
 	ThePlayer.Init(0, PLAYER_START_X, PLAYER_START_Z)
@@ -242,7 +237,7 @@ func gameLoop() {
 				re := e.(*sdl.KeyboardEvent)
 
 				if re.Keysym.Sym == sdl.K_ESCAPE && re.Type == sdl.KEYDOWN {
-					inventory.visible = false
+					inventory.Hide()
 					if pause.visible {
 						pause.visible = false
 						update2000ms.Unpause()
@@ -262,7 +257,11 @@ func gameLoop() {
 
 				if !pause.visible {
 					if re.Keysym.Sym == sdl.K_i && re.Type == sdl.KEYDOWN {
-						inventory.visible = !inventory.visible
+						if inventory.visible {
+							inventory.Hide()
+						} else {
+							inventory.Show(nil)
+						}
 					}
 
 					if inventory.visible {
@@ -319,7 +318,6 @@ func gameLoop() {
 			console.Update()
 
 			UpdateTimeOfDay()
-			UpdateCampfires()
 			PreloadChunks(220)
 
 			drawFrame, computeFrame = 0, 0
@@ -438,7 +436,10 @@ func Draw(t int64) {
 
 	gl.RenderMode(gl.RENDER)
 
-	selectedBlockFace := viewport.SelectedBlockFace()
+	var selectedBlockFace *BlockFace
+	if !pause.visible && !inventory.visible {
+		selectedBlockFace = viewport.SelectedBlockFace()
+	}
 	ThePlayer.Draw(center, selectedBlockFace)
 	TheWorld.Draw(center, selectedBlockFace)
 
@@ -465,24 +466,6 @@ func UpdateTimeOfDay() {
 	timeOfDay += 0.02
 	if timeOfDay > 24 {
 		timeOfDay -= 24
-	}
-}
-
-func UpdateCampfires() {
-	// Age any campfires
-
-	for _, campfire := range campFires {
-		campfire.life -= 0.02
-		if campfire.life <= 0 {
-			pos := IntPosition(campfire.lightSource.pos)
-			TheWorld.Setv(pos, BLOCK_AIR)
-			TheWorld.InvalidateRadius(pos[XAXIS], pos[ZAXIS], CAMPFIRE_INTENSITY)
-
-			i := 0
-			for ; lightSources[i] != campfire.lightSource ; i++ { }
-			lightSources = append(lightSources[:i], lightSources[i+1:]...)
-			campFires = append(campFires[:i], campFires[i+1:]...)
-		}
 	}
 }
 

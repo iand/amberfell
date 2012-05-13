@@ -111,7 +111,7 @@ func (self *MobData) DistanceTo(v Vectorf) float64 {
 	return self.position.Minus(v).Magnitude()
 }
 
-func (self *MobData) Update(dt float64) {
+func (self *MobData) Update(dt float64) (completed bool) {
 	self.position[XAXIS] += self.velocity[XAXIS] * dt
 	self.position[YAXIS] += self.velocity[YAXIS] * dt
 	self.position[ZAXIS] += self.velocity[ZAXIS] * dt
@@ -131,6 +131,7 @@ func (self *MobData) Update(dt float64) {
 		self.walkSequence = 0
 	}
 
+	return false
 }
 
 type Mob interface {
@@ -151,5 +152,5 @@ type Mob interface {
 	Rotate(angle float64)
 	Act(dt float64)
 	Draw(pos Vectorf, selectedBlockFace *BlockFace)
-	Update(dt float64)
+	Update(dt float64) bool
 }

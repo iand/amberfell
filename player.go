@@ -258,7 +258,7 @@ func (self *Player) HandleKeys(keys []uint8) {
 }
 
 func (self *Player) CanInteract() bool {
-	if self.currentAction == ACTION_BREAK || self.currentItem != ITEM_NONE {
+	if self.currentAction == ACTION_HAND || self.currentAction == ACTION_BREAK || self.currentItem != ITEM_NONE {
 		return true
 	}
 	return false
@@ -272,12 +272,40 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 	selectedBlockFace := interactingBlockFace.blockFace
 	// println("Interacting at ", selectedBlockFace.pos.String())
 	switch self.currentAction {
+
+	case ACTION_HAND:
+		blockid := TheWorld.Atv(selectedBlockFace.pos)
+		switch blockid {
+		case BLOCK_AMBERFELL_PUMP, BLOCK_STEAM_GENERATOR:
+			if obj, ok := TheWorld.containerObjects[selectedBlockFace.pos]; ok {
+				inventory.Show(obj)
+			}
+		}
+
 	case ACTION_BREAK:
 		blockid := TheWorld.Atv(selectedBlockFace.pos)
 		if blockid != BLOCK_AIR {
 			interactingBlockFace.hitCount++
 			if items[uint16(blockid)].hitsNeeded != STRENGTH_UNBREAKABLE && interactingBlockFace.hitCount >= items[uint16(blockid)].hitsNeeded {
 				TheWorld.Setv(selectedBlockFace.pos, BLOCK_AIR)
+
+				switch blockid {
+				case BLOCK_CAMPFIRE:
+					delete(TheWorld.lightSources, selectedBlockFace.pos)
+					delete(TheWorld.timedObjects, selectedBlockFace.pos)
+					TheWorld.InvalidateRadius(selectedBlockFace.pos[XAXIS], selectedBlockFace.pos[ZAXIS], uint16(CAMPFIRE_INTENSITY))
+
+				case BLOCK_AMBERFELL_PUMP:
+					delete(TheWorld.timedObjects, selectedBlockFace.pos)
+					delete(TheWorld.containerObjects, selectedBlockFace.pos)
+
+				case BLOCK_STEAM_GENERATOR:
+					delete(TheWorld.timedObjects, selectedBlockFace.pos)
+					delete(TheWorld.containerObjects, selectedBlockFace.pos)
+					delete(TheWorld.generatorObjects, selectedBlockFace.pos)
+
+				}
+
 				if items[uint16(blockid)].drops != nil {
 					droppedItem := items[uint16(blockid)].drops.item
 					if self.inventory[droppedItem] < MAX_ITEMS_IN_INVENTORY {
@@ -308,15 +336,33 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 			}
 			if TheWorld.Atv(selectedBlockFace.pos) == BLOCK_AIR && self.currentItem < 256 {
 				blockid := byte(self.currentItem)
-				if blockid == BLOCK_CAMPFIRE {
+
+				switch blockid {
+				case BLOCK_CAMPFIRE:
 					// Add a light source
 
-					light := &LightSource{Vectorf{float64(selectedBlockFace.pos[XAXIS]), float64(selectedBlockFace.pos[YAXIS]), float64(selectedBlockFace.pos[ZAXIS])}, CAMPFIRE_INTENSITY}
-					lightSources = append(lightSources, light)
-
-					campFires = append(campFires, &CampFire{light, CAMPFIRE_DURATION})
+					campfire := NewCampFire(selectedBlockFace.pos)
+					TheWorld.lightSources[selectedBlockFace.pos] = campfire
+					TheWorld.timedObjects[selectedBlockFace.pos] = campfire
 
 					TheWorld.InvalidateRadius(selectedBlockFace.pos[XAXIS], selectedBlockFace.pos[ZAXIS], uint16(CAMPFIRE_INTENSITY))
+
+				case BLOCK_AMBERFELL_PUMP:
+					sourced := false
+					if selectedBlockFace.pos[YAXIS] > 0 && TheWorld.At(selectedBlockFace.pos[XAXIS], selectedBlockFace.pos[YAXIS]-1, selectedBlockFace.pos[ZAXIS]) == BLOCK_AMBERFELL {
+						sourced = true
+					}
+
+					pump := NewAmberfellPump(selectedBlockFace.pos, sourced, false)
+					TheWorld.timedObjects[selectedBlockFace.pos] = pump
+					TheWorld.containerObjects[selectedBlockFace.pos] = pump
+
+				case BLOCK_STEAM_GENERATOR:
+					gen := NewSteamGenerator(selectedBlockFace.pos)
+					gen.fuel = 5
+					TheWorld.timedObjects[selectedBlockFace.pos] = gen
+					TheWorld.containerObjects[selectedBlockFace.pos] = gen
+					TheWorld.generatorObjects[selectedBlockFace.pos] = gen
 
 				}
 
@@ -385,7 +431,8 @@ func (self *Player) EquipItem(itemid uint16) {
 
 }
 
-func (self *Player) Update(dt float64) {
+func (self *Player) Update(dt float64) (completed bool) {
 	self.distanceTravelled += dt * math.Sqrt(math.Pow(self.velocity[XAXIS], 2)+math.Pow(self.velocity[ZAXIS], 2))
 	self.MobData.Update(dt)
+	return false
 }
