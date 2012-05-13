@@ -449,8 +449,8 @@ func (self *World) GetChunkForBlock(x uint16, y uint16, z uint16) (*Chunk, uint1
 // Gets the chunk for a given x/z block coordinate
 // x = 0, z = 0 is in the top left of the home chunk
 func (self *World) GetChunk(cx uint16, cy uint16, cz uint16) *Chunk {
-	chunk, ok := self.chunks[chunkIndex(cx, cy, cz)]
-	if !ok {
+	
+	if chunk, ok := self.chunks[chunkIndex(cx, cy, cz)]; !ok {
 		chunk = self.GenerateChunk(cx, cy, cz)
 	}
 	return chunk
@@ -493,8 +493,7 @@ func (self *World) InvalidateRadius(x uint16, z uint16, r uint16) {
 	}
 
 	for i := range chunks {
-		chunk, ok := self.chunks[i]
-		if ok {
+		if chunk, ok := self.chunks[i]; ok {
 			chunk.clean = false
 		}
 	}
