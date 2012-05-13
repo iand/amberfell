@@ -6,7 +6,6 @@
 package main
 
 import (
-	"container/list"
 	"flag"
 	"fmt"
 	"github.com/banthar/Go-SDL/sdl"
@@ -46,10 +45,6 @@ var (
 	terrainBuffer     *VertexBuffer
 
 	items map[uint16]Item
-
-	// World elements
-	lightSources = list.New()
-	campfires    = list.New()
 
 	// HUD elements
 	blockscale float32 = 0.4 // The scale at which to render blocks in the HUD
@@ -160,8 +155,7 @@ func initGame() {
 
 	//WolfModel = LoadModel("res/wolf.mm3d")
 
-	TheWorld = new(World)
-	TheWorld.Init()
+	TheWorld = NewWorld()
 
 	ThePlayer = new(Player)
 	ThePlayer.Init(0, PLAYER_START_X, PLAYER_START_Z)
@@ -335,7 +329,6 @@ func gameLoop() {
 			console.Update()
 
 			UpdateTimeOfDay()
-			UpdateCampfires()
 			PreloadChunks(220)
 
 			drawFrame, computeFrame = 0, 0
@@ -481,24 +474,6 @@ func UpdateTimeOfDay() {
 	timeOfDay += 0.02
 	if timeOfDay > 24 {
 		timeOfDay -= 24
-	}
-}
-
-func UpdateCampfires() {
-	// Age any campfires
-
-	for e := campfires.Front(); e != nil; e = e.Next() {
-		campfire := e.Value.(*CampFire)
-		campfire.life -= 0.02
-		if campfire.life <= 0 {
-			lightSource := campfire.lightSourceElem.Value.(*LightSource)
-			pos := IntPosition(lightSource.pos)
-			TheWorld.Setv(pos, BLOCK_AIR)
-			TheWorld.InvalidateRadius(pos[XAXIS], pos[ZAXIS], CAMPFIRE_INTENSITY)
-
-			lightSources.Remove(campfire.lightSourceElem)
-			campfires.Remove(e)
-		}
 	}
 }
 

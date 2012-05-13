@@ -1709,7 +1709,7 @@ func LightLevel(pos Vectorf, normal [3]float32) [4]float32 {
 	n64 := Vectorf{float64(normal[0]), float64(normal[1]), float64(normal[2])}
 	lightLevel := 0
 
-	for e := lightSources.Front(); e != nil; e = e.Next() {
+	for e := TheWorld.lightSources.Front(); e != nil; e = e.Next() {
 		lightSource := e.Value.(*LightSource)
 		distance := uint16(pos.Minus(lightSource.pos).Magnitude())
 		dir := lightSource.pos.Minus(pos)

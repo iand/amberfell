@@ -16,9 +16,12 @@ import (
 )
 
 type World struct {
-	mobs      []Mob
-	chunks    map[uint64]*Chunk
-	amberfell map[uint64][2]uint16
+	mobs             []Mob
+	chunks           map[uint64]*Chunk
+	amberfell        map[uint64][2]uint16
+	lightSources     *list.List
+	timedObjects     map[Vectori]TimedObject
+	containerObjects map[Vectori]ContainerObject
 }
 
 type Chunk struct {
@@ -47,11 +50,6 @@ type InteractingBlockFace struct {
 type LightSource struct {
 	pos       Vectorf
 	intensity uint16
-}
-
-type CampFire struct {
-	lightSourceElem *list.Element
-	life            float64
 }
 
 func chunkCoordsFromWorld(x uint16, y uint16, z uint16) (cx uint16, cy uint16, cz uint16) {
@@ -83,19 +81,23 @@ func blockIndex(x uint16, y uint16, z uint16) uint16 {
 	return CHUNK_WIDTH*CHUNK_WIDTH*y + CHUNK_WIDTH*x + z
 }
 
-func (self *World) Init() {
+func NewWorld() *World {
+	world := &World{}
+	world.chunks = make(map[uint64]*Chunk)
+	world.amberfell = make(map[uint64][2]uint16)
+	world.lightSources = list.New()
+	world.timedObjects = make(map[Vectori]TimedObject)
+	world.containerObjects = make(map[Vectori]ContainerObject)
 
-	self.chunks = make(map[uint64]*Chunk)
-	self.amberfell = make(map[uint64][2]uint16)
+	xc, yc, zc := chunkCoordsFromWorld(PLAYER_START_X, world.GroundLevel(PLAYER_START_X, PLAYER_START_Z), PLAYER_START_Z)
 
-	xc, yc, zc := chunkCoordsFromWorld(PLAYER_START_X, self.GroundLevel(PLAYER_START_X, PLAYER_START_Z), PLAYER_START_Z)
-
-	self.GenerateAmberfell()
-	self.GenerateChunk(xc, yc, zc)
+	world.GenerateAmberfell()
+	world.GenerateChunk(xc, yc, zc)
 	// wolf := new(Wolf)
 	// wolf.Init(200, 25, 19, float32(self.FindSurface(25, 19)))
 	// self.mobs = append(self.mobs, wolf)
 
+	return world
 }
 
 func (self *World) GroundLevel(x uint16, z uint16) uint16 {
@@ -231,7 +233,15 @@ func (self *World) GenerateChunk(cx uint16, cy uint16, cz uint16) *Chunk {
 	for x := uint16(0); x < CHUNK_WIDTH; x++ {
 		for z := uint16(0); z < CHUNK_WIDTH; z++ {
 			ground := self.GroundLevel(x+xw, z+zw)
-			soil := ground + uint16(float64(self.SoilThickness(x+xw, z+zw))*(1-((float64(ground)-CHUNK_HEIGHT/2)/(2*CHUNK_HEIGHT))))
+			coal := self.Coal(x+xw, z+zw)
+			iron := self.Iron(x+xw, z+zw)
+			copper := self.Copper(x+xw, z+zw)
+
+			soilModifier := 1.0
+			if coal > 0 || iron > 0 || copper > 0 {
+				soilModifier = 0.8
+			}
+			soil := ground + uint16(float64(self.SoilThickness(x+xw, z+zw))*soilModifier*(1-((float64(ground)-CHUNK_HEIGHT/2)/(CHUNK_HEIGHT/2))))
 
 			rocks := ground // + self.Rocks(x+xw, z+zw)
 
@@ -258,8 +268,7 @@ func (self *World) GenerateChunk(cx uint16, cy uint16, cz uint16) *Chunk {
 					}
 
 				}
-				coal := self.Coal(x+xw, z+zw)
-				surface := upper
+				surface := upper - 1
 				if coal < 3 {
 					surface--
 				}
@@ -270,8 +279,7 @@ func (self *World) GenerateChunk(cx uint16, cy uint16, cz uint16) *Chunk {
 					chunk.standingStoneProb += 0.000001
 				}
 
-				iron := self.Iron(x+xw, z+zw)
-				surface = upper
+				surface = upper - 1
 				if iron < 3 {
 					surface--
 				}
@@ -282,7 +290,6 @@ func (self *World) GenerateChunk(cx uint16, cy uint16, cz uint16) *Chunk {
 					chunk.standingStoneProb += 0.00001
 				}
 
-				copper := self.Copper(x+xw, z+zw)
 				surface = upper - 1
 				if copper < 3 {
 					surface--
@@ -292,14 +299,6 @@ func (self *World) GenerateChunk(cx uint16, cy uint16, cz uint16) *Chunk {
 				}
 				if copper > 0 {
 					chunk.standingStoneProb += 0.00001
-				}
-
-				// Burn the grass around an amberfell source
-				if hasAmberfell && chunk.At(x, upper-1, z) == BLOCK_DIRT {
-					dist := (amberfellCoords[0]-x)*(amberfellCoords[0]-x) + (amberfellCoords[1]-z)*(amberfellCoords[1]-z)
-					if dist <= 4 {
-						chunk.Set(x, upper-1, z, BLOCK_BURNT_GRASS)
-					}
 				}
 
 			}
@@ -359,29 +358,31 @@ func (self *World) GenerateChunkFeatures(chunk *Chunk) {
 						self.GrowTree(x, y, z)
 
 					}
+				} else if self.Precipitation(x, z) > BUSH_PRECIPITATION_MIN && rand.Intn(100) < BUSH_DENSITY_PCT {
+					self.Set(x, y, z, BLOCK_BUSH)
 				} else {
-					feature1 := self.Feature1(x, z)
-					feature2 := self.Feature2(x, z)
+					// feature1 := self.Feature1(x, z)
+					// feature2 := self.Feature2(x, z)
 
-					if feature1 > 0.8 && feature2 > 0.8 {
-						self.Set(x, y, z, BLOCK_LEAVES)
-						self.Set(x, y+1, z, BLOCK_LEAVES)
-						self.Set(x, y+2, z, BLOCK_LEAVES)
-						self.Set(x, y+3, z, BLOCK_LEAVES)
-						self.Set(x, y+4, z, BLOCK_LEAVES)
-						self.Set(x, y+5, z, BLOCK_LEAVES)
-						self.Set(x, y+6, z, BLOCK_LEAVES)
-					} else if feature1 > 0.7 && feature2 > 0.7 {
-						self.Set(x, y, z, BLOCK_LEAVES)
-						self.Set(x, y+1, z, BLOCK_LEAVES)
-						self.Set(x, y+2, z, BLOCK_LEAVES)
-						self.Set(x, y+3, z, BLOCK_LEAVES)
-						self.Set(x, y+4, z, BLOCK_LEAVES)
-					} else if feature1 > 0.6 && feature2 > 0.6 {
-						self.Set(x, y, z, BLOCK_STONE)
-						self.Set(x, y+1, z, BLOCK_LEAVES)
-						self.Set(x, y+2, z, BLOCK_LEAVES)
-					}
+					// if feature1 > 0.8 && feature2 > 0.8 {
+					// 	self.Set(x, y, z, BLOCK_LEAVES)
+					// 	self.Set(x, y+1, z, BLOCK_LEAVES)
+					// 	self.Set(x, y+2, z, BLOCK_LEAVES)
+					// 	self.Set(x, y+3, z, BLOCK_LEAVES)
+					// 	self.Set(x, y+4, z, BLOCK_LEAVES)
+					// 	self.Set(x, y+5, z, BLOCK_LEAVES)
+					// 	self.Set(x, y+6, z, BLOCK_LEAVES)
+					// } else if feature1 > 0.7 && feature2 > 0.7 {
+					// 	self.Set(x, y, z, BLOCK_LEAVES)
+					// 	self.Set(x, y+1, z, BLOCK_LEAVES)
+					// 	self.Set(x, y+2, z, BLOCK_LEAVES)
+					// 	self.Set(x, y+3, z, BLOCK_LEAVES)
+					// 	self.Set(x, y+4, z, BLOCK_LEAVES)
+					// } else if feature1 > 0.6 && feature2 > 0.6 {
+					// 	self.Set(x, y, z, BLOCK_STONE)
+					// 	self.Set(x, y+1, z, BLOCK_LEAVES)
+					// 	self.Set(x, y+2, z, BLOCK_LEAVES)
+					// }
 				}
 			}
 		}
@@ -694,15 +695,6 @@ func (self *World) ApplyForces(mob Mob, dt float64) {
 
 }
 
-func (self *World) Simulate(dt float64) {
-	for _, v := range self.mobs {
-		v.Act(dt)
-		self.ApplyForces(v, dt)
-		v.Update(dt)
-	}
-
-}
-
 func (self World) ChunkLoadedFor(x uint16, y uint16, z uint16) bool {
 	cx := x / CHUNK_WIDTH
 	cy := y / CHUNK_HEIGHT
@@ -833,6 +825,29 @@ func (self *World) GrowBranch(x uint16, y uint16, z uint16, face uint8, chance i
 	}
 }
 
+func (self *World) Simulate(dt float64) {
+	for _, v := range self.mobs {
+		v.Act(dt)
+		self.ApplyForces(v, dt)
+		v.Update(dt)
+	}
+
+	self.UpdateObjects(dt)
+
+}
+
+func (self *World) UpdateObjects(dt float64) {
+	// Age any campfires
+
+	for key, obj := range self.timedObjects {
+		if obj.Update(dt) {
+			delete(self.timedObjects, key)
+		}
+
+	}
+
+}
+
 // **************************************************************
 // CHUNKS
 // **************************************************************
@@ -910,4 +925,20 @@ func (self *Chunk) Render(selectedBlockFace *BlockFace) {
 
 	// fmt.Printf("Chunk ticks: %4.0f\n", float64(t.GetTicks())/1e6)
 
+}
+
+func (self *CampFire) Update(dt float64) (completed bool) {
+	completed = false
+	self.life -= 0.02 * dt
+	if self.life <= 0 {
+		lightSource := self.lightSourceElem.Value.(*LightSource)
+		pos := IntPosition(lightSource.pos)
+		TheWorld.Setv(pos, BLOCK_AIR)
+		TheWorld.InvalidateRadius(pos[XAXIS], pos[ZAXIS], CAMPFIRE_INTENSITY)
+
+		TheWorld.lightSources.Remove(self.lightSourceElem)
+		completed = true
+
+	}
+	return
 }

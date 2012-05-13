@@ -32,7 +32,7 @@ func (self *Inventory) Draw(t int64) {
 	gl.Disable(gl.LIGHT0)
 	gl.Disable(gl.LIGHT1)
 
-	gl.Color4ub(0, 0, 0, 240)
+	gl.Color4ub(0, 0, 0, 208)
 
 	gl.Begin(gl.QUADS)
 	gl.Vertex2f(float32(viewport.lplane), float32(viewport.bplane))

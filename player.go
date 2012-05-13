@@ -258,7 +258,7 @@ func (self *Player) HandleKeys(keys []uint8) {
 }
 
 func (self *Player) CanInteract() bool {
-	if self.currentAction == ACTION_BREAK || self.currentItem != ITEM_NONE {
+	if self.currentAction == ACTION_HAND || self.currentAction == ACTION_BREAK || self.currentItem != ITEM_NONE {
 		return true
 	}
 	return false
@@ -272,6 +272,17 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 	selectedBlockFace := interactingBlockFace.blockFace
 	// println("Interacting at ", selectedBlockFace.pos.String())
 	switch self.currentAction {
+
+	case ACTION_HAND:
+		blockid := TheWorld.Atv(selectedBlockFace.pos)
+		switch blockid {
+		case BLOCK_AMBERFELL_PUMP:
+			if pump, ok := TheWorld.containerObjects[selectedBlockFace.pos]; ok {
+				pump.Interact()
+			}
+
+		}
+
 	case ACTION_BREAK:
 		blockid := TheWorld.Atv(selectedBlockFace.pos)
 		if blockid != BLOCK_AIR {
@@ -308,16 +319,27 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 			}
 			if TheWorld.Atv(selectedBlockFace.pos) == BLOCK_AIR && self.currentItem < 256 {
 				blockid := byte(self.currentItem)
-				if blockid == BLOCK_CAMPFIRE {
+
+				switch blockid {
+				case BLOCK_CAMPFIRE:
 					// Add a light source
 
 					light := LightSource{Vectorf{float64(selectedBlockFace.pos[XAXIS]), float64(selectedBlockFace.pos[YAXIS]), float64(selectedBlockFace.pos[ZAXIS])}, CAMPFIRE_INTENSITY}
-					lightElem := lightSources.PushBack(&light)
+					lightElem := TheWorld.lightSources.PushBack(&light)
 
 					campfire := CampFire{lightElem, CAMPFIRE_DURATION}
-					campfires.PushBack(&campfire)
+					TheWorld.timedObjects[selectedBlockFace.pos] = &campfire
 
 					TheWorld.InvalidateRadius(selectedBlockFace.pos[XAXIS], selectedBlockFace.pos[ZAXIS], uint16(CAMPFIRE_INTENSITY))
+
+				case BLOCK_AMBERFELL_PUMP:
+					sourced := false
+					if selectedBlockFace.pos[YAXIS] > 0 && TheWorld.At(selectedBlockFace.pos[XAXIS], selectedBlockFace.pos[YAXIS]-1, selectedBlockFace.pos[ZAXIS]) == BLOCK_AMBERFELL {
+						sourced = true
+					}
+					pump := NewAmberfellPump(sourced, false)
+					TheWorld.timedObjects[selectedBlockFace.pos] = pump
+					TheWorld.containerObjects[selectedBlockFace.pos] = pump
 
 				}
 
@@ -386,7 +408,8 @@ func (self *Player) EquipItem(itemid uint16) {
 
 }
 
-func (self *Player) Update(dt float64) {
+func (self *Player) Update(dt float64) (completed bool) {
 	self.distanceTravelled += dt * math.Sqrt(math.Pow(self.velocity[XAXIS], 2)+math.Pow(self.velocity[ZAXIS], 2))
 	self.MobData.Update(dt)
+	return false
 }
