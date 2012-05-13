@@ -119,6 +119,10 @@ type CampFire struct {
 	life float64
 }
 
+func NewCampFire(pos Vectori) *CampFire {
+	return &CampFire{pos: pos, life: CAMPFIRE_DURATION}
+}
+
 func (self *CampFire) Intensity() uint16 {
 	return CAMPFIRE_INTENSITY
 }
@@ -137,14 +141,14 @@ func (self *CampFire) Update(dt float64) (completed bool) {
 }
 
 type AmberfellPump struct {
+	pos            Vectori
 	sourced        bool
 	unitsPerSecond float64
 	unitsHeld      float64
 }
 
-func NewAmberfellPump(sourced bool, powered bool) *AmberfellPump {
-	pump := AmberfellPump{}
-	pump.sourced = sourced
+func NewAmberfellPump(pos Vectori, sourced bool, powered bool) *AmberfellPump {
+	pump := AmberfellPump{pos: pos, sourced: sourced}
 	if powered {
 		pump.unitsPerSecond = AMBERFELL_UNITS_PER_SECOND_POWERED
 	} else {

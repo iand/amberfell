@@ -324,7 +324,7 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 				case BLOCK_CAMPFIRE:
 					// Add a light source
 
-					campfire := &CampFire{selectedBlockFace.pos, CAMPFIRE_DURATION}
+					campfire := NewCampFire(selectedBlockFace.pos)
 					TheWorld.lightSources[selectedBlockFace.pos] = campfire
 					TheWorld.timedObjects[selectedBlockFace.pos] = campfire
 
@@ -335,7 +335,7 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 					if selectedBlockFace.pos[YAXIS] > 0 && TheWorld.At(selectedBlockFace.pos[XAXIS], selectedBlockFace.pos[YAXIS]-1, selectedBlockFace.pos[ZAXIS]) == BLOCK_AMBERFELL {
 						sourced = true
 					}
-					pump := NewAmberfellPump(sourced, false)
+					pump := NewAmberfellPump(selectedBlockFace.pos, sourced, false)
 					TheWorld.timedObjects[selectedBlockFace.pos] = pump
 					TheWorld.containerObjects[selectedBlockFace.pos] = pump
 
