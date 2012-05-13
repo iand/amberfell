@@ -49,7 +49,7 @@ var (
 
 	// World elements
 	lightSources = list.New()
-	campfires    = list.New()
+	campFires    = []*CampFire{}
 
 	// HUD elements
 	blockscale float32 = 0.4 // The scale at which to render blocks in the HUD
@@ -472,8 +472,7 @@ func UpdateTimeOfDay() {
 func UpdateCampfires() {
 	// Age any campfires
 
-	for e := campfires.Front(); e != nil; e = e.Next() {
-		campfire := e.Value.(*CampFire)
+	for i, campfire := range campFires {
 		campfire.life -= 0.02
 		if campfire.life <= 0 {
 			lightSource := campfire.lightSourceElem.Value.(*LightSource)
@@ -482,7 +481,7 @@ func UpdateCampfires() {
 			TheWorld.InvalidateRadius(pos[XAXIS], pos[ZAXIS], CAMPFIRE_INTENSITY)
 
 			lightSources.Remove(campfire.lightSourceElem)
-			campfires.Remove(e)
+			campFires = append(campFires[:i], campFires[i+1:]...)
 		}
 	}
 }
