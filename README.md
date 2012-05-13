@@ -11,9 +11,9 @@ Change camera angle with arrow keys.
 * `i`: Inventory.
 * `Esc`: Pause.
 * `F3`: Debug console.
-* `Ctrl` + Up/Down arrow to zoom in and out
-* `Ctrl` + Left/Right arrow to contract/expand view
+* `Ctrl` + `Up/Down arrow`: zoom in and out
+* `Ctrl` + `Left/Right arrow`: contract/expand view
 
 In the inventory window, use `Ctrl` + Click to equip an item.
 
-For debugging, `Ctrl` + # while debug console is open will give player 999 of all items
+For debugging, `Ctrl` + `#` while debug console is open will give player 999 of all items
