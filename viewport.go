@@ -125,12 +125,12 @@ func (self *Viewport) ClipPlanes() *[6][4]float32 {
 	// mvpmatrix := ModelMatrix()
 
 	planes64 := [6][4]float64{
-		[4]float64{mvpmatrix[3] + mvpmatrix[0], mvpmatrix[7] + mvpmatrix[4], mvpmatrix[11] + mvpmatrix[8], mvpmatrix[15] + mvpmatrix[12]},
-		[4]float64{mvpmatrix[3] - mvpmatrix[0], mvpmatrix[7] - mvpmatrix[4], mvpmatrix[11] - mvpmatrix[8], mvpmatrix[15] - mvpmatrix[12]},
-		[4]float64{mvpmatrix[3] + mvpmatrix[1], mvpmatrix[7] + mvpmatrix[5], mvpmatrix[11] + mvpmatrix[9], mvpmatrix[15] + mvpmatrix[13]},
-		[4]float64{mvpmatrix[3] - mvpmatrix[1], mvpmatrix[7] - mvpmatrix[5], mvpmatrix[11] - mvpmatrix[9], mvpmatrix[15] - mvpmatrix[13]},
-		[4]float64{mvpmatrix[3] + mvpmatrix[2], mvpmatrix[7] + mvpmatrix[6], mvpmatrix[11] + mvpmatrix[10], mvpmatrix[15] + mvpmatrix[14]},
-		[4]float64{mvpmatrix[3] - mvpmatrix[2], mvpmatrix[7] - mvpmatrix[6], mvpmatrix[11] - mvpmatrix[10], mvpmatrix[15] - mvpmatrix[14]},
+		{mvpmatrix[3] + mvpmatrix[0], mvpmatrix[7] + mvpmatrix[4], mvpmatrix[11] + mvpmatrix[8], mvpmatrix[15] + mvpmatrix[12]},
+		{mvpmatrix[3] - mvpmatrix[0], mvpmatrix[7] - mvpmatrix[4], mvpmatrix[11] - mvpmatrix[8], mvpmatrix[15] - mvpmatrix[12]},
+		{mvpmatrix[3] + mvpmatrix[1], mvpmatrix[7] + mvpmatrix[5], mvpmatrix[11] + mvpmatrix[9], mvpmatrix[15] + mvpmatrix[13]},
+		{mvpmatrix[3] - mvpmatrix[1], mvpmatrix[7] - mvpmatrix[5], mvpmatrix[11] - mvpmatrix[9], mvpmatrix[15] - mvpmatrix[13]},
+		{mvpmatrix[3] + mvpmatrix[2], mvpmatrix[7] + mvpmatrix[6], mvpmatrix[11] + mvpmatrix[10], mvpmatrix[15] + mvpmatrix[14]},
+		{mvpmatrix[3] - mvpmatrix[2], mvpmatrix[7] - mvpmatrix[6], mvpmatrix[11] - mvpmatrix[10], mvpmatrix[15] - mvpmatrix[14]},
 	}
 
 	var planes32 [6][4]float32
@@ -251,12 +251,12 @@ func (self *Viewport) HandleKeys(keys []uint8) {
 		// mvpmatrix := ModelMatrix()
 
 		planes64 := [6][4]float64{
-			[4]float64{mvpmatrix[3] + mvpmatrix[0], mvpmatrix[7] + mvpmatrix[4], mvpmatrix[11] + mvpmatrix[8], mvpmatrix[15] + mvpmatrix[12]},
-			[4]float64{mvpmatrix[3] - mvpmatrix[0], mvpmatrix[7] - mvpmatrix[4], mvpmatrix[11] - mvpmatrix[8], mvpmatrix[15] - mvpmatrix[12]},
-			[4]float64{mvpmatrix[3] + mvpmatrix[1], mvpmatrix[7] + mvpmatrix[5], mvpmatrix[11] + mvpmatrix[9], mvpmatrix[15] + mvpmatrix[13]},
-			[4]float64{mvpmatrix[3] - mvpmatrix[1], mvpmatrix[7] - mvpmatrix[5], mvpmatrix[11] - mvpmatrix[9], mvpmatrix[15] - mvpmatrix[13]},
-			[4]float64{mvpmatrix[3] + mvpmatrix[2], mvpmatrix[7] + mvpmatrix[6], mvpmatrix[11] + mvpmatrix[10], mvpmatrix[15] + mvpmatrix[14]},
-			[4]float64{mvpmatrix[3] - mvpmatrix[2], mvpmatrix[7] - mvpmatrix[6], mvpmatrix[11] - mvpmatrix[10], mvpmatrix[15] - mvpmatrix[14]},
+			{mvpmatrix[3] + mvpmatrix[0], mvpmatrix[7] + mvpmatrix[4], mvpmatrix[11] + mvpmatrix[8], mvpmatrix[15] + mvpmatrix[12]},
+			{mvpmatrix[3] - mvpmatrix[0], mvpmatrix[7] - mvpmatrix[4], mvpmatrix[11] - mvpmatrix[8], mvpmatrix[15] - mvpmatrix[12]},
+			{mvpmatrix[3] + mvpmatrix[1], mvpmatrix[7] + mvpmatrix[5], mvpmatrix[11] + mvpmatrix[9], mvpmatrix[15] + mvpmatrix[13]},
+			{mvpmatrix[3] - mvpmatrix[1], mvpmatrix[7] - mvpmatrix[5], mvpmatrix[11] - mvpmatrix[9], mvpmatrix[15] - mvpmatrix[13]},
+			{mvpmatrix[3] + mvpmatrix[2], mvpmatrix[7] + mvpmatrix[6], mvpmatrix[11] + mvpmatrix[10], mvpmatrix[15] + mvpmatrix[14]},
+			{mvpmatrix[3] - mvpmatrix[2], mvpmatrix[7] - mvpmatrix[6], mvpmatrix[11] - mvpmatrix[10], mvpmatrix[15] - mvpmatrix[14]},
 		}
 
 		var planes32 [6][4]float32

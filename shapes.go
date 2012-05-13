@@ -629,10 +629,10 @@ func Cuboid(pos Vectorf, bw float64, bh float64, bd float64, etexture *gl.Textur
 		e := LightLevel(pos, NORMALS[EAST_FACE])
 
 		v := []Vertex{
-			Vertex{p: [3]float32{d, -h, -w}, t: [2]float32{1.0, 1.0}, n: NORMALS[EAST_FACE], c: c, e: e},
-			Vertex{p: [3]float32{d, h, -w}, t: [2]float32{1.0, 0.0}, n: NORMALS[EAST_FACE], c: c, e: e},
-			Vertex{p: [3]float32{d, h, w}, t: [2]float32{0.0, 0.0}, n: NORMALS[EAST_FACE], c: c, e: e},
-			Vertex{p: [3]float32{d, -h, w}, t: [2]float32{0.0, 1.0}, n: NORMALS[EAST_FACE], c: c, e: e},
+			{p: [3]float32{d, -h, -w}, t: [2]float32{1.0, 1.0}, n: NORMALS[EAST_FACE], c: c, e: e},
+			{p: [3]float32{d, h, -w}, t: [2]float32{1.0, 0.0}, n: NORMALS[EAST_FACE], c: c, e: e},
+			{p: [3]float32{d, h, w}, t: [2]float32{0.0, 0.0}, n: NORMALS[EAST_FACE], c: c, e: e},
+			{p: [3]float32{d, -h, w}, t: [2]float32{0.0, 1.0}, n: NORMALS[EAST_FACE], c: c, e: e},
 		}
 
 		etexture.Bind(gl.TEXTURE_2D)
@@ -649,10 +649,10 @@ func Cuboid(pos Vectorf, bw float64, bh float64, bd float64, etexture *gl.Textur
 
 		e := LightLevel(pos, NORMALS[WEST_FACE])
 		v := []Vertex{
-			Vertex{p: [3]float32{-d, -h, -w}, t: [2]float32{0.0, 1.0}, n: NORMALS[WEST_FACE], c: c, e: e},
-			Vertex{p: [3]float32{-d, -h, w}, t: [2]float32{1.0, 1.0}, n: NORMALS[WEST_FACE], c: c, e: e},
-			Vertex{p: [3]float32{-d, h, w}, t: [2]float32{1.0, 0.0}, n: NORMALS[WEST_FACE], c: c, e: e},
-			Vertex{p: [3]float32{-d, h, -w}, t: [2]float32{0.0, 0.0}, n: NORMALS[WEST_FACE], c: c, e: e},
+			{p: [3]float32{-d, -h, -w}, t: [2]float32{0.0, 1.0}, n: NORMALS[WEST_FACE], c: c, e: e},
+			{p: [3]float32{-d, -h, w}, t: [2]float32{1.0, 1.0}, n: NORMALS[WEST_FACE], c: c, e: e},
+			{p: [3]float32{-d, h, w}, t: [2]float32{1.0, 0.0}, n: NORMALS[WEST_FACE], c: c, e: e},
+			{p: [3]float32{-d, h, -w}, t: [2]float32{0.0, 0.0}, n: NORMALS[WEST_FACE], c: c, e: e},
 		}
 
 		wtexture.Bind(gl.TEXTURE_2D)
@@ -670,10 +670,10 @@ func Cuboid(pos Vectorf, bw float64, bh float64, bd float64, etexture *gl.Textur
 
 		e := LightLevel(pos, NORMALS[NORTH_FACE])
 		v := []Vertex{
-			Vertex{p: [3]float32{-d, -h, -w}, t: [2]float32{1.0, 1.0}, n: NORMALS[NORTH_FACE], c: c, e: e},
-			Vertex{p: [3]float32{-d, h, -w}, t: [2]float32{1.0, 0.0}, n: NORMALS[NORTH_FACE], c: c, e: e},
-			Vertex{p: [3]float32{d, h, -w}, t: [2]float32{0.0, 0.0}, n: NORMALS[NORTH_FACE], c: c, e: e},
-			Vertex{p: [3]float32{d, -h, -w}, t: [2]float32{0.0, 1.0}, n: NORMALS[NORTH_FACE], c: c, e: e},
+			{p: [3]float32{-d, -h, -w}, t: [2]float32{1.0, 1.0}, n: NORMALS[NORTH_FACE], c: c, e: e},
+			{p: [3]float32{-d, h, -w}, t: [2]float32{1.0, 0.0}, n: NORMALS[NORTH_FACE], c: c, e: e},
+			{p: [3]float32{d, h, -w}, t: [2]float32{0.0, 0.0}, n: NORMALS[NORTH_FACE], c: c, e: e},
+			{p: [3]float32{d, -h, -w}, t: [2]float32{0.0, 1.0}, n: NORMALS[NORTH_FACE], c: c, e: e},
 		}
 
 		ntexture.Bind(gl.TEXTURE_2D)
@@ -691,10 +691,10 @@ func Cuboid(pos Vectorf, bw float64, bh float64, bd float64, etexture *gl.Textur
 
 		e := LightLevel(pos, NORMALS[SOUTH_FACE])
 		v := []Vertex{
-			Vertex{p: [3]float32{-d, -h, w}, t: [2]float32{0.0, 1.0}, n: NORMALS[SOUTH_FACE], c: c, e: e},
-			Vertex{p: [3]float32{d, -h, w}, t: [2]float32{1.0, 1.0}, n: NORMALS[SOUTH_FACE], c: c, e: e},
-			Vertex{p: [3]float32{d, h, w}, t: [2]float32{1.0, 0.0}, n: NORMALS[SOUTH_FACE], c: c, e: e},
-			Vertex{p: [3]float32{-d, h, w}, t: [2]float32{0.0, 0.0}, n: NORMALS[SOUTH_FACE], c: c, e: e},
+			{p: [3]float32{-d, -h, w}, t: [2]float32{0.0, 1.0}, n: NORMALS[SOUTH_FACE], c: c, e: e},
+			{p: [3]float32{d, -h, w}, t: [2]float32{1.0, 1.0}, n: NORMALS[SOUTH_FACE], c: c, e: e},
+			{p: [3]float32{d, h, w}, t: [2]float32{1.0, 0.0}, n: NORMALS[SOUTH_FACE], c: c, e: e},
+			{p: [3]float32{-d, h, w}, t: [2]float32{0.0, 0.0}, n: NORMALS[SOUTH_FACE], c: c, e: e},
 		}
 
 		stexture.Bind(gl.TEXTURE_2D)
@@ -727,10 +727,10 @@ func Cuboid(pos Vectorf, bw float64, bh float64, bd float64, etexture *gl.Textur
 		// 1.0/1.0    1.0/0.5   1.0/0.0
 
 		v := []Vertex{
-			Vertex{p: [3]float32{-d, h, -w}, t: [2]float32{1.0, 1.0}, n: NORMALS[UP_FACE], c: c, e: e},
-			Vertex{p: [3]float32{d, h, -w}, t: [2]float32{0.0, 1.0}, n: NORMALS[UP_FACE], c: c, e: e},
-			Vertex{p: [3]float32{d, h, w}, t: [2]float32{0.0, 0.0}, n: NORMALS[UP_FACE], c: c, e: e},
-			Vertex{p: [3]float32{-d, h, w}, t: [2]float32{1.0, 0.0}, n: NORMALS[UP_FACE], c: c, e: e},
+			{p: [3]float32{-d, h, -w}, t: [2]float32{1.0, 1.0}, n: NORMALS[UP_FACE], c: c, e: e},
+			{p: [3]float32{d, h, -w}, t: [2]float32{0.0, 1.0}, n: NORMALS[UP_FACE], c: c, e: e},
+			{p: [3]float32{d, h, w}, t: [2]float32{0.0, 0.0}, n: NORMALS[UP_FACE], c: c, e: e},
+			{p: [3]float32{-d, h, w}, t: [2]float32{1.0, 0.0}, n: NORMALS[UP_FACE], c: c, e: e},
 
 			// Vertex{p: [3]float32{d, h, -w}, t: [2]float32{0.0, 1.0}, n: NORMALS[UP_FACE], c: c, e: e},
 			// Vertex{p: [3]float32{0, h, -w}, t: [2]float32{0.0, 0.5}, n: NORMALS[UP_FACE], c: c, e: e},
@@ -768,10 +768,10 @@ func Cuboid(pos Vectorf, bw float64, bh float64, bd float64, etexture *gl.Textur
 
 		e := LightLevel(pos, NORMALS[DOWN_FACE])
 		v := []Vertex{
-			Vertex{p: [3]float32{-d, -h, -w}, t: [2]float32{1.0, 1.0}, n: NORMALS[DOWN_FACE], c: c, e: e},
-			Vertex{p: [3]float32{d, -h, -w}, t: [2]float32{0.0, 1.0}, n: NORMALS[DOWN_FACE], c: c, e: e},
-			Vertex{p: [3]float32{d, -h, w}, t: [2]float32{0.0, 0.0}, n: NORMALS[DOWN_FACE], c: c, e: e},
-			Vertex{p: [3]float32{-d, -h, w}, t: [2]float32{1.0, 0.0}, n: NORMALS[DOWN_FACE], c: c, e: e},
+			{p: [3]float32{-d, -h, -w}, t: [2]float32{1.0, 1.0}, n: NORMALS[DOWN_FACE], c: c, e: e},
+			{p: [3]float32{d, -h, -w}, t: [2]float32{0.0, 1.0}, n: NORMALS[DOWN_FACE], c: c, e: e},
+			{p: [3]float32{d, -h, w}, t: [2]float32{0.0, 0.0}, n: NORMALS[DOWN_FACE], c: c, e: e},
+			{p: [3]float32{-d, -h, w}, t: [2]float32{1.0, 0.0}, n: NORMALS[DOWN_FACE], c: c, e: e},
 		}
 
 		dtexture.Bind(gl.TEXTURE_2D)
@@ -1709,8 +1709,7 @@ func LightLevel(pos Vectorf, normal [3]float32) [4]float32 {
 	n64 := Vectorf{float64(normal[0]), float64(normal[1]), float64(normal[2])}
 	lightLevel := 0
 
-	for e := lightSources.Front(); e != nil; e = e.Next() {
-		lightSource := e.Value.(*LightSource)
+	for _, lightSource := range lightSources {
 		distance := uint16(pos.Minus(lightSource.pos).Magnitude())
 		dir := lightSource.pos.Minus(pos)
 		if distance < 2 || dir.Dot(n64) > 0 {

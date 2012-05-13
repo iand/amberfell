@@ -64,33 +64,33 @@ func InitItems() {
 }
 
 var handmadeRecipes = []Recipe{
-	Recipe{product: ItemQuantity{BLOCK_LOG_WALL, 1},
+	{product: ItemQuantity{BLOCK_LOG_WALL, 1},
 		components: []ItemQuantity{
-			ItemQuantity{BLOCK_TRUNK, 1},
+			{BLOCK_TRUNK, 1},
 		}},
 
-	Recipe{product: ItemQuantity{BLOCK_LOG_SLAB, 1},
+	{product: ItemQuantity{BLOCK_LOG_SLAB, 1},
 		components: []ItemQuantity{
-			ItemQuantity{BLOCK_TRUNK, 1},
+			{BLOCK_TRUNK, 1},
 		}},
 
-	Recipe{product: ItemQuantity{ITEM_FIREWOOD, 2},
+	{product: ItemQuantity{ITEM_FIREWOOD, 2},
 		components: []ItemQuantity{
-			ItemQuantity{BLOCK_TRUNK, 1},
+			{BLOCK_TRUNK, 1},
 		}},
 
-	Recipe{product: ItemQuantity{ITEM_FIREWOOD, 2},
+	{product: ItemQuantity{ITEM_FIREWOOD, 2},
 		components: []ItemQuantity{
-			ItemQuantity{BLOCK_LOG_WALL, 1},
+			{BLOCK_LOG_WALL, 1},
 		}},
 
-	Recipe{product: ItemQuantity{ITEM_FIREWOOD, 2},
+	{product: ItemQuantity{ITEM_FIREWOOD, 2},
 		components: []ItemQuantity{
-			ItemQuantity{BLOCK_LOG_SLAB, 1},
+			{BLOCK_LOG_SLAB, 1},
 		}},
 
-	Recipe{product: ItemQuantity{BLOCK_CAMPFIRE, 1},
+	{product: ItemQuantity{BLOCK_CAMPFIRE, 1},
 		components: []ItemQuantity{
-			ItemQuantity{ITEM_FIREWOOD, 3},
+			{ITEM_FIREWOOD, 3},
 		}},
 }

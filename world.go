@@ -8,7 +8,6 @@ package main
 import (
 	// "fmt"
 	// "github.com/banthar/gl"
-	"container/list"
 	"github.com/iand/perlin"
 	"math"
 	"math/rand"
@@ -50,7 +49,7 @@ type LightSource struct {
 }
 
 type CampFire struct {
-	lightSourceElem *list.Element
+	lightSource	*LightSource
 	life            float64
 }
 
@@ -493,7 +492,7 @@ func (self *World) InvalidateRadius(x uint16, z uint16, r uint16) {
 		}
 	}
 
-	for i, _ := range chunks {
+	for i := range chunks {
 		chunk, ok := self.chunks[i]
 		if ok {
 			chunk.clean = false
