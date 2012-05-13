@@ -26,10 +26,11 @@ type TimedObject interface {
 }
 
 type ContainerObject interface {
-	// Items() []ItemQuantity
+	Label() string
+	Item(slot uint16) *ItemQuantity
 	// Add(item ItemQuantity)
 	// Remove(item ItemQuantity)
-	// Capacity(itemid uint16)
+	Capacity() uint16
 	Interact() // Just temporay for testing
 }
 
@@ -149,16 +150,21 @@ type AmberfellPump struct {
 
 func NewAmberfellPump(pos Vectori, sourced bool, powered bool) *AmberfellPump {
 	pump := AmberfellPump{pos: pos, sourced: sourced}
-	if powered {
-		pump.unitsPerSecond = AMBERFELL_UNITS_PER_SECOND_POWERED
-	} else {
-		pump.unitsPerSecond = AMBERFELL_UNITS_PER_SECOND_UNPOWERED
-	}
 	return &pump
 }
 
 func (self *AmberfellPump) Update(dt float64) (completed bool) {
 	if self.sourced {
+		self.unitsPerSecond = AMBERFELL_UNITS_PER_SECOND_UNPOWERED
+		neighbours := TheWorld.Neighbours(self.pos)
+		for i := 0; i < 6; i++ {
+			if neighbours[i] == BLOCK_STEAM_GENERATOR {
+				// TODO: check is steam generator is fuelled
+				self.unitsPerSecond = AMBERFELL_UNITS_PER_SECOND_POWERED
+				break
+			}
+		}
+
 		self.unitsHeld += self.unitsPerSecond * dt
 		if self.unitsHeld > AMBERFELL_PUMP_CAPACITY {
 			self.unitsHeld = AMBERFELL_PUMP_CAPACITY
@@ -168,7 +174,32 @@ func (self *AmberfellPump) Update(dt float64) (completed bool) {
 	return false
 }
 
+func (self *AmberfellPump) Label() string {
+	if self.sourced {
+		if self.unitsPerSecond == AMBERFELL_UNITS_PER_SECOND_POWERED {
+			return "Amberfell Pump (powered)"
+		} else {
+			return "Amberfell Pump (unpowered)"
+
+		}
+	}
+
+	return "Amberfell Pump (inactive)"
+}
+
 func (self *AmberfellPump) Interact() {
 	println("Amberfell pump: ", self.unitsHeld)
 
+}
+
+func (self *AmberfellPump) Capacity() uint16 {
+	return AMBERFELL_PUMP_CAPACITY
+}
+
+func (self *AmberfellPump) Item(slot uint16) *ItemQuantity {
+	if float64(slot) <= self.unitsHeld-1 {
+		return &ItemQuantity{BLOCK_AMBERFELL, 1}
+	}
+
+	return nil
 }

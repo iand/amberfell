@@ -559,6 +559,7 @@ func (self *World) HasVisibleFaces(neighbours [18]uint16) bool {
 }
 
 func (self *World) ApproxBlockAt(x uint16, y uint16, z uint16) uint16 {
+
 	if self.ChunkLoadedFor(x, y, z) {
 		return uint16(self.At(x, y, z))
 	} else if self.GroundLevel(x, z) > y {
@@ -567,17 +568,11 @@ func (self *World) ApproxBlockAt(x uint16, y uint16, z uint16) uint16 {
 	return BLOCK_AIR
 }
 
-func (self *World) Neighbours(x uint16, y uint16, z uint16) (neighbours [6]uint16) {
-	neighbours[WEST_FACE] = self.ApproxBlockAt(x-1, y, z)
-	neighbours[EAST_FACE] = self.ApproxBlockAt(x+1, y, z)
-	neighbours[NORTH_FACE] = self.ApproxBlockAt(x, y, z-1)
-	neighbours[SOUTH_FACE] = self.ApproxBlockAt(x, y, z+1)
-	neighbours[DOWN_FACE] = self.ApproxBlockAt(x, y-1, z)
-	neighbours[UP_FACE] = self.ApproxBlockAt(x, y+1, z)
-	return
-}
+func (self *World) Neighbours(pos Vectori) (neighbours [18]uint16) {
+	x := pos[XAXIS]
+	y := pos[YAXIS]
+	z := pos[ZAXIS]
 
-func (self *World) AllNeighbours(x uint16, y uint16, z uint16) (neighbours [18]uint16) {
 	neighbours[WEST_FACE] = self.ApproxBlockAt(x-1, y, z)
 	neighbours[EAST_FACE] = self.ApproxBlockAt(x+1, y, z)
 	neighbours[NORTH_FACE] = self.ApproxBlockAt(x, y, z-1)
@@ -885,20 +880,18 @@ func (self *Chunk) PreRender(selectedBlockFace *BlockFace) {
 
 					var blockid uint16 = uint16(self.Blocks[blockIndex(x, y, z)])
 					if blockid != 0 {
-						xw := self.x*CHUNK_WIDTH + x
-						yw := y
-						zw := self.z*CHUNK_WIDTH + z
 
-						neighbours := TheWorld.AllNeighbours(xw, yw, zw)
+						pos := Vectori{self.x*CHUNK_WIDTH + x, y, self.z*CHUNK_WIDTH + z}
+						neighbours := TheWorld.Neighbours(pos)
 
 						if TheWorld.HasVisibleFaces(neighbours) {
 
 							selectedFace := uint8(FACE_NONE)
-							if selectedBlockFace != nil && xw == selectedBlockFace.pos[XAXIS] && yw == selectedBlockFace.pos[YAXIS] && zw == selectedBlockFace.pos[ZAXIS] {
+							if selectedBlockFace != nil && pos.Equals(&selectedBlockFace.pos) {
 								selectedFace = selectedBlockFace.face
 							}
 
-							TerrainCube(self.vertexBuffer, float32(xw), float32(yw), float32(zw), neighbours, blockid, selectedFace)
+							TerrainCube(self.vertexBuffer, pos, neighbours, blockid, selectedFace)
 						}
 					}
 				}

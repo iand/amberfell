@@ -237,7 +237,7 @@ func gameLoop() {
 				re := e.(*sdl.KeyboardEvent)
 
 				if re.Keysym.Sym == sdl.K_ESCAPE && re.Type == sdl.KEYDOWN {
-					inventory.visible = false
+					inventory.Hide()
 					if pause.visible {
 						pause.visible = false
 						update2000ms.Unpause()
@@ -257,7 +257,11 @@ func gameLoop() {
 
 				if !pause.visible {
 					if re.Keysym.Sym == sdl.K_i && re.Type == sdl.KEYDOWN {
-						inventory.visible = !inventory.visible
+						if inventory.visible {
+							inventory.Hide()
+						} else {
+							inventory.Show(nil)
+						}
 					}
 
 					if inventory.visible {
@@ -432,7 +436,10 @@ func Draw(t int64) {
 
 	gl.RenderMode(gl.RENDER)
 
-	selectedBlockFace := viewport.SelectedBlockFace()
+	var selectedBlockFace *BlockFace
+	if !pause.visible && !inventory.visible {
+		selectedBlockFace = viewport.SelectedBlockFace()
+	}
 	ThePlayer.Draw(center, selectedBlockFace)
 	TheWorld.Draw(center, selectedBlockFace)
 

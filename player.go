@@ -278,7 +278,7 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 		switch blockid {
 		case BLOCK_AMBERFELL_PUMP:
 			if pump, ok := TheWorld.containerObjects[selectedBlockFace.pos]; ok {
-				pump.Interact()
+				inventory.Show(pump)
 			}
 
 		}
@@ -335,6 +335,7 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 					if selectedBlockFace.pos[YAXIS] > 0 && TheWorld.At(selectedBlockFace.pos[XAXIS], selectedBlockFace.pos[YAXIS]-1, selectedBlockFace.pos[ZAXIS]) == BLOCK_AMBERFELL {
 						sourced = true
 					}
+
 					pump := NewAmberfellPump(selectedBlockFace.pos, sourced, false)
 					TheWorld.timedObjects[selectedBlockFace.pos] = pump
 					TheWorld.containerObjects[selectedBlockFace.pos] = pump

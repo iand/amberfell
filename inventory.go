@@ -20,6 +20,10 @@ type Inventory struct {
 	inventoryRects [60]Rect
 	componentRects [6]Rect
 	productRects   [18]Rect
+
+	currentContainer ContainerObject
+	containerSlots   []ItemQuantity
+	containerRects   []Rect
 }
 
 func (self *Inventory) Draw(t int64) {
@@ -73,7 +77,7 @@ func (self *Inventory) Draw(t int64) {
 
 	for i := range self.componentSlots {
 		x := float64(viewport.lplane) + offset*float64(2+len(self.inventoryRects)/COLSIZE) + float64(i)*offset
-		y := float64(viewport.tplane) - (float64(10) * PIXEL_SCALE)
+		y := float64(viewport.tplane) - (10.0 * PIXEL_SCALE)
 		self.componentRects[i] = Rect{x, y - diam, diam, diam}
 
 		self.DrawItemSlot(t, self.componentRects[i])
@@ -87,7 +91,7 @@ func (self *Inventory) Draw(t int64) {
 
 	for i := range self.productSlots {
 		x := float64(viewport.lplane) + offset*float64(2+len(self.inventoryRects)/COLSIZE) + offset*float64(i%len(self.componentRects))
-		y := float64(viewport.tplane) - (float64(10) * PIXEL_SCALE) - offset*float64(2+float64(i/len(self.componentRects)))
+		y := float64(viewport.tplane) - (10.0 * PIXEL_SCALE) - offset*float64(2+float64(i/len(self.componentRects)))
 		self.productRects[i] = Rect{x, y - diam, diam, diam}
 
 		self.DrawItemSlot(t, self.productRects[i])
@@ -97,6 +101,31 @@ func (self *Inventory) Draw(t int64) {
 		if ps != nil {
 			self.DrawItem(t, ps.product.quantity, ps.product.item, self.productRects[i])
 		}
+	}
+
+	if self.currentContainer != nil {
+
+		for i := range self.containerSlots {
+			x := float64(viewport.lplane) + offset*float64(2+len(self.inventoryRects)/COLSIZE) + float64(i)*offset
+			y := float64(viewport.tplane) - (10.0 * PIXEL_SCALE) - offset*float64(2+float64(len(self.productRects)/len(self.componentRects))) - offset*float64(2+float64(i/len(self.componentRects)))
+			self.containerRects[i] = Rect{x, y - diam, diam, diam}
+
+			self.DrawItemSlot(t, self.containerRects[i])
+		}
+
+		for i := uint16(0); i < self.currentContainer.Capacity(); i++ {
+			item := self.currentContainer.Item(i)
+			if item != nil {
+				self.DrawItem(t, item.quantity, item.item, self.containerRects[i])
+			}
+		}
+
+		gl.PushMatrix()
+		gl.LoadIdentity()
+		gl.Translated(self.containerRects[0].x, self.containerRects[0].y+diam, 0)
+		inventoryItemFont.Print(self.currentContainer.Label())
+		gl.PopMatrix()
+
 	}
 
 	var mousex, mousey int
@@ -110,8 +139,6 @@ func (self *Inventory) DrawItemSlot(t int64, r Rect) {
 	gl.PushMatrix()
 	gl.LoadIdentity()
 
-	const blocksize = float32(0.3)
-
 	gl.Color4ub(16, 16, 16, 255)
 	gl.Begin(gl.QUADS)
 	gl.Vertex2d(r.x, r.y)
@@ -121,7 +148,7 @@ func (self *Inventory) DrawItemSlot(t int64, r Rect) {
 	gl.End()
 
 	gl.Color4ub(6, 6, 6, 255)
-	gl.Begin(gl.LINE)
+	gl.Begin(gl.LINES)
 	gl.Vertex2d(r.x, r.y)
 	gl.Vertex2d(r.x+r.sizex, r.y)
 	gl.Vertex2d(r.x, r.y)
@@ -129,7 +156,7 @@ func (self *Inventory) DrawItemSlot(t int64, r Rect) {
 	gl.End()
 
 	gl.Color4ub(64, 64, 64, 255)
-	gl.Begin(gl.LINE)
+	gl.Begin(gl.LINES)
 	gl.Vertex2d(r.x+r.sizex, r.y)
 	gl.Vertex2d(r.x+r.sizex, r.y+r.sizey)
 	gl.Vertex2d(r.x, r.y+r.sizey)
@@ -153,7 +180,7 @@ func (self *Inventory) DrawItem(t int64, quantity uint16, blockid uint16, r Rect
 	gl.Rotatef(360*float32(math.Sin(float64(t)/1e10+float64(i))), 0.0, 0.0, 1.0)
 	gl.Scalef(blocksize, blocksize, blocksize)
 	gVertexBuffer.Reset()
-	TerrainCube(gVertexBuffer, 0, 0, 0, [18]uint16{}, blockid, FACE_NONE)
+	TerrainCube(gVertexBuffer, Vectori{}, [18]uint16{}, blockid, FACE_NONE)
 	gVertexBuffer.RenderDirect(false)
 
 	gl.LoadIdentity()
@@ -380,4 +407,28 @@ func (self *Inventory) ShowTooltip(x, y float64, str string) {
 	inventoryItemFont.Print(str)
 
 	gl.PopMatrix()
+}
+
+func (self *Inventory) Hide() {
+	self.currentContainer = nil
+	self.containerSlots = nil
+	self.containerRects = nil
+
+	self.visible = false
+
+}
+
+func (self *Inventory) Show(container ContainerObject) {
+	self.currentContainer = container
+	if self.currentContainer != nil {
+		self.containerSlots = make([]ItemQuantity, container.Capacity())
+		self.containerRects = make([]Rect, container.Capacity())
+	}
+
+	self.visible = true
+
+	if container != nil {
+		container.Interact()
+	}
+
 }

@@ -269,7 +269,11 @@ func loadTexture(filename string) *gl.Texture {
 
 }
 
-func TerrainCube(vertexBuffer *VertexBuffer, x float32, y float32, z float32, neighbours [18]uint16, blockid uint16, selectedFace uint8) {
+func TerrainCube(vertexBuffer *VertexBuffer, pos Vectori, neighbours [18]uint16, blockid uint16, selectedFace uint8) {
+
+	x := float32(pos[XAXIS])
+	y := float32(pos[YAXIS])
+	z := float32(pos[ZAXIS])
 
 	block := items[uint16(blockid)]
 	var visible [6]bool
