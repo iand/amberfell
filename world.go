@@ -8,7 +8,6 @@ package main
 import (
 	// "fmt"
 	// "github.com/banthar/gl"
-	"container/list"
 	"github.com/iand/perlin"
 	"math"
 	"math/rand"
@@ -19,7 +18,7 @@ type World struct {
 	mobs             []Mob
 	chunks           map[uint64]*Chunk
 	amberfell        map[uint64][2]uint16
-	lightSources     *list.List
+	lightSources     map[Vectori]LightSource
 	timedObjects     map[Vectori]TimedObject
 	containerObjects map[Vectori]ContainerObject
 }
@@ -45,11 +44,6 @@ type BlockFace struct {
 type InteractingBlockFace struct {
 	blockFace *BlockFace
 	hitCount  uint8
-}
-
-type LightSource struct {
-	pos       Vectorf
-	intensity uint16
 }
 
 func chunkCoordsFromWorld(x uint16, y uint16, z uint16) (cx uint16, cy uint16, cz uint16) {
@@ -85,9 +79,9 @@ func NewWorld() *World {
 	world := &World{}
 	world.chunks = make(map[uint64]*Chunk)
 	world.amberfell = make(map[uint64][2]uint16)
-	world.lightSources = list.New()
 	world.timedObjects = make(map[Vectori]TimedObject)
 	world.containerObjects = make(map[Vectori]ContainerObject)
+	world.lightSources = make(map[Vectori]LightSource)
 
 	xc, yc, zc := chunkCoordsFromWorld(PLAYER_START_X, world.GroundLevel(PLAYER_START_X, PLAYER_START_Z), PLAYER_START_Z)
 
@@ -494,7 +488,7 @@ func (self *World) InvalidateRadius(x uint16, z uint16, r uint16) {
 		}
 	}
 
-	for i, _ := range chunks {
+	for i := range chunks {
 		chunk, ok := self.chunks[i]
 		if ok {
 			chunk.clean = false
@@ -837,8 +831,6 @@ func (self *World) Simulate(dt float64) {
 }
 
 func (self *World) UpdateObjects(dt float64) {
-	// Age any campfires
-
 	for key, obj := range self.timedObjects {
 		if obj.Update(dt) {
 			delete(self.timedObjects, key)
@@ -927,18 +919,3 @@ func (self *Chunk) Render(selectedBlockFace *BlockFace) {
 
 }
 
-func (self *CampFire) Update(dt float64) (completed bool) {
-	completed = false
-	self.life -= 0.02 * dt
-	if self.life <= 0 {
-		lightSource := self.lightSourceElem.Value.(*LightSource)
-		pos := IntPosition(lightSource.pos)
-		TheWorld.Setv(pos, BLOCK_AIR)
-		TheWorld.InvalidateRadius(pos[XAXIS], pos[ZAXIS], CAMPFIRE_INTENSITY)
-
-		TheWorld.lightSources.Remove(self.lightSourceElem)
-		completed = true
-
-	}
-	return
-}

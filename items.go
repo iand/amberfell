@@ -5,9 +5,6 @@
 */
 package main
 
-import (
-	"container/list"
-)
 
 type Item struct {
 	id   uint16
@@ -22,6 +19,9 @@ type Item struct {
 	drops       *ItemQuantity
 }
 
+type LightSource interface {
+	Intensity() uint16
+}
 type TimedObject interface {
 	Update(dt float64) bool
 }
@@ -31,7 +31,7 @@ type ContainerObject interface {
 	// Add(item ItemQuantity)
 	// Remove(item ItemQuantity)
 	// Capacity(itemid uint16)
-	Interact()
+	Interact() // Just temporay for testing
 }
 
 type ItemQuantity struct {
@@ -84,41 +84,60 @@ func InitItems() {
 }
 
 var handmadeRecipes = []Recipe{
-	Recipe{product: ItemQuantity{BLOCK_LOG_WALL, 1},
+	{product: ItemQuantity{BLOCK_LOG_WALL, 1},
 		components: []ItemQuantity{
-			ItemQuantity{BLOCK_TRUNK, 1},
+			{BLOCK_TRUNK, 1},
 		}},
 
-	Recipe{product: ItemQuantity{BLOCK_LOG_SLAB, 1},
+	{product: ItemQuantity{BLOCK_LOG_SLAB, 1},
 		components: []ItemQuantity{
-			ItemQuantity{BLOCK_TRUNK, 1},
+			{BLOCK_TRUNK, 1},
 		}},
 
-	Recipe{product: ItemQuantity{ITEM_FIREWOOD, 2},
+	{product: ItemQuantity{ITEM_FIREWOOD, 2},
 		components: []ItemQuantity{
-			ItemQuantity{BLOCK_TRUNK, 1},
+			{BLOCK_TRUNK, 1},
 		}},
 
-	Recipe{product: ItemQuantity{ITEM_FIREWOOD, 2},
+	{product: ItemQuantity{ITEM_FIREWOOD, 2},
 		components: []ItemQuantity{
-			ItemQuantity{BLOCK_LOG_WALL, 1},
+			{BLOCK_LOG_WALL, 1},
 		}},
 
-	Recipe{product: ItemQuantity{ITEM_FIREWOOD, 2},
+	{product: ItemQuantity{ITEM_FIREWOOD, 2},
 		components: []ItemQuantity{
-			ItemQuantity{BLOCK_LOG_SLAB, 1},
+			{BLOCK_LOG_SLAB, 1},
 		}},
 
-	Recipe{product: ItemQuantity{BLOCK_CAMPFIRE, 1},
+	{product: ItemQuantity{BLOCK_CAMPFIRE, 1},
 		components: []ItemQuantity{
-			ItemQuantity{ITEM_FIREWOOD, 3},
+			{ITEM_FIREWOOD, 3},
 		}},
 }
 
 type CampFire struct {
-	lightSourceElem *list.Element
+	pos 			Vectori
 	life            float64
 }
+
+func (self *CampFire) Intensity() uint16 {
+	return CAMPFIRE_INTENSITY
+}
+
+func (self *CampFire) Update(dt float64) (completed bool) {
+	completed = false
+	self.life -= 0.02 * dt
+	if self.life <= 0 {
+ 		TheWorld.Setv(self.pos, BLOCK_AIR)
+       	delete(TheWorld.lightSources,self.pos)
+       	TheWorld.InvalidateRadius(self.pos[XAXIS], self.pos[ZAXIS], CAMPFIRE_INTENSITY)
+		completed = true
+	}
+
+	return completed
+}
+
+
 
 type AmberfellPump struct {
 	sourced        bool

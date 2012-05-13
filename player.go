@@ -324,11 +324,9 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 				case BLOCK_CAMPFIRE:
 					// Add a light source
 
-					light := LightSource{Vectorf{float64(selectedBlockFace.pos[XAXIS]), float64(selectedBlockFace.pos[YAXIS]), float64(selectedBlockFace.pos[ZAXIS])}, CAMPFIRE_INTENSITY}
-					lightElem := TheWorld.lightSources.PushBack(&light)
-
-					campfire := CampFire{lightElem, CAMPFIRE_DURATION}
-					TheWorld.timedObjects[selectedBlockFace.pos] = &campfire
+					campfire := &CampFire{selectedBlockFace.pos, CAMPFIRE_DURATION}
+					TheWorld.lightSources[selectedBlockFace.pos] = campfire
+					TheWorld.timedObjects[selectedBlockFace.pos] = campfire
 
 					TheWorld.InvalidateRadius(selectedBlockFace.pos[XAXIS], selectedBlockFace.pos[ZAXIS], uint16(CAMPFIRE_INTENSITY))
 

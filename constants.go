@@ -42,7 +42,7 @@ const (
 	CAMPFIRE_INTENSITY = 6
 	MAX_LIGHT_LEVEL    = 12
 
-	CAMPFIRE_DURATION = 0.2
+	CAMPFIRE_DURATION = 10
 
 	AMBERFELL_UNITS_PER_SECOND_UNPOWERED = 0.01
 	AMBERFELL_UNITS_PER_SECOND_POWERED   = 0.2
@@ -199,11 +199,11 @@ var (
 	}
 	COLOUR_WHITE = [4]float32{1.0, 1.0, 1.0, 1.0}
 	COLOURS      = [5][4]float32{
-		[4]float32{1.0, 1.0, 1.0, 1.0},
-		[4]float32{0.7, 0.7, 0.7, 1.0},
-		[4]float32{0.55, 0.55, 0.55, 1.0},
-		[4]float32{0.4, 0.4, 0.4, 1.0},
-		[4]float32{0.2, 0.2, 0.2, 1.0},
+		{1.0, 1.0, 1.0, 1.0},
+		{0.7, 0.7, 0.7, 1.0},
+		{0.55, 0.55, 0.55, 1.0},
+		{0.4, 0.4, 0.4, 1.0},
+		{0.2, 0.2, 0.2, 1.0},
 	}
 
 	COLOUR_HIGH = [4]float32{96.0 / 255, 208.0 / 255, 96.0 / 255, 1.0}

@@ -55,7 +55,7 @@ func (self *Inventory) Draw(t int64) {
 
 	offset := diam + float64(4)*PIXEL_SCALE
 
-	for i := 0; i < len(self.inventoryRects); i++ {
+	for i := range self.inventoryRects {
 		x := float64(viewport.lplane) + float64(10)*PIXEL_SCALE + float64(i/COLSIZE)*offset
 		y := float64(viewport.tplane) - float64(10)*PIXEL_SCALE - float64(i%COLSIZE)*offset
 		self.inventoryRects[i] = Rect{x, y - diam, diam, diam}
@@ -71,7 +71,7 @@ func (self *Inventory) Draw(t int64) {
 		}
 	}
 
-	for i := 0; i < len(self.componentSlots); i++ {
+	for i := range self.componentSlots {
 		x := float64(viewport.lplane) + offset*float64(2+len(self.inventoryRects)/COLSIZE) + float64(i)*offset
 		y := float64(viewport.tplane) - (float64(10) * PIXEL_SCALE)
 		self.componentRects[i] = Rect{x, y - diam, diam, diam}
@@ -79,13 +79,13 @@ func (self *Inventory) Draw(t int64) {
 		self.DrawItemSlot(t, self.componentRects[i])
 	}
 
-	for i := 0; i < len(self.componentSlots); i++ {
-		if self.componentSlots[i] != 0 {
-			self.DrawItem(t, ThePlayer.inventory[self.componentSlots[i]], self.componentSlots[i], self.componentRects[i])
+	for i, cs := range self.componentSlots {
+		if cs != 0 {
+			self.DrawItem(t, ThePlayer.inventory[cs], cs, self.componentRects[i])
 		}
 	}
 
-	for i := 0; i < len(self.productSlots); i++ {
+	for i := range self.productSlots {
 		x := float64(viewport.lplane) + offset*float64(2+len(self.inventoryRects)/COLSIZE) + offset*float64(i%len(self.componentRects))
 		y := float64(viewport.tplane) - (float64(10) * PIXEL_SCALE) - offset*float64(2+float64(i/len(self.componentRects)))
 		self.productRects[i] = Rect{x, y - diam, diam, diam}
@@ -93,9 +93,9 @@ func (self *Inventory) Draw(t int64) {
 		self.DrawItemSlot(t, self.productRects[i])
 	}
 
-	for i := 0; i < len(self.productSlots); i++ {
-		if self.productSlots[i] != nil {
-			self.DrawItem(t, self.productSlots[i].product.quantity, self.productSlots[i].product.item, self.productRects[i])
+	for i, ps := range self.productSlots {
+		if ps != nil {
+			self.DrawItem(t, ps.product.quantity, ps.product.item, self.productRects[i])
 		}
 	}
 
@@ -167,7 +167,7 @@ func (self *Inventory) DrawItem(t int64, quantity uint16, blockid uint16, r Rect
 func (self *Inventory) HasRecipeComponents(recipe *Recipe) bool {
 	componentCount := 0
 
-	for k := 0; k < len(self.componentSlots); k++ {
+	for k := range self.componentSlots {
 		if self.componentSlots[k] != 0 {
 			componentCount++
 		}
@@ -177,11 +177,10 @@ func (self *Inventory) HasRecipeComponents(recipe *Recipe) bool {
 		return false
 	}
 
-	for j := 0; j < len(recipe.components); j++ {
+	for _, rc := range recipe.components {
 		gotComponent := false
-		for k := 0; k < len(self.componentSlots); k++ {
-			if self.componentSlots[k] == recipe.components[j].item &&
-				ThePlayer.inventory[recipe.components[j].item] >= recipe.components[j].quantity {
+		for k := range self.componentSlots {
+			if self.componentSlots[k] == rc.item && ThePlayer.inventory[rc.item] >= rc.quantity {
 				gotComponent = true
 				break
 			}
@@ -197,12 +196,12 @@ func (self *Inventory) HasRecipeComponents(recipe *Recipe) bool {
 }
 
 func (self *Inventory) UpdateProducts() {
-	for i := 0; i < len(self.productSlots); i++ {
+	for i := range self.productSlots {
 		self.productSlots[i] = nil
 	}
 
 	productIndex := 0
-	for i := 0; i < len(handmadeRecipes); i++ {
+	for i := range handmadeRecipes {
 		recipe := &handmadeRecipes[i]
 		if self.HasRecipeComponents(recipe) {
 			self.productSlots[productIndex] = recipe
@@ -216,7 +215,7 @@ func (self *Inventory) HandleMouseButton(re *sdl.MouseButtonEvent) {
 	if re.Button == 1 && re.State == 1 { // LEFT, DOWN
 		x, y := viewport.ScreenCoordsToWorld2D(re.X, re.Y)
 
-		for i := 0; i < len(self.inventoryRects); i++ {
+		for i := range self.inventoryRects {
 			if self.inventoryRects[i].Contains(x, y) {
 				if self.inventorySlots[i] != 0 {
 					keys := sdl.GetKeyState()
@@ -225,12 +224,12 @@ func (self *Inventory) HandleMouseButton(re *sdl.MouseButtonEvent) {
 
 					} else {
 						// Add to component slots
-						for j := 0; j < len(self.componentSlots); j++ {
+						for j := range self.componentSlots {
 							if self.componentSlots[j] == self.inventorySlots[i] {
 								return // Already in component slot
 							}
 						}
-						for j := 0; j < len(self.componentSlots); j++ {
+						for j := range self.componentSlots {
 							if self.componentSlots[j] == 0 {
 								self.componentSlots[j] = self.inventorySlots[i]
 								self.UpdateProducts()
@@ -243,7 +242,7 @@ func (self *Inventory) HandleMouseButton(re *sdl.MouseButtonEvent) {
 				return
 			}
 		}
-		for i := 0; i < len(self.componentRects); i++ {
+		for i := range self.componentRects {
 			if self.componentRects[i].Contains(x, y) {
 				if self.componentSlots[i] != 0 {
 					self.componentSlots[i] = 0
@@ -252,18 +251,18 @@ func (self *Inventory) HandleMouseButton(re *sdl.MouseButtonEvent) {
 				return
 			}
 		}
-		for i := 0; i < len(self.productRects); i++ {
+		for i := range self.productRects {
 			if self.productRects[i].Contains(x, y) {
 				if self.productSlots[i] != nil {
 					recipe := self.productSlots[i]
 					if self.HasRecipeComponents(recipe) {
-						for j := 0; j < len(recipe.components); j++ {
-							ThePlayer.inventory[recipe.components[j].item] -= recipe.components[j].quantity
+						for _, rc := range recipe.components {
+							ThePlayer.inventory[rc.item] -= rc.quantity
 						}
 						ThePlayer.inventory[recipe.product.item] += recipe.product.quantity
 						self.UpdateProducts()
 
-						for j := 0; j < len(self.componentSlots); j++ {
+						for j := range self.componentSlots {
 							if ThePlayer.inventory[self.componentSlots[j]] <= 0 {
 								self.componentSlots[j] = 0
 							}
@@ -302,15 +301,15 @@ func (self *Inventory) HandleMouse(mousex int, mousey int, mousestate uint8) {
 	x, y := viewport.ScreenCoordsToWorld2D(uint16(mousex), uint16(mousey))
 	itemid := uint16(0)
 
-	for i := 0; i < len(self.inventoryRects); i++ {
-		if self.inventoryRects[i].Contains(x, y) {
+	for i, ir := range self.inventoryRects {
+		if ir.Contains(x, y) {
 			itemid = self.inventorySlots[i]
 			break
 		}
 	}
 	if itemid == 0 {
-		for i := 0; i < len(self.componentRects); i++ {
-			if self.componentRects[i].Contains(x, y) {
+		for i, cr := range self.componentRects {
+			if cr.Contains(x, y) {
 				itemid = self.componentSlots[i]
 				break
 			}
@@ -318,23 +317,18 @@ func (self *Inventory) HandleMouse(mousex int, mousey int, mousestate uint8) {
 	}
 
 	if itemid == 0 {
-		for i := 0; i < len(self.productRects); i++ {
-			if self.productRects[i].Contains(x, y) {
-				if self.productSlots[i] != nil {
-					itemid = self.productSlots[i].product.item
-					break
-				}
+		for i, pr := range self.productRects {
+			if pr.Contains(x, y) && self.productSlots[i] != nil {
+				itemid = self.productSlots[i].product.item
+				break
 			}
 		}
 	}
 
 	if itemid == 0 {
-		hit, pos := picker.HitTest(x, y)
-		if hit {
-			if pos > 2 {
-				itemid = uint16(pos) - 3
-			}
 
+		if hit, pos := picker.HitTest(x, y); hit && pos > 2 {
+			itemid = uint16(pos) - 3
 		}
 
 		for i := 0; i < 5; i++ {
