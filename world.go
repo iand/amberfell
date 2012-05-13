@@ -918,4 +918,3 @@ func (self *Chunk) Render(selectedBlockFace *BlockFace) {
 	// fmt.Printf("Chunk ticks: %4.0f\n", float64(t.GetTicks())/1e6)
 
 }
-

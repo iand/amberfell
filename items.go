@@ -5,7 +5,6 @@
 */
 package main
 
-
 type Item struct {
 	id   uint16
 	name string
@@ -116,8 +115,8 @@ var handmadeRecipes = []Recipe{
 }
 
 type CampFire struct {
-	pos 			Vectori
-	life            float64
+	pos  Vectori
+	life float64
 }
 
 func (self *CampFire) Intensity() uint16 {
@@ -128,16 +127,14 @@ func (self *CampFire) Update(dt float64) (completed bool) {
 	completed = false
 	self.life -= 0.02 * dt
 	if self.life <= 0 {
- 		TheWorld.Setv(self.pos, BLOCK_AIR)
-       	delete(TheWorld.lightSources,self.pos)
-       	TheWorld.InvalidateRadius(self.pos[XAXIS], self.pos[ZAXIS], CAMPFIRE_INTENSITY)
+		TheWorld.Setv(self.pos, BLOCK_AIR)
+		delete(TheWorld.lightSources, self.pos)
+		TheWorld.InvalidateRadius(self.pos[XAXIS], self.pos[ZAXIS], CAMPFIRE_INTENSITY)
 		completed = true
 	}
 
 	return completed
 }
-
-
 
 type AmberfellPump struct {
 	sourced        bool
