@@ -22,7 +22,6 @@ type Inventory struct {
 	productRects   [18]Rect
 
 	currentContainer ContainerObject
-	containerSlots   []ItemQuantity
 	containerRects   []Rect
 }
 
@@ -105,7 +104,7 @@ func (self *Inventory) Draw(t int64) {
 
 	if self.currentContainer != nil {
 
-		for i := range self.containerSlots {
+		for i := range self.containerRects {
 			x := float64(viewport.lplane) + offset*float64(2+len(self.inventoryRects)/COLSIZE) + float64(i)*offset
 			y := float64(viewport.tplane) - (10.0 * PIXEL_SCALE) - offset*float64(2+float64(len(self.productRects)/len(self.componentRects))) - offset*float64(2+float64(i/len(self.componentRects)))
 			self.containerRects[i] = Rect{x, y - diam, diam, diam}
@@ -113,7 +112,7 @@ func (self *Inventory) Draw(t int64) {
 			self.DrawItemSlot(t, self.containerRects[i])
 		}
 
-		for i := uint16(0); i < self.currentContainer.Capacity(); i++ {
+		for i := uint16(0); i < self.currentContainer.Slots(); i++ {
 			item := self.currentContainer.Item(i)
 			if item != nil {
 				self.DrawItem(t, item.quantity, item.item, self.containerRects[i])
@@ -411,7 +410,6 @@ func (self *Inventory) ShowTooltip(x, y float64, str string) {
 
 func (self *Inventory) Hide() {
 	self.currentContainer = nil
-	self.containerSlots = nil
 	self.containerRects = nil
 
 	self.visible = false
@@ -421,14 +419,9 @@ func (self *Inventory) Hide() {
 func (self *Inventory) Show(container ContainerObject) {
 	self.currentContainer = container
 	if self.currentContainer != nil {
-		self.containerSlots = make([]ItemQuantity, container.Capacity())
-		self.containerRects = make([]Rect, container.Capacity())
+		self.containerRects = make([]Rect, container.Slots())
 	}
 
 	self.visible = true
-
-	if container != nil {
-		container.Interact()
-	}
 
 }

@@ -30,8 +30,11 @@ type ContainerObject interface {
 	Item(slot uint16) *ItemQuantity
 	// Add(item ItemQuantity)
 	// Remove(item ItemQuantity)
-	Capacity() uint16
-	Interact() // Just temporay for testing
+	Slots() uint16
+}
+
+type GeneratorObject interface {
+	Active() bool
 }
 
 type ItemQuantity struct {
@@ -156,10 +159,24 @@ func NewAmberfellPump(pos Vectori, sourced bool, powered bool) *AmberfellPump {
 func (self *AmberfellPump) Update(dt float64) (completed bool) {
 	if self.sourced {
 		self.unitsPerSecond = AMBERFELL_UNITS_PER_SECOND_UNPOWERED
-		neighbours := TheWorld.Neighbours(self.pos)
-		for i := 0; i < 6; i++ {
-			if neighbours[i] == BLOCK_STEAM_GENERATOR {
-				// TODO: check is steam generator is fuelled
+		for face := 0; face < 6; face++ {
+			npos := Vectori{self.pos[XAXIS], self.pos[YAXIS], self.pos[ZAXIS]}
+			switch face {
+			case NORTH_FACE:
+				npos[ZAXIS]--
+			case SOUTH_FACE:
+				npos[ZAXIS]++
+			case EAST_FACE:
+				npos[XAXIS]++
+			case WEST_FACE:
+				npos[XAXIS]--
+			case UP_FACE:
+				npos[YAXIS]++
+			case DOWN_FACE:
+				npos[YAXIS]--
+			}
+
+			if gen, ok := TheWorld.generatorObjects[npos]; ok && gen.Active() {
 				self.unitsPerSecond = AMBERFELL_UNITS_PER_SECOND_POWERED
 				break
 			}
@@ -187,19 +204,63 @@ func (self *AmberfellPump) Label() string {
 	return "Amberfell Pump (inactive)"
 }
 
-func (self *AmberfellPump) Interact() {
-	println("Amberfell pump: ", self.unitsHeld)
-
-}
-
-func (self *AmberfellPump) Capacity() uint16 {
-	return AMBERFELL_PUMP_CAPACITY
+func (self *AmberfellPump) Slots() uint16 {
+	return 1
 }
 
 func (self *AmberfellPump) Item(slot uint16) *ItemQuantity {
-	if float64(slot) <= self.unitsHeld-1 {
-		return &ItemQuantity{BLOCK_AMBERFELL, 1}
+	if slot == 0 && self.unitsHeld > 1 {
+		return &ItemQuantity{BLOCK_AMBERFELL, uint16(self.unitsHeld)}
 	}
 
 	return nil
+}
+
+type SteamGenerator struct {
+	pos  Vectori
+	fuel uint16
+	life float64
+}
+
+func NewSteamGenerator(pos Vectori) *SteamGenerator {
+	gen := SteamGenerator{pos: pos}
+	return &gen
+}
+
+func (self *SteamGenerator) Update(dt float64) (completed bool) {
+	self.life -= 0.02 * dt
+	if self.life <= 0 {
+		if self.fuel > 0 {
+			self.fuel--
+			self.life = 1
+		} else {
+			self.life = 0
+		}
+	}
+
+	return false
+}
+
+func (self *SteamGenerator) Label() string {
+	if self.life > 0 {
+		return "Steam Generator (active)"
+	}
+
+	return "Steam Generator (inactive)"
+}
+
+func (self *SteamGenerator) Slots() uint16 {
+	return 1
+}
+
+func (self *SteamGenerator) Item(slot uint16) *ItemQuantity {
+	if slot == 0 && self.fuel > 1 {
+		return &ItemQuantity{BLOCK_COAL, uint16(self.fuel)}
+	}
+
+	return nil
+}
+
+func (self *SteamGenerator) Active() bool {
+	return self.life > 0
 }

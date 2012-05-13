@@ -21,6 +21,7 @@ type World struct {
 	lightSources     map[Vectori]LightSource
 	timedObjects     map[Vectori]TimedObject
 	containerObjects map[Vectori]ContainerObject
+	generatorObjects map[Vectori]GeneratorObject
 }
 
 type Chunk struct {
@@ -82,6 +83,7 @@ func NewWorld() *World {
 	world.timedObjects = make(map[Vectori]TimedObject)
 	world.containerObjects = make(map[Vectori]ContainerObject)
 	world.lightSources = make(map[Vectori]LightSource)
+	world.generatorObjects = make(map[Vectori]GeneratorObject)
 
 	xc, yc, zc := chunkCoordsFromWorld(PLAYER_START_X, world.GroundLevel(PLAYER_START_X, PLAYER_START_Z), PLAYER_START_Z)
 

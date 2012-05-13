@@ -276,11 +276,10 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 	case ACTION_HAND:
 		blockid := TheWorld.Atv(selectedBlockFace.pos)
 		switch blockid {
-		case BLOCK_AMBERFELL_PUMP:
-			if pump, ok := TheWorld.containerObjects[selectedBlockFace.pos]; ok {
-				inventory.Show(pump)
+		case BLOCK_AMBERFELL_PUMP, BLOCK_STEAM_GENERATOR:
+			if obj, ok := TheWorld.containerObjects[selectedBlockFace.pos]; ok {
+				inventory.Show(obj)
 			}
-
 		}
 
 	case ACTION_BREAK:
@@ -289,6 +288,24 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 			interactingBlockFace.hitCount++
 			if items[uint16(blockid)].hitsNeeded != STRENGTH_UNBREAKABLE && interactingBlockFace.hitCount >= items[uint16(blockid)].hitsNeeded {
 				TheWorld.Setv(selectedBlockFace.pos, BLOCK_AIR)
+
+				switch blockid {
+				case BLOCK_CAMPFIRE:
+					delete(TheWorld.lightSources, selectedBlockFace.pos)
+					delete(TheWorld.timedObjects, selectedBlockFace.pos)
+					TheWorld.InvalidateRadius(selectedBlockFace.pos[XAXIS], selectedBlockFace.pos[ZAXIS], uint16(CAMPFIRE_INTENSITY))
+
+				case BLOCK_AMBERFELL_PUMP:
+					delete(TheWorld.timedObjects, selectedBlockFace.pos)
+					delete(TheWorld.containerObjects, selectedBlockFace.pos)
+
+				case BLOCK_STEAM_GENERATOR:
+					delete(TheWorld.timedObjects, selectedBlockFace.pos)
+					delete(TheWorld.containerObjects, selectedBlockFace.pos)
+					delete(TheWorld.generatorObjects, selectedBlockFace.pos)
+
+				}
+
 				if items[uint16(blockid)].drops != nil {
 					droppedItem := items[uint16(blockid)].drops.item
 					if self.inventory[droppedItem] < MAX_ITEMS_IN_INVENTORY {
@@ -339,6 +356,13 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 					pump := NewAmberfellPump(selectedBlockFace.pos, sourced, false)
 					TheWorld.timedObjects[selectedBlockFace.pos] = pump
 					TheWorld.containerObjects[selectedBlockFace.pos] = pump
+
+				case BLOCK_STEAM_GENERATOR:
+					gen := NewSteamGenerator(selectedBlockFace.pos)
+					gen.fuel = 5
+					TheWorld.timedObjects[selectedBlockFace.pos] = gen
+					TheWorld.containerObjects[selectedBlockFace.pos] = gen
+					TheWorld.generatorObjects[selectedBlockFace.pos] = gen
 
 				}
 
