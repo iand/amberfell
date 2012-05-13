@@ -6,7 +6,6 @@
 package main
 
 import (
-	"container/list"
 	"flag"
 	"fmt"
 	"github.com/banthar/Go-SDL/sdl"
@@ -48,7 +47,7 @@ var (
 	items map[uint16]Item
 
 	// World elements
-	lightSources = list.New()
+	lightSources = []*LightSource{}
 	campFires    = []*CampFire{}
 
 	// HUD elements
@@ -472,15 +471,16 @@ func UpdateTimeOfDay() {
 func UpdateCampfires() {
 	// Age any campfires
 
-	for i, campfire := range campFires {
+	for _, campfire := range campFires {
 		campfire.life -= 0.02
 		if campfire.life <= 0 {
-			lightSource := campfire.lightSourceElem.Value.(*LightSource)
-			pos := IntPosition(lightSource.pos)
+			pos := IntPosition(campfire.lightSource.pos)
 			TheWorld.Setv(pos, BLOCK_AIR)
 			TheWorld.InvalidateRadius(pos[XAXIS], pos[ZAXIS], CAMPFIRE_INTENSITY)
 
-			lightSources.Remove(campfire.lightSourceElem)
+			i := 0
+			for ; lightSources[i] != campfire.lightSource ; i++ { }
+			lightSources = append(lightSources[:i], lightSources[i+1:]...)
 			campFires = append(campFires[:i], campFires[i+1:]...)
 		}
 	}

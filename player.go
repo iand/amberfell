@@ -311,10 +311,10 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 				if blockid == BLOCK_CAMPFIRE {
 					// Add a light source
 
-					light := LightSource{Vectorf{float64(selectedBlockFace.pos[XAXIS]), float64(selectedBlockFace.pos[YAXIS]), float64(selectedBlockFace.pos[ZAXIS])}, CAMPFIRE_INTENSITY}
-					lightElem := lightSources.PushBack(&light)
+					light := &LightSource{Vectorf{float64(selectedBlockFace.pos[XAXIS]), float64(selectedBlockFace.pos[YAXIS]), float64(selectedBlockFace.pos[ZAXIS])}, CAMPFIRE_INTENSITY}
+					lightSources = append(lightSources, light)
 
-					campFires = append(campFires, &CampFire{lightElem, CAMPFIRE_DURATION})
+					campFires = append(campFires, &CampFire{light, CAMPFIRE_DURATION})
 
 					TheWorld.InvalidateRadius(selectedBlockFace.pos[XAXIS], selectedBlockFace.pos[ZAXIS], uint16(CAMPFIRE_INTENSITY))
 

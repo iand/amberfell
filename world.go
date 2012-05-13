@@ -8,7 +8,6 @@ package main
 import (
 	// "fmt"
 	// "github.com/banthar/gl"
-	"container/list"
 	"github.com/iand/perlin"
 	"math"
 	"math/rand"
@@ -50,7 +49,7 @@ type LightSource struct {
 }
 
 type CampFire struct {
-	lightSourceElem *list.Element
+	lightSource	*LightSource
 	life            float64
 }
 
