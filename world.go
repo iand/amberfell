@@ -448,10 +448,10 @@ func (self *World) GetChunkForBlock(x uint16, y uint16, z uint16) (*Chunk, uint1
 // x = 0, z = 0 is in the top left of the home chunk
 func (self *World) GetChunk(cx uint16, cy uint16, cz uint16) *Chunk {
 	
-	if chunk, ok := self.chunks[chunkIndex(cx, cy, cz)]; !ok {
-		chunk = self.GenerateChunk(cx, cy, cz)
+	if chunk, ok := self.chunks[chunkIndex(cx, cy, cz)]; ok {
+		return chunk
 	}
-	return chunk
+	return self.GenerateChunk(cx, cy, cz)
 
 }
 
