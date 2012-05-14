@@ -27,10 +27,12 @@ type TimedObject interface {
 
 type ContainerObject interface {
 	Label() string
-	Item(slot uint16) *ItemQuantity
-	// Add(item ItemQuantity)
-	// Remove(item ItemQuantity)
-	Slots() uint16
+	Item(slot int) ItemQuantity
+	CanTake() bool
+	CanPlace(itemid uint16) bool
+	Take(slot int, quantity uint16)
+	Place(slot int, iq *ItemQuantity)
+	Slots() int
 }
 
 type GeneratorObject interface {
@@ -204,16 +206,37 @@ func (self *AmberfellPump) Label() string {
 	return "Amberfell Pump (inactive)"
 }
 
-func (self *AmberfellPump) Slots() uint16 {
+func (self *AmberfellPump) Slots() int {
 	return 1
 }
 
-func (self *AmberfellPump) Item(slot uint16) *ItemQuantity {
+func (self *AmberfellPump) Item(slot int) ItemQuantity {
 	if slot == 0 && self.unitsHeld > 1 {
-		return &ItemQuantity{BLOCK_AMBERFELL, uint16(self.unitsHeld)}
+		return ItemQuantity{BLOCK_AMBERFELL, uint16(self.unitsHeld)}
 	}
 
-	return nil
+	return ItemQuantity{}
+}
+func (self *AmberfellPump) Take(slot int, quantity uint16) {
+	if slot == 0 {
+		self.unitsHeld -= float64(quantity)
+	}
+
+	if self.unitsHeld < 0 {
+		self.unitsHeld = 0
+	}
+}
+
+func (self *AmberfellPump) Place(slot int, iq *ItemQuantity) {
+	// NOOP
+}
+
+func (self *AmberfellPump) CanTake() bool {
+	return true
+}
+
+func (self *AmberfellPump) CanPlace(itemid uint16) bool {
+	return false
 }
 
 type SteamGenerator struct {
@@ -249,18 +272,45 @@ func (self *SteamGenerator) Label() string {
 	return "Steam Generator (inactive)"
 }
 
-func (self *SteamGenerator) Slots() uint16 {
+func (self *SteamGenerator) Slots() int {
 	return 1
 }
 
-func (self *SteamGenerator) Item(slot uint16) *ItemQuantity {
-	if slot == 0 && self.fuel > 1 {
-		return &ItemQuantity{BLOCK_COAL, uint16(self.fuel)}
+func (self *SteamGenerator) Item(slot int) ItemQuantity {
+	if slot == 0 && self.fuel >= 1 {
+		return ItemQuantity{BLOCK_COAL, uint16(self.fuel)}
 	}
 
-	return nil
+	return ItemQuantity{}
+}
+
+func (self *SteamGenerator) Take(slot int, quantity uint16) {
+	if slot == 0 {
+		self.fuel -= quantity
+	}
+
+	if self.fuel < 0 {
+		self.fuel = 0
+	}
+}
+
+func (self *SteamGenerator) Place(slot int, iq *ItemQuantity) {
+	if slot == 0 && iq.item == BLOCK_COAL {
+		self.fuel += iq.quantity
+	}
 }
 
 func (self *SteamGenerator) Active() bool {
 	return self.life > 0
+}
+
+func (self *SteamGenerator) CanTake() bool {
+	return true
+}
+
+func (self *SteamGenerator) CanPlace(itemid uint16) bool {
+	if itemid == BLOCK_COAL {
+		return true
+	}
+	return false
 }

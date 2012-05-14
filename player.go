@@ -359,7 +359,6 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 
 				case BLOCK_STEAM_GENERATOR:
 					gen := NewSteamGenerator(selectedBlockFace.pos)
-					gen.fuel = 5
 					TheWorld.timedObjects[selectedBlockFace.pos] = gen
 					TheWorld.containerObjects[selectedBlockFace.pos] = gen
 					TheWorld.generatorObjects[selectedBlockFace.pos] = gen

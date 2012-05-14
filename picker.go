@@ -45,7 +45,7 @@ func (self *Picker) Draw(t int64) {
 	gl.End()
 
 	self.DrawItemHighlight(t, ThePlayer.currentAction)
-	self.DrawPlayerItems(t)
+	self.DrawPlayerItems(t, true)
 
 	gl.PopMatrix()
 
@@ -66,7 +66,7 @@ func (self *Picker) DrawItemHighlight(t int64, position uint8) {
 	gl.PopMatrix()
 }
 
-func (self *Picker) DrawPlayerItems(t int64) {
+func (self *Picker) DrawPlayerItems(t int64, drawQuantities bool) {
 
 	gl.PushMatrix()
 	gl.LoadIdentity()
@@ -89,9 +89,11 @@ func (self *Picker) DrawPlayerItems(t int64) {
 			TerrainCube(gVertexBuffer, Vectori{}, [18]uint16{}, item, FACE_NONE)
 			gVertexBuffer.RenderDirect(false)
 
-			gl.LoadIdentity()
-			gl.Translatef(x-17*PIXEL_SCALE, y-19*PIXEL_SCALE, 20)
-			consoleFont.Print(fmt.Sprintf("%d", ThePlayer.inventory[item]))
+			if drawQuantities {
+				gl.LoadIdentity()
+				gl.Translatef(x-17*PIXEL_SCALE, y-19*PIXEL_SCALE, 20)
+				consoleFont.Print(fmt.Sprintf("%d", ThePlayer.inventory[item]))
+			}
 
 		}
 	}
