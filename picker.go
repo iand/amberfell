@@ -57,7 +57,7 @@ func (self *Picker) DrawItemHighlight(t int64, position uint8) {
 
 	actionItemAngle := -(float64(position) - 1.5) * math.Pi / 4
 	gl.Begin(gl.TRIANGLE_FAN)
-	gl.Color4ub(0, 0, 0, 228)
+	gl.Color4ub(64, 64, 64, 228)
 	gl.Vertex2f(self.x-self.actionItemRadius*float32(math.Sin(actionItemAngle)), self.y+self.actionItemRadius*float32(math.Cos(actionItemAngle)))
 	for angle := float64(0); angle <= 2*math.Pi; angle += math.Pi / 2 / 10 {
 		gl.Vertex2f(self.x-self.actionItemRadius*float32(math.Sin(actionItemAngle))-float32(math.Sin(angle))*self.selectionRadius, self.y+self.actionItemRadius*float32(math.Cos(actionItemAngle))+float32(math.Cos(angle))*self.selectionRadius)
@@ -120,8 +120,8 @@ func (self *Picker) HitTest(x, y float64) (bool, int) {
 func (self *Picker) HandleMouseButton(re *sdl.MouseButtonEvent) {
 	if re.Button == 1 && re.State == 1 { // LEFT, DOWN
 		x, y := viewport.ScreenCoordsToWorld2D(re.X, re.Y)
-		hit, pos := self.HitTest(x, y)
-		if hit {
+		
+		if hit, pos := self.HitTest(x, y); hit {
 			ThePlayer.SelectAction(pos)
 		}
 	}
