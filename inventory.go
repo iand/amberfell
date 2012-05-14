@@ -586,98 +586,100 @@ func (self *Inventory) HandleMouseButton(re *sdl.MouseButtonEvent) {
 		if self.currentContainer != nil {
 
 			for i := range self.containerRects {
+				if self.containerRects[i].Contains(x, y) {
 
-				if self.selectedItem == nil {
-					if self.currentContainer.CanTake() {
-						// pick up item, if any
-						if self.currentContainer.Item(i).item != 0 && self.currentContainer.Item(i).quantity > 0 {
-							if bulk {
-								// Act on all items in slot
-								self.selectedItem = &SelectedItem{ItemQuantity{self.currentContainer.Item(i).item, self.currentContainer.Item(i).quantity}, ItemSlot{AREA_CONTAINER, i}}
-								self.currentContainer.Take(i, self.currentContainer.Item(i).quantity)
-							} else {
-								// Act on a single item
-								self.selectedItem = &SelectedItem{ItemQuantity{self.currentContainer.Item(i).item, 1}, ItemSlot{AREA_CONTAINER, i}}
-								self.currentContainer.Take(i, 1)
-							}
-						}
-					}
-				} else if self.currentContainer.Item(i).item == self.selectedItem.item {
-					// Clicked on slot containing same item as current selection
-					// Is this the same slot as the source of items
-					if self.selectedItem.area == AREA_CONTAINER && self.selectedItem.index == i {
+					if self.selectedItem == nil {
 						if self.currentContainer.CanTake() {
-							// Same slot
-							if invert {
-								// drop back into same slot
+							// pick up item, if any
+							if self.currentContainer.Item(i).item != 0 && self.currentContainer.Item(i).quantity > 0 {
 								if bulk {
 									// Act on all items in slot
-									self.currentContainer.Place(i, &ItemQuantity{self.selectedItem.item, self.selectedItem.quantity})
-									self.selectedItem.quantity = 0
-								} else {
-									// Act on a single item
-									self.selectedItem.quantity -= 1
-									self.currentContainer.Place(i, &ItemQuantity{self.selectedItem.item, 1})
-								}
-
-							} else {
-								// pick more up
-								if bulk {
-									// Act on all items in slot
-									self.selectedItem.quantity += self.currentContainer.Item(i).quantity
+									self.selectedItem = &SelectedItem{ItemQuantity{self.currentContainer.Item(i).item, self.currentContainer.Item(i).quantity}, ItemSlot{AREA_CONTAINER, i}}
 									self.currentContainer.Take(i, self.currentContainer.Item(i).quantity)
 								} else {
 									// Act on a single item
-									self.selectedItem.quantity += 1
+									self.selectedItem = &SelectedItem{ItemQuantity{self.currentContainer.Item(i).item, 1}, ItemSlot{AREA_CONTAINER, i}}
 									self.currentContainer.Take(i, 1)
 								}
 							}
 						}
-					} else {
-						// Different slot
-						if invert {
+					} else if self.currentContainer.Item(i).item == self.selectedItem.item {
+						// Clicked on slot containing same item as current selection
+						// Is this the same slot as the source of items
+						if self.selectedItem.area == AREA_CONTAINER && self.selectedItem.index == i {
 							if self.currentContainer.CanTake() {
-								if bulk {
-									// Act on all items in slot
-									self.selectedItem.quantity += self.currentContainer.Item(i).quantity
-									self.currentContainer.Take(i, self.currentContainer.Item(i).quantity)
+								// Same slot
+								if invert {
+									// drop back into same slot
+									if bulk {
+										// Act on all items in slot
+										self.currentContainer.Place(i, &ItemQuantity{self.selectedItem.item, self.selectedItem.quantity})
+										self.selectedItem.quantity = 0
+									} else {
+										// Act on a single item
+										self.selectedItem.quantity -= 1
+										self.currentContainer.Place(i, &ItemQuantity{self.selectedItem.item, 1})
+									}
+
 								} else {
-									// Act on a single item
-									self.selectedItem.quantity += 1
-									self.currentContainer.Take(i, 1)
+									// pick more up
+									if bulk {
+										// Act on all items in slot
+										self.selectedItem.quantity += self.currentContainer.Item(i).quantity
+										self.currentContainer.Take(i, self.currentContainer.Item(i).quantity)
+									} else {
+										// Act on a single item
+										self.selectedItem.quantity += 1
+										self.currentContainer.Take(i, 1)
+									}
 								}
 							}
 						} else {
-							if self.currentContainer.CanPlace(self.selectedItem.item) {
-								if bulk {
-									// Act on all items in slot
-									self.currentContainer.Place(i, &ItemQuantity{self.selectedItem.item, self.selectedItem.quantity})
-									self.selectedItem.quantity = 0
-								} else {
-									// Act on a single item
-									self.selectedItem.quantity -= 1
-									self.currentContainer.Place(i, &ItemQuantity{self.selectedItem.item, 1})
+							// Different slot
+							if invert {
+								if self.currentContainer.CanTake() {
+									if bulk {
+										// Act on all items in slot
+										self.selectedItem.quantity += self.currentContainer.Item(i).quantity
+										self.currentContainer.Take(i, self.currentContainer.Item(i).quantity)
+									} else {
+										// Act on a single item
+										self.selectedItem.quantity += 1
+										self.currentContainer.Take(i, 1)
+									}
+								}
+							} else {
+								if self.currentContainer.CanPlace(self.selectedItem.item) {
+									if bulk {
+										// Act on all items in slot
+										self.currentContainer.Place(i, &ItemQuantity{self.selectedItem.item, self.selectedItem.quantity})
+										self.selectedItem.quantity = 0
+									} else {
+										// Act on a single item
+										self.selectedItem.quantity -= 1
+										self.currentContainer.Place(i, &ItemQuantity{self.selectedItem.item, 1})
+									}
 								}
 							}
 						}
-					}
-				} else if self.currentContainer.Item(i).item == 0 {
-					if self.currentContainer.CanPlace(self.selectedItem.item) {
-						quantity := uint16(1)
-						if bulk {
-							quantity = self.selectedItem.quantity
+					} else if self.currentContainer.Item(i).item == 0 {
+						if self.currentContainer.CanPlace(self.selectedItem.item) {
+							quantity := uint16(1)
+							if bulk {
+								quantity = self.selectedItem.quantity
+							}
+
+							self.selectedItem.quantity -= quantity
+							self.currentContainer.Place(i, &ItemQuantity{self.selectedItem.item, quantity})
 						}
-
-						self.selectedItem.quantity -= quantity
-						self.currentContainer.Place(i, &ItemQuantity{self.selectedItem.item, quantity})
 					}
-				}
 
-				if self.selectedItem != nil && self.selectedItem.quantity == 0 {
-					self.selectedItem = nil
-				}
+					if self.selectedItem != nil && self.selectedItem.quantity == 0 {
+						self.selectedItem = nil
+					}
 
-				return
+					return
+				}
 			}
 		}
 

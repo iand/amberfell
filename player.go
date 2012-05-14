@@ -269,7 +269,7 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 	case ACTION_HAND:
 		blockid := TheWorld.Atv(selectedBlockFace.pos)
 		switch blockid {
-		case BLOCK_AMBERFELL_PUMP, BLOCK_STEAM_GENERATOR:
+		case BLOCK_AMBERFELL_PUMP, BLOCK_STEAM_GENERATOR, BLOCK_AMBERFELL_CONDENSER:
 			if obj, ok := TheWorld.containerObjects[selectedBlockFace.pos]; ok {
 				inventory.Show(obj, nil)
 			}
@@ -299,6 +299,10 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 					delete(TheWorld.timedObjects, selectedBlockFace.pos)
 					delete(TheWorld.containerObjects, selectedBlockFace.pos)
 					delete(TheWorld.generatorObjects, selectedBlockFace.pos)
+
+				case BLOCK_AMBERFELL_CONDENSER:
+					delete(TheWorld.timedObjects, selectedBlockFace.pos)
+					delete(TheWorld.containerObjects, selectedBlockFace.pos)
 
 				}
 
@@ -358,6 +362,11 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 					TheWorld.timedObjects[selectedBlockFace.pos] = gen
 					TheWorld.containerObjects[selectedBlockFace.pos] = gen
 					TheWorld.generatorObjects[selectedBlockFace.pos] = gen
+
+				case BLOCK_AMBERFELL_CONDENSER:
+					obj := NewAmberfellCondenser(selectedBlockFace.pos)
+					TheWorld.timedObjects[selectedBlockFace.pos] = obj
+					TheWorld.containerObjects[selectedBlockFace.pos] = obj
 
 				}
 
