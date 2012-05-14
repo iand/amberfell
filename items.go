@@ -71,30 +71,37 @@ func InitItems() {
 	items[BLOCK_AIR] = NewItem(BLOCK_AIR, "Air", TEXTURE_NONE, TEXTURE_NONE, STRENGTH_STONE, true, false, false, nil)
 	items[BLOCK_STONE] = NewItem(BLOCK_STONE, "Stone", TEXTURE_STONE, TEXTURE_STONE, STRENGTH_STONE, false, true, true, &ItemQuantity{BLOCK_STONE, 1})
 	items[BLOCK_DIRT] = NewItem(BLOCK_DIRT, "Dirt", TEXTURE_DIRT, TEXTURE_DIRT_TOP, STRENGTH_DIRT, false, true, true, &ItemQuantity{BLOCK_DIRT, 1})
-	items[BLOCK_BURNT_GRASS] = NewItem(BLOCK_DIRT, "Dirt", TEXTURE_DIRT, TEXTURE_BURNT_GRASS, STRENGTH_DIRT, false, true, true, &ItemQuantity{BLOCK_DIRT, 1})
+	items[BLOCK_BURNT_GRASS] = NewItem(BLOCK_BURNT_GRASS, "Dirt", TEXTURE_DIRT, TEXTURE_BURNT_GRASS, STRENGTH_DIRT, false, true, true, &ItemQuantity{BLOCK_DIRT, 1})
 	items[BLOCK_TRUNK] = NewItem(BLOCK_TRUNK, "Tree trunk", TEXTURE_TRUNK, TEXTURE_TRUNK, STRENGTH_WOOD, false, true, true, &ItemQuantity{BLOCK_TRUNK, 1})
-	items[BLOCK_LEAVES] = NewItem(BLOCK_TRUNK, "Leaves", TEXTURE_LEAVES, TEXTURE_LEAVES, STRENGTH_LEAVES, false, false, false, &ItemQuantity{ITEM_FIREWOOD, 1})
-	items[BLOCK_BUSH] = NewItem(BLOCK_BUSH, "Bush", TEXTURE_LEAVES, TEXTURE_LEAVES, STRENGTH_LEAVES, false, true, false, &ItemQuantity{ITEM_FIREWOOD, 1})
+	items[BLOCK_LEAVES] = NewItem(BLOCK_LEAVES, "Leaves", TEXTURE_LEAVES, TEXTURE_LEAVES, STRENGTH_LEAVES, false, false, false, &ItemQuantity{ITEM_FIREWOOD, 1})
+	items[BLOCK_BUSH] = NewItem(BLOCK_BUSH, "Bush", TEXTURE_LEAVES, TEXTURE_LEAVES, STRENGTH_LEAVES, false, false, false, &ItemQuantity{ITEM_FIREWOOD, 1})
 	items[BLOCK_LOG_WALL] = NewItem(BLOCK_LOG_WALL, "Log wall", TEXTURE_LOG_WALL, TEXTURE_LOG_WALL_TOP, STRENGTH_WOOD, true, true, true, &ItemQuantity{ITEM_FIREWOOD, 1})
 	items[BLOCK_LOG_SLAB] = NewItem(BLOCK_LOG_SLAB, "Log slab", TEXTURE_LOG_WALL, TEXTURE_LOG_WALL_TOP, STRENGTH_WOOD, true, true, true, &ItemQuantity{ITEM_FIREWOOD, 1})
 
+	items[BLOCK_PLANK_WALL] = NewItem(BLOCK_PLANK_WALL, "Wooden wall", TEXTURE_PLANK_WALL, TEXTURE_PLANK_WALL, STRENGTH_WOOD, true, true, true, &ItemQuantity{ITEM_PLANK, 1})
+	items[BLOCK_PLANK_SLAB] = NewItem(BLOCK_PLANK_SLAB, "Wooden slab", TEXTURE_PLANK_WALL, TEXTURE_PLANK_WALL, STRENGTH_WOOD, true, true, true, &ItemQuantity{ITEM_PLANK, 1})
+
 	items[BLOCK_COAL_SEAM] = NewItem(BLOCK_COAL_SEAM, "Coal Seam", TEXTURE_COAL, TEXTURE_COAL, STRENGTH_STONE, false, false, false, &ItemQuantity{ITEM_COAL, 1})
-	items[BLOCK_IRON_SEAM] = NewItem(BLOCK_IRON_SEAM, "Iron Seam", TEXTURE_IRON, TEXTURE_IRON, STRENGTH_STONE, false, false, false, &ItemQuantity{ITEM_IRON_ORE, 1})
-	items[BLOCK_COPPER_SEAM] = NewItem(BLOCK_COPPER_SEAM, "Copper Seam", TEXTURE_COPPER, TEXTURE_COPPER, STRENGTH_STONE, false, false, false, &ItemQuantity{ITEM_COPPER_ORE, 1})
+	items[BLOCK_IRON_SEAM] = NewItem(BLOCK_IRON_SEAM, "Haematite Seam", TEXTURE_IRON, TEXTURE_IRON, STRENGTH_STONE, false, false, false, &ItemQuantity{ITEM_IRON_ORE, 1})
+	items[BLOCK_COPPER_SEAM] = NewItem(BLOCK_COPPER_SEAM, "Malachite Seam", TEXTURE_COPPER, TEXTURE_COPPER, STRENGTH_STONE, false, false, false, &ItemQuantity{ITEM_COPPER_ORE, 1})
+	items[BLOCK_MAGNETITE_SEAM] = NewItem(BLOCK_MAGNETITE_SEAM, "Magnetite Seam", TEXTURE_COPPER, TEXTURE_COPPER, STRENGTH_STONE, false, false, false, &ItemQuantity{ITEM_MAGNETITE_ORE, 1})
 	items[BLOCK_AMBERFELL_SOURCE] = NewItem(BLOCK_AMBERFELL_SOURCE, "Amberfell Source", TEXTURE_AMBERFELL_SOURCE, TEXTURE_AMBERFELL_SOURCE_TOP, STRENGTH_UNBREAKABLE, false, true, true, nil)
 	items[BLOCK_CARVED_STONE] = NewItem(BLOCK_CARVED_STONE, "Carved stone", TEXTURE_CARVED_STONE, TEXTURE_STONE, STRENGTH_STONE, false, true, true, &ItemQuantity{BLOCK_STONE, 1})
 	items[BLOCK_CAMPFIRE] = NewItem(BLOCK_CAMPFIRE, "Campfire", TEXTURE_LOG_WALL, TEXTURE_FIRE, STRENGTH_LEAVES, true, true, true, &ItemQuantity{ITEM_FIREWOOD, 1})
 
 	items[BLOCK_AMBERFELL_PUMP] = NewItem(BLOCK_AMBERFELL_PUMP, "Amberfell Pump", TEXTURE_COPPER_MACH_SIDE, TEXTURE_COPPER_MACH_TOP, STRENGTH_IRON, false, true, true, &ItemQuantity{BLOCK_AMBERFELL_PUMP, 1})
 	items[BLOCK_STEAM_GENERATOR] = NewItem(BLOCK_STEAM_GENERATOR, "Steam Generator", TEXTURE_IRON_MACH_SIDE, TEXTURE_IRON_MACH_TOP, STRENGTH_IRON, false, true, true, &ItemQuantity{BLOCK_STEAM_GENERATOR, 1})
-	items[BLOCK_CARPENTERS_BENCH] = NewItem(BLOCK_CARPENTERS_BENCH, "Carpenter's Bench", TEXTURE_CARPENTERS_BENCH, TEXTURE_CARPENTERS_BENCH_TOP, STRENGTH_WOOD, false, true, true, &ItemQuantity{ITEM_FIREWOOD, 5})
+	items[BLOCK_CARPENTERS_BENCH] = NewItem(BLOCK_CARPENTERS_BENCH, "Carpenter's Bench", TEXTURE_PLANK_WALL, TEXTURE_CARPENTERS_BENCH_TOP, STRENGTH_WOOD, false, true, true, &ItemQuantity{ITEM_FIREWOOD, 5})
 
 	items[ITEM_FIREWOOD] = NewItem(ITEM_FIREWOOD, "Firewood", TEXTURE_ITEM_FIREWOOD, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
 	items[ITEM_PLANK] = NewItem(ITEM_PLANK, "Plank", TEXTURE_ITEM_PLANK, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
 	items[ITEM_COAL] = NewItem(ITEM_COAL, "Coal", TEXTURE_ITEM_COAL, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
-	items[ITEM_IRON_ORE] = NewItem(ITEM_IRON_ORE, "Iron Ore", TEXTURE_ITEM_IRON_ORE, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
-	items[ITEM_COPPER_ORE] = NewItem(ITEM_COPPER_ORE, "Copper Ore", TEXTURE_ITEM_COPPER_ORE, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
+	items[ITEM_IRON_ORE] = NewItem(ITEM_IRON_ORE, "Haematite", TEXTURE_ITEM_IRON_ORE, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
+	items[ITEM_MAGNETITE_ORE] = NewItem(ITEM_MAGNETITE_ORE, "Magnetite", TEXTURE_ITEM_IRON_ORE, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
+	items[ITEM_COPPER_ORE] = NewItem(ITEM_COPPER_ORE, "Malachite", TEXTURE_ITEM_COPPER_ORE, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
 	items[ITEM_AMBERFELL] = NewItem(ITEM_AMBERFELL, "Amberfell", TEXTURE_ITEM_AMBERFELL, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
+	items[ITEM_LODESTONE] = NewItem(ITEM_LODESTONE, "Lodestone", TEXTURE_ITEM_LODESTONE, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
+	items[ITEM_AMBERFELL_CRYSTAL] = NewItem(ITEM_AMBERFELL_CRYSTAL, "Amberfell Crystal", TEXTURE_ITEM_AMBERFELL_CRYSTAL, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
 
 }
 
@@ -343,8 +350,16 @@ func (self *CarpentersBench) Recipes() []Recipe {
 }
 
 var carpenterRecipes = []Recipe{
-	{product: ItemQuantity{ITEM_PLANK, 2},
+	{product: ItemQuantity{ITEM_PLANK, 4},
 		components: []ItemQuantity{
 			{BLOCK_TRUNK, 1},
+		}},
+	{product: ItemQuantity{BLOCK_PLANK_WALL, 1},
+		components: []ItemQuantity{
+			{ITEM_PLANK, 3},
+		}},
+	{product: ItemQuantity{BLOCK_PLANK_SLAB, 1},
+		components: []ItemQuantity{
+			{ITEM_PLANK, 3},
 		}},
 }

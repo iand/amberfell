@@ -49,7 +49,7 @@ func (self *VertexBuffer) Reset() {
 }
 
 func (self *VertexBuffer) AddFace(face uint8, texture uint16, selected bool, shade int, x1, y1, z1, tx1, ty1, x2, y2, z2, tx2, ty2 float32) {
-	if self.vertexCount >= VERTEX_BUFFER_CAPACITY-4 {
+	if self.vertexCount >= cap(self.vertices)-4 {
 		// TODO: log a warning about overflowing buffer
 		return
 	}
@@ -385,7 +385,7 @@ func TerrainCube(vertexBuffer *VertexBuffer, pos Vectori, neighbours [18]uint16,
 	switch blockid {
 	case BLOCK_CAMPFIRE:
 		Pile(vertexBuffer, x, y, z, ORIENT_EAST, block, visible, shadeLevels, selectedFace)
-	case BLOCK_LOG_SLAB:
+	case BLOCK_LOG_SLAB, BLOCK_PLANK_SLAB:
 		if neighbours[NORTH_FACE] != BLOCK_AIR {
 			if neighbours[EAST_FACE] != BLOCK_AIR {
 				if neighbours[SOUTH_FACE] != BLOCK_AIR {
@@ -453,7 +453,7 @@ func TerrainCube(vertexBuffer *VertexBuffer, pos Vectori, neighbours [18]uint16,
 			SlabSingle(vertexBuffer, x, y, z, ORIENT_EAST, block, visible, shadeLevels, selectedFace)
 		}
 
-	case BLOCK_LOG_WALL:
+	case BLOCK_LOG_WALL, BLOCK_PLANK_WALL:
 		if neighbours[NORTH_FACE] != BLOCK_AIR {
 			if neighbours[EAST_FACE] != BLOCK_AIR {
 				if neighbours[SOUTH_FACE] != BLOCK_AIR {

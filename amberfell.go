@@ -264,7 +264,7 @@ func gameLoop() {
 						if inventory.visible {
 							inventory.Hide()
 						} else {
-							inventory.Show(nil)
+							inventory.Show(nil, nil)
 						}
 					}
 

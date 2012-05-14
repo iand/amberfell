@@ -57,14 +57,13 @@ func (self *Player) Act(dt float64) {
 	// noop
 }
 
-func (player *Player) Draw(center Vectorf, selectedBlockFace *BlockFace) {
+func (self *Player) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 
-	pos := Vectorf{player.position[XAXIS], player.position[YAXIS], player.position[ZAXIS]}
+	pos := Vectorf{self.position[XAXIS], self.position[YAXIS], self.position[ZAXIS]}
 	gl.PushMatrix()
 
-	gl.Translatef(float32(player.position[XAXIS]), float32(player.position[YAXIS]), float32(player.position[ZAXIS]))
-	//stepHeight := float32(math.Sin(player.Bounce * piover180)/10.0)
-	gl.Rotated(player.Heading(), 0.0, 1.0, 0.0)
+	gl.Translated(self.position[XAXIS], self.position[YAXIS], self.position[ZAXIS])
+	gl.Rotated(self.Heading(), 0.0, 1.0, 0.0)
 
 	// Translate to top of ground block
 	gl.Translatef(0.0, -0.5, 0.0)
@@ -91,17 +90,11 @@ func (player *Player) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 
 	var legAngle, torsoAngle, leftArmAngle, rightArmAngle, step float64
 
-	// if player.velocity[YAXIS] != 0 {
-	// 	legAngle = 20
-	// 	leftArmAngle = 120
-	// 	rightArmAngle = 120
-	// } else {
-	legAngle = 40 * (math.Abs(player.velocity[XAXIS]) + math.Abs(player.velocity[ZAXIS])) / player.walkingSpeed * math.Sin(player.walkSequence)
+	legAngle = 40 * (math.Abs(self.velocity[XAXIS]) + math.Abs(self.velocity[ZAXIS])) / self.walkingSpeed * math.Sin(self.walkSequence)
 	torsoAngle = -math.Abs(legAngle / 6)
 	leftArmAngle = -legAngle * 1.2
 	rightArmAngle = legAngle * 1.2
-	step = headHeight * 0.1 * math.Pow(math.Sin(player.walkSequence), 2)
-	// }
+	step = headHeight * 0.1 * math.Pow(math.Sin(self.walkSequence), 2)
 
 	gl.Translated(0.0, step, 0)
 	pos[YAXIS] += step
@@ -167,13 +160,13 @@ func (player *Player) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 
 	if selectedBlockFace != nil {
 		blockPos := selectedBlockFace.pos.Vectorf()
-		headPos := player.position.Add(Vectorf{0, headHeight * 9, 0})
+		headPos := self.position.Add(Vectorf{0, headHeight * 9, 0})
 
 		blockDir := blockPos.Minus(headPos)
-		if player.Facing(blockDir) {
+		if self.Facing(blockDir) {
 			yrot := (math.Atan2(blockDir[XAXIS], blockDir[ZAXIS]) - math.Pi/2) * 180 / math.Pi
 			zrot, xrot := -12.0, -12.0
-			gl.Rotated(-player.Heading(), 0.0, 1.0, 0.0)
+			gl.Rotated(-self.Heading(), 0.0, 1.0, 0.0)
 			gl.Rotated(yrot, 0.0, 1.0, 0.0)
 			gl.Rotated(zrot, 0.0, 0.0, 1.0)
 			gl.Rotated(xrot, 1.0, 0.0, 0.0)
@@ -278,8 +271,11 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 		switch blockid {
 		case BLOCK_AMBERFELL_PUMP, BLOCK_STEAM_GENERATOR:
 			if obj, ok := TheWorld.containerObjects[selectedBlockFace.pos]; ok {
-				inventory.Show(obj)
+				inventory.Show(obj, nil)
 			}
+		case BLOCK_CARPENTERS_BENCH:
+			inventory.Show(nil, NewCarpentersBench(selectedBlockFace.pos))
+
 		}
 
 	case ACTION_BREAK:

@@ -14,10 +14,10 @@ import (
 
 type Inventory struct {
 	visible        bool
-	inventorySlots [60]ItemQuantity
+	inventorySlots [72]ItemQuantity
 	componentSlots [6]ItemQuantity
 	productSlots   [18]*Recipe
-	inventoryRects [60]Rect
+	inventoryRects [72]Rect
 	componentRects [6]Rect
 	productRects   [18]Rect
 
@@ -25,6 +25,7 @@ type Inventory struct {
 
 	currentContainer ContainerObject
 	containerRects   []Rect
+	currentCrafting  CraftingObject
 	drawBuffer       *VertexBuffer
 }
 
@@ -80,14 +81,22 @@ func (self *Inventory) Draw(t int64) {
 	const blocksize = float64(0.3)
 	const COLSIZE = 12
 
-	diam := blocksize * 2.4
+	slotsize := blocksize * 2.4
+	slotstep := slotsize + float64(4)*PIXEL_SCALE
+	slotsInRow := len(self.componentRects)
 
-	offset := diam + float64(4)*PIXEL_SCALE
+	xtools := float64(viewport.lplane) + 10.0*PIXEL_SCALE
+	ytools := float64(viewport.tplane) - 10.0*PIXEL_SCALE - slotstep
 
+	gl.PushMatrix()
+	gl.LoadIdentity()
+	gl.Translated(xtools, ytools+4*PIXEL_SCALE, 0)
+	inventoryItemFont.Print("Inventory")
+	gl.PopMatrix()
 	for i := range self.inventoryRects {
-		x := float64(viewport.lplane) + float64(10)*PIXEL_SCALE + float64(i/COLSIZE)*offset
-		y := float64(viewport.tplane) - float64(10)*PIXEL_SCALE - float64(i%COLSIZE)*offset
-		self.inventoryRects[i] = Rect{x, y - diam, diam, diam}
+		x := xtools + float64(i%slotsInRow)*slotstep
+		y := ytools - float64(i/slotsInRow)*slotstep
+		self.inventoryRects[i] = Rect{x, y - slotsize, slotsize, slotsize}
 		self.DrawItemSlot(t, self.inventoryRects[i])
 	}
 
@@ -97,10 +106,23 @@ func (self *Inventory) Draw(t int64) {
 		}
 	}
 
+	xtools += slotstep * (1.0 + float64(slotsInRow))
+
+	gl.PushMatrix()
+	gl.LoadIdentity()
+	gl.Translated(xtools, ytools+4*PIXEL_SCALE, 0)
+
+	if self.currentCrafting == nil {
+		inventoryItemFont.Print("Handcrafting")
+	} else {
+		inventoryItemFont.Print(self.currentCrafting.Label())
+	}
+	gl.PopMatrix()
+
 	for i := range self.componentSlots {
-		x := float64(viewport.lplane) + offset*float64(2+len(self.inventoryRects)/COLSIZE) + float64(i)*offset
-		y := float64(viewport.tplane) - (10.0 * PIXEL_SCALE)
-		self.componentRects[i] = Rect{x, y - diam, diam, diam}
+		x := xtools + float64(i)*slotstep
+		y := ytools
+		self.componentRects[i] = Rect{x, y - slotsize, slotsize, slotsize}
 
 		self.DrawItemSlot(t, self.componentRects[i])
 	}
@@ -111,10 +133,11 @@ func (self *Inventory) Draw(t int64) {
 		}
 	}
 
+	ytools -= slotstep * 2
 	for i := range self.productSlots {
-		x := float64(viewport.lplane) + offset*float64(2+len(self.inventoryRects)/COLSIZE) + offset*float64(i%len(self.componentRects))
-		y := float64(viewport.tplane) - (10.0 * PIXEL_SCALE) - offset*float64(2+float64(i/len(self.componentRects)))
-		self.productRects[i] = Rect{x, y - diam, diam, diam}
+		x := xtools + slotstep*float64(i%slotsInRow)
+		y := ytools - slotstep*float64(i/slotsInRow)
+		self.productRects[i] = Rect{x, y - slotsize, slotsize, slotsize}
 
 		self.DrawItemSlot(t, self.productRects[i])
 	}
@@ -125,12 +148,19 @@ func (self *Inventory) Draw(t int64) {
 		}
 	}
 
+	ytools -= slotstep * float64(1+len(self.productRects)/slotsInRow)
 	if self.currentContainer != nil {
 
+		gl.PushMatrix()
+		gl.LoadIdentity()
+		gl.Translated(xtools, ytools+4*PIXEL_SCALE, 0)
+		inventoryItemFont.Print(self.currentContainer.Label())
+		gl.PopMatrix()
+
 		for i := range self.containerRects {
-			x := float64(viewport.lplane) + offset*float64(2+len(self.inventoryRects)/COLSIZE) + float64(i)*offset
-			y := float64(viewport.tplane) - (10.0 * PIXEL_SCALE) - offset*float64(2+float64(len(self.productRects)/len(self.componentRects))) - offset*float64(2+float64(i/len(self.componentRects)))
-			self.containerRects[i] = Rect{x, y - diam, diam, diam}
+			x := xtools + slotstep*float64(i%slotsInRow)
+			y := ytools - slotstep*float64(i/slotsInRow)
+			self.containerRects[i] = Rect{x, y - slotsize, slotsize, slotsize}
 
 			self.DrawItemSlot(t, self.containerRects[i])
 		}
@@ -140,12 +170,6 @@ func (self *Inventory) Draw(t int64) {
 				self.DrawItemInSlot(t, self.currentContainer.Item(i).quantity, self.currentContainer.Item(i).item, self.containerRects[i])
 			}
 		}
-
-		gl.PushMatrix()
-		gl.LoadIdentity()
-		gl.Translated(self.containerRects[0].x, self.containerRects[0].y+diam, 0)
-		inventoryItemFont.Print(self.currentContainer.Label())
-		gl.PopMatrix()
 
 	}
 
@@ -264,9 +288,14 @@ func (self *Inventory) UpdateProducts() {
 		self.productSlots[i] = nil
 	}
 
+	recipes := handmadeRecipes
+	if self.currentCrafting != nil {
+		recipes = self.currentCrafting.Recipes()
+	}
+
 	productIndex := 0
-	for i := range handmadeRecipes {
-		recipe := &handmadeRecipes[i]
+	for i := range recipes {
+		recipe := &recipes[i]
 		if self.HasRecipeComponents(recipe) {
 			self.productSlots[productIndex] = recipe
 			productIndex++
@@ -789,6 +818,7 @@ func (self *Inventory) ShowTooltip(x, y float64, str string) {
 
 func (self *Inventory) Hide() {
 	self.currentContainer = nil
+	self.currentCrafting = nil
 	self.containerRects = nil
 
 	for i := range ThePlayer.inventory {
@@ -822,11 +852,14 @@ func (self *Inventory) Hide() {
 
 }
 
-func (self *Inventory) Show(container ContainerObject) {
+func (self *Inventory) Show(container ContainerObject, crafting CraftingObject) {
 	self.currentContainer = container
 	if self.currentContainer != nil {
 		self.containerRects = make([]Rect, container.Slots())
 	}
+
+	self.currentCrafting = crafting
+
 	self.selectedItem = nil
 
 	slot := 0
