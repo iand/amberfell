@@ -73,26 +73,30 @@ func (self *Picker) DrawPlayerItems(t int64, drawQuantities bool) {
 
 	for i := 0; i < 5; i++ {
 
-		item := ThePlayer.equippedItems[i]
-		if item != ITEM_NONE {
+		itemid := ThePlayer.equippedItems[i]
+		if itemid != ITEM_NONE {
 			angle := -(float64(i) + 1.5) * math.Pi / 4
 			gl.LoadIdentity()
 			x := self.x - self.actionItemRadius*float32(math.Sin(angle))
 			y := self.y + self.actionItemRadius*float32(math.Cos(angle))
 			gl.Translatef(x, y, 0)
 
-			gl.Rotatef(360*float32(math.Sin(float64(t)/1e10+float64(i))), 1.0, 0.0, 0.0)
-			gl.Rotatef(360*float32(math.Cos(float64(t)/1e10+float64(i))), 0.0, 1.0, 0.0)
-			gl.Rotatef(360*float32(math.Sin(float64(t)/1e10+float64(i))), 0.0, 0.0, 1.0)
+			gl.Rotated(90, 1.0, 0.0, 0.0)
+			gl.Rotated(30*math.Sin(float64(t)/1e9+float64(itemid)/2), 0.0, 1.0, 0.0)
+
 			gl.Scalef(blockscale, blockscale, blockscale)
-			gVertexBuffer.Reset()
-			TerrainCube(gVertexBuffer, Vectori{}, [18]uint16{}, item, FACE_NONE)
-			gVertexBuffer.RenderDirect(false)
+			gGuiBuffer.Reset()
+			if itemid < 256 {
+				TerrainCube(gGuiBuffer, Vectori{}, [18]uint16{BLOCK_DIRT, BLOCK_DIRT, BLOCK_DIRT, BLOCK_DIRT, BLOCK_AIR, BLOCK_DIRT, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR}, itemid, FACE_NONE)
+			} else {
+				RenderItemFlat(gGuiBuffer, Vectori{}, itemid)
+			}
+			gGuiBuffer.RenderDirect(false)
 
 			if drawQuantities {
 				gl.LoadIdentity()
 				gl.Translatef(x-17*PIXEL_SCALE, y-19*PIXEL_SCALE, 20)
-				consoleFont.Print(fmt.Sprintf("%d", ThePlayer.inventory[item]))
+				consoleFont.Print(fmt.Sprintf("%d", ThePlayer.inventory[itemid]))
 			}
 
 		}

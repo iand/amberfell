@@ -25,6 +25,7 @@ type Inventory struct {
 
 	currentContainer ContainerObject
 	containerRects   []Rect
+	drawBuffer       *VertexBuffer
 }
 
 type ItemSlot struct {
@@ -43,6 +44,12 @@ const (
 	AREA_HANDHELD_PRODUCT   = 3
 	AREA_CONTAINER          = 4
 )
+
+func NewInventory() *Inventory {
+	inv := &Inventory{}
+	inv.drawBuffer = NewVertexBuffer(1000, terrainTexture)
+	return inv
+}
 
 func (self *Inventory) Draw(t int64) {
 	gl.MatrixMode(gl.MODELVIEW)
@@ -143,14 +150,14 @@ func (self *Inventory) Draw(t int64) {
 	}
 
 	var mousex, mousey int
-	sdl.GetMouseState(&mousex, &mousey)
+	mousestate := sdl.GetMouseState(&mousex, &mousey)
 
 	if self.selectedItem != nil {
 		x, y := viewport.ScreenCoordsToWorld2D(uint16(mousex), uint16(mousey))
 		self.DrawItem(t, self.selectedItem.quantity, self.selectedItem.item, x, y)
 	}
 
-	//self.HandleMouse(mousex, mousey, mousestate)
+	self.HandleMouse(mousex, mousey, mousestate)
 
 	gl.PopMatrix()
 }
@@ -186,27 +193,32 @@ func (self *Inventory) DrawItemSlot(t int64, r Rect) {
 	gl.PopMatrix()
 }
 
-func (self *Inventory) DrawItemInSlot(t int64, quantity uint16, blockid uint16, r Rect) {
-	self.DrawItem(t, quantity, blockid, r.x+r.sizex/2, r.y+r.sizey/2+4*PIXEL_SCALE)
+func (self *Inventory) DrawItemInSlot(t int64, quantity uint16, itemid uint16, r Rect) {
+	self.DrawItem(t, quantity, itemid, r.x+r.sizex/2, r.y+r.sizey/2+4*PIXEL_SCALE)
 
 }
 
-func (self *Inventory) DrawItem(t int64, quantity uint16, blockid uint16, x float64, y float64) {
+func (self *Inventory) DrawItem(t int64, quantity uint16, itemid uint16, x float64, y float64) {
 	gl.PushMatrix()
 	gl.LoadIdentity()
 
+	// angle := -90.0
 	const blocksize = float32(0.3)
 
-	i := 1
 	gl.Translated(x, y, 0)
 
-	gl.Rotatef(360*float32(math.Sin(float64(t)/1e10+float64(i))), 1.0, 0.0, 0.0)
-	gl.Rotatef(360*float32(math.Cos(float64(t)/1e10+float64(i))), 0.0, 1.0, 0.0)
-	gl.Rotatef(360*float32(math.Sin(float64(t)/1e10+float64(i))), 0.0, 0.0, 1.0)
+	//gl.Rotated(angle, 1.0, 0.0, 0.0)
+	gl.Rotated(90, 1.0, 0.0, 0.0)
+	gl.Rotated(30*math.Sin(float64(t)/1e9+float64(itemid)/2), 0.0, 1.0, 0.0)
 	gl.Scalef(blocksize, blocksize, blocksize)
-	gVertexBuffer.Reset()
-	TerrainCube(gVertexBuffer, Vectori{}, [18]uint16{}, blockid, FACE_NONE)
-	gVertexBuffer.RenderDirect(false)
+	self.drawBuffer.Reset()
+
+	if itemid < 256 {
+		TerrainCube(self.drawBuffer, Vectori{}, [18]uint16{BLOCK_DIRT, BLOCK_DIRT, BLOCK_DIRT, BLOCK_DIRT, BLOCK_AIR, BLOCK_DIRT, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR}, itemid, FACE_NONE)
+	} else {
+		RenderItemFlat(self.drawBuffer, Vectori{}, itemid)
+	}
+	self.drawBuffer.RenderDirect(false)
 
 	gl.LoadIdentity()
 	gl.Translated(x+2*PIXEL_SCALE-48*PIXEL_SCALE*float64(blocksize), y-7*PIXEL_SCALE-48*PIXEL_SCALE*float64(blocksize), 0)

@@ -349,7 +349,7 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 
 				case BLOCK_AMBERFELL_PUMP:
 					sourced := false
-					if selectedBlockFace.pos[YAXIS] > 0 && TheWorld.At(selectedBlockFace.pos[XAXIS], selectedBlockFace.pos[YAXIS]-1, selectedBlockFace.pos[ZAXIS]) == BLOCK_AMBERFELL {
+					if selectedBlockFace.pos[YAXIS] > 0 && TheWorld.At(selectedBlockFace.pos[XAXIS], selectedBlockFace.pos[YAXIS]-1, selectedBlockFace.pos[ZAXIS]) == BLOCK_AMBERFELL_SOURCE {
 						sourced = true
 					}
 
