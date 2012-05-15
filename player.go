@@ -14,9 +14,6 @@ import (
 
 type Player struct {
 	MobData
-	Bounce float64
-	// position      Vectorf
-	// velocity      Vectorf
 	currentAction     uint8
 	currentItem       uint16
 	equippedItems     [7]uint16
@@ -35,7 +32,12 @@ func (self *Player) Init(heading float64, x uint16, z uint16) {
 	self.position[XAXIS] = float64(x)
 	self.position[YAXIS] = float64(TheWorld.FindSurface(x, z))
 	self.position[ZAXIS] = float64(z)
+	self.mass = 5
+	self.stamina = 30
+	self.energy = self.stamina
+
 	self.walkingSpeed = 14
+	self.sprintSpeed = 22
 	self.currentAction = ACTION_HAND
 	self.currentItem = ITEM_NONE
 
@@ -90,7 +92,7 @@ func (self *Player) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 
 	var legAngle, torsoAngle, leftArmAngle, rightArmAngle, step float64
 
-	legAngle = 40 * (math.Abs(self.velocity[XAXIS]) + math.Abs(self.velocity[ZAXIS])) / self.walkingSpeed * math.Sin(self.walkSequence)
+	legAngle = 55 * (math.Abs(self.velocity[XAXIS]) + math.Abs(self.velocity[ZAXIS])) / self.sprintSpeed * math.Sin(self.walkSequence)
 	torsoAngle = -math.Abs(legAngle / 6)
 	leftArmAngle = -legAngle * 1.2
 	rightArmAngle = legAngle * 1.2
@@ -194,8 +196,12 @@ func (self *Player) HandleKeys(keys []uint8) {
 			self.velocity[XAXIS] = math.Cos(self.Heading()*math.Pi/180) * self.walkingSpeed / 2
 			self.velocity[ZAXIS] = -math.Sin(self.Heading()*math.Pi/180) * self.walkingSpeed / 2
 		} else {
-			self.velocity[XAXIS] = math.Cos(self.Heading()*math.Pi/180) * self.walkingSpeed
-			self.velocity[ZAXIS] = -math.Sin(self.Heading()*math.Pi/180) * self.walkingSpeed
+			speed := self.walkingSpeed
+			if self.energy > 5 && keys[sdl.K_LSHIFT] != 0 || keys[sdl.K_RSHIFT] != 0 {
+				speed = self.sprintSpeed
+			}
+			self.velocity[XAXIS] = math.Cos(self.Heading()*math.Pi/180) * speed
+			self.velocity[ZAXIS] = -math.Sin(self.Heading()*math.Pi/180) * speed
 		}
 
 	}
@@ -204,8 +210,12 @@ func (self *Player) HandleKeys(keys []uint8) {
 			self.velocity[XAXIS] = -math.Cos(self.Heading()*math.Pi/180) * self.walkingSpeed / 4
 			self.velocity[ZAXIS] = math.Sin(self.Heading()*math.Pi/180) * self.walkingSpeed / 4
 		} else {
-			self.velocity[XAXIS] = -math.Cos(self.Heading()*math.Pi/180) * self.walkingSpeed / 2
-			self.velocity[ZAXIS] = math.Sin(self.Heading()*math.Pi/180) * self.walkingSpeed / 2
+			speed := self.walkingSpeed
+			if self.energy > 5 && keys[sdl.K_LSHIFT] != 0 || keys[sdl.K_RSHIFT] != 0 {
+				speed = self.sprintSpeed
+			}
+			self.velocity[XAXIS] = -math.Cos(self.Heading()*math.Pi/180) * speed
+			self.velocity[ZAXIS] = math.Sin(self.Heading()*math.Pi/180) * speed
 		}
 
 	}
@@ -367,6 +377,7 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 					obj := NewAmberfellCondenser(selectedBlockFace.pos)
 					TheWorld.timedObjects[selectedBlockFace.pos] = obj
 					TheWorld.containerObjects[selectedBlockFace.pos] = obj
+					TheWorld.containerObjects[selectedBlockFace.pos] = obj
 
 				}
 
@@ -439,4 +450,8 @@ func (self *Player) Update(dt float64) (completed bool) {
 	self.distanceTravelled += dt * math.Sqrt(math.Pow(self.velocity[XAXIS], 2)+math.Pow(self.velocity[ZAXIS], 2))
 	self.MobData.Update(dt)
 	return false
+}
+
+func (self *Player) TargetType() uint8 {
+	return TARGET_PLAYER
 }

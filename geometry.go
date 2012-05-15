@@ -75,6 +75,20 @@ func (a Vectorf) Magnitude() float64 {
 	return math.Sqrt(math.Pow(a[0], 2) + math.Pow(a[1], 2) + math.Pow(a[2], 2))
 }
 
+func (a Vectorf) Angle(b Vectorf) float64 {
+	amag := a.Magnitude()
+	bmag := b.Magnitude()
+	if amag == 0 || bmag == 0 {
+		return 0
+	}
+	return math.Acos(a.Dot(b) / (amag * bmag))
+}
+
+// Assumes a and b are normalized
+func (a Vectorf) AngleNormalized(b Vectorf) float64 {
+	return math.Acos(a.Dot(b))
+}
+
 func (a Vectorf) Normalize() Vectorf {
 	mag := a.Magnitude()
 	return Vectorf{a[0] / mag, a[1] / mag, a[2] / mag}

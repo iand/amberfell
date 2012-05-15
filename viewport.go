@@ -44,7 +44,6 @@ func (self *Viewport) Reshape(width int, height int) {
 	self.bplane = -viewHeight / 4
 	self.tplane = 3 * viewHeight / 4
 
-	println("self.lplane:", self.lplane, "self.rplane", self.rplane)
 	gl.MatrixMode(gl.PROJECTION)
 	gl.LoadIdentity()
 	gl.Ortho(self.lplane, self.rplane, self.bplane, self.tplane, -60, 60)
@@ -81,7 +80,7 @@ func (self *Viewport) Rotz(angle float64) {
 
 func (self *Viewport) Zoomstd() {
 	self.selectionDirty = false
-	self.scale = 1.0
+	self.scale = 0.6
 }
 
 func (self *Viewport) Zoomin() {

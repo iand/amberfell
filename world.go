@@ -78,6 +78,7 @@ func blockIndex(x uint16, y uint16, z uint16) uint16 {
 
 func NewWorld() *World {
 	world := &World{}
+
 	world.chunks = make(map[uint64]*Chunk)
 	world.amberfell = make(map[uint64][2]uint16)
 	world.timedObjects = make(map[Vectori]TimedObject)
@@ -89,10 +90,8 @@ func NewWorld() *World {
 
 	world.GenerateAmberfell()
 	world.GenerateChunk(xc, yc, zc)
-	// wolf := new(Wolf)
-	// wolf.Init(200, 25, 19, float32(self.FindSurface(25, 19)))
-	// self.mobs = append(self.mobs, wolf)
 
+	world.SpawnWolfPack(PLAYER_START_X-35, PLAYER_START_Z)
 	return world
 }
 
@@ -108,7 +107,7 @@ func (self *World) GroundLevel(x uint16, z uint16) uint16 {
 		noise = -1.0
 	}
 	if noise < 0 {
-		noise /= 15
+		noise /= 20
 	}
 	ground := uint16((CHUNK_HEIGHT/2)*(noise+0.1)/1.1 + CHUNK_HEIGHT/3.0)
 	return ground
@@ -696,8 +695,8 @@ func (self World) ChunkLoadedFor(x uint16, y uint16, z uint16) bool {
 }
 
 func (self *World) Draw(center Vectorf, selectedBlockFace *BlockFace) {
-	for _, v := range self.mobs {
-		v.Draw(center, selectedBlockFace)
+	for _, mob := range self.mobs {
+		mob.Draw(center, selectedBlockFace)
 	}
 
 	pxmin, _, pzmin := chunkCoordsFromWorld(uint16(center[XAXIS]-float64(viewRadius)), uint16(center[YAXIS]), uint16(center[ZAXIS]-float64(viewRadius)))
@@ -817,10 +816,28 @@ func (self *World) GrowBranch(x uint16, y uint16, z uint16, face uint8, chance i
 }
 
 func (self *World) Simulate(dt float64) {
-	for _, v := range self.mobs {
-		v.Act(dt)
-		self.ApplyForces(v, dt)
-		v.Update(dt)
+
+	for _, mob := range self.mobs {
+		mob.Act(dt)
+		self.ApplyForces(mob, dt)
+		mob.Update(dt)
+	}
+
+	for i := len(self.mobs) - 1; i >= 0; i-- {
+		if ThePlayer.position.Minus(self.mobs[i].Position()).Magnitude() > float64(viewRadius)*3 {
+			self.mobs = append(self.mobs[:i], self.mobs[i+1:]...)
+		}
+	}
+
+	if len(self.mobs) < 10 {
+		if rand.Float64() < 0.1*dt {
+			angle := rand.Float64() * 2 * math.Pi
+			distance := (1 + rand.Float64()) * float64(viewRadius)
+
+			x := ThePlayer.position[XAXIS] + math.Cos(angle)*distance
+			z := ThePlayer.position[ZAXIS] + -math.Sin(angle)*distance
+			self.SpawnWolfPack(x, z)
+		}
 	}
 
 	self.UpdateObjects(dt)
@@ -833,6 +850,18 @@ func (self *World) UpdateObjects(dt float64) {
 			delete(self.timedObjects, key)
 		}
 
+	}
+
+}
+
+func (self *World) SpawnWolfPack(x float64, z float64) {
+
+	size := rand.Intn(4) + rand.Intn(4)
+	for i := 0; i < size; i++ {
+		wx := uint16(x + rand.Float64()*8 - 4)
+		wz := uint16(z + rand.Float64()*8 - 4)
+		wolf := NewWolf(180, wx, self.FindSurface(wx, wz), wz)
+		self.mobs = append(self.mobs, wolf)
 	}
 
 }

@@ -29,7 +29,8 @@ var (
 	ThePlayer  *Player
 	viewport   Viewport
 
-	timeOfDay float32 = 9
+	timeOfDay     float32 = 9
+	sunlightLevel int     = 7
 
 	worldSeed = int64(20000)
 	treeLine  = uint16(math.Trunc(5.0 * float64(CHUNK_HEIGHT/6.0)))
@@ -104,7 +105,8 @@ func initGame() {
 		panic("Could not initalize fonts")
 	}
 
-	screen := sdl.SetVideoMode(800, 600, 32, sdl.OPENGL|sdl.RESIZABLE)
+	sdl.GL_SetAttribute(sdl.GL_DOUBLEBUFFER, 1)
+	screen := sdl.SetVideoMode(1024, 600, 32, sdl.OPENGL|sdl.RESIZABLE)
 
 	if screen == nil {
 		sdl.Quit()
@@ -165,7 +167,7 @@ func initGame() {
 	inventory = NewInventory()
 
 	viewport.Reshape(int(screen.W), int(screen.H))
-	PreloadChunks(1000)
+	PreloadChunks(400)
 
 }
 
@@ -321,7 +323,7 @@ func gameLoop() {
 			console.fps = float64(drawFrame) / (float64(update500ms.GetTicks()) / float64(1e9))
 			console.Update()
 
-			UpdateTimeOfDay()
+			UpdateTimeOfDay(false)
 			PreloadChunks(220)
 
 			drawFrame, computeFrame = 0, 0
@@ -357,7 +359,6 @@ func gameLoop() {
 				t += dt
 			}
 		}
-		//interpolate(previous, current, accumulator/dt)
 
 		Draw(currentTime - startTime)
 		drawFrame++
@@ -402,41 +403,15 @@ func Draw(t int64) {
 	gl.Materialfv(gl.FRONT, gl.DIFFUSE, []float32{0.1, 0.1, 0.1, 1})
 	gl.Materialfv(gl.FRONT, gl.SPECULAR, []float32{0.1, 0.1, 0.1, 1})
 	gl.Materialfv(gl.FRONT, gl.SHININESS, []float32{0.0, 0.0, 0.0, 1})
-	var daylightIntensity float32 = 0.45
-	var nighttimeIntensity float32 = 0.15
-	if timeOfDay < 5 || timeOfDay > 21 {
-		gl.LightModelfv(gl.LIGHT_MODEL_AMBIENT, []float32{0.2, 0.2, 0.2, 1})
-		daylightIntensity = 0.01
-	} else if timeOfDay < 6 {
-		daylightIntensity = nighttimeIntensity + daylightIntensity*(timeOfDay-5)
-	} else if timeOfDay > 20 {
-		daylightIntensity = nighttimeIntensity + daylightIntensity*(21-timeOfDay)
-	}
+
+	daylightIntensity := float32(SUNLIGHT_LEVELS[sunlightLevel])
 
 	gl.LightModelfv(gl.LIGHT_MODEL_AMBIENT, []float32{daylightIntensity / 2.5, daylightIntensity / 2.5, daylightIntensity / 2.5, 1})
 
 	gl.Lightfv(gl.LIGHT0, gl.POSITION, []float32{30 * float32(math.Sin(ThePlayer.Heading()*math.Pi/180)), 60, 30 * float32(math.Cos(ThePlayer.Heading()*math.Pi/180)), 0})
 	gl.Lightfv(gl.LIGHT0, gl.AMBIENT, []float32{daylightIntensity, daylightIntensity, daylightIntensity, 1})
-	// gl.Lightfv(gl.LIGHT0, gl.DIFFUSE, []float32{daylightIntensity, daylightIntensity, daylightIntensity,1})
-	// gl.Lightfv(gl.LIGHT0, gl.SPECULAR, []float32{daylightIntensity, daylightIntensity, daylightIntensity,1})
 	gl.Lightfv(gl.LIGHT0, gl.DIFFUSE, []float32{daylightIntensity * 2, daylightIntensity * 2, daylightIntensity * 2, 1})
 	gl.Lightfv(gl.LIGHT0, gl.SPECULAR, []float32{daylightIntensity, daylightIntensity, daylightIntensity, 1})
-
-	// Torch
-	// ambient := float32(0.6)
-	// specular := float32(0.6)
-	// diffuse := float32(1)
-
-	// gl.Lightfv(gl.LIGHT1, gl.POSITION, []float32{float32(ThePlayer.position[XAXIS]), float32(ThePlayer.position[YAXIS] + 1), float32(ThePlayer.position[ZAXIS]), 1})
-	// gl.Lightfv(gl.LIGHT1, gl.AMBIENT, []float32{ambient, ambient, ambient, 1})
-	// gl.Lightfv(gl.LIGHT1, gl.SPECULAR, []float32{specular, specular, specular, 1})
-	// gl.Lightfv(gl.LIGHT1, gl.DIFFUSE, []float32{diffuse, diffuse, diffuse, 1})
-	// gl.Lightf(gl.LIGHT1, gl.CONSTANT_ATTENUATION, 1.5)
-	// gl.Lightf(gl.LIGHT1, gl.LINEAR_ATTENUATION, 0.5)
-	// gl.Lightf(gl.LIGHT1, gl.QUADRATIC_ATTENUATION, 0.01)
-	// gl.Lightf(gl.LIGHT1, gl.SPOT_CUTOFF, 35)
-	// gl.Lightf(gl.LIGHT1, gl.SPOT_EXPONENT, 2.0)
-	// gl.Lightfv(gl.LIGHT1, gl.SPOT_DIRECTION, []float32{float32(math.Cos(ThePlayer.Heading() * math.Pi / 180)), float32(-0.7), -float32(math.Sin(ThePlayer.Heading() * math.Pi / 180))})
 
 	gl.RenderMode(gl.RENDER)
 
@@ -463,35 +438,36 @@ func Draw(t int64) {
 	gl.Finish()
 	gl.Flush()
 	sdl.GL_SwapBuffers()
-	// runtime.GC()
 }
 
-func UpdateTimeOfDay() {
-	timeOfDay += 0.02
-	if timeOfDay > 24 {
-		timeOfDay -= 24
+func UpdateTimeOfDay(reverse bool) {
+	if reverse {
+		timeOfDay -= 0.02
+		if timeOfDay < 0 {
+			timeOfDay += 24
+		}
+	} else {
+		timeOfDay += 0.02
+		if timeOfDay > 24 {
+			timeOfDay -= 24
+		}
 	}
+
+	if timeOfDay >= 21.5 || timeOfDay < 4.5 {
+		sunlightLevel = 0
+	} else if timeOfDay >= 4.5 && timeOfDay < 6 {
+		sunlightLevel = 1 + int(6*(timeOfDay-4.5)/1.5)
+	} else if timeOfDay >= 6 && timeOfDay < 20 {
+		sunlightLevel = 7
+	} else {
+		sunlightLevel = 7 - int(6*(timeOfDay-20)/1.5)
+	}
+
 }
 
 func PreloadChunks(maxtime int64) {
 	startTicks := time.Now().UnixNano()
 	center := ThePlayer.Position()
-	// pxmin, _, pzmin := chunkCoordsFromWorld(uint16(center[XAXIS]-float64(viewRadius)), uint16(center[YAXIS]), uint16(center[ZAXIS]-float64(viewRadius)))
-	// pxmax, _, pzmax := chunkCoordsFromWorld(uint16(center[XAXIS]+float64(viewRadius)), uint16(center[YAXIS]), uint16(center[ZAXIS]+float64(viewRadius)))
-
-	// for px := pxmin; px <= pxmax; px++ {
-	// 	for pz := pzmin; pz <= pzmax; pz++ {
-	// 		TheWorld.GetChunk(px, 0, pz).PreRender(nil)
-	// 		if time.Now().UnixNano()-startTicks > maxtime*1e6 {
-	// 			return
-	// 		}
-
-	// 	}
-	// }
-
-	//if !ThePlayer.IsMoving() {
-	// Load some chunks around where the player is headed
-	// center := ThePlayer.Position()
 	px, _, pz := chunkCoordsFromWorld(uint16(center[XAXIS]), uint16(center[YAXIS]), uint16(center[ZAXIS]))
 
 	r := 1
@@ -516,7 +492,6 @@ func PreloadChunks(maxtime int64) {
 		}
 
 	}
-	//}
 }
 func CullChunks() {
 	center := ThePlayer.Position()

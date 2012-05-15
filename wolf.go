@@ -7,25 +7,88 @@ package main
 
 import (
 	"github.com/banthar/gl"
-	"math/rand"
 )
 
 type Wolf struct {
 	MobData
 }
 
-func (self *Wolf) Init(heading float64, x float32, z float32, y float32) {
-	self.heading = heading
-	self.position[XAXIS] = float64(x)
-	self.position[YAXIS] = float64(y)
-	self.position[ZAXIS] = float64(z)
+func NewWolf(heading float64, x, y, z uint16) *Wolf {
+	wolf := &Wolf{}
+	wolf.heading = heading
+	wolf.position[XAXIS] = float64(x)
+	wolf.position[YAXIS] = float64(y)
+	wolf.position[ZAXIS] = float64(z)
+	wolf.walkingSpeed = 14
+	wolf.sprintSpeed = 25
+	wolf.stamina = 30
+	wolf.energy = wolf.stamina
+	wolf.mass = 5
+	wolf.behaviours = []MobBehaviour{
+		MobBehaviour{
+			behaviour:   BEHAVIOUR_PURSUE,
+			targetType:  TARGET_PLAYER,
+			targetRange: 12,
+			targetAngle: 180,
+			sunlight:    SUNLIGHT_LEVELS_ANY,
+			weight:      2,
+			last:        true,
+		},
+		MobBehaviour{
+			behaviour:   BEHAVIOUR_PURSUE,
+			targetType:  TARGET_PLAYER,
+			targetRange: 22,
+			targetAngle: 120,
+			sunlight:    SUNLIGHT_LEVELS_NIGHT,
+			weight:      3,
+			last:        true,
+		},
+		MobBehaviour{
+			behaviour:   BEHAVIOUR_SEPARATE,
+			targetType:  TARGET_WOLF,
+			targetRange: 10,
+			targetAngle: 120,
+			sunlight:    SUNLIGHT_LEVELS_ANY,
+			weight:      1,
+			last:        false,
+		},
+		MobBehaviour{
+			behaviour:   BEHAVIOUR_GATHER,
+			targetType:  TARGET_WOLF,
+			targetRange: 30,
+			targetAngle: 120,
+			sunlight:    SUNLIGHT_LEVELS_ANY,
+			weight:      1,
+			last:        false,
+		},
+		MobBehaviour{
+			behaviour:   BEHAVIOUR_ALIGN,
+			targetType:  TARGET_WOLF,
+			targetRange: 30,
+			targetAngle: 120,
+			sunlight:    SUNLIGHT_LEVELS_ANY,
+			weight:      1,
+			last:        false,
+		},
+		MobBehaviour{
+			behaviour:   BEHAVIOUR_WANDER,
+			targetType:  TARGET_ANY,
+			targetRange: 0,
+			targetAngle: 0,
+			sunlight:    SUNLIGHT_LEVELS_ANY,
+			weight:      1,
+			last:        false,
+		},
+	}
+
+	return wolf
 }
 
 func (self *Wolf) W() float64 { return 2 }
 func (self *Wolf) H() float64 { return 2 }
 func (self *Wolf) D() float64 { return 1 }
 
-func (self *Wolf) Act(dt float64) {
+func (self *Wolf) Act2(dt float64) {
 
 	// Behaviour
 
@@ -56,19 +119,24 @@ func (self *Wolf) Act(dt float64) {
 	// Terminate sequence?
 	// TOTAL: 29bits
 
-	// type Foo struct {
-	// 	behaviour uint8
-
-	// }
-
-	self.Rotate(rand.Float64()*9 - 4.5)
-	self.Forward(rand.Float64()*4 - 1)
 }
 
 func (self *Wolf) Draw(center Vectorf, selectedBlockFace *BlockFace) {
+	// println("drawing at ", self.position[XAXIS], self.position[ZAXIS])
+	pos := Vectorf{self.position[XAXIS], self.position[YAXIS], self.position[ZAXIS]}
 	gl.PushMatrix()
-	gl.Translatef(float32(self.position[XAXIS]), float32(self.position[YAXIS]), float32(self.position[ZAXIS]))
+
+	gl.Translated(self.position[XAXIS], self.position[YAXIS], self.position[ZAXIS])
 	gl.Rotated(self.Heading(), 0.0, 1.0, 0.0)
-	WolfModel.GLDraw()
+
+	// Translate to top of ground block
+	gl.Translatef(0.0, -0.5, 0.0)
+	pos[YAXIS] += -0.5
+
+	Cuboid(pos, 1, 0.5, 1, textures[TEXTURE_LEG], textures[TEXTURE_LEG], textures[TEXTURE_LEG_SIDE], textures[TEXTURE_LEG_SIDE], textures[32], textures[32], FACE_NONE)
 	gl.PopMatrix()
+}
+
+func (self *Wolf) TargetType() uint8 {
+	return TARGET_WOLF
 }
