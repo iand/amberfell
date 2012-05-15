@@ -253,7 +253,7 @@ func (self *World) GenerateChunk(cx uint16, cy uint16, cz uint16) *Chunk {
 
 			if hasAmberfell && amberfellCoords[0] == x && amberfellCoords[1] == z {
 				for y := uint16(0); y < upper; y++ {
-					chunk.Set(x, y, z, BLOCK_AMBERFELL)
+					chunk.Set(x, y, z, BLOCK_AMBERFELL_SOURCE)
 				}
 			} else {
 				for y := uint16(0); y < upper; y++ {
@@ -269,7 +269,7 @@ func (self *World) GenerateChunk(cx uint16, cy uint16, cz uint16) *Chunk {
 					surface--
 				}
 				for y := surface; y > surface-coal && y > 0; y-- {
-					chunk.Set(x, y, z, BLOCK_COAL)
+					chunk.Set(x, y, z, BLOCK_COAL_SEAM)
 				}
 				if coal > 0 {
 					chunk.standingStoneProb += 0.000001
@@ -280,7 +280,7 @@ func (self *World) GenerateChunk(cx uint16, cy uint16, cz uint16) *Chunk {
 					surface--
 				}
 				for y := surface; y > surface-iron && y > 0; y-- {
-					chunk.Set(x, y, z, BLOCK_IRON)
+					chunk.Set(x, y, z, BLOCK_IRON_SEAM)
 				}
 				if iron > 0 {
 					chunk.standingStoneProb += 0.00001
@@ -291,7 +291,7 @@ func (self *World) GenerateChunk(cx uint16, cy uint16, cz uint16) *Chunk {
 					surface--
 				}
 				for y := surface; y > surface-copper && y > 0; y-- {
-					chunk.Set(x, y, z, BLOCK_COPPER)
+					chunk.Set(x, y, z, BLOCK_COPPER_SEAM)
 				}
 				if copper > 0 {
 					chunk.standingStoneProb += 0.00001

@@ -14,15 +14,42 @@ import (
 
 type Inventory struct {
 	visible        bool
-	inventorySlots [60]uint16
-	componentSlots [6]uint16
+	inventorySlots [72]ItemQuantity
+	componentSlots [6]ItemQuantity
 	productSlots   [18]*Recipe
-	inventoryRects [60]Rect
+	inventoryRects [72]Rect
 	componentRects [6]Rect
 	productRects   [18]Rect
 
+	selectedItem *SelectedItem
+
 	currentContainer ContainerObject
 	containerRects   []Rect
+	currentCrafting  CraftingObject
+	drawBuffer       *VertexBuffer
+}
+
+type ItemSlot struct {
+	area  uint8
+	index int
+}
+
+type SelectedItem struct {
+	ItemQuantity
+	ItemSlot
+}
+
+const (
+	AREA_INVENTORY          = 1
+	AREA_HANDHELD_COMPONENT = 2
+	AREA_HANDHELD_PRODUCT   = 3
+	AREA_CONTAINER          = 4
+)
+
+func NewInventory() *Inventory {
+	inv := &Inventory{}
+	inv.drawBuffer = NewVertexBuffer(1000, terrainTexture)
+	return inv
 }
 
 func (self *Inventory) Draw(t int64) {
@@ -49,86 +76,111 @@ func (self *Inventory) Draw(t int64) {
 	picker.DrawItemHighlight(t, 5)
 	picker.DrawItemHighlight(t, 6)
 	picker.DrawItemHighlight(t, 7)
-	picker.DrawPlayerItems(t)
+	picker.DrawPlayerItems(t, false)
 
 	const blocksize = float64(0.3)
 	const COLSIZE = 12
 
-	diam := blocksize * 2.4
+	slotsize := blocksize * 2.4
+	slotstep := slotsize + float64(4)*PIXEL_SCALE
+	slotsInRow := len(self.componentRects)
 
-	offset := diam + float64(4)*PIXEL_SCALE
+	xtools := float64(viewport.lplane) + 10.0*PIXEL_SCALE
+	ytools := float64(viewport.tplane) - 10.0*PIXEL_SCALE - slotstep
 
+	gl.PushMatrix()
+	gl.LoadIdentity()
+	gl.Translated(xtools, ytools+4*PIXEL_SCALE, 0)
+	inventoryItemFont.Print("Inventory")
+	gl.PopMatrix()
 	for i := range self.inventoryRects {
-		x := float64(viewport.lplane) + float64(10)*PIXEL_SCALE + float64(i/COLSIZE)*offset
-		y := float64(viewport.tplane) - float64(10)*PIXEL_SCALE - float64(i%COLSIZE)*offset
-		self.inventoryRects[i] = Rect{x, y - diam, diam, diam}
+		x := xtools + float64(i%slotsInRow)*slotstep
+		y := ytools - float64(i/slotsInRow)*slotstep
+		self.inventoryRects[i] = Rect{x, y - slotsize, slotsize, slotsize}
 		self.DrawItemSlot(t, self.inventoryRects[i])
 	}
 
-	slot := 0
-	for i := 1; i < len(ThePlayer.inventory); i++ {
-		if ThePlayer.inventory[i] > 0 {
-			self.inventorySlots[slot] = uint16(i)
-			self.DrawItem(t, ThePlayer.inventory[i], uint16(i), self.inventoryRects[slot])
-			slot++
+	for i := range self.inventorySlots {
+		if self.inventorySlots[i].item != 0 && self.inventorySlots[i].quantity > 0 {
+			self.DrawItemInSlot(t, self.inventorySlots[i].quantity, self.inventorySlots[i].item, self.inventoryRects[i])
 		}
 	}
 
+	xtools += slotstep * (1.0 + float64(slotsInRow))
+
+	gl.PushMatrix()
+	gl.LoadIdentity()
+	gl.Translated(xtools, ytools+4*PIXEL_SCALE, 0)
+
+	if self.currentCrafting == nil {
+		inventoryItemFont.Print("Handcrafting")
+	} else {
+		inventoryItemFont.Print(self.currentCrafting.Label())
+	}
+	gl.PopMatrix()
+
 	for i := range self.componentSlots {
-		x := float64(viewport.lplane) + offset*float64(2+len(self.inventoryRects)/COLSIZE) + float64(i)*offset
-		y := float64(viewport.tplane) - (10.0 * PIXEL_SCALE)
-		self.componentRects[i] = Rect{x, y - diam, diam, diam}
+		x := xtools + float64(i)*slotstep
+		y := ytools
+		self.componentRects[i] = Rect{x, y - slotsize, slotsize, slotsize}
 
 		self.DrawItemSlot(t, self.componentRects[i])
 	}
 
 	for i, cs := range self.componentSlots {
-		if cs != 0 {
-			self.DrawItem(t, ThePlayer.inventory[cs], cs, self.componentRects[i])
+		if cs.item != 0 {
+			self.DrawItemInSlot(t, cs.quantity, cs.item, self.componentRects[i])
 		}
 	}
 
+	ytools -= slotstep * 2
 	for i := range self.productSlots {
-		x := float64(viewport.lplane) + offset*float64(2+len(self.inventoryRects)/COLSIZE) + offset*float64(i%len(self.componentRects))
-		y := float64(viewport.tplane) - (10.0 * PIXEL_SCALE) - offset*float64(2+float64(i/len(self.componentRects)))
-		self.productRects[i] = Rect{x, y - diam, diam, diam}
+		x := xtools + slotstep*float64(i%slotsInRow)
+		y := ytools - slotstep*float64(i/slotsInRow)
+		self.productRects[i] = Rect{x, y - slotsize, slotsize, slotsize}
 
 		self.DrawItemSlot(t, self.productRects[i])
 	}
 
 	for i, ps := range self.productSlots {
 		if ps != nil {
-			self.DrawItem(t, ps.product.quantity, ps.product.item, self.productRects[i])
+			self.DrawItemInSlot(t, ps.product.quantity, ps.product.item, self.productRects[i])
 		}
 	}
 
+	ytools -= slotstep * float64(1+len(self.productRects)/slotsInRow)
 	if self.currentContainer != nil {
 
+		gl.PushMatrix()
+		gl.LoadIdentity()
+		gl.Translated(xtools, ytools+4*PIXEL_SCALE, 0)
+		inventoryItemFont.Print(self.currentContainer.Label())
+		gl.PopMatrix()
+
 		for i := range self.containerRects {
-			x := float64(viewport.lplane) + offset*float64(2+len(self.inventoryRects)/COLSIZE) + float64(i)*offset
-			y := float64(viewport.tplane) - (10.0 * PIXEL_SCALE) - offset*float64(2+float64(len(self.productRects)/len(self.componentRects))) - offset*float64(2+float64(i/len(self.componentRects)))
-			self.containerRects[i] = Rect{x, y - diam, diam, diam}
+			x := xtools + slotstep*float64(i%slotsInRow)
+			y := ytools - slotstep*float64(i/slotsInRow)
+			self.containerRects[i] = Rect{x, y - slotsize, slotsize, slotsize}
 
 			self.DrawItemSlot(t, self.containerRects[i])
 		}
 
-		for i := uint16(0); i < self.currentContainer.Slots(); i++ {
-			item := self.currentContainer.Item(i)
-			if item != nil {
-				self.DrawItem(t, item.quantity, item.item, self.containerRects[i])
+		for i := 0; i < self.currentContainer.Slots(); i++ {
+			if self.currentContainer.Item(i).item != 0 {
+				self.DrawItemInSlot(t, self.currentContainer.Item(i).quantity, self.currentContainer.Item(i).item, self.containerRects[i])
 			}
 		}
-
-		gl.PushMatrix()
-		gl.LoadIdentity()
-		gl.Translated(self.containerRects[0].x, self.containerRects[0].y+diam, 0)
-		inventoryItemFont.Print(self.currentContainer.Label())
-		gl.PopMatrix()
 
 	}
 
 	var mousex, mousey int
 	mousestate := sdl.GetMouseState(&mousex, &mousey)
+
+	if self.selectedItem != nil {
+		x, y := viewport.ScreenCoordsToWorld2D(uint16(mousex), uint16(mousey))
+		self.DrawItem(t, self.selectedItem.quantity, self.selectedItem.item, x, y)
+	}
+
 	self.HandleMouse(mousex, mousey, mousestate)
 
 	gl.PopMatrix()
@@ -165,25 +217,35 @@ func (self *Inventory) DrawItemSlot(t int64, r Rect) {
 	gl.PopMatrix()
 }
 
-func (self *Inventory) DrawItem(t int64, quantity uint16, blockid uint16, r Rect) {
+func (self *Inventory) DrawItemInSlot(t int64, quantity uint16, itemid uint16, r Rect) {
+	self.DrawItem(t, quantity, itemid, r.x+r.sizex/2, r.y+r.sizey/2+4*PIXEL_SCALE)
+
+}
+
+func (self *Inventory) DrawItem(t int64, quantity uint16, itemid uint16, x float64, y float64) {
 	gl.PushMatrix()
 	gl.LoadIdentity()
 
+	// angle := -90.0
 	const blocksize = float32(0.3)
 
-	i := 1
-	gl.Translated(r.x+r.sizex/2, r.y+r.sizey/2+4*PIXEL_SCALE, 0)
+	gl.Translated(x, y, 0)
 
-	gl.Rotatef(360*float32(math.Sin(float64(t)/1e10+float64(i))), 1.0, 0.0, 0.0)
-	gl.Rotatef(360*float32(math.Cos(float64(t)/1e10+float64(i))), 0.0, 1.0, 0.0)
-	gl.Rotatef(360*float32(math.Sin(float64(t)/1e10+float64(i))), 0.0, 0.0, 1.0)
+	//gl.Rotated(angle, 1.0, 0.0, 0.0)
+	gl.Rotated(90, 1.0, 0.0, 0.0)
+	gl.Rotated(30*math.Sin(float64(t)/1e9+float64(itemid)/2), 0.0, 1.0, 0.0)
 	gl.Scalef(blocksize, blocksize, blocksize)
-	gVertexBuffer.Reset()
-	TerrainCube(gVertexBuffer, Vectori{}, [18]uint16{}, blockid, FACE_NONE)
-	gVertexBuffer.RenderDirect(false)
+	self.drawBuffer.Reset()
+
+	if itemid < 256 {
+		TerrainCube(self.drawBuffer, Vectori{}, [18]uint16{BLOCK_DIRT, BLOCK_DIRT, BLOCK_DIRT, BLOCK_DIRT, BLOCK_AIR, BLOCK_DIRT, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR}, itemid, FACE_NONE)
+	} else {
+		RenderItemFlat(self.drawBuffer, Vectori{}, itemid)
+	}
+	self.drawBuffer.RenderDirect(false)
 
 	gl.LoadIdentity()
-	gl.Translated(r.x+5*PIXEL_SCALE, r.y+2*PIXEL_SCALE, 0)
+	gl.Translated(x+2*PIXEL_SCALE-48*PIXEL_SCALE*float64(blocksize), y-7*PIXEL_SCALE-48*PIXEL_SCALE*float64(blocksize), 0)
 	inventoryItemFont.Print(fmt.Sprintf("%d", quantity))
 
 	gl.PopMatrix()
@@ -194,7 +256,7 @@ func (self *Inventory) HasRecipeComponents(recipe *Recipe) bool {
 	componentCount := 0
 
 	for k := range self.componentSlots {
-		if self.componentSlots[k] != 0 {
+		if self.componentSlots[k].quantity != 0 {
 			componentCount++
 		}
 	}
@@ -206,7 +268,7 @@ func (self *Inventory) HasRecipeComponents(recipe *Recipe) bool {
 	for _, rc := range recipe.components {
 		gotComponent := false
 		for k := range self.componentSlots {
-			if self.componentSlots[k] == rc.item && ThePlayer.inventory[rc.item] >= rc.quantity {
+			if self.componentSlots[k].item == rc.item && self.componentSlots[k].quantity >= rc.quantity {
 				gotComponent = true
 				break
 			}
@@ -226,9 +288,14 @@ func (self *Inventory) UpdateProducts() {
 		self.productSlots[i] = nil
 	}
 
+	recipes := handmadeRecipes
+	if self.currentCrafting != nil {
+		recipes = self.currentCrafting.Recipes()
+	}
+
 	productIndex := 0
-	for i := range handmadeRecipes {
-		recipe := &handmadeRecipes[i]
+	for i := range recipes {
+		recipe := &recipes[i]
 		if self.HasRecipeComponents(recipe) {
 			self.productSlots[productIndex] = recipe
 			productIndex++
@@ -241,72 +308,415 @@ func (self *Inventory) HandleMouseButton(re *sdl.MouseButtonEvent) {
 	if re.Button == 1 && re.State == 1 { // LEFT, DOWN
 		x, y := viewport.ScreenCoordsToWorld2D(re.X, re.Y)
 
+		// Nothing selected, left click == pick one up
+		// Nothing selected, shift left click == pick all up
+
+		// Item selected, same source, same item in slot, left click == pick another up
+		// Item selected, same source, same item in slot, shift left click == pick all up
+		// Item selected, same source, same item in slot, ctrl left click == drop one
+		// Item selected, same source, same item in slot, ctrl shift left click == drop all
+
+		// Item selected, same source, empty slot, left click == drop one
+		// Item selected, same source, empty slot, shift left click == drop all
+		// Item selected, same source, empty slot, ctrl left click == N/A
+		// Item selected, same source, empty slot, ctrl shift left click == N/A
+
+		// Item selected, diff source, same item in slot, left click == drop one
+		// Item selected, diff source, same item in slot, shift left click == drop all
+		// Item selected, diff source, same item in slot, ctrl left click == pick one up
+		// Item selected, diff source, same item in slot, ctrl shift left click == pick all up
+
+		// Item selected, diff source, empty slot, left click == drop one
+		// Item selected, diff source, empty slot, shift left click == drop all
+		// Item selected, diff source, empty slot, ctrl left click == pick one up
+		// Item selected, diff source, empty slot, ctrl shift left click == pick all up
+
+		keys := sdl.GetKeyState()
+
+		bulk := false
+		invert := false
+		if keys[sdl.K_LSHIFT] != 0 || keys[sdl.K_RSHIFT] != 0 {
+			bulk = true
+		}
+		if keys[sdl.K_LCTRL] != 0 || keys[sdl.K_RCTRL] != 0 {
+			invert = true
+		}
+
 		for i := range self.inventoryRects {
 			if self.inventoryRects[i].Contains(x, y) {
-				if self.inventorySlots[i] != 0 {
-					keys := sdl.GetKeyState()
-					if keys[sdl.K_LCTRL] != 0 || keys[sdl.K_RCTRL] != 0 {
-						ThePlayer.EquipItem(self.inventorySlots[i])
+				slot := &self.inventorySlots[i]
 
-					} else {
-						// Add to component slots
-						for j := range self.componentSlots {
-							if self.componentSlots[j] == self.inventorySlots[i] {
-								return // Already in component slot
-							}
-						}
-						for j := range self.componentSlots {
-							if self.componentSlots[j] == 0 {
-								self.componentSlots[j] = self.inventorySlots[i]
-								self.UpdateProducts()
-								return
+				if self.selectedItem == nil {
+					// pick up item, if any
+					if slot.item != 0 && slot.quantity > 0 {
+						if bulk {
+							// Act on all items in slot
+							self.selectedItem = &SelectedItem{ItemQuantity{slot.item, slot.quantity}, ItemSlot{AREA_INVENTORY, i}}
+							slot.quantity = 0
+							slot.item = 0
+						} else {
+							// Act on a single item
+							self.selectedItem = &SelectedItem{ItemQuantity{slot.item, 1}, ItemSlot{AREA_INVENTORY, i}}
+							slot.quantity -= 1
+							if slot.quantity == 0 {
+								slot.item = 0
 							}
 						}
 					}
+				} else if slot.item == self.selectedItem.item {
+					// Clicked on slot containing same item as current selection
+					// Is this the same slot as the source of items
+					if self.selectedItem.area == AREA_INVENTORY && self.selectedItem.index == i {
+						// Same slot
+						if invert {
+							// drop back into same slot
+							if bulk {
+								// Act on all items in slot
+								slot.quantity += self.selectedItem.quantity
+								self.selectedItem.quantity = 0
+							} else {
+								// Act on a single item
+								self.selectedItem.quantity -= 1
+								slot.quantity += 1
+							}
 
+						} else {
+							// pick more up
+							if bulk {
+								// Act on all items in slot
+								self.selectedItem.quantity += slot.quantity
+								slot.quantity = 0
+							} else {
+								// Act on a single item
+								self.selectedItem.quantity += 1
+								slot.quantity -= 1
+							}
+						}
+					} else {
+						// Different slot
+						if invert {
+							if bulk {
+								self.selectedItem.quantity += slot.quantity
+								slot.quantity = 0
+							} else {
+								self.selectedItem.quantity += 1
+								slot.quantity -= 1
+							}
+						} else {
+							if bulk {
+								slot.quantity += self.selectedItem.quantity
+								self.selectedItem.quantity = 0
+							} else {
+								self.selectedItem.quantity -= 1
+								slot.quantity += 1
+							}
+						}
+					}
+				} else if slot.item == 0 {
+					quantity := uint16(1)
+					if bulk {
+						quantity = self.selectedItem.quantity
+					}
+
+					self.selectedItem.quantity -= quantity
+					slot.quantity += quantity
+					slot.item = self.selectedItem.item
 				}
+
+				if self.selectedItem != nil && self.selectedItem.quantity == 0 {
+					self.selectedItem = nil
+				}
+
+				if slot.quantity == 0 {
+					slot.item = 0
+				}
+
 				return
 			}
 		}
 		for i := range self.componentRects {
 			if self.componentRects[i].Contains(x, y) {
-				if self.componentSlots[i] != 0 {
-					self.componentSlots[i] = 0
+				slot := &self.componentSlots[i]
+				slotQuantity := slot.quantity
+				if self.selectedItem == nil {
+					// pick up item, if any
+					if slot.item != 0 && slot.quantity > 0 {
+						if bulk {
+							// Act on all items in slot
+							self.selectedItem = &SelectedItem{ItemQuantity{slot.item, slot.quantity}, ItemSlot{AREA_HANDHELD_COMPONENT, i}}
+							slot.quantity = 0
+							slot.item = 0
+						} else {
+							// Act on a single item
+							self.selectedItem = &SelectedItem{ItemQuantity{slot.item, 1}, ItemSlot{AREA_HANDHELD_COMPONENT, i}}
+							slot.quantity -= 1
+							if slot.quantity == 0 {
+								slot.item = 0
+							}
+						}
+					}
+				} else if slot.item == self.selectedItem.item {
+					// Clicked on slot containing same item as current selection
+					// Is this the same slot as the source of items
+					if self.selectedItem.area == AREA_HANDHELD_COMPONENT && self.selectedItem.index == i {
+						// Same slot
+						if invert {
+							// drop back into same slot
+							if bulk {
+								// Act on all items in slot
+								slot.quantity += self.selectedItem.quantity
+								self.selectedItem.quantity = 0
+							} else {
+								// Act on a single item
+								self.selectedItem.quantity -= 1
+								slot.quantity += 1
+							}
+
+						} else {
+							// pick more up
+							if bulk {
+								// Act on all items in slot
+								self.selectedItem.quantity += slot.quantity
+								slot.quantity = 0
+							} else {
+								// Act on a single item
+								self.selectedItem.quantity += 1
+								slot.quantity -= 1
+							}
+						}
+					} else if self.selectedItem.area != AREA_HANDHELD_COMPONENT {
+						// Different slot
+						if invert {
+							if bulk {
+								self.selectedItem.quantity += slot.quantity
+								slot.quantity = 0
+							} else {
+								self.selectedItem.quantity += 1
+								slot.quantity -= 1
+							}
+						} else {
+							if bulk {
+								slot.quantity += self.selectedItem.quantity
+								self.selectedItem.quantity = 0
+							} else {
+								self.selectedItem.quantity -= 1
+								slot.quantity += 1
+							}
+						}
+
+					}
+				} else if slot.item == 0 {
+					// Check for duplicates
+					for j := range self.componentSlots {
+						if j != i && self.componentSlots[j].item == self.selectedItem.item {
+							return
+						}
+					}
+
+					quantity := uint16(1)
+					if bulk {
+						quantity = self.selectedItem.quantity
+					}
+
+					self.selectedItem.quantity -= quantity
+					slot.quantity += quantity
+					slot.item = self.selectedItem.item
+				}
+
+				if self.selectedItem != nil && self.selectedItem.quantity == 0 {
+					self.selectedItem = nil
+				}
+
+				if slot.quantity == 0 {
+					slot.item = 0
+				}
+
+				if slotQuantity != slot.quantity {
 					self.UpdateProducts()
 				}
+
 				return
+
 			}
 		}
 		for i := range self.productRects {
 			if self.productRects[i].Contains(x, y) {
 				if self.productSlots[i] != nil {
 					recipe := self.productSlots[i]
-					if self.HasRecipeComponents(recipe) {
-						for _, rc := range recipe.components {
-							ThePlayer.inventory[rc.item] -= rc.quantity
-						}
-						ThePlayer.inventory[recipe.product.item] += recipe.product.quantity
-						self.UpdateProducts()
 
-						for j := range self.componentSlots {
-							if ThePlayer.inventory[self.componentSlots[j]] <= 0 {
-								self.componentSlots[j] = 0
+					itemid := recipe.product.item
+					if self.selectedItem == nil {
+						if self.HasRecipeComponents(recipe) {
+							for _, rc := range recipe.components {
+								for k := range self.componentSlots {
+									if self.componentSlots[k].item == rc.item {
+										self.componentSlots[k].quantity -= rc.quantity
+									}
+								}
 							}
-						}
+							self.selectedItem = &SelectedItem{ItemQuantity{recipe.product.item, recipe.product.quantity}, ItemSlot{AREA_HANDHELD_PRODUCT, i}}
+							self.UpdateProducts()
 
+						}
+					} else if itemid == self.selectedItem.item {
+						if self.HasRecipeComponents(recipe) {
+							for _, rc := range recipe.components {
+								for k := range self.componentSlots {
+									if self.componentSlots[k].item == rc.item {
+										self.componentSlots[k].quantity -= rc.quantity
+									}
+									if self.componentSlots[k].quantity == 0 {
+										self.componentSlots[k].item = 0
+									}
+								}
+							}
+							self.selectedItem.quantity += recipe.product.quantity
+							if self.selectedItem.quantity > MAX_ITEMS_IN_INVENTORY {
+								self.selectedItem.quantity = MAX_ITEMS_IN_INVENTORY
+							}
+							self.UpdateProducts()
+						}
 					}
+
+					return
 				}
-				return
 			}
 		}
 
+		if self.currentContainer != nil {
+
+			for i := range self.containerRects {
+				if self.containerRects[i].Contains(x, y) {
+
+					if self.selectedItem == nil {
+						if self.currentContainer.CanTake() {
+							// pick up item, if any
+							if self.currentContainer.Item(i).item != 0 && self.currentContainer.Item(i).quantity > 0 {
+								if bulk {
+									// Act on all items in slot
+									self.selectedItem = &SelectedItem{ItemQuantity{self.currentContainer.Item(i).item, self.currentContainer.Item(i).quantity}, ItemSlot{AREA_CONTAINER, i}}
+									self.currentContainer.Take(i, self.currentContainer.Item(i).quantity)
+								} else {
+									// Act on a single item
+									self.selectedItem = &SelectedItem{ItemQuantity{self.currentContainer.Item(i).item, 1}, ItemSlot{AREA_CONTAINER, i}}
+									self.currentContainer.Take(i, 1)
+								}
+							}
+						}
+					} else if self.currentContainer.Item(i).item == self.selectedItem.item {
+						// Clicked on slot containing same item as current selection
+						// Is this the same slot as the source of items
+						if self.selectedItem.area == AREA_CONTAINER && self.selectedItem.index == i {
+							if self.currentContainer.CanTake() {
+								// Same slot
+								if invert {
+									// drop back into same slot
+									if bulk {
+										// Act on all items in slot
+										self.currentContainer.Place(i, &ItemQuantity{self.selectedItem.item, self.selectedItem.quantity})
+										self.selectedItem.quantity = 0
+									} else {
+										// Act on a single item
+										self.selectedItem.quantity -= 1
+										self.currentContainer.Place(i, &ItemQuantity{self.selectedItem.item, 1})
+									}
+
+								} else {
+									// pick more up
+									if bulk {
+										// Act on all items in slot
+										self.selectedItem.quantity += self.currentContainer.Item(i).quantity
+										self.currentContainer.Take(i, self.currentContainer.Item(i).quantity)
+									} else {
+										// Act on a single item
+										self.selectedItem.quantity += 1
+										self.currentContainer.Take(i, 1)
+									}
+								}
+							}
+						} else {
+							// Different slot
+							if invert {
+								if self.currentContainer.CanTake() {
+									if bulk {
+										// Act on all items in slot
+										self.selectedItem.quantity += self.currentContainer.Item(i).quantity
+										self.currentContainer.Take(i, self.currentContainer.Item(i).quantity)
+									} else {
+										// Act on a single item
+										self.selectedItem.quantity += 1
+										self.currentContainer.Take(i, 1)
+									}
+								}
+							} else {
+								if self.currentContainer.CanPlace(self.selectedItem.item) {
+									if bulk {
+										// Act on all items in slot
+										self.currentContainer.Place(i, &ItemQuantity{self.selectedItem.item, self.selectedItem.quantity})
+										self.selectedItem.quantity = 0
+									} else {
+										// Act on a single item
+										self.selectedItem.quantity -= 1
+										self.currentContainer.Place(i, &ItemQuantity{self.selectedItem.item, 1})
+									}
+								}
+							}
+						}
+					} else if self.currentContainer.Item(i).item == 0 {
+						if self.currentContainer.CanPlace(self.selectedItem.item) {
+							quantity := uint16(1)
+							if bulk {
+								quantity = self.selectedItem.quantity
+							}
+
+							self.selectedItem.quantity -= quantity
+							self.currentContainer.Place(i, &ItemQuantity{self.selectedItem.item, quantity})
+						}
+					}
+
+					if self.selectedItem != nil && self.selectedItem.quantity == 0 {
+						self.selectedItem = nil
+					}
+
+					return
+				}
+			}
+		}
+
+		// Add/remove items from picker
 		hit, pos := picker.HitTest(x, y)
 		if hit && pos > 2 {
-			keys := sdl.GetKeyState()
-			if keys[sdl.K_LCTRL] != 0 || keys[sdl.K_RCTRL] != 0 {
+			if self.selectedItem == nil {
 				// Remove from picker
 				ThePlayer.equippedItems[uint16(pos)-3] = ITEM_NONE
+			} else {
+				// Set the picker
+				ThePlayer.equippedItems[uint16(pos)-3] = self.selectedItem.item
+				if self.selectedItem.area == AREA_INVENTORY {
+					self.inventorySlots[self.selectedItem.index].quantity += self.selectedItem.quantity
+				} else {
+					println("Looking for somewhere in inventory to place some ", self.selectedItem.item)
+					for i := range self.inventorySlots {
+						if self.inventorySlots[i].item == self.selectedItem.item {
+							println("Found some ", self.selectedItem.item, " in inventory slot ", i)
+							if self.inventorySlots[i].quantity+self.selectedItem.quantity < MAX_ITEMS_IN_INVENTORY {
+								self.inventorySlots[i].quantity += self.selectedItem.quantity
+								break
+							} else {
+								self.selectedItem.quantity -= MAX_ITEMS_IN_INVENTORY - self.inventorySlots[i].quantity
+								self.inventorySlots[i].quantity = MAX_ITEMS_IN_INVENTORY
+							}
+						} else if self.inventorySlots[i].item == 0 {
+							self.inventorySlots[i].item = self.selectedItem.item
+							self.inventorySlots[i].quantity = self.selectedItem.quantity
+							break
+						}
+					}
+				}
+				self.selectedItem = nil
+
 			}
+
 		}
 
 	}
@@ -329,14 +739,14 @@ func (self *Inventory) HandleMouse(mousex int, mousey int, mousestate uint8) {
 
 	for i, ir := range self.inventoryRects {
 		if ir.Contains(x, y) {
-			itemid = self.inventorySlots[i]
+			itemid = self.inventorySlots[i].item
 			break
 		}
 	}
 	if itemid == 0 {
 		for i, cr := range self.componentRects {
 			if cr.Contains(x, y) {
-				itemid = self.componentSlots[i]
+				itemid = self.componentSlots[i].item
 				break
 			}
 		}
@@ -410,16 +820,57 @@ func (self *Inventory) ShowTooltip(x, y float64, str string) {
 
 func (self *Inventory) Hide() {
 	self.currentContainer = nil
+	self.currentCrafting = nil
 	self.containerRects = nil
+
+	for i := range ThePlayer.inventory {
+		ThePlayer.inventory[i] = 0
+	}
+
+	for i := range self.inventorySlots {
+		ThePlayer.inventory[self.inventorySlots[i].item] += self.inventorySlots[i].quantity
+		self.inventorySlots[i].quantity = 0
+		self.inventorySlots[i].item = 0
+	}
+
+	if self.selectedItem != nil {
+		ThePlayer.inventory[self.selectedItem.item] += self.selectedItem.quantity
+		self.selectedItem = nil
+	}
+
+	for i := range self.componentSlots {
+		ThePlayer.inventory[self.componentSlots[i].item] += self.componentSlots[i].quantity
+		self.componentSlots[i].quantity = 0
+		self.componentSlots[i].item = 0
+	}
+
+	for i := range ThePlayer.inventory {
+		if ThePlayer.inventory[i] > MAX_ITEMS_IN_INVENTORY {
+			ThePlayer.inventory[i] = MAX_ITEMS_IN_INVENTORY
+		}
+	}
 
 	self.visible = false
 
 }
 
-func (self *Inventory) Show(container ContainerObject) {
+func (self *Inventory) Show(container ContainerObject, crafting CraftingObject) {
 	self.currentContainer = container
 	if self.currentContainer != nil {
 		self.containerRects = make([]Rect, container.Slots())
+	}
+
+	self.currentCrafting = crafting
+
+	self.selectedItem = nil
+
+	slot := 0
+	for i := range ThePlayer.inventory {
+		if ThePlayer.inventory[i] > 0 {
+			self.inventorySlots[slot].item = uint16(i)
+			self.inventorySlots[slot].quantity = ThePlayer.inventory[i]
+			slot++
+		}
 	}
 
 	self.visible = true

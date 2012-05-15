@@ -42,6 +42,7 @@ var (
 	terrainTexture    *gl.Texture
 	itemsTexture      *gl.Texture
 	gVertexBuffer     *VertexBuffer
+	gGuiBuffer        *VertexBuffer
 	terrainBuffer     *VertexBuffer
 
 	items map[uint16]Item
@@ -50,7 +51,7 @@ var (
 	blockscale float32 = 0.4 // The scale at which to render blocks in the HUD
 	picker     *Picker
 	console    Console
-	inventory  Inventory
+	inventory  *Inventory
 	pause      Pause
 )
 
@@ -152,6 +153,7 @@ func initGame() {
 	itemsTexture = loadTexture("res/items.png")
 
 	gVertexBuffer = NewVertexBuffer(10000, terrainTexture)
+	gGuiBuffer = NewVertexBuffer(1000, terrainTexture)
 
 	//WolfModel = LoadModel("res/wolf.mm3d")
 
@@ -159,6 +161,8 @@ func initGame() {
 
 	ThePlayer = new(Player)
 	ThePlayer.Init(0, PLAYER_START_X, PLAYER_START_Z)
+
+	inventory = NewInventory()
 
 	viewport.Reshape(int(screen.W), int(screen.H))
 	PreloadChunks(1000)
@@ -260,7 +264,7 @@ func gameLoop() {
 						if inventory.visible {
 							inventory.Hide()
 						} else {
-							inventory.Show(nil)
+							inventory.Show(nil, nil)
 						}
 					}
 
