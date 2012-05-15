@@ -43,7 +43,7 @@
 			"file": "amberfell.go",
 			"settings":
 			{
-				"buffer_size": 14078,
+				"buffer_size": 14327,
 				"line_ending": "Unix"
 			}
 		},
@@ -51,7 +51,7 @@
 			"file": "player.go",
 			"settings":
 			{
-				"buffer_size": 13964,
+				"buffer_size": 15163,
 				"line_ending": "Unix"
 			}
 		},
@@ -59,7 +59,7 @@
 			"file": "shapes.go",
 			"settings":
 			{
-				"buffer_size": 63866,
+				"buffer_size": 64548,
 				"line_ending": "Unix"
 			}
 		},
@@ -75,15 +75,75 @@
 			"file": "items.go",
 			"settings":
 			{
-				"buffer_size": 6019,
+				"buffer_size": 13930,
 				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "wolf.go",
+			"settings":
+			{
+				"buffer_size": 1558,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/iand/.cache/.fr-Bq9LWQ/opensteer/src/SimpleVehicle.cpp",
+			"settings":
+			{
+				"buffer_size": 12508,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/iand/.cache/.fr-HhkxL1/opensteer/src/Vec3.cpp",
+			"settings":
+			{
+				"buffer_size": 7939,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/iand/.cache/.fr-Tiai3N/opensteer/src/main.cpp",
+			"settings":
+			{
+				"buffer_size": 2184,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/iand/.cache/.fr-XSjVuk/opensteer/src/OpenSteerDemo.cpp",
+			"settings":
+			{
+				"buffer_size": 23974,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "// ----------------------------------------------------------------------------\n//\n//\n// OpenSteer -- Steering Behaviors for Autonomous Characters\n//\n// Copyright (c) 2002-2003, Sony Computer Entertainment America\n// Original author: Craig Reynolds <craig_reynolds@playstation.sony.com>\n//\n// Permission is hereby granted, free of charge, to any person obtaining a\n// copy of this software and associated documentation files (the \"Software\"),\n// to deal in the Software without restriction, including without limitation\n// the rights to use, copy, modify, merge, publish, distribute, sublicense,\n// and/or sell copies of the Software, and to permit persons to whom the\n// Software is furnished to do so, subject to the following conditions:\n//\n// The above copyright notice and this permission notice shall be included in\n// all copies or substantial portions of the Software.\n//\n// THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL\n// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING\n// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER\n// DEALINGS IN THE SOFTWARE.\n//\n//\n// ----------------------------------------------------------------------------\n//\n//\n// Capture the Flag   (a portion of the traditional game)\n//\n// The \"Capture the Flag\" sample steering problem, proposed by Marcin\n// Chady of the Working Group on Steering of the IGDA's AI Interface\n// Standards Committee (http://www.igda.org/Committees/ai.htm) in this\n// message (http://sourceforge.net/forum/message.php?msg_id=1642243):\n//\n//     \"An agent is trying to reach a physical location while trying\n//     to stay clear of a group of enemies who are actively seeking\n//     him. The environment is littered with obstacles, so collision\n//     avoidance is also necessary.\"\n//\n// Note that the enemies do not make use of their knowledge of the \n// seeker's goal by \"guarding\" it.  \n//\n// XXX hmm, rename them \"attacker\" and \"defender\"?\n//\n// 08-12-02 cwr: created \n//\n//\n// ----------------------------------------------------------------------------\n\n\n#include <iomanip>\n#include <sstream>\n#include \"OpenSteer/SimpleVehicle.h\"\n#include \"OpenSteer/OpenSteerDemo.h\"\n\n\n    \n    using namespace OpenSteer;\n\n// ----------------------------------------------------------------------------\n// short names for STL vectors (iterators) of SphericalObstacle pointers\n\n\ntypedef std::vector<SphericalObstacle*> SOG;  // spherical obstacle group\ntypedef SOG::const_iterator SOI;              // spherical obstacle iterator\n\n\n// ----------------------------------------------------------------------------\n// This PlugIn uses two vehicle types: CtfSeeker and CtfEnemy.  They have a\n// common base class: CtfBase which is a specialization of SimpleVehicle.\n\n\nclass CtfBase : public SimpleVehicle\n{\npublic:\n    // constructor\n    CtfBase () {reset ();}\n\n    // reset state\n    void reset (void);\n\n    // draw this character/vehicle into the scene\n    void draw (void);\n\n    // annotate when actively avoiding obstacles\n    void annotateAvoidObstacle (const float minDistanceToCollision);\n\n    void drawHomeBase (void);\n\n    void randomizeStartingPositionAndHeading (void);\n    enum seekerState {running, tagged, atGoal};\n\n    // for draw method\n    Vec3 bodyColor;\n\n    // xxx store steer sub-state for anotation\n    bool avoiding;\n\n    // dynamic obstacle registry\n    static void initializeObstacles (void);\n    static void addOneObstacle (void);\n    static void removeOneObstacle (void);\n    float minDistanceToObstacle (const Vec3 point);\n    static int obstacleCount;\n    static const int maxObstacleCount;\n    static SOG allObstacles;\n};\n\n\nclass CtfSeeker : public CtfBase\n{\npublic:\n\n    // constructor\n    CtfSeeker () {reset ();}\n\n    // reset state\n    void reset (void);\n\n    // per frame simulation update\n    void update (const float currentTime, const float elapsedTime);\n\n    // is there a clear path to the goal?\n    bool clearPathToGoal (void);\n\n    Vec3 steeringForSeeker (void);\n    void updateState (const float currentTime);\n    void draw (void);\n    Vec3 steerToEvadeAllDefenders (void);\n    Vec3 XXXsteerToEvadeAllDefenders (void);\n    void adjustObstacleAvoidanceLookAhead (const bool clearPath);\n    void clearPathAnnotation (const float threshold,\n                              const float behindcThreshold,\n                              const Vec3& goalDirection);\n\n    seekerState state;\n    bool evading; // xxx store steer sub-state for anotation\n    float lastRunningTime; // for auto-reset\n};\n\n\nclass CtfEnemy : public CtfBase\n{\npublic:\n\n    // constructor\n    CtfEnemy () {reset ();}\n\n    // reset state\n    void reset (void);\n\n    // per frame simulation update\n    void update (const float currentTime, const float elapsedTime);\n};\n\n\n// ----------------------------------------------------------------------------\n// globals\n// (perhaps these should be member variables of a Vehicle or PlugIn class)\n\n\nconst int CtfBase::maxObstacleCount = 100;\n\nconst Vec3 gHomeBaseCenter (0, 0, 0);\nconst float gHomeBaseRadius = 1.5;\n\nconst float gMinStartRadius = 30;\nconst float gMaxStartRadius = 40;\n\nconst float gBrakingRate = 0.75;\n\nconst Vec3 evadeColor     (0.6f, 0.6f, 0.3f); // annotation\nconst Vec3 seekColor      (0.3f, 0.6f, 0.6f); // annotation\nconst Vec3 clearPathColor (0.3f, 0.6f, 0.3f); // annotation\n\nconst float gAvoidancePredictTimeMin  = 0.9f;\nconst float gAvoidancePredictTimeMax  = 2;\nfloat gAvoidancePredictTime = gAvoidancePredictTimeMin;\n\nbool enableAttackSeek  = true; // for testing (perhaps retain for UI control?)\nbool enableAttackEvade = true; // for testing (perhaps retain for UI control?)\n\nCtfSeeker* gSeeker = NULL;\n\n\n// count the number of times the simulation has reset (e.g. for overnight runs)\nint resetCount = 0;\n\n\n// ----------------------------------------------------------------------------\n// state for OpenSteerDemo PlugIn\n//\n// XXX consider moving this inside CtfPlugIn\n// XXX consider using STL (any advantage? consistency?)\n\n\nCtfSeeker* ctfSeeker;\nconst int ctfEnemyCount = 4;\nCtfEnemy* ctfEnemies [ctfEnemyCount];\n\n\n// ----------------------------------------------------------------------------\n// reset state\n\n\nvoid CtfBase::reset (void)\n{\n    SimpleVehicle::reset ();  // reset the vehicle \n\n    setSpeed (3);             // speed along Forward direction.\n    setMaxForce (3.0);        // steering force is clipped to this magnitude\n    setMaxSpeed (3.0);        // velocity is clipped to this magnitude\n\n    avoiding = false;         // not actively avoiding\n\n    randomizeStartingPositionAndHeading ();  // new starting position\n\n    clearTrailHistory ();     // prevent long streaks due to teleportation\n}\n\n\nvoid CtfSeeker::reset (void)\n{\n    CtfBase::reset ();\n    bodyColor.set (0.4f, 0.4f, 0.6f); // blueish\n    gSeeker = this;\n    state = running;\n    evading = false;\n}\n\n\nvoid CtfEnemy::reset (void)\n{\n    CtfBase::reset ();\n    bodyColor.set (0.6f, 0.4f, 0.4f); // redish\n}\n\n\n// ----------------------------------------------------------------------------\n// draw this character/vehicle into the scene\n\n\nvoid CtfBase::draw (void)\n{\n    drawBasic2dCircularVehicle (*this, bodyColor);\n    drawTrail ();\n}\n\n\n// ----------------------------------------------------------------------------\n\n\nvoid CtfBase::randomizeStartingPositionAndHeading (void)\n{\n    // randomize position on a ring between inner and outer radii\n    // centered around the home base\n    const float rRadius = frandom2 (gMinStartRadius, gMaxStartRadius);\n    const Vec3 randomOnRing = RandomUnitVectorOnXZPlane () * rRadius;\n    setPosition (gHomeBaseCenter + randomOnRing);\n\n    // are we are too close to an obstacle?\n    if (minDistanceToObstacle (position()) < radius()*5)\n    {\n        // if so, retry the randomization (this recursive call may not return\n        // if there is too little free space)\n        randomizeStartingPositionAndHeading ();\n    }\n    else\n    {\n        // otherwise, if the position is OK, randomize 2D heading\n        randomizeHeadingOnXZPlane ();\n    }\n}\n\n\n// ----------------------------------------------------------------------------\n\n\nvoid CtfEnemy::update (const float currentTime, const float elapsedTime)\n{\n    // determine upper bound for pursuit prediction time\n    const float seekerToGoalDist = Vec3::distance (gHomeBaseCenter,\n                                                   gSeeker->position());\n    const float adjustedDistance = seekerToGoalDist - radius()-gHomeBaseRadius;\n    const float seekerToGoalTime = ((adjustedDistance < 0 ) ?\n                                    0 :\n                                    (adjustedDistance/gSeeker->speed()));\n    const float maxPredictionTime = seekerToGoalTime * 0.9f;\n\n    // determine steering (pursuit, obstacle avoidance, or braking)\n    Vec3 steer (0, 0, 0);\n    if (gSeeker->state == running)\n    {\n        const Vec3 avoidance =\n            steerToAvoidObstacles (gAvoidancePredictTimeMin,\n                                   (ObstacleGroup&) allObstacles);\n\n        // saved for annotation\n        avoiding = (avoidance == Vec3::zero);\n\n        if (avoiding)\n            steer = steerForPursuit (*gSeeker, maxPredictionTime);\n        else\n            steer = avoidance;\n    }\n    else\n    {\n        applyBrakingForce (gBrakingRate, elapsedTime);\n    }\n    applySteeringForce (steer, elapsedTime);\n\n    // annotation\n    annotationVelocityAcceleration ();\n    recordTrailVertex (currentTime, position());\n\n\n    // detect and record interceptions (\"tags\") of seeker\n    const float seekerToMeDist = Vec3::distance (position(), \n                                                 gSeeker->position());\n    const float sumOfRadii = radius() + gSeeker->radius();\n    if (seekerToMeDist < sumOfRadii)\n    {\n        if (gSeeker->state == running) gSeeker->state = tagged;\n\n        // annotation:\n        if (gSeeker->state == tagged)\n        {\n            const Vec3 color (0.8f, 0.5f, 0.5f);\n            annotationXZDisk (sumOfRadii,\n                        (position() + gSeeker->position()) / 2,\n                        color,\n                        20);\n        }\n    }\n}\n\n\n// ----------------------------------------------------------------------------\n// are there any enemies along the corridor between us and the goal?\n\n\nbool CtfSeeker::clearPathToGoal (void)\n{\n    const float sideThreshold = radius() * 8.0f;\n    const float behindThreshold = radius() * 2.0f;\n\n    const Vec3 goalOffset = gHomeBaseCenter - position();\n    const float goalDistance = goalOffset.length ();\n    const Vec3 goalDirection = goalOffset / goalDistance;\n\n    const bool goalIsAside = isAside (gHomeBaseCenter, 0.5);\n\n    // for annotation: loop over all and save result, instead of early return \n    bool xxxReturn = true;\n\n    // loop over enemies\n    for (int i = 0; i < ctfEnemyCount; i++)\n    {\n        // short name for this enemy\n        const CtfEnemy& e = *ctfEnemies[i];\n        const float eDistance = Vec3::distance (position(), e.position());\n        const float timeEstimate = 0.3f * eDistance / e.speed(); //xxx\n        const Vec3 eFuture = e.predictFuturePosition (timeEstimate);\n        const Vec3 eOffset = eFuture - position();\n        const float alongCorridor = goalDirection.dot (eOffset);\n        const bool inCorridor = ((alongCorridor > -behindThreshold) && \n                                 (alongCorridor < goalDistance));\n        const float eForwardDistance = forward().dot (eOffset);\n\n        // xxx temp move this up before the conditionals\n        annotationXZCircle (e.radius(), eFuture, clearPathColor, 20); //xxx\n\n        // consider as potential blocker if within the corridor\n        if (inCorridor)\n        {\n            const Vec3 perp = eOffset - (goalDirection * alongCorridor);\n            const float acrossCorridor = perp.length();\n            if (acrossCorridor < sideThreshold)\n            {\n                // not a blocker if behind us and we are perp to corridor\n                const float eFront = eForwardDistance + e.radius ();\n\n                //annotationLine (position, forward*eFront, gGreen); // xxx\n                //annotationLine (e.position, forward*eFront, gGreen); // xxx\n\n                // xxx\n                // std::ostringstream message;\n                // message << \"eFront = \" << std::setprecision(2)\n                //         << std::setiosflags(std::ios::fixed) << eFront << std::ends;\n                // draw2dTextAt3dLocation (*message.str(), eFuture, gWhite);\n\n                const bool eIsBehind = eFront < -behindThreshold;\n                const bool eIsWayBehind = eFront < (-2 * behindThreshold);\n                const bool safeToTurnTowardsGoal =\n                    ((eIsBehind && goalIsAside) || eIsWayBehind);\n\n                if (! safeToTurnTowardsGoal)\n                {\n                    // this enemy blocks the path to the goal, so return false\n                    annotationLine (position(), e.position(), clearPathColor);\n                    // return false;\n                    xxxReturn = false;\n                }\n            }\n        }\n    }\n\n    // no enemies found along path, return true to indicate path is clear\n    // clearPathAnnotation (sideThreshold, behindThreshold, goalDirection);\n    // return true;\n    //if (xxxReturn)\n        clearPathAnnotation (sideThreshold, behindThreshold, goalDirection);\n    return xxxReturn;\n}\n\n\n// ----------------------------------------------------------------------------\n\n\nvoid CtfSeeker::clearPathAnnotation (const float sideThreshold,\n                                     const float behindThreshold,\n                                     const Vec3& goalDirection)\n{\n    const Vec3 behindSide = side() * sideThreshold;\n    const Vec3 behindBack = forward() * -behindThreshold;\n    const Vec3 pbb = position() + behindBack;\n    const Vec3 gun = localRotateForwardToSide (goalDirection);\n    const Vec3 gn = gun * sideThreshold;\n    const Vec3 hbc = gHomeBaseCenter;\n    annotationLine (pbb + gn,         hbc + gn,         clearPathColor);\n    annotationLine (pbb - gn,         hbc - gn,         clearPathColor);\n    annotationLine (hbc - gn,         hbc + gn,         clearPathColor);\n    annotationLine (pbb - behindSide, pbb + behindSide, clearPathColor);\n}\n\n\n// ----------------------------------------------------------------------------\n// xxx perhaps this should be a call to a general purpose annotation\n// xxx for \"local xxx axis aligned box in XZ plane\" -- same code in in\n// xxx Pedestrian.cpp\n\n\nvoid CtfBase::annotateAvoidObstacle (const float minDistanceToCollision)\n{\n    const Vec3 boxSide = side() * radius();\n    const Vec3 boxFront = forward() * minDistanceToCollision;\n    const Vec3 FR = position() + boxFront - boxSide;\n    const Vec3 FL = position() + boxFront + boxSide;\n    const Vec3 BR = position()            - boxSide;\n    const Vec3 BL = position()            + boxSide;\n    const Vec3 white (1,1,1);\n    annotationLine (FR, FL, white);\n    annotationLine (FL, BL, white);\n    annotationLine (BL, BR, white);\n    annotationLine (BR, FR, white);\n}\n\n\n// ----------------------------------------------------------------------------\n\n\nVec3 CtfSeeker::steerToEvadeAllDefenders (void)\n{\n    Vec3 evade (0, 0, 0);\n    const float goalDistance = Vec3::distance (gHomeBaseCenter, position());\n\n    // sum up weighted evasion\n    for (int i = 0; i < ctfEnemyCount; i++)\n    {\n        const CtfEnemy& e = *ctfEnemies[i];\n        const Vec3 eOffset = e.position() - position();\n        const float eDistance = eOffset.length();\n\n        const float eForwardDistance = forward().dot (eOffset);\n        const float behindThreshold = radius() * 2;\n        const bool behind = eForwardDistance < behindThreshold;\n        if ((!behind) || (eDistance < 5))\n        {\n            if (eDistance < (goalDistance * 1.2)) //xxx\n            {\n                // const float timeEstimate = 0.5f * eDistance / e.speed;//xxx\n                const float timeEstimate = 0.15f * eDistance / e.speed();//xxx\n                const Vec3 future =\n                    e.predictFuturePosition (timeEstimate);\n\n                annotationXZCircle (e.radius(), future, evadeColor, 20); // xxx\n\n                const Vec3 offset = future - position();\n                const Vec3 lateral = offset.perpendicularComponent (forward());\n                const float d = lateral.length();\n                const float weight = -1000 / (d * d);\n                evade += (lateral / d) * weight;\n            }\n        }\n    }\n    return evade;\n}\n\n\nVec3 CtfSeeker::XXXsteerToEvadeAllDefenders (void)\n{\n    // sum up weighted evasion\n    Vec3 evade (0, 0, 0);\n    for (int i = 0; i < ctfEnemyCount; i++)\n    {\n        const CtfEnemy& e = *ctfEnemies[i];\n        const Vec3 eOffset = e.position() - position();\n        const float eDistance = eOffset.length();\n\n        // xxx maybe this should take into account e's heading? xxx\n        const float timeEstimate = 0.5f * eDistance / e.speed(); //xxx\n        const Vec3 eFuture = e.predictFuturePosition (timeEstimate);\n\n        // annotation\n        annotationXZCircle (e.radius(), eFuture, evadeColor, 20);\n\n        // steering to flee from eFuture (enemy's future position)\n        const Vec3 flee = xxxsteerForFlee (eFuture);\n\n        const float eForwardDistance = forward().dot (eOffset);\n        const float behindThreshold = radius() * -2;\n\n        const float distanceWeight = 4 / eDistance;\n        const float forwardWeight = ((eForwardDistance > behindThreshold) ?\n                                     1.0f : 0.5f);\n\n        const Vec3 adjustedFlee = flee * distanceWeight * forwardWeight;\n\n        evade += adjustedFlee;\n    }\n    return evade;\n}\n\n\n// ----------------------------------------------------------------------------\n\n\nVec3 CtfSeeker::steeringForSeeker (void)\n{\n    // determine if obstacle avodiance is needed\n    const bool clearPath = clearPathToGoal ();\n    adjustObstacleAvoidanceLookAhead (clearPath);\n    const Vec3 obstacleAvoidance =\n        steerToAvoidObstacles (gAvoidancePredictTime,\n                               (ObstacleGroup&) allObstacles);\n\n    // saved for annotation\n    avoiding = (obstacleAvoidance != Vec3::zero);\n\n    if (avoiding)\n    {\n        // use pure obstacle avoidance if needed\n        return obstacleAvoidance;\n    }\n    else\n    {\n        // otherwise seek home base and perhaps evade defenders\n        const Vec3 seek = xxxsteerForSeek (gHomeBaseCenter);\n        if (clearPath)\n        {\n            // we have a clear path (defender-free corridor), use pure seek\n\n            // xxx experiment 9-16-02\n            Vec3 s = limitMaxDeviationAngle (seek, 0.707f, forward());\n\n            annotationLine (position(), position() + (s * 0.2f), seekColor);\n            return s;\n        }\n        else\n        {\n            if (0) // xxx testing new evade code xxx\n            {\n                // combine seek and (forward facing portion of) evasion\n                const Vec3 evade = steerToEvadeAllDefenders ();\n                const Vec3 steer = \n                    seek + limitMaxDeviationAngle (evade, 0.5f, forward());\n\n                // annotation: show evasion steering force\n                annotationLine (position(),position()+(steer*0.2f),evadeColor);\n                return steer;\n            }\n            else\n\n            {\n                const Vec3 evade = XXXsteerToEvadeAllDefenders ();\n                const Vec3 steer = limitMaxDeviationAngle (seek + evade,\n                                                           0.707f, forward());\n\n                annotationLine (position(),position()+seek, gRed);\n                annotationLine (position(),position()+evade, gGreen);\n\n                // annotation: show evasion steering force\n                annotationLine (position(),position()+(steer*0.2f),evadeColor);\n                return steer;\n            }\n        }\n    }\n}\n\n\n// ----------------------------------------------------------------------------\n// adjust obstacle avoidance look ahead time: make it large when we are far\n// from the goal and heading directly towards it, make it small otherwise.\n\n\nvoid CtfSeeker::adjustObstacleAvoidanceLookAhead (const bool clearPath)\n{\n    if (clearPath)\n    {\n        evading = false;\n        const float goalDistance = Vec3::distance (gHomeBaseCenter,position());\n        const bool headingTowardGoal = isAhead (gHomeBaseCenter, 0.98f);\n        const bool isNear = (goalDistance/speed()) < gAvoidancePredictTimeMax;\n        const bool useMax = headingTowardGoal && !isNear;\n        gAvoidancePredictTime =\n            (useMax ? gAvoidancePredictTimeMax : gAvoidancePredictTimeMin);\n    }\n    else\n    {\n        evading = true;\n        gAvoidancePredictTime = gAvoidancePredictTimeMin;\n    }\n}\n\n\n// ----------------------------------------------------------------------------\n\n\nvoid CtfSeeker::updateState (const float currentTime)\n{\n    // if we reach the goal before being tagged, switch to atGoal state\n    if (state == running)\n    {\n        const float baseDistance = Vec3::distance (position(),gHomeBaseCenter);\n        if (baseDistance < (radius() + gHomeBaseRadius)) state = atGoal;\n    }\n\n    // update lastRunningTime (holds off reset time)\n    if (state == running)\n    {\n        lastRunningTime = currentTime;\n    }\n    else\n    {\n        const float resetDelay = 4;\n        const float resetTime = lastRunningTime + resetDelay;\n        if (currentTime > resetTime) \n        {\n            // xxx a royal hack (should do this internal to CTF):\n            OpenSteerDemo::queueDelayedResetPlugInXXX ();\n        }\n    }\n}\n\n\n// ----------------------------------------------------------------------------\n\n\nvoid CtfSeeker::draw (void)\n{\n    // first call the draw method in the base class\n    CtfBase::draw();\n\n    // select string describing current seeker state\n    char* seekerStateString = \"\";\n    switch (state)\n    {\n    case running:\n        if (avoiding)\n            seekerStateString = \"avoid obstacle\";\n        else if (evading)\n            seekerStateString = \"seek and evade\";\n        else\n            seekerStateString = \"seek goal\";\n        break;\n    case tagged: seekerStateString = \"tagged\"; break;\n    case atGoal: seekerStateString = \"reached goal\"; break;\n    }\n\n    // annote seeker with its state as text\n    const Vec3 textOrigin = position() + Vec3 (0, 0.25, 0);\n    std::ostringstream annote;\n    annote << seekerStateString << std::endl;\n    annote << std::setprecision(2) << std::setiosflags(std::ios::fixed)\n           << speed() << std::ends;\n    draw2dTextAt3dLocation (annote, textOrigin, gWhite);\n\n    // display status in the upper left corner of the window\n    std::ostringstream status;\n    status << seekerStateString << std::endl;\n    status << obstacleCount << \" obstacles [F1/F2]\" << std::endl;\n    status << resetCount << \" restarts\" << std::ends;\n    const float h = drawGetWindowHeight ();\n    const Vec3 screenLocation (10, h-50, 0);\n    draw2dTextAt2dLocation (status, screenLocation, gGray80);\n}\n\n\n// ----------------------------------------------------------------------------\n// update method for goal seeker\n\n\nvoid CtfSeeker::update (const float currentTime, const float elapsedTime)\n{\n    // do behavioral state transitions, as needed\n    updateState (currentTime);\n\n    // determine and apply steering/braking forces\n    Vec3 steer (0, 0, 0);\n    if (state == running)\n    {\n        steer = steeringForSeeker ();\n    }\n    else\n    {\n        applyBrakingForce (gBrakingRate, elapsedTime);\n    }\n    applySteeringForce (steer, elapsedTime);\n\n    // annotation\n    annotationVelocityAcceleration ();\n    recordTrailVertex (currentTime, position());\n}\n\n\n// ----------------------------------------------------------------------------\n// dynamic obstacle registry\n//\n// xxx need to combine guts of addOneObstacle and minDistanceToObstacle,\n// xxx perhaps by having the former call the latter, or change the latter to\n// xxx be \"nearestObstacle\": give it a position, it finds the nearest obstacle\n// xxx (but remember: obstacles a not necessarilty spheres!)\n\n\nint CtfBase::obstacleCount = -1; // this value means \"uninitialized\"\nSOG CtfBase::allObstacles;\n\n\n#define testOneObstacleOverlap(radius, center)               \\\n{                                                            \\\n    float d = Vec3::distance (c, center);                    \\\n    float clearance = d - (r + (radius));                    \\\n    if (minClearance > clearance) minClearance = clearance;  \\\n}\n\n\nvoid CtfBase::initializeObstacles (void)\n{\n    // start with 40% of possible obstacles\n    if (obstacleCount == -1)\n    {\n        obstacleCount = 0;\n        for (int i = 0; i < (maxObstacleCount * 0.4); i++) addOneObstacle ();\n    }\n}\n\n\nvoid CtfBase::addOneObstacle (void)\n{\n    if (obstacleCount < maxObstacleCount)\n    {\n        // pick a random center and radius,\n        // loop until no overlap with other obstacles and the home base\n        float r;\n        Vec3 c;\n        float minClearance;\n        const float requiredClearance = gSeeker->radius() * 4; // 2 x diameter\n        do\n        {\n            r = frandom2 (1.5, 4);\n            c = randomVectorOnUnitRadiusXZDisk () * gMaxStartRadius * 1.1f;\n            minClearance = FLT_MAX;\n\n            for (SOI so = allObstacles.begin(); so != allObstacles.end(); so++)\n            {\n                testOneObstacleOverlap ((**so).radius, (**so).center);\n            }\n\n            testOneObstacleOverlap (gHomeBaseRadius - requiredClearance,\n                                    gHomeBaseCenter);\n        }\n        while (minClearance < requiredClearance);\n\n        // add new non-overlapping obstacle to registry\n        allObstacles.push_back (new SphericalObstacle (r, c));\n        obstacleCount++;\n    }\n}\n\n\nfloat CtfBase::minDistanceToObstacle (const Vec3 point)\n{\n    float r = 0;\n    Vec3 c = point;\n    float minClearance = FLT_MAX;\n    for (SOI so = allObstacles.begin(); so != allObstacles.end(); so++)\n    {\n        testOneObstacleOverlap ((**so).radius, (**so).center);\n    }\n    return minClearance;\n}\n\n\nvoid CtfBase::removeOneObstacle (void)\n{\n    if (obstacleCount > 0)\n    {\n        obstacleCount--;\n        allObstacles.pop_back();\n    }\n}\n\n\n// ----------------------------------------------------------------------------\n// PlugIn for OpenSteerDemo\n\n\nclass CtfPlugIn : public PlugIn\n{\npublic:\n\n    const char* name (void) {return \"Capture the Flag\";}\n\n    float selectionOrderSortKey (void) {return 0.01f;}\n\n    virtual ~CtfPlugIn() {} // be more \"nice\" to avoid a compiler warning\n\n    void open (void)\n    {\n        // create the seeker (\"hero\"/\"attacker\")\n        ctfSeeker = new CtfSeeker;\n        all.push_back (ctfSeeker);\n\n        // create the specified number of enemies, \n        // storing pointers to them in an array.\n        for (int i = 0; i<ctfEnemyCount; i++)\n        {\n            ctfEnemies[i] = new CtfEnemy;\n            all.push_back (ctfEnemies[i]);\n        }\n\n        // initialize camera\n        OpenSteerDemo::init2dCamera (*ctfSeeker);\n        OpenSteerDemo::camera.mode = Camera::cmFixedDistanceOffset;\n        OpenSteerDemo::camera.fixedTarget.set (15, 0, 0);\n        OpenSteerDemo::camera.fixedPosition.set (80, 60, 0);\n\n        CtfBase::initializeObstacles ();\n    }\n\n    void update (const float currentTime, const float elapsedTime)\n    {\n        // update the seeker\n        ctfSeeker->update (currentTime, elapsedTime);\n      \n        // update each enemy\n        for (int i = 0; i < ctfEnemyCount; i++)\n        {\n            ctfEnemies[i]->update (currentTime, elapsedTime);\n        }\n    }\n\n    void redraw (const float currentTime, const float elapsedTime)\n    {\n        // selected vehicle (user can mouse click to select another)\n        AbstractVehicle& selected = *OpenSteerDemo::selectedVehicle;\n\n        // vehicle nearest mouse (to be highlighted)\n        AbstractVehicle& nearMouse = *OpenSteerDemo::vehicleNearestToMouse ();\n\n        // update camera\n        OpenSteerDemo::updateCamera (currentTime, elapsedTime, selected);\n\n        // draw \"ground plane\" centered between base and selected vehicle\n        const Vec3 goalOffset = gHomeBaseCenter-OpenSteerDemo::camera.position();\n        const Vec3 goalDirection = goalOffset.normalize ();\n        const Vec3 cameraForward = OpenSteerDemo::camera.xxxls().forward();\n        const float goalDot = cameraForward.dot (goalDirection);\n        const float blend = remapIntervalClip (goalDot, 1, 0, 0.5, 0);\n        const Vec3 gridCenter = interpolate (blend,\n                                             selected.position(),\n                                             gHomeBaseCenter);\n        OpenSteerDemo::gridUtility (gridCenter);\n\n        // draw the seeker, obstacles and home base\n        ctfSeeker->draw();\n        drawObstacles ();\n        drawHomeBase();\n\n        // draw each enemy\n        for (int i = 0; i < ctfEnemyCount; i++) ctfEnemies[i]->draw ();\n\n        // highlight vehicle nearest mouse\n        OpenSteerDemo::highlightVehicleUtility (nearMouse);\n    }\n\n    void close (void)\n    {\n        // delete seeker\n        delete (ctfSeeker);\n        ctfSeeker = NULL;\n\n        // delete each enemy\n        for (int i = 0; i < ctfEnemyCount; i++)\n        {\n            delete (ctfEnemies[i]);\n            ctfEnemies[i] = NULL;\n        }\n\n        // clear the group of all vehicles\n        all.clear();\n    }\n\n    void reset (void)\n    {\n        // count resets\n        resetCount++;\n\n        // reset the seeker (\"hero\"/\"attacker\") and enemies\n        ctfSeeker->reset ();\n        for (int i = 0; i<ctfEnemyCount; i++) ctfEnemies[i]->reset ();\n\n        // reset camera position\n        OpenSteerDemo::position2dCamera (*ctfSeeker);\n\n        // make camera jump immediately to new position\n        OpenSteerDemo::camera.doNotSmoothNextMove ();\n    }\n\n    void handleFunctionKeys (int keyNumber)\n    {\n        switch (keyNumber)\n        {\n        case 1: CtfBase::addOneObstacle ();    break;\n        case 2: CtfBase::removeOneObstacle (); break;\n        }\n    }\n\n    void printMiniHelpForFunctionKeys (void)\n    {\n        std::ostringstream message;\n        message << \"Function keys handled by \";\n        message << '\"' << name() << '\"' << ':' << std::ends;\n        OpenSteerDemo::printMessage (message);\n        OpenSteerDemo::printMessage (\"  F1     add one obstacle.\");\n        OpenSteerDemo::printMessage (\"  F2     remove one obstacle.\");\n        OpenSteerDemo::printMessage (\"\");\n    }\n\n    const AVGroup& allVehicles (void) {return (const AVGroup&) all;}\n\n    void drawHomeBase (void)\n    {\n        const Vec3 up (0, 0.01f, 0);\n        const Vec3 atColor (0.3f, 0.3f, 0.5f);\n        const Vec3 noColor = gGray50;\n        const bool reached = ctfSeeker->state == CtfSeeker::atGoal;\n        const Vec3 baseColor = (reached ? atColor : noColor);\n        drawXZDisk (gHomeBaseRadius,    gHomeBaseCenter, baseColor, 40);\n        drawXZDisk (gHomeBaseRadius/15, gHomeBaseCenter+up, gBlack, 20);\n    }\n\n    void drawObstacles (void)\n    {\n        const Vec3 color (0.8f, 0.6f, 0.4f);\n        const SOG& allSO = CtfBase::allObstacles;\n        for (SOI so = allSO.begin(); so != allSO.end(); so++)\n        {\n            drawXZCircle ((**so).radius, (**so).center, color, 40);\n        }\n    }\n\n    // a group (STL vector) of all vehicles in the PlugIn\n    std::vector<CtfBase*> all;\n};\n\n\nCtfPlugIn gCtfPlugIn;\n\n\n// ----------------------------------------------------------------------------\n\n\n",
+			"file": "/home/iand/.cache/.fr-xMdhps/opensteer/plugins/CaptureTheFlag.cpp",
+			"file_size": 31687,
+			"file_write_time": 1096912183000000,
+			"settings":
+			{
+				"buffer_size": 31687,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "CREDITS",
+			"settings":
+			{
+				"buffer_size": 210,
+				"line_ending": "Unix",
+				"name": "CREDITS"
 			}
 		},
 		{
 			"file": "mob.go",
 			"settings":
 			{
-				"buffer_size": 3795,
+				"buffer_size": 3794,
 				"line_ending": "Unix"
 			}
 		},
@@ -91,57 +151,7 @@
 			"file": "constants.go",
 			"settings":
 			{
-				"buffer_size": 4787,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"contents": "Searching 37 files for \"MAP_RADIUS\"\n\n/home/iand/wip/amberfell/constants.go:\n   12  	CHUNK_HEIGHT = 10\n   13  \n   14: 	MAP_RADIUS     = 64000\n   15  	PLAYER_START_X = 32760\n   16  	PLAYER_START_Z = 32760\n\n/home/iand/wip/amberfell/world.go:\n   49  \n   50  	var max, min float64\n   51: 	for i:=uint16(0); i < MAP_RADIUS*2;i++ {\n   52  		h := self.StoneHeight(i, PLAYER_START_Z)\n   53  		if h > max { max = h}\n   ..\n   96  \n   97  func (self *World) DirtHeight(x uint16, z uint16) float64 {\n   98: 	return perlin.Noise2D(0.25*float64(x-MAP_RADIUS)/(MAP_RADIUS), 0.25*float64(z-MAP_RADIUS)/(MAP_RADIUS), 2, 0.8, 1)\n   99  }\n  100  \n  101  func (self *World) StoneHeight(x uint16, z uint16) float64 {\n  102: 	return perlin.Noise2D(float64(x-MAP_RADIUS)/(MAP_RADIUS), float64(z-MAP_RADIUS)/(MAP_RADIUS), 2, 0.8, 1)\n  103  }\n  104  \n  ...\n  201  \n  202  func (self *World) Grow(x uint16, y uint16, z uint16, n int, s int, w int, e int, u int, d int, texture byte) {\n  203: 	if y > 0 && x < MAP_RADIUS && self.At(x+1, y-1, z) != 0 && rand.Intn(100) < e {\n  204  		self.Set(x+1, y, z, texture)\n  205  		self.Grow(x+1, y, z, n, s, 0, e-2, u, d, texture)\n  ...\n  209  		self.Grow(x-1, y, z, n, s, w-2, 0, u, d, texture)\n  210  	}\n  211: 	if y > 0 && z < MAP_RADIUS && self.At(x, y-1, z+1) != 0 && rand.Intn(100) < s {\n  212  		self.Set(x, y, z+1, texture)\n  213  		self.Grow(x, y, z+1, 0, s-2, w, e, u, d, texture)\n  ...\n  217  		self.Grow(x, y, z-1, n-2, 0, w, e, u, d, texture)\n  218  	}\n  219: 	if y < MAP_RADIUS && rand.Intn(100) < u {\n  220  		self.Set(x, y+1, z, texture)\n  221  		self.Grow(x, y+1, z, n, s, w, e, u-2, 0, texture)\n\n13 matches across 2 files\n\n\nSearching 37 files for \"MAP_RADIUS\"\n\n/home/iand/wip/amberfell/world.go:\n   49  \n   50  	var max, min float64\n   51: 	for i:=uint16(0); i < MAP_RADIUS*2;i++ {\n   52  		h := self.StoneHeight(i, PLAYER_START_Z)\n   53  		if h > max { max = h}\n   ..\n   96  \n   97  func (self *World) DirtHeight(x uint16, z uint16) float64 {\n   98: 	return perlin.Noise2D(0.25*float64(x-MAP_RADIUS)/(MAP_RADIUS), 0.25*float64(z-MAP_RADIUS)/(MAP_RADIUS), 2, 0.8, 1)\n   99  }\n  100  \n  101  func (self *World) StoneHeight(x uint16, z uint16) float64 {\n  102: 	return perlin.Noise2D(float64(x-MAP_RADIUS)/(MAP_RADIUS), float64(z-MAP_RADIUS)/(MAP_RADIUS), 2, 0.8, 1)\n  103  }\n  104  \n  ...\n  201  \n  202  func (self *World) Grow(x uint16, y uint16, z uint16, n int, s int, w int, e int, u int, d int, texture byte) {\n  203: 	if y > 0 && x < MAP_RADIUS && self.At(x+1, y-1, z) != 0 && rand.Intn(100) < e {\n  204  		self.Set(x+1, y, z, texture)\n  205  		self.Grow(x+1, y, z, n, s, 0, e-2, u, d, texture)\n  ...\n  209  		self.Grow(x-1, y, z, n, s, w-2, 0, u, d, texture)\n  210  	}\n  211: 	if y > 0 && z < MAP_RADIUS && self.At(x, y-1, z+1) != 0 && rand.Intn(100) < s {\n  212  		self.Set(x, y, z+1, texture)\n  213  		self.Grow(x, y, z+1, 0, s-2, w, e, u, d, texture)\n  ...\n  217  		self.Grow(x, y, z-1, n-2, 0, w, e, u, d, texture)\n  218  	}\n  219: 	if y < MAP_RADIUS && rand.Intn(100) < u {\n  220  		self.Set(x, y+1, z, texture)\n  221  		self.Grow(x, y+1, z, n, s, w, e, u-2, 0, texture)\n\n12 matches in 1 file\n\n\nSearching 37 files for \"console.ver\"\n\n/home/iand/wip/amberfell/world.go:\n  416  \n  417  	console.cubecount = 0\n  418: 	console.vertices = 0\n  419  \n  420  	px := uint16(center[XAXIS]) / CHUNK_WIDTH\n  ...\n  574  		}\n  575  \n  576: 		console.vertices += self.vertexBuffer.vertexCount\n  577  		self.clean = true\n  578  	}\n\n2 matches in 1 file\n\n\nSearching 37 files for \"Reset\"\n\n/home/iand/wip/amberfell/amberfell.go:\n  342  \n  343  func Draw(t int64) {\n  344: 	gVertexBuffer.Reset()\n  345  \n  346  	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT)\n\n/home/iand/wip/amberfell/inventory.go:\n  171  	gl.Rotatef(360*float32(math.Sin(float64(t)/1e10+float64(i))), 0.0, 0.0, 1.0)\n  172  	gl.Scalef(blocksize, blocksize, blocksize)\n  173: 	gVertexBuffer.Reset()\n  174  	TerrainCube(gVertexBuffer, 0, 0, 0, [6]uint16{0, 0, 0, 0, 0, 0}, byte(blockid), FACE_NONE)\n  175  	gVertexBuffer.RenderDirect()\n\n/home/iand/wip/amberfell/picker.go:\n   87  			gl.Rotatef(360*float32(math.Sin(float64(t)/1e10+float64(i))), 0.0, 0.0, 1.0)\n   88  			gl.Scalef(blockscale, blockscale, blockscale)\n   89: 			gVertexBuffer.Reset()\n   90  			TerrainCube(gVertexBuffer, 0, 0, 0, [6]uint16{0, 0, 0, 0, 0, 0}, byte(item), FACE_NONE)\n   91  			gVertexBuffer.RenderDirect()\n\n/home/iand/wip/amberfell/shapes.go:\n   53  }\n   54  \n   55: func (self *VertexBuffer) Reset() {\n   56  	self.vertexCount = 0\n   57  	self.indexCount = 0\n\n/home/iand/wip/amberfell/world.go:\n  435  	console.vertices = 0\n  436  \n  437: 	terrainBuffer.Reset()\n  438  \n  439  	pxmin, _, pzmin := chunkCoordsFromWorld(uint16(center[XAXIS]-float64(viewRadius)), uint16(center[YAXIS]), uint16(center[ZAXIS]-float64(viewRadius)))\n  ...\n  578  		t := Timer{}\n  579  		t.Start()\n  580: 		//self.vertexBuffer.Reset()\n  581  		var x, y, z uint16\n  582  		for x = 0; x < CHUNK_WIDTH; x++ {\n\n6 matches across 5 files\n\n\nSearching 39 files for \"cubecount\"\n\n/home/iand/wip/amberfell/console.go:\n   16  	fps       float64\n   17  	mem       runtime.MemStats\n   18: 	cubecount int\n   19  	vertices  int\n   20  	culledVertices  int\n   ..\n   53  \n   54  	gl.Translatef(float32(viewport.lplane)+margin, float32(viewport.bplane)+consoleHeight+margin-h, 0)\n   55: 	consoleFont.Print(fmt.Sprintf(\"FPS: %5.2f CC: %d V: %d (%d)\", self.fps, self.cubecount, self.vertices, self.culledVertices))\n   56  	gl.LoadIdentity()\n   57  	gl.Translatef(float32(viewport.lplane)+margin, float32(viewport.bplane)+consoleHeight+margin-2*h, 0)\n\n/home/iand/wip/amberfell/world.go:\n  563  \n  564  							TerrainCube(self.vertexBuffer, float32(xw), float32(yw), float32(zw), neighbours, blockid, selectedFace)\n  565: 							console.cubecount++\n  566  						}\n  567  					}\n\n3 matches across 2 files\n\n\nSearching 39 files for \"byte(\" (whole word)\n\n/home/iand/wip/amberfell/inventory.go:\n  192  	gl.Scalef(blocksize, blocksize, blocksize)\n  193  	gVertexBuffer.Reset()\n  194: 	TerrainCube(gVertexBuffer, 0, 0, 0, [6]uint16{0, 0, 0, 0, 0, 0}, byte(blockid), FACE_NONE)\n  195  	gVertexBuffer.RenderDirect(false)\n  196  \n\n/home/iand/wip/amberfell/picker.go:\n   87  			gl.Scalef(blockscale, blockscale, blockscale)\n   88  			gVertexBuffer.Reset()\n   89: 			TerrainCube(gVertexBuffer, 0, 0, 0, [6]uint16{0, 0, 0, 0, 0, 0}, byte(item), FACE_NONE)\n   90  			gVertexBuffer.RenderDirect(false)\n   91  \n\n/home/iand/wip/amberfell/player.go:\n  278  			}\n  279  			if TheWorld.Atv(selectedBlockFace.pos) == BLOCK_AIR {\n  280: 				TheWorld.Setv(selectedBlockFace.pos, byte(self.currentItem))\n  281  				self.inventory[self.currentItem]--\n  282  			}\n\n3 matches across 3 files\n\n\nSearching 39 files for \"byte(\" (whole word)\n\n/home/iand/wip/amberfell/inventory.go:\n  192  	gl.Scalef(blocksize, blocksize, blocksize)\n  193  	gVertexBuffer.Reset()\n  194: 	TerrainCube(gVertexBuffer, 0, 0, 0, [6]uint16{0, 0, 0, 0, 0, 0}, byte(blockid), FACE_NONE)\n  195  	gVertexBuffer.RenderDirect(false)\n  196  \n\n/home/iand/wip/amberfell/picker.go:\n   87  			gl.Scalef(blockscale, blockscale, blockscale)\n   88  			gVertexBuffer.Reset()\n   89: 			TerrainCube(gVertexBuffer, 0, 0, 0, [6]uint16{0, 0, 0, 0, 0, 0}, byte(item), FACE_NONE)\n   90  			gVertexBuffer.RenderDirect(false)\n   91  \n\n/home/iand/wip/amberfell/player.go:\n  278  			}\n  279  			if TheWorld.Atv(selectedBlockFace.pos) == BLOCK_AIR && self.currentItem < 256 {\n  280: 				TheWorld.Setv(selectedBlockFace.pos, byte(self.currentItem))\n  281  				self.inventory[self.currentItem]--\n  282  			}\n\n3 matches across 3 files\n\n\nSearching 39 files for \"byte(\" (whole word)\n\n/home/iand/wip/amberfell/inventory.go:\n  192  	gl.Scalef(blocksize, blocksize, blocksize)\n  193  	gVertexBuffer.Reset()\n  194: 	TerrainCube(gVertexBuffer, 0, 0, 0, [6]uint16{0, 0, 0, 0, 0, 0}, byte(blockid), FACE_NONE)\n  195  	gVertexBuffer.RenderDirect(false)\n  196  \n\n/home/iand/wip/amberfell/player.go:\n  278  			}\n  279  			if TheWorld.Atv(selectedBlockFace.pos) == BLOCK_AIR && self.currentItem < 256 {\n  280: 				TheWorld.Setv(selectedBlockFace.pos, byte(self.currentItem))\n  281  				self.inventory[self.currentItem]--\n  282  			}\n\n2 matches across 2 files\n\n\nSearching 47 files for \"lightSources\"\n\n/home/iand/wip/amberfell/amberfell.go:\n   49  \n   50  	// World elements\n   51: 	lightSources = list.New()\n   52  	campfires    = list.New()\n   53  \n   ..\n  495  			TheWorld.InvalidateRadius(pos[XAXIS], pos[ZAXIS], CAMPFIRE_INTENSITY)\n  496  \n  497: 			lightSources.Remove(campfire.lightSourceElem)\n  498  			campfires.Remove(e)\n  499  		}\n\n/home/iand/wip/amberfell/player.go:\n  313  \n  314  					light := LightSource{Vectorf{float64(selectedBlockFace.pos[XAXIS]), float64(selectedBlockFace.pos[YAXIS]), float64(selectedBlockFace.pos[ZAXIS])}, CAMPFIRE_INTENSITY}\n  315: 					lightElem := lightSources.PushBack(&light)\n  316  \n  317  					campfire := CampFire{lightElem, CAMPFIRE_DURATION}\n\n/home/iand/wip/amberfell/shapes.go:\n 1608  	lightLevel := 0\n 1609  \n 1610: 	for e := lightSources.Front(); e != nil; e = e.Next() {\n 1611  		lightSource := e.Value.(LightSource)\n 1612  		distance := uint16(pos.Minus(lightSource.pos).Magnitude())\n\n4 matches across 3 files\n\n\nSearching 47 files for \"lightSources\"\n\n/home/iand/wip/amberfell/amberfell.go:\n   49  \n   50  	// World elements\n   51: 	lightSources = list.New()\n   52  	campfires    = list.New()\n   53  \n   ..\n  495  			TheWorld.InvalidateRadius(pos[XAXIS], pos[ZAXIS], CAMPFIRE_INTENSITY)\n  496  \n  497: 			lightSources.Remove(campfire.lightSourceElem)\n  498  			campfires.Remove(e)\n  499  		}\n\n/home/iand/wip/amberfell/player.go:\n  313  \n  314  					light := LightSource{Vectorf{float64(selectedBlockFace.pos[XAXIS]), float64(selectedBlockFace.pos[YAXIS]), float64(selectedBlockFace.pos[ZAXIS])}, CAMPFIRE_INTENSITY}\n  315: 					lightElem := lightSources.PushBack(&light)\n  316  \n  317  					campfire := CampFire{lightElem, CAMPFIRE_DURATION}\n\n/home/iand/wip/amberfell/shapes.go:\n 1608  	lightLevel := 0\n 1609  \n 1610: 	for e := lightSources.Front(); e != nil; e = e.Next() {\n 1611  		lightSource := e.Value.(LightSource)\n 1612  		distance := uint16(pos.Minus(lightSource.pos).Magnitude())\n\n4 matches across 3 files\n\n\nSearching 48 files for \"openttd\"\n\n/home/iand/tmp/openttd/trunk/src/road_gui.cpp:\n    2  \n    3  /*\n    4:  * This file is part of OpenTTD.\n    5:  * OpenTTD is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 2.\n    6:  * OpenTTD is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n    7:  * See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with OpenTTD. If not, see <http://www.gnu.org/licenses/>.\n    8   */\n    9  \n\n4 matches in 1 file\n\n\nSearching 58 files for \"SelectAction\"\n\n/home/iand/wip/amberfell/picker.go:\n  123  		hit, pos := self.HitTest(x, y)\n  124  		if hit {\n  125: 			ThePlayer.SelectAction(pos)\n  126  		}\n  127  	}\n  ...\n  130  func (self *Picker) HandleKeys(keys []uint8) {\n  131  	if keys[sdl.K_1] != 0 {\n  132: 		ThePlayer.SelectAction(0)\n  133  	}\n  134  	if keys[sdl.K_2] != 0 {\n  135: 		ThePlayer.SelectAction(1)\n  136  	}\n  137  	if keys[sdl.K_3] != 0 {\n  138: 		ThePlayer.SelectAction(2)\n  139  	}\n  140  	if keys[sdl.K_4] != 0 {\n  141: 		ThePlayer.SelectAction(3)\n  142  	}\n  143  	if keys[sdl.K_5] != 0 {\n  144: 		ThePlayer.SelectAction(4)\n  145  	}\n  146  	if keys[sdl.K_6] != 0 {\n  147: 		ThePlayer.SelectAction(5)\n  148  	}\n  149  	if keys[sdl.K_7] != 0 {\n  150: 		ThePlayer.SelectAction(6)\n  151  	}\n  152  	if keys[sdl.K_8] != 0 {\n  153: 		ThePlayer.SelectAction(7)\n  154  	}\n  155  }\n\n/home/iand/wip/amberfell/player.go:\n  364  }\n  365  \n  366: func (self *Player) SelectAction(action int) {\n  367  	switch action {\n  368  	case 0:\n\n10 matches across 2 files\n",
-			"settings":
-			{
-				"buffer_size": 12012,
-				"line_ending": "Unix",
-				"name": "Find Results",
-				"scratch": true
-			}
-		},
-		{
-			"file": "/home/iand/tmp/openttd/trunk/src/genworld.cpp",
-			"settings":
-			{
-				"buffer_size": 10067,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "/home/iand/tmp/openttd/trunk/src/industry_cmd.cpp",
-			"settings":
-			{
-				"buffer_size": 96354,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "/home/iand/tmp/openttd/trunk/src/map_func.h",
-			"settings":
-			{
-				"buffer_size": 11647,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "/home/iand/tmp/openttd/trunk/src/industrytype.h",
-			"settings":
-			{
-				"buffer_size": 10585,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "/home/iand/tmp/openttd/trunk/src/industry.h",
-			"settings":
-			{
-				"buffer_size": 7101,
+				"buffer_size": 6388,
 				"line_ending": "Unix"
 			}
 		},
@@ -149,15 +159,7 @@
 			"file": "viewport.go",
 			"settings":
 			{
-				"buffer_size": 9625,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "geometry_test.go",
-			"settings":
-			{
-				"buffer_size": 6105,
+				"buffer_size": 9505,
 				"line_ending": "Unix"
 			}
 		},
@@ -189,7 +191,7 @@
 			"file": "picker.go",
 			"settings":
 			{
-				"buffer_size": 4120,
+				"buffer_size": 4330,
 				"line_ending": "Unix"
 			}
 		},
@@ -197,7 +199,7 @@
 			"file": "console.go",
 			"settings":
 			{
-				"buffer_size": 3736,
+				"buffer_size": 3711,
 				"line_ending": "Unix"
 			}
 		},
@@ -205,7 +207,25 @@
 			"file": "inventory.go",
 			"settings":
 			{
-				"buffer_size": 9712,
+				"buffer_size": 24419,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "Searching 53 files for \"hittest\"\n\n/home/iand/wip/amberfell/amberfell.sublime-workspace:\n   97  		},\n   98  		{\n   99: 			\"contents\": \"Searching 37 files for \\\"MAP_RADIUS\\\"\\n\\n/home/iand/wip/amberfell/constants.go:\\n   12  	CHUNK_HEIGHT = 10\\n   13  \\n   14: 	MAP_RADIUS     = 64000\\n   15  	PLAYER_START_X = 32760\\n   16  	PLAYER_START_Z = 32760\\n\\n/home/iand/wip/amberfell/world.go:\\n   49  \\n   50  	var max, min float64\\n   51: 	for i:=uint16(0); i < MAP_RADIUS*2;i++ {\\n   52  		h := self.StoneHeight(i, PLAYER_START_Z)\\n   53  		if h > max { max = h}\\n   ..\\n   96  \\n   97  func (self *World) DirtHeight(x uint16, z uint16) float64 {\\n   98: 	return perlin.Noise2D(0.25*float64(x-MAP_RADIUS)/(MAP_RADIUS), 0.25*float64(z-MAP_RADIUS)/(MAP_RADIUS), 2, 0.8, 1)\\n   99  }\\n  100  \\n  101  func (self *World) StoneHeight(x uint16, z uint16) float64 {\\n  102: 	return perlin.Noise2D(float64(x-MAP_RADIUS)/(MAP_RADIUS), float64(z-MAP_RADIUS)/(MAP_RADIUS), 2, 0.8, 1)\\n  103  }\\n  104  \\n  ...\\n  201  \\n  202  func (self *World) Grow(x uint16, y uint16, z uint16, n int, s int, w int, e int, u int, d int, texture byte) {\\n  203: 	if y > 0 && x < MAP_RADIUS && self.At(x+1, y-1, z) != 0 && rand.Intn(100) < e {\\n  204  		self.Set(x+1, y, z, texture)\\n  205  		self.Grow(x+1, y, z, n, s, 0, e-2, u, d, texture)\\n  ...\\n  209  		self.Grow(x-1, y, z, n, s, w-2, 0, u, d, texture)\\n  210  	}\\n  211: 	if y > 0 && z < MAP_RADIUS && self.At(x, y-1, z+1) != 0 && rand.Intn(100) < s {\\n  212  		self.Set(x, y, z+1, texture)\\n  213  		self.Grow(x, y, z+1, 0, s-2, w, e, u, d, texture)\\n  ...\\n  217  		self.Grow(x, y, z-1, n-2, 0, w, e, u, d, texture)\\n  218  	}\\n  219: 	if y < MAP_RADIUS && rand.Intn(100) < u {\\n  220  		self.Set(x, y+1, z, texture)\\n  221  		self.Grow(x, y+1, z, n, s, w, e, u-2, 0, texture)\\n\\n13 matches across 2 files\\n\\n\\nSearching 37 files for \\\"MAP_RADIUS\\\"\\n\\n/home/iand/wip/amberfell/world.go:\\n   49  \\n   50  	var max, min float64\\n   51: 	for i:=uint16(0); i < MAP_RADIUS*2;i++ {\\n   52  		h := self.StoneHeight(i, PLAYER_START_Z)\\n   53  		if h > max { max = h}\\n   ..\\n   96  \\n   97  func (self *World) DirtHeight(x uint16, z uint16) float64 {\\n   98: 	return perlin.Noise2D(0.25*float64(x-MAP_RADIUS)/(MAP_RADIUS), 0.25*float64(z-MAP_RADIUS)/(MAP_RADIUS), 2, 0.8, 1)\\n   99  }\\n  100  \\n  101  func (self *World) StoneHeight(x uint16, z uint16) float64 {\\n  102: 	return perlin.Noise2D(float64(x-MAP_RADIUS)/(MAP_RADIUS), float64(z-MAP_RADIUS)/(MAP_RADIUS), 2, 0.8, 1)\\n  103  }\\n  104  \\n  ...\\n  201  \\n  202  func (self *World) Grow(x uint16, y uint16, z uint16, n int, s int, w int, e int, u int, d int, texture byte) {\\n  203: 	if y > 0 && x < MAP_RADIUS && self.At(x+1, y-1, z) != 0 && rand.Intn(100) < e {\\n  204  		self.Set(x+1, y, z, texture)\\n  205  		self.Grow(x+1, y, z, n, s, 0, e-2, u, d, texture)\\n  ...\\n  209  		self.Grow(x-1, y, z, n, s, w-2, 0, u, d, texture)\\n  210  	}\\n  211: 	if y > 0 && z < MAP_RADIUS && self.At(x, y-1, z+1) != 0 && rand.Intn(100) < s {\\n  212  		self.Set(x, y, z+1, texture)\\n  213  		self.Grow(x, y, z+1, 0, s-2, w, e, u, d, texture)\\n  ...\\n  217  		self.Grow(x, y, z-1, n-2, 0, w, e, u, d, texture)\\n  218  	}\\n  219: 	if y < MAP_RADIUS && rand.Intn(100) < u {\\n  220  		self.Set(x, y+1, z, texture)\\n  221  		self.Grow(x, y+1, z, n, s, w, e, u-2, 0, texture)\\n\\n12 matches in 1 file\\n\\n\\nSearching 37 files for \\\"console.ver\\\"\\n\\n/home/iand/wip/amberfell/world.go:\\n  416  \\n  417  	console.cubecount = 0\\n  418: 	console.vertices = 0\\n  419  \\n  420  	px := uint16(center[XAXIS]) / CHUNK_WIDTH\\n  ...\\n  574  		}\\n  575  \\n  576: 		console.vertices += self.vertexBuffer.vertexCount\\n  577  		self.clean = true\\n  578  	}\\n\\n2 matches in 1 file\\n\\n\\nSearching 37 files for \\\"Reset\\\"\\n\\n/home/iand/wip/amberfell/amberfell.go:\\n  342  \\n  343  func Draw(t int64) {\\n  344: 	gVertexBuffer.Reset()\\n  345  \\n  346  	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT)\\n\\n/home/iand/wip/amberfell/inventory.go:\\n  171  	gl.Rotatef(360*float32(math.Sin(float64(t)/1e10+float64(i))), 0.0, 0.0, 1.0)\\n  172  	gl.Scalef(blocksize, blocksize, blocksize)\\n  173: 	gVertexBuffer.Reset()\\n  174  	TerrainCube(gVertexBuffer, 0, 0, 0, [6]uint16{0, 0, 0, 0, 0, 0}, byte(blockid), FACE_NONE)\\n  175  	gVertexBuffer.RenderDirect()\\n\\n/home/iand/wip/amberfell/picker.go:\\n   87  			gl.Rotatef(360*float32(math.Sin(float64(t)/1e10+float64(i))), 0.0, 0.0, 1.0)\\n   88  			gl.Scalef(blockscale, blockscale, blockscale)\\n   89: 			gVertexBuffer.Reset()\\n   90  			TerrainCube(gVertexBuffer, 0, 0, 0, [6]uint16{0, 0, 0, 0, 0, 0}, byte(item), FACE_NONE)\\n   91  			gVertexBuffer.RenderDirect()\\n\\n/home/iand/wip/amberfell/shapes.go:\\n   53  }\\n   54  \\n   55: func (self *VertexBuffer) Reset() {\\n   56  	self.vertexCount = 0\\n   57  	self.indexCount = 0\\n\\n/home/iand/wip/amberfell/world.go:\\n  435  	console.vertices = 0\\n  436  \\n  437: 	terrainBuffer.Reset()\\n  438  \\n  439  	pxmin, _, pzmin := chunkCoordsFromWorld(uint16(center[XAXIS]-float64(viewRadius)), uint16(center[YAXIS]), uint16(center[ZAXIS]-float64(viewRadius)))\\n  ...\\n  578  		t := Timer{}\\n  579  		t.Start()\\n  580: 		//self.vertexBuffer.Reset()\\n  581  		var x, y, z uint16\\n  582  		for x = 0; x < CHUNK_WIDTH; x++ {\\n\\n6 matches across 5 files\\n\\n\\nSearching 39 files for \\\"cubecount\\\"\\n\\n/home/iand/wip/amberfell/console.go:\\n   16  	fps       float64\\n   17  	mem       runtime.MemStats\\n   18: 	cubecount int\\n   19  	vertices  int\\n   20  	culledVertices  int\\n   ..\\n   53  \\n   54  	gl.Translatef(float32(viewport.lplane)+margin, float32(viewport.bplane)+consoleHeight+margin-h, 0)\\n   55: 	consoleFont.Print(fmt.Sprintf(\\\"FPS: %5.2f CC: %d V: %d (%d)\\\", self.fps, self.cubecount, self.vertices, self.culledVertices))\\n   56  	gl.LoadIdentity()\\n   57  	gl.Translatef(float32(viewport.lplane)+margin, float32(viewport.bplane)+consoleHeight+margin-2*h, 0)\\n\\n/home/iand/wip/amberfell/world.go:\\n  563  \\n  564  							TerrainCube(self.vertexBuffer, float32(xw), float32(yw), float32(zw), neighbours, blockid, selectedFace)\\n  565: 							console.cubecount++\\n  566  						}\\n  567  					}\\n\\n3 matches across 2 files\\n\\n\\nSearching 39 files for \\\"byte(\\\" (whole word)\\n\\n/home/iand/wip/amberfell/inventory.go:\\n  192  	gl.Scalef(blocksize, blocksize, blocksize)\\n  193  	gVertexBuffer.Reset()\\n  194: 	TerrainCube(gVertexBuffer, 0, 0, 0, [6]uint16{0, 0, 0, 0, 0, 0}, byte(blockid), FACE_NONE)\\n  195  	gVertexBuffer.RenderDirect(false)\\n  196  \\n\\n/home/iand/wip/amberfell/picker.go:\\n   87  			gl.Scalef(blockscale, blockscale, blockscale)\\n   88  			gVertexBuffer.Reset()\\n   89: 			TerrainCube(gVertexBuffer, 0, 0, 0, [6]uint16{0, 0, 0, 0, 0, 0}, byte(item), FACE_NONE)\\n   90  			gVertexBuffer.RenderDirect(false)\\n   91  \\n\\n/home/iand/wip/amberfell/player.go:\\n  278  			}\\n  279  			if TheWorld.Atv(selectedBlockFace.pos) == BLOCK_AIR {\\n  280: 				TheWorld.Setv(selectedBlockFace.pos, byte(self.currentItem))\\n  281  				self.inventory[self.currentItem]--\\n  282  			}\\n\\n3 matches across 3 files\\n\\n\\nSearching 39 files for \\\"byte(\\\" (whole word)\\n\\n/home/iand/wip/amberfell/inventory.go:\\n  192  	gl.Scalef(blocksize, blocksize, blocksize)\\n  193  	gVertexBuffer.Reset()\\n  194: 	TerrainCube(gVertexBuffer, 0, 0, 0, [6]uint16{0, 0, 0, 0, 0, 0}, byte(blockid), FACE_NONE)\\n  195  	gVertexBuffer.RenderDirect(false)\\n  196  \\n\\n/home/iand/wip/amberfell/picker.go:\\n   87  			gl.Scalef(blockscale, blockscale, blockscale)\\n   88  			gVertexBuffer.Reset()\\n   89: 			TerrainCube(gVertexBuffer, 0, 0, 0, [6]uint16{0, 0, 0, 0, 0, 0}, byte(item), FACE_NONE)\\n   90  			gVertexBuffer.RenderDirect(false)\\n   91  \\n\\n/home/iand/wip/amberfell/player.go:\\n  278  			}\\n  279  			if TheWorld.Atv(selectedBlockFace.pos) == BLOCK_AIR && self.currentItem < 256 {\\n  280: 				TheWorld.Setv(selectedBlockFace.pos, byte(self.currentItem))\\n  281  				self.inventory[self.currentItem]--\\n  282  			}\\n\\n3 matches across 3 files\\n\\n\\nSearching 39 files for \\\"byte(\\\" (whole word)\\n\\n/home/iand/wip/amberfell/inventory.go:\\n  192  	gl.Scalef(blocksize, blocksize, blocksize)\\n  193  	gVertexBuffer.Reset()\\n  194: 	TerrainCube(gVertexBuffer, 0, 0, 0, [6]uint16{0, 0, 0, 0, 0, 0}, byte(blockid), FACE_NONE)\\n  195  	gVertexBuffer.RenderDirect(false)\\n  196  \\n\\n/home/iand/wip/amberfell/player.go:\\n  278  			}\\n  279  			if TheWorld.Atv(selectedBlockFace.pos) == BLOCK_AIR && self.currentItem < 256 {\\n  280: 				TheWorld.Setv(selectedBlockFace.pos, byte(self.currentItem))\\n  281  				self.inventory[self.currentItem]--\\n  282  			}\\n\\n2 matches across 2 files\\n\\n\\nSearching 47 files for \\\"lightSources\\\"\\n\\n/home/iand/wip/amberfell/amberfell.go:\\n   49  \\n   50  	// World elements\\n   51: 	lightSources = list.New()\\n   52  	campfires    = list.New()\\n   53  \\n   ..\\n  495  			TheWorld.InvalidateRadius(pos[XAXIS], pos[ZAXIS], CAMPFIRE_INTENSITY)\\n  496  \\n  497: 			lightSources.Remove(campfire.lightSourceElem)\\n  498  			campfires.Remove(e)\\n  499  		}\\n\\n/home/iand/wip/amberfell/player.go:\\n  313  \\n  314  					light := LightSource{Vectorf{float64(selectedBlockFace.pos[XAXIS]), float64(selectedBlockFace.pos[YAXIS]), float64(selectedBlockFace.pos[ZAXIS])}, CAMPFIRE_INTENSITY}\\n  315: 					lightElem := lightSources.PushBack(&light)\\n  316  \\n  317  					campfire := CampFire{lightElem, CAMPFIRE_DURATION}\\n\\n/home/iand/wip/amberfell/shapes.go:\\n 1608  	lightLevel := 0\\n 1609  \\n 1610: 	for e := lightSources.Front(); e != nil; e = e.Next() {\\n 1611  		lightSource := e.Value.(LightSource)\\n 1612  		distance := uint16(pos.Minus(lightSource.pos).Magnitude())\\n\\n4 matches across 3 files\\n\\n\\nSearching 47 files for \\\"lightSources\\\"\\n\\n/home/iand/wip/amberfell/amberfell.go:\\n   49  \\n   50  	// World elements\\n   51: 	lightSources = list.New()\\n   52  	campfires    = list.New()\\n   53  \\n   ..\\n  495  			TheWorld.InvalidateRadius(pos[XAXIS], pos[ZAXIS], CAMPFIRE_INTENSITY)\\n  496  \\n  497: 			lightSources.Remove(campfire.lightSourceElem)\\n  498  			campfires.Remove(e)\\n  499  		}\\n\\n/home/iand/wip/amberfell/player.go:\\n  313  \\n  314  					light := LightSource{Vectorf{float64(selectedBlockFace.pos[XAXIS]), float64(selectedBlockFace.pos[YAXIS]), float64(selectedBlockFace.pos[ZAXIS])}, CAMPFIRE_INTENSITY}\\n  315: 					lightElem := lightSources.PushBack(&light)\\n  316  \\n  317  					campfire := CampFire{lightElem, CAMPFIRE_DURATION}\\n\\n/home/iand/wip/amberfell/shapes.go:\\n 1608  	lightLevel := 0\\n 1609  \\n 1610: 	for e := lightSources.Front(); e != nil; e = e.Next() {\\n 1611  		lightSource := e.Value.(LightSource)\\n 1612  		distance := uint16(pos.Minus(lightSource.pos).Magnitude())\\n\\n4 matches across 3 files\\n\\n\\nSearching 48 files for \\\"openttd\\\"\\n\\n/home/iand/tmp/openttd/trunk/src/road_gui.cpp:\\n    2  \\n    3  /*\\n    4:  * This file is part of OpenTTD.\\n    5:  * OpenTTD is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 2.\\n    6:  * OpenTTD is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\\n    7:  * See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with OpenTTD. If not, see <http://www.gnu.org/licenses/>.\\n    8   */\\n    9  \\n\\n4 matches in 1 file\\n\\n\\nSearching 58 files for \\\"SelectAction\\\"\\n\\n/home/iand/wip/amberfell/picker.go:\\n  123  		hit, pos := self.HitTest(x, y)\\n  124  		if hit {\\n  125: 			ThePlayer.SelectAction(pos)\\n  126  		}\\n  127  	}\\n  ...\\n  130  func (self *Picker) HandleKeys(keys []uint8) {\\n  131  	if keys[sdl.K_1] != 0 {\\n  132: 		ThePlayer.SelectAction(0)\\n  133  	}\\n  134  	if keys[sdl.K_2] != 0 {\\n  135: 		ThePlayer.SelectAction(1)\\n  136  	}\\n  137  	if keys[sdl.K_3] != 0 {\\n  138: 		ThePlayer.SelectAction(2)\\n  139  	}\\n  140  	if keys[sdl.K_4] != 0 {\\n  141: 		ThePlayer.SelectAction(3)\\n  142  	}\\n  143  	if keys[sdl.K_5] != 0 {\\n  144: 		ThePlayer.SelectAction(4)\\n  145  	}\\n  146  	if keys[sdl.K_6] != 0 {\\n  147: 		ThePlayer.SelectAction(5)\\n  148  	}\\n  149  	if keys[sdl.K_7] != 0 {\\n  150: 		ThePlayer.SelectAction(6)\\n  151  	}\\n  152  	if keys[sdl.K_8] != 0 {\\n  153: 		ThePlayer.SelectAction(7)\\n  154  	}\\n  155  }\\n\\n/home/iand/wip/amberfell/player.go:\\n  364  }\\n  365  \\n  366: func (self *Player) SelectAction(action int) {\\n  367  	switch action {\\n  368  	case 0:\\n\\n10 matches across 2 files\\n\",\n  100  			\"settings\":\n  101  			{\n\n/home/iand/wip/amberfell/inventory.go:\n  414  		}\n  415  \n  416: 		hit, pos := picker.HitTest(x, y)\n  417  		if hit && pos > 2 {\n  418  			keys := sdl.GetKeyState()\n  ...\n  467  	if itemid == 0 {\n  468  \n  469: 		if hit, pos := picker.HitTest(x, y); hit && pos > 2 {\n  470  			itemid = uint16(pos) - 3\n  471  		}\n\n/home/iand/wip/amberfell/picker.go:\n  101  \n  102  // x and y are in screen2d coords\n  103: func (self *Picker) HitTest(x, y float64) (bool, int) {\n  104  \n  105  	for i := 0; i < 8; i++ {\n  ...\n  121  	if re.Button == 1 && re.State == 1 { // LEFT, DOWN\n  122  		x, y := viewport.ScreenCoordsToWorld2D(re.X, re.Y)\n  123: 		hit, pos := self.HitTest(x, y)\n  124  		if hit {\n  125  			ThePlayer.SelectAction(pos)\n\n5 matches across 3 files\n",
+			"settings":
+			{
+				"buffer_size": 13330,
+				"line_ending": "Unix",
+				"name": "Find Results",
+				"scratch": true
+			}
+		},
+		{
+			"file": "amberfell.sublime-workspace",
+			"settings":
+			{
+				"buffer_size": 43842,
 				"line_ending": "Unix"
 			}
 		},
@@ -229,7 +249,7 @@
 			"file": "world.go",
 			"settings":
 			{
-				"buffer_size": 24531,
+				"buffer_size": 24133,
 				"line_ending": "Unix"
 			}
 		},
@@ -270,6 +290,12 @@
 	},
 	"file_history":
 	[
+		"/home/iand/wip/amberfell/geometry_test.go",
+		"/home/iand/tmp/openttd/trunk/src/genworld.cpp",
+		"/home/iand/tmp/openttd/trunk/src/industry_cmd.cpp",
+		"/home/iand/tmp/openttd/trunk/src/industry.h",
+		"/home/iand/tmp/openttd/trunk/src/map_func.h",
+		"/home/iand/tmp/openttd/trunk/src/industrytype.h",
 		"/home/iand/wip/tmp/image.go",
 		"/home/iand/gocode/src/github.com/iand/perlin/perlin.go",
 		"/home/iand/.config/sublime-text-2/Packages/GoSublime/CHANGELOG.md",
@@ -292,7 +318,6 @@
 		"/home/iand/wip/amberfell/mob.go",
 		"/home/iand/wip/amberfell/shapes.go",
 		"/home/iand/wip/amberfell/geometry.go",
-		"/home/iand/wip/amberfell/geometry_test.go",
 		"/home/iand/wip/amberfell/timer.go",
 		"/home/iand/wip/amberfell/viewport.go",
 		"/home/iand/wip/amberfell/fonts.go",
@@ -392,16 +417,11 @@
 		"/home/iand/bin/craftbukkit/craftbukkit.sh",
 		"/home/iand/bin/craftbukkit/plugins/BOSEconomy/settings.txt",
 		"/home/iand/bin/craftbukkit/plugins/BOSEconomy/brackets.txt",
-		"/home/iand/bin/craftbukkit/plugins/BOSEconomy/accounts.txt",
-		"/home/iand/.mozilla/firefox/mwad0hks.default/itsalltext/mail.google.com.2c2f1l3d1e.txt",
-		"/home/iand/bin/craftbukkit/plugins/TempleCraft/config.yml",
-		"/home/iand/bin/craftbukkit/plugins/SecureChests/config.yml",
-		"/home/iand/bin/craftbukkit/plugins/EpicQuest/quests.yml",
-		"/home/iand/bin/craftbukkit/plugins/OtherDrops/includes/od-random_examples.yml"
+		"/home/iand/bin/craftbukkit/plugins/BOSEconomy/accounts.txt"
 	],
 	"find":
 	{
-		"height": 63.0
+		"height": 65.0
 	},
 	"find_in_files":
 	{
@@ -417,6 +437,30 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"craftingProductSlots",
+			"productRects",
+			"productSlots",
+			"craftingPro",
+			"productSlots",
+			"componentSlots",
+			"componentRects",
+			"len(self.componentRects)",
+			"slotsep",
+			"diam",
+			"offset",
+			"float32",
+			"buffer",
+			"drawpl",
+			"inventory[",
+			"hittest",
+			"ThePlayer.inventory",
+			"hasre",
+			"HandleMouse",
+			"blocksize",
+			"selection",
+			"inventory.",
+			"Terrain",
+			"Neighb",
 			"updatecamp",
 			"SelectAction",
 			"currentAction",
@@ -520,31 +564,7 @@
 			"viewp",
 			"metrics",
 			"push",
-			"VertexBuffer",
-			"self",
-			"bind",
-			"RenderQuadIndex",
-			"wallcorne",
-			"addface",
-			"corner",
-			"AddFace2",
-			"wallsingle",
-			"SlabCross(ORIENT_EAST",
-			", orient",
-			"int16",
-			"GetChunkForBlock",
-			"FindSurface",
-			"generate",
-			"FindSurface",
-			"random",
-			"blockIndex",
-			"chunkIndexFromWorld",
-			"int64",
-			"chunkIndexFromWorld(",
-			"chunkIndexFromWorld(0, 0, 0)",
-			"chunkIndexFromWorld",
-			"chunkIndex(",
-			"GenerateChunk"
+			"VertexBuffer"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -552,6 +572,12 @@
 		"regex": false,
 		"replace_history":
 		[
+			"craftingProductRects",
+			"craftingProductSlots",
+			"craftingComponentSlots",
+			"craftingComponentRects",
+			"slotsInRow",
+			"slotstep",
 			"timesObjects",
 			"selectedFace == DOWN_FACE, shadeLevels[DOWN_FACE], ",
 			"selectedFace == UP_FACE, shadeLevels[UP_FACE], ",
@@ -652,7 +678,7 @@
 	"groups":
 	[
 		{
-			"selected": 24,
+			"selected": 10,
 			"sheets":
 			[
 				{
@@ -660,15 +686,15 @@
 					"file": "amberfell.go",
 					"settings":
 					{
-						"buffer_size": 14078,
+						"buffer_size": 14327,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								6156,
+								6156
 							]
 						],
 						"settings":
@@ -677,7 +703,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 9.0,
+						"translation.y": 3758.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -687,15 +713,15 @@
 					"file": "player.go",
 					"settings":
 					{
-						"buffer_size": 13964,
+						"buffer_size": 15163,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								11724,
-								11724
+								13625,
+								13625
 							]
 						],
 						"settings":
@@ -704,7 +730,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 4764.0,
+						"translation.y": 5198.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -714,15 +740,15 @@
 					"file": "shapes.go",
 					"settings":
 					{
-						"buffer_size": 63866,
+						"buffer_size": 64548,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								63558,
-								63558
+								12771,
+								12771
 							]
 						],
 						"settings":
@@ -731,7 +757,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 25449.0,
+						"translation.y": 4650.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -768,15 +794,15 @@
 					"file": "items.go",
 					"settings":
 					{
-						"buffer_size": 6019,
+						"buffer_size": 13930,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								5667,
-								5667
+								0,
+								0
 							]
 						],
 						"settings":
@@ -785,25 +811,217 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 1888.0,
+						"translation.y": 7112.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
 					"buffer": 5,
-					"file": "mob.go",
+					"file": "wolf.go",
 					"settings":
 					{
-						"buffer_size": 3795,
+						"buffer_size": 1558,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2646,
-								2648
+								1130,
+								1130
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 290.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "/home/iand/.cache/.fr-Bq9LWQ/opensteer/src/SimpleVehicle.cpp",
+					"settings":
+					{
+						"buffer_size": 12508,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								12508,
+								12508
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 4490.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "/home/iand/.cache/.fr-HhkxL1/opensteer/src/Vec3.cpp",
+					"settings":
+					{
+						"buffer_size": 7939,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								7939,
+								7939
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 2720.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 8,
+					"file": "/home/iand/.cache/.fr-Tiai3N/opensteer/src/main.cpp",
+					"settings":
+					{
+						"buffer_size": 2184,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2184,
+								2184
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 425.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 9,
+					"file": "/home/iand/.cache/.fr-XSjVuk/opensteer/src/OpenSteerDemo.cpp",
+					"settings":
+					{
+						"buffer_size": 23974,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								6177,
+								6177
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 2790.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 10,
+					"file": "/home/iand/.cache/.fr-xMdhps/opensteer/plugins/CaptureTheFlag.cpp",
+					"settings":
+					{
+						"buffer_size": 31687,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								4214,
+								4214
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1920.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 11,
+					"file": "CREDITS",
+					"settings":
+					{
+						"buffer_size": 210,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								89,
+								89
+							]
+						],
+						"settings":
+						{
+							"auto_name": "CREDITS",
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 12,
+					"file": "mob.go",
+					"settings":
+					{
+						"buffer_size": 3794,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2580,
+								2580
 							]
 						],
 						"settings":
@@ -818,19 +1036,19 @@
 					"type": "text"
 				},
 				{
-					"buffer": 6,
+					"buffer": 13,
 					"file": "constants.go",
 					"settings":
 					{
-						"buffer_size": 4787,
+						"buffer_size": 6388,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1098,
-								1115
+								2247,
+								2247
 							]
 						],
 						"settings":
@@ -839,490 +1057,25 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 465.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 7,
-					"settings":
-					{
-						"buffer_size": 12012,
-						"regions":
-						{
-							"match":
-							{
-								"flags": 112,
-								"regions":
-								[
-									[
-										118,
-										128
-									],
-									[
-										306,
-										316
-									],
-									[
-										532,
-										542
-									],
-									[
-										545,
-										555
-									],
-									[
-										573,
-										583
-									],
-									[
-										586,
-										596
-									],
-									[
-										735,
-										745
-									],
-									[
-										748,
-										758
-									],
-									[
-										771,
-										781
-									],
-									[
-										784,
-										794
-									],
-									[
-										982,
-										992
-									],
-									[
-										1242,
-										1252
-									],
-									[
-										1493,
-										1503
-									],
-									[
-										1793,
-										1803
-									],
-									[
-										2019,
-										2029
-									],
-									[
-										2032,
-										2042
-									],
-									[
-										2060,
-										2070
-									],
-									[
-										2073,
-										2083
-									],
-									[
-										2222,
-										2232
-									],
-									[
-										2235,
-										2245
-									],
-									[
-										2258,
-										2268
-									],
-									[
-										2271,
-										2281
-									],
-									[
-										2469,
-										2479
-									],
-									[
-										2729,
-										2739
-									],
-									[
-										2980,
-										2990
-									],
-									[
-										3255,
-										3266
-									],
-									[
-										3368,
-										3379
-									],
-									[
-										3607,
-										3612
-									],
-									[
-										3905,
-										3910
-									],
-									[
-										4253,
-										4258
-									],
-									[
-										4485,
-										4490
-									],
-									[
-										4647,
-										4652
-									],
-									[
-										4896,
-										4901
-									],
-									[
-										5145,
-										5154
-									],
-									[
-										5415,
-										5424
-									],
-									[
-										5783,
-										5792
-									],
-									[
-										6090,
-										6095
-									],
-									[
-										6366,
-										6371
-									],
-									[
-										6602,
-										6607
-									],
-									[
-										6950,
-										6955
-									],
-									[
-										7226,
-										7231
-									],
-									[
-										7488,
-										7493
-									],
-									[
-										7836,
-										7841
-									],
-									[
-										8099,
-										8104
-									],
-									[
-										8329,
-										8341
-									],
-									[
-										8501,
-										8513
-									],
-									[
-										8837,
-										8849
-									],
-									[
-										9024,
-										9036
-									],
-									[
-										9333,
-										9345
-									],
-									[
-										9505,
-										9517
-									],
-									[
-										9841,
-										9853
-									],
-									[
-										10028,
-										10040
-									],
-									[
-										10347,
-										10354
-									],
-									[
-										10366,
-										10373
-									],
-									[
-										10550,
-										10557
-									],
-									[
-										10865,
-										10872
-									],
-									[
-										11113,
-										11125
-									],
-									[
-										11263,
-										11275
-									],
-									[
-										11340,
-										11352
-									],
-									[
-										11417,
-										11429
-									],
-									[
-										11494,
-										11506
-									],
-									[
-										11571,
-										11583
-									],
-									[
-										11648,
-										11660
-									],
-									[
-										11725,
-										11737
-									],
-									[
-										11802,
-										11814
-									],
-									[
-										11918,
-										11930
-									]
-								],
-								"scope": ""
-							}
-						},
-						"selection":
-						[
-							[
-								11111,
-								11111
-							]
-						],
-						"settings":
-						{
-							"detect_indentation": false,
-							"output_tag": 12,
-							"result_base_dir": "",
-							"result_file_regex": "^([A-Za-z\\\\/<].*):$",
-							"result_line_regex": "^ +([0-9]+):",
-							"scroll_past_end": true,
-							"syntax": "Packages/Default/Find Results.hidden-tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 5055.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 8,
-					"file": "/home/iand/tmp/openttd/trunk/src/genworld.cpp",
-					"settings":
-					{
-						"buffer_size": 10067,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								5158,
-								5158
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 1711.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 9,
-					"file": "/home/iand/tmp/openttd/trunk/src/industry_cmd.cpp",
-					"settings":
-					{
-						"buffer_size": 96354,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								67099,
-								67112
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 29844.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 10,
-					"file": "/home/iand/tmp/openttd/trunk/src/map_func.h",
-					"settings":
-					{
-						"buffer_size": 11647,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								11647,
-								11647
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 5854.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 11,
-					"file": "/home/iand/tmp/openttd/trunk/src/industrytype.h",
-					"settings":
-					{
-						"buffer_size": 10585,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								10585,
-								10585
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 2464.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 12,
-					"file": "/home/iand/tmp/openttd/trunk/src/industry.h",
-					"settings":
-					{
-						"buffer_size": 7101,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								7101,
-								7101
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 2194.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 13,
-					"file": "viewport.go",
-					"settings":
-					{
-						"buffer_size": 9625,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1307,
-								1307
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Go/Go.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 701.0,
+						"translation.y": 1265.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
 					"buffer": 14,
-					"file": "geometry_test.go",
+					"file": "viewport.go",
 					"settings":
 					{
-						"buffer_size": 6105,
+						"buffer_size": 9505,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								252,
-								252
+								565,
+								575
 							]
 						],
 						"settings":
@@ -1422,15 +1175,15 @@
 					"file": "picker.go",
 					"settings":
 					{
-						"buffer_size": 4120,
+						"buffer_size": 4330,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1884,
-								1884
+								2425,
+								2425
 							]
 						],
 						"settings":
@@ -1439,7 +1192,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 391.0,
+						"translation.y": 1022.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -1449,15 +1202,15 @@
 					"file": "console.go",
 					"settings":
 					{
-						"buffer_size": 3736,
+						"buffer_size": 3711,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								3729,
-								3729
+								3473,
+								3473
 							]
 						],
 						"settings":
@@ -1476,15 +1229,15 @@
 					"file": "inventory.go",
 					"settings":
 					{
-						"buffer_size": 9712,
+						"buffer_size": 24419,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								731,
-								731
+								19679,
+								19679
 							]
 						],
 						"settings":
@@ -1493,13 +1246,99 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 120.0,
+						"translation.y": 9966.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
 					"buffer": 21,
+					"settings":
+					{
+						"buffer_size": 13330,
+						"regions":
+						{
+							"match":
+							{
+								"flags": 112,
+								"regions":
+								[
+									[
+										11550,
+										11557
+									],
+									[
+										12666,
+										12673
+									],
+									[
+										12815,
+										12822
+									],
+									[
+										13006,
+										13013
+									],
+									[
+										13234,
+										13241
+									]
+								],
+								"scope": ""
+							}
+						},
+						"selection":
+						[
+							[
+								12638,
+								12644
+							]
+						],
+						"settings":
+						{
+							"detect_indentation": false,
+							"output_tag": 1,
+							"result_base_dir": "",
+							"result_file_regex": "^([A-Za-z\\\\/<].*):$",
+							"result_line_regex": "^ +([0-9]+):",
+							"scroll_past_end": true,
+							"syntax": "Packages/Default/Find Results.hidden-tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 1680.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 22,
+					"file": "amberfell.sublime-workspace",
+					"settings":
+					{
+						"buffer_size": 43842,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1205,
+								1205
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Text/Plain text.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 1140.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 23,
 					"file": "pause.go",
 					"settings":
 					{
@@ -1526,7 +1365,7 @@
 					"type": "text"
 				},
 				{
-					"buffer": 22,
+					"buffer": 24,
 					"file": "fonts.go",
 					"settings":
 					{
@@ -1553,19 +1392,19 @@
 					"type": "text"
 				},
 				{
-					"buffer": 23,
+					"buffer": 25,
 					"file": "world.go",
 					"settings":
 					{
-						"buffer_size": 24531,
+						"buffer_size": 24133,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								24531,
-								24531
+								0,
+								0
 							]
 						],
 						"settings":
@@ -1574,13 +1413,13 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 13626.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
-					"buffer": 24,
+					"buffer": 26,
 					"file": "README.md",
 					"settings":
 					{
@@ -1641,7 +1480,7 @@
 	"menu_visible": true,
 	"output.exec":
 	{
-		"height": 207.0
+		"height": 185.0
 	},
 	"replace":
 	{
