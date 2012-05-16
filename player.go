@@ -12,14 +12,18 @@ import (
 	// "fmt"
 )
 
+type Action uint8
+type BlockId uint16
+type ItemId BlockId
+
 type Player struct {
 	MobData
 	Bounce float64
 	// position      Vectorf
 	// velocity      Vectorf
-	currentAction     uint8
-	currentItem       uint16
-	equippedItems     [7]uint16
+	currentAction     Action
+	currentItem       ItemId
+	equippedItems     [7]ItemId
 	inventory         [MAX_ITEMS]uint16
 	distanceTravelled float64
 	distanceFromStart uint16
@@ -282,7 +286,7 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 		blockid := TheWorld.Atv(selectedBlockFace.pos)
 		if blockid != BLOCK_AIR {
 			interactingBlockFace.hitCount++
-			if items[uint16(blockid)].hitsNeeded != STRENGTH_UNBREAKABLE && interactingBlockFace.hitCount >= items[uint16(blockid)].hitsNeeded {
+			if items[ItemId(blockid)].hitsNeeded != STRENGTH_UNBREAKABLE && interactingBlockFace.hitCount >= items[ItemId(blockid)].hitsNeeded {
 				TheWorld.Setv(selectedBlockFace.pos, BLOCK_AIR)
 
 				switch blockid {
@@ -306,12 +310,12 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 
 				}
 
-				if items[uint16(blockid)].drops != nil {
-					droppedItem := items[uint16(blockid)].drops.item
+				if items[ItemId(blockid)].drops != nil {
+					droppedItem := items[ItemId(blockid)].drops.item
 					if self.inventory[droppedItem] < MAX_ITEMS_IN_INVENTORY {
 						self.inventory[droppedItem]++
-						if items[uint16(droppedItem)].placeable {
-							self.EquipItem(uint16(droppedItem))
+						if items[droppedItem].placeable {
+							self.EquipItem(droppedItem)
 						}
 					}
 				}
@@ -416,7 +420,7 @@ func (self *Player) SelectAction(action int) {
 	}
 }
 
-func (self *Player) EquipItem(itemid uint16) {
+func (self *Player) EquipItem(itemid ItemId) {
 
 	// Check to see if this item is already equipped
 	for j := 0; j < 5; j++ {

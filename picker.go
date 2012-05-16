@@ -51,7 +51,7 @@ func (self *Picker) Draw(t int64) {
 
 }
 
-func (self *Picker) DrawItemHighlight(t int64, position uint8) {
+func (self *Picker) DrawItemHighlight(t int64, position Action) {
 	gl.PushMatrix()
 	gl.LoadIdentity()
 
@@ -87,9 +87,9 @@ func (self *Picker) DrawPlayerItems(t int64, drawQuantities bool) {
 			gl.Scalef(blockscale, blockscale, blockscale)
 			gGuiBuffer.Reset()
 			if itemid < 256 {
-				TerrainCube(gGuiBuffer, Vectori{}, [18]uint16{BLOCK_DIRT, BLOCK_DIRT, BLOCK_DIRT, BLOCK_DIRT, BLOCK_AIR, BLOCK_DIRT, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR}, itemid, FACE_NONE)
+				TerrainCube(gGuiBuffer, Vectori{}, [18]BlockId{BLOCK_DIRT, BLOCK_DIRT, BLOCK_DIRT, BLOCK_DIRT, BLOCK_AIR, BLOCK_DIRT, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR}, BlockId(itemid), FACE_NONE)
 			} else {
-				RenderItemFlat(gGuiBuffer, Vectori{}, itemid)
+				RenderItemFlat(gGuiBuffer, Vectori{}, BlockId(itemid))
 			}
 			gGuiBuffer.RenderDirect(false)
 

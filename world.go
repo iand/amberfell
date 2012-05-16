@@ -529,7 +529,7 @@ func (self *World) Grow(x uint16, y uint16, z uint16, n int, s int, w int, e int
 	}
 }
 
-func (self *World) HasVisibleFaces(neighbours [18]uint16) bool {
+func (self *World) HasVisibleFaces(neighbours [18]BlockId) bool {
 
 	switch neighbours[WEST_FACE] {
 	case BLOCK_AIR, BLOCK_LOG_WALL, BLOCK_LOG_SLAB:
@@ -559,17 +559,17 @@ func (self *World) HasVisibleFaces(neighbours [18]uint16) bool {
 	return false
 }
 
-func (self *World) ApproxBlockAt(x uint16, y uint16, z uint16) uint16 {
+func (self *World) ApproxBlockAt(x uint16, y uint16, z uint16) BlockId {
 
 	if self.ChunkLoadedFor(x, y, z) {
-		return uint16(self.At(x, y, z))
+		return BlockId(self.At(x, y, z))
 	} else if self.GroundLevel(x, z) > y {
 		return BLOCK_DIRT
 	}
 	return BLOCK_AIR
 }
 
-func (self *World) Neighbours(pos Vectori) (neighbours [18]uint16) {
+func (self *World) Neighbours(pos Vectori) (neighbours [18]BlockId) {
 	x := pos[XAXIS]
 	y := pos[YAXIS]
 	z := pos[ZAXIS]
@@ -879,7 +879,7 @@ func (self *Chunk) PreRender(selectedBlockFace *BlockFace) {
 			for z = 0; z < CHUNK_WIDTH; z++ {
 				for y = 0; y < CHUNK_HEIGHT; y++ {
 
-					var blockid uint16 = uint16(self.Blocks[blockIndex(x, y, z)])
+					blockid := BlockId(self.Blocks[blockIndex(x, y, z)])
 					if blockid != 0 {
 
 						pos := Vectori{self.x*CHUNK_WIDTH + x, y, self.z*CHUNK_WIDTH + z}

@@ -29,7 +29,7 @@ type ContainerObject interface {
 	Label() string
 	Item(slot int) ItemQuantity
 	CanTake() bool
-	CanPlace(itemid uint16) bool
+	CanPlace(itemid ItemId) bool
 	Take(slot int, quantity uint16)
 	Place(slot int, iq *ItemQuantity)
 	Slots() int
@@ -45,7 +45,7 @@ type GeneratorObject interface {
 }
 
 type ItemQuantity struct {
-	item     uint16
+	item     ItemId
 	quantity uint16
 }
 
@@ -67,7 +67,7 @@ func NewItem(id uint16, name string, texture1 uint16, texture2 uint16, hitsNeede
 }
 
 func InitItems() {
-	items = make(map[uint16]Item)
+	items = make(map[ItemId]Item)
 	items[BLOCK_AIR] = NewItem(BLOCK_AIR, "Air", TEXTURE_NONE, TEXTURE_NONE, STRENGTH_STONE, true, false, false, nil)
 	items[BLOCK_STONE] = NewItem(BLOCK_STONE, "Stone", TEXTURE_STONE, TEXTURE_STONE, STRENGTH_STONE, false, true, true, &ItemQuantity{BLOCK_STONE, 1})
 	items[BLOCK_DIRT] = NewItem(BLOCK_DIRT, "Dirt", TEXTURE_DIRT, TEXTURE_DIRT_TOP, STRENGTH_DIRT, false, true, true, &ItemQuantity{BLOCK_DIRT, 1})
@@ -253,7 +253,7 @@ func (self *AmberfellPump) CanTake() bool {
 	return true
 }
 
-func (self *AmberfellPump) CanPlace(itemid uint16) bool {
+func (self *AmberfellPump) CanPlace(itemid ItemId) bool {
 	return false
 }
 
@@ -326,7 +326,7 @@ func (self *SteamGenerator) CanTake() bool {
 	return true
 }
 
-func (self *SteamGenerator) CanPlace(itemid uint16) bool {
+func (self *SteamGenerator) CanPlace(itemid ItemId) bool {
 	if itemid == ITEM_COAL {
 		return true
 	}
@@ -463,7 +463,7 @@ func (self *AmberfellCondenser) CanTake() bool {
 	return true
 }
 
-func (self *AmberfellCondenser) CanPlace(itemid uint16) bool {
+func (self *AmberfellCondenser) CanPlace(itemid ItemId) bool {
 	if itemid == ITEM_FIREWOOD || itemid == ITEM_AMBERFELL || itemid == ITEM_AMBERFELL_CRYSTAL {
 		return true
 	}

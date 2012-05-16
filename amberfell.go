@@ -45,7 +45,7 @@ var (
 	gGuiBuffer        *VertexBuffer
 	terrainBuffer     *VertexBuffer
 
-	items map[uint16]Item
+	items map[ItemId]Item
 
 	// HUD elements
 	blockscale float32 = 0.4 // The scale at which to render blocks in the HUD
