@@ -75,7 +75,8 @@ func main() {
 	defer quit()
 
 	initGame()
-	gameLoop()
+	loop()
+	//	gameLoop()
 
 	if *flag_memprofile {
 		pfile, err := os.Create("amberfell.prof")
@@ -178,198 +179,246 @@ func quit() {
 	println("Thanks for playing.")
 }
 
-func gameLoop() {
-	var startTime int64 = time.Now().UnixNano()
-	var currentTime, accumulator int64 = 0, 0
-	var t, dt int64 = 0, 1e9 / 40
-	var drawFrame, computeFrame int64 = 0, 0
+func loop() {
 
-	update500ms := new(Timer)
-	update500ms.interval = 500 * 1e6
-	update500ms.Start()
+	ticksim := time.Tick(50 * time.Millisecond)
+	tickEnvironment := time.Tick(150 * time.Millisecond)
+	tickUI := time.Tick(500 * time.Millisecond)
+	tickHousekeeping := time.Tick(2 * time.Second)
 
-	update150ms := new(Timer)
-	update150ms.interval = 50 * 1e6
-	update150ms.Start()
+	startTime := time.Now().UnixNano()
+	for {
 
-	update2000ms := new(Timer)
-	update2000ms.interval = 2000 * 1e6
-	update2000ms.Start()
+		delta := time.Now().UnixNano() - startTime
+		Draw(delta)
+		startTime = time.Now().UnixNano()
 
-	var interactingBlock *InteractingBlockFace
+		select {
 
-	done := false
-	for !done {
-
-		for e := sdl.PollEvent(); e != nil; e = sdl.PollEvent() {
-			switch e.(type) {
-			case *sdl.QuitEvent:
-				done = true
-			case *sdl.ResizeEvent:
-				re := e.(*sdl.ResizeEvent)
-				screen := sdl.SetVideoMode(int(re.W), int(re.H), 16,
-					sdl.OPENGL|sdl.RESIZABLE)
-				if screen != nil {
-					viewport.Reshape(int(screen.W), int(screen.H))
-				} else {
-					panic("Could not set video mode")
-				}
-				break
-
-			case *sdl.MouseButtonEvent:
-				re := e.(*sdl.MouseButtonEvent)
-				if inventory.visible {
-					inventory.HandleMouseButton(re)
-				} else {
-					picker.HandleMouseButton(re)
-
-					if re.Button == 1 && re.State == 1 { // LEFT, DOWN
-						if ThePlayer.CanInteract() {
-							selectedBlockFace := viewport.SelectedBlockFace()
-							if selectedBlockFace != nil {
-								if interactingBlock == nil || interactingBlock.blockFace.pos != selectedBlockFace.pos {
-									interactingBlock = new(InteractingBlockFace)
-									interactingBlock.blockFace = selectedBlockFace
-									interactingBlock.hitCount = 0
-								}
-								ThePlayer.Interact(interactingBlock)
-							}
-							// println("Click:", re.X, re.Y, re.State, re.Button, re.Which)
-						}
-					}
-				}
-
-			case *sdl.KeyboardEvent:
-				re := e.(*sdl.KeyboardEvent)
-
-				if re.Keysym.Sym == sdl.K_ESCAPE && re.Type == sdl.KEYDOWN {
-					inventory.Hide()
-					if pause.visible {
-						pause.visible = false
-						update2000ms.Unpause()
-						update500ms.Unpause()
-						update150ms.Unpause()
-					} else {
-						pause.visible = true
-						update2000ms.Pause()
-						update500ms.Pause()
-						update150ms.Pause()
-					}
-				}
-
-				if re.Keysym.Sym == sdl.K_F3 && re.Type == sdl.KEYDOWN {
-					console.visible = !console.visible
-				}
-
-				if !pause.visible {
-					if re.Keysym.Sym == sdl.K_i && re.Type == sdl.KEYDOWN {
-						if inventory.visible {
-							inventory.Hide()
-						} else {
-							inventory.Show(nil, nil)
-						}
-					}
-
-					if inventory.visible {
-						inventory.HandleKeyboard(re)
-					}
-				}
+		case <-ticksim:
+			if HandleUserInput() {
+				return
 			}
-		}
+			TheWorld.Simulate()
 
-		keys := sdl.GetKeyState()
-
-		if console.visible {
-			console.HandleKeys(keys)
-		}
-
-		if pause.visible {
-			pause.HandleKeys(keys)
-		} else if inventory.visible {
-			inventory.HandleKeys(keys)
-		} else {
-			viewport.HandleKeys(keys)
-			ThePlayer.HandleKeys(keys)
-			picker.HandleKeys(keys)
-		}
-
-		if update150ms.PassedInterval() {
-
-			if !inventory.visible {
-				// If player is breaking a block then allow them to hold mouse down to continue action
-				if interactingBlock != nil && ThePlayer.currentAction == ACTION_BREAK {
-					if mouseState := sdl.GetMouseState(nil, nil); mouseState == 1 {
-						if ThePlayer.CanInteract() {
-							selectedBlockFace := viewport.SelectedBlockFace()
-							if selectedBlockFace != nil {
-								if interactingBlock == nil || !interactingBlock.blockFace.pos.Equals(&selectedBlockFace.pos) {
-									interactingBlock = new(InteractingBlockFace)
-									interactingBlock.blockFace = selectedBlockFace
-									interactingBlock.hitCount = 0
-								}
-								ThePlayer.Interact(interactingBlock)
-							}
-							// println("Click:", re.X, re.Y, re.State, re.Button, re.Which)
-						}
-					}
-				}
-			}
-
+		case <-tickEnvironment:
+			RepeatBreakBlock()
 			PreloadChunks(50)
-			update150ms.Start()
-		}
 
-		if update500ms.PassedInterval() {
-			console.fps = float64(drawFrame) / (float64(update500ms.GetTicks()) / float64(1e9))
+		case <-tickUI:
 			console.Update()
-
 			UpdateTimeOfDay(false)
 			PreloadChunks(220)
 
-			drawFrame, computeFrame = 0, 0
-			update500ms.Start()
-
-		}
-
-		if update2000ms.PassedInterval() {
+		case <-tickHousekeeping:
 			CullChunks()
 			UpdatePlayerStats()
-			update2000ms.Start()
+
+		default:
+			delta := time.Now().UnixNano() - startTime
+			Draw(delta)
+			startTime = time.Now().UnixNano()
 		}
 
-		if !pause.visible {
-			newTime := time.Now().UnixNano()
-			deltaTime := newTime - currentTime
-			currentTime = newTime
-			if deltaTime > 1e9/4 {
-				deltaTime = 1e9 / 4
+	}
+}
+
+func HandleUserInput() bool {
+	for e := sdl.PollEvent(); e != nil; e = sdl.PollEvent() {
+		switch e.(type) {
+		case *sdl.QuitEvent:
+			return true
+		case *sdl.ResizeEvent:
+			re := e.(*sdl.ResizeEvent)
+			screen := sdl.SetVideoMode(int(re.W), int(re.H), 16,
+				sdl.OPENGL|sdl.RESIZABLE)
+			if screen != nil {
+				viewport.Reshape(int(screen.W), int(screen.H))
+			} else {
+				panic("Could not set video mode")
+			}
+			break
+
+		case *sdl.MouseButtonEvent:
+			re := e.(*sdl.MouseButtonEvent)
+			if inventory.visible {
+				inventory.HandleMouseButton(re)
+			} else {
+				picker.HandleMouseButton(re)
+
+				if re.Button == 1 && re.State == 1 { // LEFT, DOWN
+					if ThePlayer.CanInteract() {
+						selectedBlockFace := viewport.SelectedBlockFace()
+						if selectedBlockFace != nil {
+							if ThePlayer.interactingBlock == nil || ThePlayer.interactingBlock.blockFace.pos != selectedBlockFace.pos {
+								ThePlayer.interactingBlock = new(InteractingBlockFace)
+								ThePlayer.interactingBlock.blockFace = selectedBlockFace
+								ThePlayer.interactingBlock.hitCount = 0
+							}
+							ThePlayer.Interact(ThePlayer.interactingBlock)
+						}
+						// println("Click:", re.X, re.Y, re.State, re.Button, re.Which)
+					}
+				}
 			}
 
-			accumulator += deltaTime
+		case *sdl.KeyboardEvent:
+			re := e.(*sdl.KeyboardEvent)
 
-			for accumulator > dt {
-				accumulator -= dt
+			if re.Keysym.Sym == sdl.K_ESCAPE && re.Type == sdl.KEYDOWN {
+				inventory.Hide()
+				if pause.visible {
+					pause.visible = false
+					// update2000ms.Unpause()
+					// update500ms.Unpause()
+					// update150ms.Unpause()
+				} else {
+					pause.visible = true
+					// update2000ms.Pause()
+					// update500ms.Pause()
+					// update150ms.Pause()
+				}
+			}
 
-				TheWorld.ApplyForces(ThePlayer, float64(dt)/1e9)
+			if re.Keysym.Sym == sdl.K_F3 && re.Type == sdl.KEYDOWN {
+				console.visible = !console.visible
+			}
 
-				ThePlayer.Update(float64(dt) / 1e9)
-				TheWorld.Simulate(float64(dt) / 1e9)
+			if !pause.visible {
+				if re.Keysym.Sym == sdl.K_i && re.Type == sdl.KEYDOWN {
+					if inventory.visible {
+						inventory.Hide()
+					} else {
+						inventory.Show(nil, nil)
+					}
+				}
 
-				computeFrame++
-				t += dt
+				if inventory.visible {
+					inventory.HandleKeyboard(re)
+				}
 			}
 		}
+	}
 
-		Draw(currentTime - startTime)
-		drawFrame++
+	keys := sdl.GetKeyState()
+
+	if console.visible {
+		console.HandleKeys(keys)
+	}
+
+	if pause.visible {
+		pause.HandleKeys(keys)
+	} else if inventory.visible {
+		inventory.HandleKeys(keys)
+	} else {
+		viewport.HandleKeys(keys)
+		ThePlayer.HandleKeys(keys)
+		picker.HandleKeys(keys)
+	}
+
+	return false
+}
+
+func RepeatBreakBlock() {
+	if !inventory.visible {
+		// If player is breaking a block then allow them to hold mouse down to continue action
+		if ThePlayer.interactingBlock != nil && ThePlayer.currentAction == ACTION_BREAK {
+			if mouseState := sdl.GetMouseState(nil, nil); mouseState == 1 {
+				if ThePlayer.CanInteract() {
+					selectedBlockFace := viewport.SelectedBlockFace()
+					if selectedBlockFace != nil {
+						if ThePlayer.interactingBlock == nil || !ThePlayer.interactingBlock.blockFace.pos.Equals(&selectedBlockFace.pos) {
+							ThePlayer.interactingBlock = new(InteractingBlockFace)
+							ThePlayer.interactingBlock.blockFace = selectedBlockFace
+							ThePlayer.interactingBlock.hitCount = 0
+						}
+						ThePlayer.Interact(ThePlayer.interactingBlock)
+					}
+					// println("Click:", re.X, re.Y, re.State, re.Button, re.Which)
+				}
+			}
+		}
 	}
 
 }
 
+// func gameLoop() {
+// 	var startTime int64 = time.Now().UnixNano()
+// 	var currentTime, accumulator int64 = 0, 0
+// 	var t, dt int64 = 0, 1e9 / 40
+// 	var drawFrame, computeFrame int64 = 0, 0
+
+// 	update500ms := new(Timer)
+// 	update500ms.interval = 500 * 1e6
+// 	update500ms.Start()
+
+// 	update150ms := new(Timer)
+// 	update150ms.interval = 50 * 1e6
+// 	update150ms.Start()
+
+// 	update2000ms := new(Timer)
+// 	update2000ms.interval = 2000 * 1e6
+// 	update2000ms.Start()
+
+// 	done := false
+// 	for !done {
+
+// 		done = HandleUserInput()
+
+// 		if update150ms.PassedInterval() {
+// 			RepeatBreakBlock()
+// 			PreloadChunks(50)
+// 			update150ms.Start()
+// 		}
+
+// 		if update500ms.PassedInterval() {
+// 			console.Update()
+
+// 			UpdateTimeOfDay(false)
+// 			PreloadChunks(220)
+
+// 			drawFrame, computeFrame = 0, 0
+// 			update500ms.Start()
+
+// 		}
+
+// 		if update2000ms.PassedInterval() {
+// 			CullChunks()
+// 			UpdatePlayerStats()
+// 			update2000ms.Start()
+// 		}
+
+// 		if !pause.visible {
+// 			newTime := time.Now().UnixNano()
+// 			deltaTime := newTime - currentTime
+// 			currentTime = newTime
+// 			if deltaTime > 1e9/4 {
+// 				deltaTime = 1e9 / 4
+// 			}
+
+// 			accumulator += deltaTime
+
+// 			for accumulator > dt {
+// 				accumulator -= dt
+
+// 				TheWorld.ApplyForces(ThePlayer, float64(dt)/1e9)
+// 				ThePlayer.Update(float64(dt) / 1e9)
+// 				TheWorld.Simulate(float64(dt) / 1e9)
+
+// 				computeFrame++
+// 				t += dt
+// 			}
+// 		}
+
+// 		Draw(currentTime - startTime)
+// 		drawFrame++
+// 	}
+
+// }
+
 func Draw(t int64) {
 	console.culledVertices = 0
 	console.vertices = 0
-
 	gVertexBuffer.Reset()
 
 	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT)
@@ -438,6 +487,7 @@ func Draw(t int64) {
 	gl.Finish()
 	gl.Flush()
 	sdl.GL_SwapBuffers()
+	console.framesDrawn++
 }
 
 func UpdateTimeOfDay(reverse bool) {

@@ -20,6 +20,7 @@ type Player struct {
 	inventory         [MAX_ITEMS]uint16
 	distanceTravelled float64
 	distanceFromStart uint16
+	interactingBlock  *InteractingBlockFace
 }
 
 type BlockBreakRecord struct {

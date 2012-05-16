@@ -23,6 +23,7 @@ type World struct {
 	containerObjects map[Vectori]ContainerObject
 	generatorObjects map[Vectori]GeneratorObject
 	genseed          int64
+	lastSimulated    int64
 }
 
 type Chunk struct {
@@ -87,7 +88,7 @@ func NewWorld() *World {
 	world.containerObjects = make(map[Vectori]ContainerObject)
 	world.lightSources = make(map[Vectori]LightSource)
 	world.generatorObjects = make(map[Vectori]GeneratorObject)
-
+	world.lastSimulated = time.Now().UnixNano()
 	xc, yc, zc := chunkCoordsFromWorld(PLAYER_START_X, world.GroundLevel(PLAYER_START_X, PLAYER_START_Z), PLAYER_START_Z)
 
 	world.GenerateAmberfell()
@@ -833,9 +834,12 @@ func (self *World) GrowBranch(x uint16, y uint16, z uint16, face uint8, chance i
 	}
 }
 
-func (self *World) Simulate(dt float64) {
+func (self *World) Simulate() {
+	dt := float64(time.Now().UnixNano()-self.lastSimulated) / 1.e9
+	self.lastSimulated = time.Now().UnixNano()
 
-	//targets := make([]Target, 40)
+	self.ApplyForces(ThePlayer, dt)
+	ThePlayer.Update(dt)
 
 	for _, mob := range self.mobs {
 		mob.Act(dt)
@@ -871,7 +875,6 @@ func (self *World) UpdateObjects(dt float64) {
 		}
 
 	}
-
 }
 
 func (self *World) SpawnWolfPack(x float64, z float64) {

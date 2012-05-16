@@ -10,6 +10,7 @@ import (
 	"github.com/banthar/Go-SDL/sdl"
 	"github.com/banthar/gl"
 	"runtime"
+	"time"
 )
 
 type Console struct {
@@ -20,9 +21,14 @@ type Console struct {
 	visible             bool
 	chunkGenerationTime int64
 	nosoil              bool
+	framesDrawn         int
+	lastFpsTime         int64
 }
 
 func (self *Console) Update() {
+	self.fps = float64(self.framesDrawn) / (float64(time.Now().UnixNano()-self.lastFpsTime) / float64(1e9))
+	self.lastFpsTime = time.Now().UnixNano()
+	self.framesDrawn = 0
 	runtime.ReadMemStats(&self.mem)
 }
 
