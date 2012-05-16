@@ -197,7 +197,7 @@ func (self *Player) HandleKeys(keys []uint8) {
 			self.velocity[ZAXIS] = -math.Sin(self.Heading()*math.Pi/180) * self.walkingSpeed / 2
 		} else {
 			speed := self.walkingSpeed
-			if self.energy > 5 && keys[sdl.K_LSHIFT] != 0 || keys[sdl.K_RSHIFT] != 0 {
+			if self.energy > 5 && (keys[sdl.K_LSHIFT] != 0 || keys[sdl.K_RSHIFT] != 0) {
 				speed = self.sprintSpeed
 			}
 			self.velocity[XAXIS] = math.Cos(self.Heading()*math.Pi/180) * speed
@@ -211,11 +211,11 @@ func (self *Player) HandleKeys(keys []uint8) {
 			self.velocity[ZAXIS] = math.Sin(self.Heading()*math.Pi/180) * self.walkingSpeed / 4
 		} else {
 			speed := self.walkingSpeed
-			if self.energy > 5 && keys[sdl.K_LSHIFT] != 0 || keys[sdl.K_RSHIFT] != 0 {
+			if self.energy > 5 && (keys[sdl.K_LSHIFT] != 0 || keys[sdl.K_RSHIFT] != 0) {
 				speed = self.sprintSpeed
 			}
-			self.velocity[XAXIS] = -math.Cos(self.Heading()*math.Pi/180) * speed
-			self.velocity[ZAXIS] = math.Sin(self.Heading()*math.Pi/180) * speed
+			self.velocity[XAXIS] = -math.Cos(self.Heading()*math.Pi/180) * speed / 2
+			self.velocity[ZAXIS] = math.Sin(self.Heading()*math.Pi/180) * speed / 2
 		}
 
 	}

@@ -57,6 +57,12 @@ type MobBehaviour struct {
 	last        bool
 }
 
+type Target struct {
+	targetType uint8
+	position   Vectorf
+	velocity   Vectorf
+}
+
 const SUNLIGHT_LEVELS_LOWER_MASK = 0xF0
 const SUNLIGHT_LEVELS_UPPER_MASK = 0x0F
 const SUNLIGHT_LEVELS_ANY = 0x08

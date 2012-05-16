@@ -22,6 +22,7 @@ type World struct {
 	timedObjects     map[Vectori]TimedObject
 	containerObjects map[Vectori]ContainerObject
 	generatorObjects map[Vectori]GeneratorObject
+	genseed          int64
 }
 
 type Chunk struct {
@@ -79,6 +80,7 @@ func blockIndex(x uint16, y uint16, z uint16) uint16 {
 func NewWorld() *World {
 	world := &World{}
 
+	world.genseed = worldSeed
 	world.chunks = make(map[uint64]*Chunk)
 	world.amberfell = make(map[uint64][2]uint16)
 	world.timedObjects = make(map[Vectori]TimedObject)
@@ -90,8 +92,6 @@ func NewWorld() *World {
 
 	world.GenerateAmberfell()
 	world.GenerateChunk(xc, yc, zc)
-
-	world.SpawnWolfPack(PLAYER_START_X-35, PLAYER_START_Z)
 	return world
 }
 
@@ -389,8 +389,7 @@ func (self *World) GenerateChunkFeatures(chunk *Chunk) {
 func (self *World) GenerateAmberfell() {
 	for x := uint16(0); x < MAP_DIAM; x += 256 {
 		for z := uint16(0); z < MAP_DIAM; z += 256 {
-			pos := uint16(rand.Float64() * 256 * 256)
-
+			pos := uint16(self.GenNext() >> 16)
 			xw := x + pos%256
 			zw := z + pos/256
 
@@ -410,6 +409,12 @@ func (self *World) GenerateAmberfell() {
 		}
 	}
 
+}
+
+func (self *World) GenNext() int32 {
+	self.genseed = (self.genseed*25214903917 + 11) % (1 << 48)
+
+	return int32(self.genseed >> 16)
 }
 
 func (self *World) FindSurface(x uint16, z uint16) uint16 {
@@ -626,24 +631,37 @@ func (self *World) ApplyForces(mob Mob, dt float64) {
 	if self.Atv(ip.North()) != BLOCK_AIR {
 		if mob.Velocity()[ZAXIS] < 0 && ip.North().HRect().Intersects(playerRect) {
 			mob.Snapz(float64(ip.North()[ZAXIS])+0.5+playerRect.sizey/2, 0)
+
+			if self.Atv(ip.North().Up()) == BLOCK_AIR {
+				mob.Setvy(4)
+			}
 		}
 	}
 
 	if self.Atv(ip.South()) != BLOCK_AIR {
 		if mob.Velocity()[ZAXIS] > 0 && ip.South().HRect().Intersects(playerRect) {
 			mob.Snapz(float64(ip.South()[ZAXIS])-0.5-playerRect.sizey/2, 0)
+			if self.Atv(ip.South().Up()) == BLOCK_AIR {
+				mob.Setvy(4)
+			}
 		}
 	}
 
 	if self.Atv(ip.East()) != BLOCK_AIR {
 		if mob.Velocity()[XAXIS] > 0 && ip.East().HRect().Intersects(playerRect) {
 			mob.Snapx(float64(ip.East()[XAXIS])-0.5-playerRect.sizex/2, 0)
+			if self.Atv(ip.East().Up()) == BLOCK_AIR {
+				mob.Setvy(4)
+			}
 		}
 	}
 
 	if self.Atv(ip.West()) != BLOCK_AIR {
 		if mob.Velocity()[XAXIS] < 0 && ip.West().HRect().Intersects(playerRect) {
 			mob.Snapx(float64(ip.West()[XAXIS])+0.5+playerRect.sizex/2, 0)
+			if self.Atv(ip.West().Up()) == BLOCK_AIR {
+				mob.Setvy(4)
+			}
 		}
 	}
 
@@ -816,6 +834,8 @@ func (self *World) GrowBranch(x uint16, y uint16, z uint16, face uint8, chance i
 }
 
 func (self *World) Simulate(dt float64) {
+
+	//targets := make([]Target, 40)
 
 	for _, mob := range self.mobs {
 		mob.Act(dt)
