@@ -158,7 +158,7 @@ func initGame() {
 	gVertexBuffer = NewVertexBuffer(10000, terrainTexture)
 	gGuiBuffer = NewVertexBuffer(1000, terrainTexture)
 
-	//WolfModel = LoadModel("res/wolf.mm3d")
+	WolfModel = LoadModel("res/wolf.mm3d")
 
 	TheWorld = NewWorld()
 
@@ -188,38 +188,39 @@ func loop() {
 
 	startTime := time.Now().UnixNano()
 	for {
+		if HandleUserInput() {
+			return
+		}
 
 		delta := time.Now().UnixNano() - startTime
 		Draw(delta)
 		startTime = time.Now().UnixNano()
 
-		select {
+		if !pause.visible {
+			select {
 
-		case <-ticksim:
-			if HandleUserInput() {
-				return
+			case <-ticksim:
+				TheWorld.Simulate()
+
+			case <-tickEnvironment:
+				RepeatBreakBlock()
+				PreloadChunks(50)
+
+			case <-tickUI:
+				console.Update()
+				UpdateTimeOfDay(false)
+				PreloadChunks(220)
+
+			case <-tickHousekeeping:
+				CullChunks()
+				UpdatePlayerStats()
+
+			default:
+				delta := time.Now().UnixNano() - startTime
+				Draw(delta)
+				startTime = time.Now().UnixNano()
 			}
-			TheWorld.Simulate()
-
-		case <-tickEnvironment:
-			RepeatBreakBlock()
-			PreloadChunks(50)
-
-		case <-tickUI:
-			console.Update()
-			UpdateTimeOfDay(false)
-			PreloadChunks(220)
-
-		case <-tickHousekeeping:
-			CullChunks()
-			UpdatePlayerStats()
-
-		default:
-			delta := time.Now().UnixNano() - startTime
-			Draw(delta)
-			startTime = time.Now().UnixNano()
 		}
-
 	}
 }
 

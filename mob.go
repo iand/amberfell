@@ -187,7 +187,7 @@ func (self *MobData) Update(dt float64) (completed bool) {
 	}
 
 	if self.velocity[XAXIS] != 0 || self.velocity[ZAXIS] != 0 {
-		self.walkSequence += 2 * math.Pi * dt
+		self.walkSequence += 2 * math.Pi * dt * 1.3
 		if self.walkSequence > 2*math.Pi {
 			self.walkSequence -= 2 * math.Pi
 		}
@@ -228,7 +228,7 @@ func (self *MobData) Act(dt float64) {
 				}
 
 				turnDir := normal.Scale(offset).Add(angleDir).Normalize()
-				force = force.Add(turnDir.Scale(self.walkingSpeed / 5).Scale(weight))
+				force = force.Add(turnDir.Scale(self.walkingSpeed / 6).Scale(weight))
 				if behaviour.last {
 					break
 				}
@@ -242,8 +242,8 @@ func (self *MobData) Act(dt float64) {
 
 					if (angle >= 360-float64(behaviour.targetAngle) || angle <= float64(behaviour.targetAngle)) && separation <= float64(behaviour.targetRange) {
 						pos := ThePlayer.position.Add(ThePlayer.velocity.Scale(separation * 0.01))
-						desiredVelocity := pos.Minus(self.position).Normalize().Scale(self.sprintSpeed)
-						force = force.Add(desiredVelocity.Minus(self.velocity).Scale(weight))
+						desiredVelocity := self.position.Minus(pos).Normalize().Scale(self.sprintSpeed)
+						force = force.Add(self.velocity.Minus(desiredVelocity).Scale(weight))
 						self.dominantBehaviour = BEHAVIOUR_PURSUE
 						if behaviour.last {
 							break
@@ -362,8 +362,9 @@ func (self *MobData) Act(dt float64) {
 	}
 
 	normalizedVel := self.velocity.Normalize()
-	if normalizedVel[XAXIS] != 0 {
-		self.heading = math.Atan(-normalizedVel[ZAXIS]/normalizedVel[XAXIS]) * 180 / math.Pi
+	self.heading = math.Atan2(-normalizedVel[ZAXIS], normalizedVel[XAXIS]) * 180 / math.Pi
+	if self.heading < 0 {
+		self.heading += 360
 	}
 
 }
