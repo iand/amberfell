@@ -43,8 +43,27 @@
 			"file": "amberfell.go",
 			"settings":
 			{
-				"buffer_size": 12556,
+				"buffer_size": 13659,
 				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "Searching 58 files for \".Set\" (whole word)\n\n/home/iand/wip/amberfell/fonts.go:\n   52  		for x := 0; x < advance; x++ {\n   53  			for y := 0; y < font.height; y++ {\n   54: 				rgba.Set(x, y, fontSurface.At(x, font.height-y))\n   55  			}\n   56  		}\n\n/home/iand/wip/amberfell/shapes.go:\n  186  	for x := 0; x < unit; x++ {\n  187  		for y := 0; y < unit; y++ {\n  188: 			hatFront.Set(x, y, img.At(x, y))\n  189  		}\n  190  	}\n  ...\n  220  	for x := r.Min.X; x < r.Max.X+1; x++ {\n  221  		for y := r.Min.Y; y < r.Max.Y+1; y++ {\n  222: 			rgba.Set(x-r.Min.X, y-r.Min.Y, img.At(x, y))\n  223  		}\n  224  	}\n  ...\n  255  	for x := 0; x < rect.Max.X; x++ {\n  256  		for y := 0; y < rect.Max.Y; y++ {\n  257: 			rgba.Set(x, y, img.At(x, y))\n  258  		}\n  259  	}\n\n/home/iand/wip/amberfell/world.go:\n  254  			if hasAmberfell && amberfellCoords[0] == x && amberfellCoords[1] == z {\n  255  				for y := uint16(0); y < upper; y++ {\n  256: 					chunk.Set(x, y, z, BLOCK_AMBERFELL_SOURCE)\n  257  				}\n  258  			} else {\n  259  				for y := uint16(0); y < upper; y++ {\n  260  					if y >= rocks && y <= soil {\n  261: 						chunk.Set(x, y, z, BLOCK_DIRT)\n  262  					} else {\n  263: 						chunk.Set(x, y, z, BLOCK_STONE)\n  264  					}\n  265  \n  ...\n  270  				}\n  271  				for y := surface; y > surface-coal && y > 0; y-- {\n  272: 					chunk.Set(x, y, z, BLOCK_COAL_SEAM)\n  273  				}\n  274  				if coal > 0 {\n  ...\n  281  				}\n  282  				for y := surface; y > surface-iron && y > 0; y-- {\n  283: 					chunk.Set(x, y, z, BLOCK_IRON_SEAM)\n  284  				}\n  285  				if iron > 0 {\n  ...\n  292  				}\n  293  				for y := surface; y > surface-copper && y > 0; y-- {\n  294: 					chunk.Set(x, y, z, BLOCK_COPPER_SEAM)\n  295  				}\n  296  				if copper > 0 {\n  ...\n  344  					// Place a standing stone\n  345  					chunk.standingStoneProb = 0\n  346: 					chunk.Set(x-xw, y, z-zw, BLOCK_STONE)\n  347: 					chunk.Set(x-xw, y+1, z-zw, BLOCK_STONE)\n  348: 					chunk.Set(x-xw, y+2, z-zw, BLOCK_CARVED_STONE)\n  349  				}\n  350  \n  ...\n  356  					}\n  357  				} else if self.Precipitation(x, z) > BUSH_PRECIPITATION_MIN && rand.Intn(100) < BUSH_DENSITY_PCT {\n  358: 					self.Set(x, y, z, BLOCK_BUSH)\n  359  				} else {\n  360  					// feature1 := self.Feature1(x, z)\n  ...\n  362  \n  363  					// if feature1 > 0.8 && feature2 > 0.8 {\n  364: 					// 	self.Set(x, y, z, BLOCK_LEAVES)\n  365: 					// 	self.Set(x, y+1, z, BLOCK_LEAVES)\n  366: 					// 	self.Set(x, y+2, z, BLOCK_LEAVES)\n  367: 					// 	self.Set(x, y+3, z, BLOCK_LEAVES)\n  368: 					// 	self.Set(x, y+4, z, BLOCK_LEAVES)\n  369: 					// 	self.Set(x, y+5, z, BLOCK_LEAVES)\n  370: 					// 	self.Set(x, y+6, z, BLOCK_LEAVES)\n  371  					// } else if feature1 > 0.7 && feature2 > 0.7 {\n  372: 					// 	self.Set(x, y, z, BLOCK_LEAVES)\n  373: 					// 	self.Set(x, y+1, z, BLOCK_LEAVES)\n  374: 					// 	self.Set(x, y+2, z, BLOCK_LEAVES)\n  375: 					// 	self.Set(x, y+3, z, BLOCK_LEAVES)\n  376: 					// 	self.Set(x, y+4, z, BLOCK_LEAVES)\n  377  					// } else if feature1 > 0.6 && feature2 > 0.6 {\n  378: 					// 	self.Set(x, y, z, BLOCK_STONE)\n  379: 					// 	self.Set(x, y+1, z, BLOCK_LEAVES)\n  380: 					// 	self.Set(x, y+2, z, BLOCK_LEAVES)\n  381  					// }\n  382  				}\n  ...\n  472  func (self *World) Set(x uint16, y uint16, z uint16, b byte) {\n  473  	chunk, ox, oy, oz := self.GetChunkForBlock(x, y, z)\n  474: 	chunk.Set(ox, oy, oz, b)\n  475  }\n  476  \n  477  func (self *World) Setv(v Vectori, b byte) {\n  478  	chunk, ox, oy, oz := self.GetChunkForBlock(v[XAXIS], v[YAXIS], v[ZAXIS])\n  479: 	chunk.Set(ox, oy, oz, b)\n  480  }\n  481  \n  ...\n  511  func (self *World) Grow(x uint16, y uint16, z uint16, n int, s int, w int, e int, u int, d int, texture byte) {\n  512  	if y > 0 && x < MAP_DIAM && self.At(x+1, y-1, z) != 0 && rand.Intn(100) < e {\n  513: 		self.Set(x+1, y, z, texture)\n  514  		self.Grow(x+1, y, z, n, s, 0, e-2, u, d, texture)\n  515  	}\n  516  	if y > 0 && x > 0 && self.At(x-1, y-1, z) != 0 && rand.Intn(100) < w {\n  517: 		self.Set(x-1, y, z, texture)\n  518  		self.Grow(x-1, y, z, n, s, w-2, 0, u, d, texture)\n  519  	}\n  520  	if y > 0 && z < MAP_DIAM && self.At(x, y-1, z+1) != 0 && rand.Intn(100) < s {\n  521: 		self.Set(x, y, z+1, texture)\n  522  		self.Grow(x, y, z+1, 0, s-2, w, e, u, d, texture)\n  523  	}\n  524  	if y > 0 && z > 0 && self.At(x, y-1, z-1) != 0 && rand.Intn(100) < n {\n  525: 		self.Set(x, y, z-1, texture)\n  526  		self.Grow(x, y, z-1, n-2, 0, w, e, u, d, texture)\n  527  	}\n  528  	if y < MAP_DIAM && rand.Intn(100) < u {\n  529: 		self.Set(x, y+1, z, texture)\n  530  		self.Grow(x, y+1, z, n, s, w, e, u-2, 0, texture)\n  531  	}\n  532  	if y > 0 && rand.Intn(100) < d {\n  533: 		self.Set(x, y-1, z, texture)\n  534  		self.Grow(x, y-1, z, n, s, w, e, 0, d-2, texture)\n  535  	}\n  ...\n  733  \n  734  func (self *World) GrowTree(x uint16, y uint16, z uint16) {\n  735: 	self.Set(x, y, z, BLOCK_TRUNK)\n  736: 	self.Set(x, y+1, z, BLOCK_TRUNK)\n  737: 	self.Set(x, y+2, z, BLOCK_TRUNK)\n  738: 	self.Set(x, y+3, z, BLOCK_TRUNK)\n  739: 	self.Set(x+1, y+3, z, BLOCK_LEAVES)\n  740: 	self.Set(x-1, y+3, z, BLOCK_LEAVES)\n  741: 	self.Set(x, y+3, z+1, BLOCK_LEAVES)\n  742: 	self.Set(x, y+3, z-1, BLOCK_LEAVES)\n  743  \n  744  	self.GrowBranch(x, y+3, z, NORTH_FACE, 50)\n  ...\n  748  \n  749  	if rand.Intn(100) < 50 {\n  750: 		self.Set(x, y+4, z, BLOCK_TRUNK)\n  751: 		self.Set(x, y+5, z, BLOCK_TRUNK)\n  752  		self.GrowBranch(x, y+5, z, NORTH_FACE, 50)\n  753  		self.GrowBranch(x, y+5, z, EAST_FACE, 50)\n  ...\n  757  \n  758  	if rand.Intn(100) < 30 {\n  759: 		self.Set(x, y+6, z, BLOCK_TRUNK)\n  760: 		self.Set(x, y+7, z, BLOCK_TRUNK)\n  761  		self.GrowBranch(x, y+7, z, NORTH_FACE, 50)\n  762  		self.GrowBranch(x, y+7, z, EAST_FACE, 50)\n  ...\n  782  	}\n  783  	if rand.Intn(100) < chance {\n  784: 		self.Set(newx, newy, newz, BLOCK_TRUNK)\n  785  		if face != SOUTH_FACE {\n  786  			if rand.Intn(100) < 50 {\n  787  				self.GrowBranch(newx, newy, newz, NORTH_FACE, chance/3)\n  788  			} else {\n  789: 				self.Set(newx, newy, newz-1, BLOCK_LEAVES)\n  790  			}\n  791  		}\n  ...\n  795  				self.GrowBranch(newx, newy, newz, SOUTH_FACE, chance/3)\n  796  			} else {\n  797: 				self.Set(newx, newy, newz+1, BLOCK_LEAVES)\n  798  			}\n  799  		}\n  ...\n  803  				self.GrowBranch(newx, newy, newz, WEST_FACE, chance/3)\n  804  			} else {\n  805: 				self.Set(newx-1, newy, newz, BLOCK_LEAVES)\n  806  			}\n  807  		}\n  ...\n  811  				self.GrowBranch(newx, newy, newz, EAST_FACE, chance/3)\n  812  			} else {\n  813: 				self.Set(newx+1, newy, newz, BLOCK_LEAVES)\n  814  			}\n  815  		}\n  ...\n  819  				self.GrowBranch(newx, newy, newz, UP_FACE, chance/3)\n  820  			} else {\n  821: 				self.Set(newx, newy+1, newz, BLOCK_LEAVES)\n  822  			}\n  823  		}\n  ...\n  826  				self.GrowBranch(newx, newy, newz, DOWN_FACE, chance/3)\n  827  			} else {\n  828: 				self.Set(newx, newy-1, newz, BLOCK_LEAVES)\n  829  			}\n  830  		}\n  831  	} else {\n  832: 		self.Set(newx, newy, newz, BLOCK_LEAVES)\n  833  \n  834  	}\n\n57 matches across 3 files\n\n\nSearching 58 files for \"LoadModel\" (whole word)\n\n/home/iand/wip/amberfell/amberfell.go:\n  159  	gGuiBuffer = NewVertexBuffer(1000, terrainTexture)\n  160  \n  161: 	WolfModel = LoadModel(\"res/wolf.mm3d\")\n  162  \n  163  	TheWorld = NewWorld()\n\n/home/iand/wip/amberfell/functions.go:\n   34  }\n   35  \n   36: // Function LoadModel loads and returns an MM3D model.\n   37: func LoadModel(filename string) (model *mm3dmodel.Model) {\n   38  	fmt.Printf(\"Loading model: %s\\n\", filename)\n   39  	f, err := os.Open(filename)\n\n3 matches across 2 files\n",
+			"settings":
+			{
+				"buffer_size": 7521,
+				"line_ending": "Unix",
+				"name": "Find Results",
+				"scratch": true
+			}
+		},
+		{
+			"file": "/home/iand/wip/tmp/ticker.go",
+			"settings":
+			{
+				"buffer_size": 318,
+				"line_ending": "Unix",
+				"name": "package main"
 			}
 		},
 		{
@@ -75,7 +94,15 @@
 			"file": "player.go",
 			"settings":
 			{
-				"buffer_size": 15546,
+				"buffer_size": 15798,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/iand/wip/tmp/image.go",
+			"settings":
+			{
+				"buffer_size": 1357,
 				"line_ending": "Unix"
 			}
 		},
@@ -83,24 +110,15 @@
 			"file": "wolf.go",
 			"settings":
 			{
-				"buffer_size": 3582,
+				"buffer_size": 9394,
 				"line_ending": "Unix"
-			}
-		},
-		{
-			"contents": "Mickey 1928\n\n\nMinnie 1928\nClarabelle 1928\nPluto 1930\nGoofy 1932	\nDonald 1934\nDaisy 1937",
-			"settings":
-			{
-				"buffer_size": 87,
-				"line_ending": "Unix",
-				"name": "Mickey 1928"
 			}
 		},
 		{
 			"file": "mob.go",
 			"settings":
 			{
-				"buffer_size": 10154,
+				"buffer_size": 10152,
 				"line_ending": "Unix"
 			}
 		},
@@ -116,7 +134,7 @@
 			"file": "viewport.go",
 			"settings":
 			{
-				"buffer_size": 9439,
+				"buffer_size": 9922,
 				"line_ending": "Unix"
 			}
 		},
@@ -156,7 +174,7 @@
 			"file": "console.go",
 			"settings":
 			{
-				"buffer_size": 3658,
+				"buffer_size": 3887,
 				"line_ending": "Unix"
 			}
 		},
@@ -188,7 +206,7 @@
 			"file": "world.go",
 			"settings":
 			{
-				"buffer_size": 25344,
+				"buffer_size": 25527,
 				"line_ending": "Unix"
 			}
 		},
@@ -360,7 +378,7 @@
 	],
 	"find":
 	{
-		"height": 65.0
+		"height": 64.0
 	},
 	"find_in_files":
 	{
@@ -376,6 +394,21 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"coal",
+			"selectedBlockFace",
+			"groundl",
+			"Draw",
+			"Draw(",
+			"wander",
+			"LoadModel",
+			"loadmodel",
+			".Set",
+			"1",
+			"walkSequence",
+			"applyfo",
+			"applyf",
+			"framesDrawn",
+			"interactingBlock",
 			"Spawn",
 			"ground",
 			"groundl",
@@ -488,24 +521,9 @@
 			"HandleMouse",
 			"CHUNK_WIDTH",
 			"growtr",
-			"preci",
-			"intn",
-			"render",
-			"Reset",
-			"findsurf",
-			"chunkFrom",
-			"groundle",
-			"vertices",
-			"console.ver",
-			"render",
-			"groundl",
-			"growtre",
-			"genera",
-			"dir",
-			"MAP_RADIUS",
-			"getchun"
+			"preci"
 		],
-		"highlight": true,
+		"highlight": false,
 		"in_selection": false,
 		"preserve_case": false,
 		"regex": false,
@@ -618,7 +636,7 @@
 	"groups":
 	[
 		{
-			"selected": 18,
+			"selected": 7,
 			"sheets":
 			[
 				{
@@ -626,34 +644,7 @@
 					"file": "amberfell.go",
 					"settings":
 					{
-						"buffer_size": 12556,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								744,
-								753
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Go/Go.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 276.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 1,
-					"file": "shapes.go",
-					"settings":
-					{
-						"buffer_size": 64548,
+						"buffer_size": 13659,
 						"regions":
 						{
 						},
@@ -676,7 +667,341 @@
 					"type": "text"
 				},
 				{
+					"buffer": 1,
+					"settings":
+					{
+						"buffer_size": 7521,
+						"regions":
+						{
+							"match":
+							{
+								"flags": 112,
+								"regions":
+								[
+									[
+										179,
+										183
+									],
+									[
+										375,
+										379
+									],
+									[
+										536,
+										540
+									],
+									[
+										703,
+										707
+									],
+									[
+										932,
+										936
+									],
+									[
+										1109,
+										1113
+									],
+									[
+										1174,
+										1178
+									],
+									[
+										1321,
+										1325
+									],
+									[
+										1488,
+										1492
+									],
+									[
+										1657,
+										1661
+									],
+									[
+										1831,
+										1835
+									],
+									[
+										1881,
+										1885
+									],
+									[
+										1933,
+										1937
+									],
+									[
+										2142,
+										2146
+									],
+									[
+										2322,
+										2326
+									],
+									[
+										2370,
+										2374
+									],
+									[
+										2420,
+										2424
+									],
+									[
+										2470,
+										2474
+									],
+									[
+										2520,
+										2524
+									],
+									[
+										2570,
+										2574
+									],
+									[
+										2620,
+										2624
+									],
+									[
+										2730,
+										2734
+									],
+									[
+										2778,
+										2782
+									],
+									[
+										2828,
+										2832
+									],
+									[
+										2878,
+										2882
+									],
+									[
+										2928,
+										2932
+									],
+									[
+										3038,
+										3042
+									],
+									[
+										3085,
+										3089
+									],
+									[
+										3135,
+										3139
+									],
+									[
+										3344,
+										3348
+									],
+									[
+										3527,
+										3531
+									],
+									[
+										3788,
+										3792
+									],
+									[
+										3974,
+										3978
+									],
+									[
+										4167,
+										4171
+									],
+									[
+										4353,
+										4357
+									],
+									[
+										4508,
+										4512
+									],
+									[
+										4656,
+										4660
+									],
+									[
+										4843,
+										4847
+									],
+									[
+										4882,
+										4886
+									],
+									[
+										4923,
+										4927
+									],
+									[
+										4964,
+										4968
+									],
+									[
+										5005,
+										5009
+									],
+									[
+										5049,
+										5053
+									],
+									[
+										5093,
+										5097
+									],
+									[
+										5137,
+										5141
+									],
+									[
+										5288,
+										5292
+									],
+									[
+										5330,
+										5334
+									],
+									[
+										5522,
+										5526
+									],
+									[
+										5564,
+										5568
+									],
+									[
+										5762,
+										5766
+									],
+									[
+										5967,
+										5971
+									],
+									[
+										6136,
+										6140
+									],
+									[
+										6304,
+										6308
+									],
+									[
+										6472,
+										6476
+									],
+									[
+										6638,
+										6642
+									],
+									[
+										6806,
+										6810
+									],
+									[
+										6898,
+										6902
+									],
+									[
+										7157,
+										7166
+									],
+									[
+										7298,
+										7307
+									],
+									[
+										7353,
+										7362
+									]
+								],
+								"scope": ""
+							}
+						},
+						"selection":
+						[
+							[
+								6982,
+								6982
+							]
+						],
+						"settings":
+						{
+							"detect_indentation": false,
+							"output_tag": 2,
+							"result_base_dir": "",
+							"result_file_regex": "^([A-Za-z\\\\/<].*):$",
+							"result_line_regex": "^ +([0-9]+):",
+							"scroll_past_end": true,
+							"syntax": "Packages/Default/Find Results.hidden-tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 3135.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
 					"buffer": 2,
+					"file": "/home/iand/wip/tmp/ticker.go",
+					"settings":
+					{
+						"buffer_size": 318,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								316,
+								41
+							]
+						],
+						"settings":
+						{
+							"auto_name": "package main",
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "shapes.go",
+					"settings":
+					{
+						"buffer_size": 64548,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								4264,
+								4298
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 1305.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 4,
 					"file": "/home/iand/tmp/openttd/trunk/src/road_gui.cpp",
 					"settings":
 					{
@@ -703,7 +1028,7 @@
 					"type": "text"
 				},
 				{
-					"buffer": 3,
+					"buffer": 5,
 					"file": "items.go",
 					"settings":
 					{
@@ -714,8 +1039,8 @@
 						"selection":
 						[
 							[
-								0,
-								0
+								790,
+								790
 							]
 						],
 						"settings":
@@ -724,105 +1049,25 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 7065.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 4,
-					"file": "player.go",
-					"settings":
-					{
-						"buffer_size": 15546,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								9492,
-								9492
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Go/Go.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 3450.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 5,
-					"file": "wolf.go",
-					"settings":
-					{
-						"buffer_size": 3582,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Go/Go.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 585.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
 					"buffer": 6,
+					"file": "player.go",
 					"settings":
 					{
-						"buffer_size": 87,
+						"buffer_size": 15798,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								14,
-								14
-							]
-						],
-						"settings":
-						{
-							"auto_name": "Mickey 1928",
-							"syntax": "Packages/Text/Plain text.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 7,
-					"file": "mob.go",
-					"settings":
-					{
-						"buffer_size": 10154,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								476,
-								493
+								1622,
+								1622
 							]
 						],
 						"settings":
@@ -831,13 +1076,94 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 3576.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "/home/iand/wip/tmp/image.go",
+					"settings":
+					{
+						"buffer_size": 1357,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								584,
+								584
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 409.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
 					"buffer": 8,
+					"file": "wolf.go",
+					"settings":
+					{
+						"buffer_size": 9394,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2888,
+								2888
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 1845.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 9,
+					"file": "mob.go",
+					"settings":
+					{
+						"buffer_size": 10152,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								9969,
+								10149
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Go/Go.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 4940.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 10,
 					"file": "constants.go",
 					"settings":
 					{
@@ -848,8 +1174,8 @@
 						"selection":
 						[
 							[
-								3421,
-								3421
+								0,
+								0
 							]
 						],
 						"settings":
@@ -858,25 +1184,25 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 2840.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
-					"buffer": 9,
+					"buffer": 11,
 					"file": "viewport.go",
 					"settings":
 					{
-						"buffer_size": 9439,
+						"buffer_size": 9922,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1943,
-								1943
+								263,
+								288
 							]
 						],
 						"settings":
@@ -885,13 +1211,13 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 996.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
-					"buffer": 10,
+					"buffer": 12,
 					"file": "functions_test.go",
 					"settings":
 					{
@@ -918,7 +1244,7 @@
 					"type": "text"
 				},
 				{
-					"buffer": 11,
+					"buffer": 13,
 					"file": "geometry.go",
 					"settings":
 					{
@@ -945,7 +1271,7 @@
 					"type": "text"
 				},
 				{
-					"buffer": 12,
+					"buffer": 14,
 					"file": "functions.go",
 					"settings":
 					{
@@ -972,7 +1298,7 @@
 					"type": "text"
 				},
 				{
-					"buffer": 13,
+					"buffer": 15,
 					"file": "picker.go",
 					"settings":
 					{
@@ -999,19 +1325,19 @@
 					"type": "text"
 				},
 				{
-					"buffer": 14,
+					"buffer": 16,
 					"file": "console.go",
 					"settings":
 					{
-						"buffer_size": 3658,
+						"buffer_size": 3887,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								3010,
-								3010
+								857,
+								857
 							]
 						],
 						"settings":
@@ -1019,14 +1345,14 @@
 							"syntax": "Packages/Go/Go.tmLanguage",
 							"translate_tabs_to_spaces": false
 						},
-						"translation.x": 1454.0,
-						"translation.y": 810.0,
+						"translation.x": 0.0,
+						"translation.y": 465.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
-					"buffer": 15,
+					"buffer": 17,
 					"file": "inventory.go",
 					"settings":
 					{
@@ -1053,7 +1379,7 @@
 					"type": "text"
 				},
 				{
-					"buffer": 16,
+					"buffer": 18,
 					"file": "pause.go",
 					"settings":
 					{
@@ -1080,7 +1406,7 @@
 					"type": "text"
 				},
 				{
-					"buffer": 17,
+					"buffer": 19,
 					"file": "fonts.go",
 					"settings":
 					{
@@ -1107,19 +1433,19 @@
 					"type": "text"
 				},
 				{
-					"buffer": 18,
+					"buffer": 20,
 					"file": "world.go",
 					"settings":
 					{
-						"buffer_size": 25344,
+						"buffer_size": 25527,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								17461,
-								17461
+								4122,
+								4089
 							]
 						],
 						"settings":
@@ -1128,13 +1454,13 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 9561.0,
+						"translation.y": 1960.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
-					"buffer": 19,
+					"buffer": 21,
 					"file": "README.md",
 					"settings":
 					{
@@ -1195,7 +1521,7 @@
 	"menu_visible": true,
 	"output.exec":
 	{
-		"height": 185.0
+		"height": 195.0
 	},
 	"replace":
 	{

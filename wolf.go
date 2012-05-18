@@ -170,7 +170,9 @@ func (self *Wolf) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 
 	var legAngle, torsoAngle, leftArmAngle, rightArmAngle, step float64
 
-	legAngle = 55 * (math.Abs(self.velocity[XAXIS]) + math.Abs(self.velocity[ZAXIS])) / self.sprintSpeed * math.Sin(self.walkSequence)
+	horzSpeed := self.velocity[XAXIS]*self.velocity[XAXIS] + self.velocity[ZAXIS]*self.velocity[ZAXIS]
+	legAngle = math.Sin(self.walkSequence) * (30 + 35*horzSpeed/(self.sprintSpeed*self.sprintSpeed))
+
 	torsoAngle = -math.Abs(legAngle / 6)
 	leftArmAngle = -legAngle * 1.2
 	rightArmAngle = legAngle * 1.2
@@ -180,10 +182,11 @@ func (self *Wolf) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 	pos[YAXIS] += step
 
 	// Translate to top of leg
+	// Translate to centre of front left leg
 	gl.Translated(0.0, legHeight, 0)
 	pos[YAXIS] += legHeight
 
-	// Translate to centre of leg
+	// Translate to centre of front left leg
 	gl.Rotated(legAngle, 0.0, 0.0, 1.0)
 	gl.Translated(0.0, -legHeight/2, (legWidth+0.25*headHeight)/2)
 	pos[YAXIS] += -legHeight / 2

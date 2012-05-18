@@ -442,6 +442,8 @@ func Draw(t int64) {
 	gl.LoadIdentity()
 
 	center := ThePlayer.Position()
+	// normal := ThePlayer.Normal()
+	gl.Translated(0, -1, 0)
 
 	// matrix := *viewport.matrix.Float32()
 	matrix := ModelMatrix().Float32()

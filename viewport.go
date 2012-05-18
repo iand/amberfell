@@ -48,12 +48,31 @@ func (self *Viewport) Reshape(width int, height int) {
 	gl.LoadIdentity()
 	gl.Ortho(self.lplane, self.rplane, self.bplane, self.tplane, -60, 60)
 
+	// self.Perspective(90, 1, 0.01,1000);
+
 	gl.MatrixMode(gl.MODELVIEW)
 	gl.LoadIdentity()
-
 	picker.x = float32(viewport.rplane) - picker.radius + blockscale*0.5
 	picker.y = float32(viewport.bplane) + picker.radius - blockscale*0.5
 
+}
+
+func (self *Viewport) Perspective(fovy, aspect, zNear, zFar float64) {
+	gl.MatrixMode(gl.PROJECTION)
+	gl.LoadIdentity()
+
+	var xmin, xmax, ymin, ymax float64
+
+	ymax = zNear * math.Tan(fovy*math.Pi/360.0)
+	ymin = -ymax
+	xmin = ymin * aspect
+	xmax = ymax * aspect
+
+	gl.Frustum(xmin, xmax, ymin, ymax, zNear, zFar)
+
+	gl.MatrixMode(gl.MODELVIEW)
+	gl.Hint(gl.PERSPECTIVE_CORRECTION_HINT, gl.NICEST)
+	gl.DepthMask(true)
 }
 
 func (self *Viewport) Rotx(angle float64) {

@@ -98,19 +98,17 @@ func NewWorld() *World {
 
 func (self *World) GroundLevel(x uint16, z uint16) uint16 {
 	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(4*NOISE_SCALE), float64(z-MAP_DIAM)/(4*NOISE_SCALE), worldSeed, 1.4, 1.2, 4)
-	if noise > 0.85 {
-		noise = noise + (1.0-noise)*0.5
-	}
 	if noise > 1.0 {
 		noise = 1.0
 	}
 	if noise < -1.0 {
 		noise = -1.0
 	}
-	if noise < 0 {
-		noise /= 20
+	if noise < 0.0 {
+		noise /= 10
 	}
-	ground := uint16((CHUNK_HEIGHT/2)*(noise+0.1)/1.1 + CHUNK_HEIGHT/3.0)
+
+	ground := uint16(SEA_LEVEL + ((CHUNK_HEIGHT-SEA_LEVEL)*0.9)*(noise+0.1)/1.1)
 	return ground
 }
 
@@ -145,6 +143,21 @@ func (self *World) Rocks(x uint16, z uint16) uint16 {
 
 	noise = noise * 5
 
+	return uint16(noise)
+}
+
+func (self *World) Ore(x uint16, z uint16, blockid byte) uint16 {
+	xloc := (float64(x) + MAP_DIAM*float64(blockid)) / (NOISE_SCALE / 2)
+	zloc := (float64(z) + MAP_DIAM*float64(blockid)) / (NOISE_SCALE / 2)
+	noise := perlin.Noise2D(xloc, zloc, worldSeed, 2.4, 1.8, 4)
+	if noise > 1.0 {
+		noise = 1.0
+	}
+	if noise < ORE_DISTRIBUTIONS[blockid] {
+		noise = 0
+	} else {
+		noise = 5 * (noise - ORE_DISTRIBUTIONS[blockid]) / (1 - ORE_DISTRIBUTIONS[blockid])
+	}
 	return uint16(noise)
 }
 
@@ -229,16 +242,8 @@ func (self *World) GenerateChunk(cx uint16, cy uint16, cz uint16) *Chunk {
 	for x := uint16(0); x < CHUNK_WIDTH; x++ {
 		for z := uint16(0); z < CHUNK_WIDTH; z++ {
 			ground := self.GroundLevel(x+xw, z+zw)
-			coal := self.Coal(x+xw, z+zw)
-			iron := self.Iron(x+xw, z+zw)
-			copper := self.Copper(x+xw, z+zw)
 
-			soilModifier := 1.0
-			if coal > 0 || iron > 0 || copper > 0 {
-				soilModifier = 0.8
-			}
-			soil := ground + uint16(float64(self.SoilThickness(x+xw, z+zw))*soilModifier*(1-((float64(ground)-CHUNK_HEIGHT/2)/(CHUNK_HEIGHT/2))))
-
+			soil := ground + uint16(float64(self.SoilThickness(x+xw, z+zw))*(1-((float64(ground)-CHUNK_HEIGHT/2)/(CHUNK_HEIGHT/2))))
 			rocks := ground // + self.Rocks(x+xw, z+zw)
 
 			upper := ground
@@ -264,37 +269,20 @@ func (self *World) GenerateChunk(cx uint16, cy uint16, cz uint16) *Chunk {
 					}
 
 				}
-				surface := upper - 1
-				if coal < 3 {
-					surface--
-				}
-				for y := surface; y > surface-coal && y > 0; y-- {
-					chunk.Set(x, y, z, BLOCK_COAL_SEAM)
-				}
-				if coal > 0 {
-					chunk.standingStoneProb += 0.000001
-				}
 
-				surface = upper - 1
-				if iron < 3 {
-					surface--
-				}
-				for y := surface; y > surface-iron && y > 0; y-- {
-					chunk.Set(x, y, z, BLOCK_IRON_SEAM)
-				}
-				if iron > 0 {
-					chunk.standingStoneProb += 0.00001
-				}
-
-				surface = upper - 1
-				if copper < 3 {
-					surface--
-				}
-				for y := surface; y > surface-copper && y > 0; y-- {
-					chunk.Set(x, y, z, BLOCK_COPPER_SEAM)
-				}
-				if copper > 0 {
-					chunk.standingStoneProb += 0.00001
+				for ore, occurrence := range ORE_DISTRIBUTIONS {
+					surface := upper - 1
+					size := self.Ore(x+xw, z+zw, ore)
+					if size > 0 {
+						if size > 2 {
+							surface++
+						}
+						for y := surface; y > surface-size && y > 0; y-- {
+							chunk.Set(x, y, z, ore)
+						}
+						chunk.standingStoneProb += 0.000001 * occurrence
+						break
+					}
 				}
 
 			}

@@ -61,7 +61,6 @@ func (self *Player) Act(dt float64) {
 }
 
 func (self *Player) Draw(center Vectorf, selectedBlockFace *BlockFace) {
-
 	pos := Vectorf{self.position[XAXIS], self.position[YAXIS], self.position[ZAXIS]}
 	gl.PushMatrix()
 
@@ -93,7 +92,10 @@ func (self *Player) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 
 	var legAngle, torsoAngle, leftArmAngle, rightArmAngle, step float64
 
-	legAngle = 55 * (math.Abs(self.velocity[XAXIS]) + math.Abs(self.velocity[ZAXIS])) / self.sprintSpeed * math.Sin(self.walkSequence)
+	horzSpeed := self.velocity[XAXIS]*self.velocity[XAXIS] + self.velocity[ZAXIS]*self.velocity[ZAXIS]
+	legAngle = math.Sin(self.walkSequence) * (20 + 45*horzSpeed/(self.sprintSpeed*self.sprintSpeed))
+
+	// legAngle = 55 * (math.Abs(self.velocity[XAXIS]) + math.Abs(self.velocity[ZAXIS])) / self.sprintSpeed * math.Sin(self.walkSequence)
 	torsoAngle = -math.Abs(legAngle / 6)
 	leftArmAngle = -legAngle * 1.2
 	rightArmAngle = legAngle * 1.2
