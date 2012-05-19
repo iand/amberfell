@@ -99,7 +99,7 @@ func (self *Viewport) Rotz(angle float64) {
 
 func (self *Viewport) Zoomstd() {
 	self.selectionDirty = false
-	self.scale = 0.6
+	self.scale = 0.8
 }
 
 func (self *Viewport) Zoomin() {
@@ -176,19 +176,18 @@ func (self *Viewport) SelectedBlockFace() *BlockFace {
 	if origin != nil {
 		pos := IntPosition(ThePlayer.position)
 		ray := Ray{origin, norm}
-		reach := int16(5)
 
 		// See http://www.dyn-lab.com/articles/pick-selection.html
 		var box *Box = nil
 		distance := float64(1e9)
 		face := uint8(0)
-		for dy := reach; dy > -(reach + 1); dy-- {
-			for dz := -reach; dz < reach+1; dz++ {
-				for dx := -reach; dx < reach+1; dx++ {
-					if dy*dy+dz*dz+dx*dx <= reach*reach {
+		for dy := int16(PLAYER_REACH); dy > -(PLAYER_REACH + 1); dy-- {
+			for dz := -int16(PLAYER_REACH); dz < PLAYER_REACH+1; dz++ {
+				for dx := -int16(PLAYER_REACH); dx < PLAYER_REACH+1; dx++ {
+					if dy*dy+dz*dz+dx*dx <= PLAYER_REACH*PLAYER_REACH {
 						blockDirection := Vectorf{float64(dx), float64(dy), float64(dz)}
 
-						if /* ThePlayer.Facing(blockDirection) && */ blockDirection.Magnitude() <= float64(reach) {
+						if /* ThePlayer.Facing(blockDirection) && */ blockDirection.Magnitude() <= float64(PLAYER_REACH) {
 
 							posTest := pos.Translate(dx, dy, dz)
 							trialDistance := math.Sqrt(math.Pow(float64(posTest[XAXIS])-origin[0], 2) + math.Pow(float64(posTest[YAXIS])-origin[1], 2) + math.Pow(float64(posTest[ZAXIS])-origin[2], 2))

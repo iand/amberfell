@@ -203,8 +203,8 @@ func loop() {
 				TheWorld.Simulate()
 
 			case <-tickEnvironment:
-				RepeatBreakBlock()
-				PreloadChunks(50)
+				MouseRepeat()
+				PreloadChunks(30)
 
 			case <-tickUI:
 				console.Update()
@@ -216,9 +216,7 @@ func loop() {
 				UpdatePlayerStats()
 
 			default:
-				delta := time.Now().UnixNano() - startTime
-				Draw(delta)
-				startTime = time.Now().UnixNano()
+				break
 			}
 		}
 	}
@@ -242,42 +240,20 @@ func HandleUserInput() bool {
 
 		case *sdl.MouseButtonEvent:
 			re := e.(*sdl.MouseButtonEvent)
-			if inventory.visible {
-				inventory.HandleMouseButton(re)
-			} else {
-				picker.HandleMouseButton(re)
-
-				if re.Button == 1 && re.State == 1 { // LEFT, DOWN
-					if ThePlayer.CanInteract() {
-						selectedBlockFace := viewport.SelectedBlockFace()
-						if selectedBlockFace != nil {
-							if ThePlayer.interactingBlock == nil || ThePlayer.interactingBlock.blockFace.pos != selectedBlockFace.pos {
-								ThePlayer.interactingBlock = new(InteractingBlockFace)
-								ThePlayer.interactingBlock.blockFace = selectedBlockFace
-								ThePlayer.interactingBlock.hitCount = 0
-							}
-							ThePlayer.Interact(ThePlayer.interactingBlock)
-						}
-						// println("Click:", re.X, re.Y, re.State, re.Button, re.Which)
-					}
-				}
-			}
+			HandleMouseButton(re)
 
 		case *sdl.KeyboardEvent:
 			re := e.(*sdl.KeyboardEvent)
 
 			if re.Keysym.Sym == sdl.K_ESCAPE && re.Type == sdl.KEYDOWN {
-				inventory.Hide()
-				if pause.visible {
-					pause.visible = false
-					// update2000ms.Unpause()
-					// update500ms.Unpause()
-					// update150ms.Unpause()
+				if inventory.visible {
+					inventory.Hide()
 				} else {
-					pause.visible = true
-					// update2000ms.Pause()
-					// update500ms.Pause()
-					// update150ms.Pause()
+					if pause.visible {
+						pause.visible = false
+					} else {
+						pause.visible = true
+					}
 				}
 			}
 
@@ -320,102 +296,28 @@ func HandleUserInput() bool {
 	return false
 }
 
-func RepeatBreakBlock() {
-	if !inventory.visible {
-		// If player is breaking a block then allow them to hold mouse down to continue action
-		if ThePlayer.interactingBlock != nil && ThePlayer.currentAction == ACTION_BREAK {
-			if mouseState := sdl.GetMouseState(nil, nil); mouseState == 1 {
-				if ThePlayer.CanInteract() {
-					selectedBlockFace := viewport.SelectedBlockFace()
-					if selectedBlockFace != nil {
-						if ThePlayer.interactingBlock == nil || !ThePlayer.interactingBlock.blockFace.pos.Equals(&selectedBlockFace.pos) {
-							ThePlayer.interactingBlock = new(InteractingBlockFace)
-							ThePlayer.interactingBlock.blockFace = selectedBlockFace
-							ThePlayer.interactingBlock.hitCount = 0
-						}
-						ThePlayer.Interact(ThePlayer.interactingBlock)
-					}
-					// println("Click:", re.X, re.Y, re.State, re.Button, re.Which)
-				}
-			}
-		}
+func HandleMouseButton(re *sdl.MouseButtonEvent) {
+	if inventory.visible {
+		inventory.HandleMouseButton(re)
+	} else {
+		picker.HandleMouseButton(re)
+		ThePlayer.HandleMouseButton(re)
+	}
+}
+
+func MouseRepeat() {
+	var x, y int
+	mouseState := sdl.GetMouseState(&x, &y)
+
+	if mouseState&MOUSE_BTN_LEFT == MOUSE_BTN_LEFT {
+		HandleMouseButton(&sdl.MouseButtonEvent{Type: sdl.MOUSEBUTTONDOWN, Button: sdl.BUTTON_LEFT, State: 1, X: uint16(x), Y: uint16(y)})
+	}
+	if mouseState&MOUSE_BTN_RIGHT == MOUSE_BTN_RIGHT {
+		HandleMouseButton(&sdl.MouseButtonEvent{Type: sdl.MOUSEBUTTONDOWN, Button: sdl.BUTTON_RIGHT, State: 1, X: uint16(x), Y: uint16(y)})
+
 	}
 
 }
-
-// func gameLoop() {
-// 	var startTime int64 = time.Now().UnixNano()
-// 	var currentTime, accumulator int64 = 0, 0
-// 	var t, dt int64 = 0, 1e9 / 40
-// 	var drawFrame, computeFrame int64 = 0, 0
-
-// 	update500ms := new(Timer)
-// 	update500ms.interval = 500 * 1e6
-// 	update500ms.Start()
-
-// 	update150ms := new(Timer)
-// 	update150ms.interval = 50 * 1e6
-// 	update150ms.Start()
-
-// 	update2000ms := new(Timer)
-// 	update2000ms.interval = 2000 * 1e6
-// 	update2000ms.Start()
-
-// 	done := false
-// 	for !done {
-
-// 		done = HandleUserInput()
-
-// 		if update150ms.PassedInterval() {
-// 			RepeatBreakBlock()
-// 			PreloadChunks(50)
-// 			update150ms.Start()
-// 		}
-
-// 		if update500ms.PassedInterval() {
-// 			console.Update()
-
-// 			UpdateTimeOfDay(false)
-// 			PreloadChunks(220)
-
-// 			drawFrame, computeFrame = 0, 0
-// 			update500ms.Start()
-
-// 		}
-
-// 		if update2000ms.PassedInterval() {
-// 			CullChunks()
-// 			UpdatePlayerStats()
-// 			update2000ms.Start()
-// 		}
-
-// 		if !pause.visible {
-// 			newTime := time.Now().UnixNano()
-// 			deltaTime := newTime - currentTime
-// 			currentTime = newTime
-// 			if deltaTime > 1e9/4 {
-// 				deltaTime = 1e9 / 4
-// 			}
-
-// 			accumulator += deltaTime
-
-// 			for accumulator > dt {
-// 				accumulator -= dt
-
-// 				TheWorld.ApplyForces(ThePlayer, float64(dt)/1e9)
-// 				ThePlayer.Update(float64(dt) / 1e9)
-// 				TheWorld.Simulate(float64(dt) / 1e9)
-
-// 				computeFrame++
-// 				t += dt
-// 			}
-// 		}
-
-// 		Draw(currentTime - startTime)
-// 		drawFrame++
-// 	}
-
-// }
 
 func Draw(t int64) {
 	console.culledVertices = 0
@@ -442,12 +344,22 @@ func Draw(t int64) {
 	gl.LoadIdentity()
 
 	center := ThePlayer.Position()
+
+	// glu.LookAt(			
+	// 				0,0,0,
+
+	// 				center[XAXIS], center[YAXIS], center[ZAXIS],
+	// 				0.0, 1.0, 0.0 )
+
 	// normal := ThePlayer.Normal()
-	gl.Translated(0, -1, 0)
 
 	// matrix := *viewport.matrix.Float32()
 	matrix := ModelMatrix().Float32()
 	gl.MultMatrixf(&matrix[0])
+
+	// normal := ThePlayer.Normal()
+	// gl.Translated(normal[XAXIS]*3, -12, normal[ZAXIS]*3)
+
 	//gl.Translatef(-float32(center[XAXIS]), -float32(center[YAXIS]), -float32(center[ZAXIS]))
 
 	// Sun

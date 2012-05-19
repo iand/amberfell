@@ -394,6 +394,20 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 }
 
 func (self *Player) HandleMouseButton(re *sdl.MouseButtonEvent) {
+	if re.Button == 1 && re.State == 1 { // LEFT, DOWN
+		if self.CanInteract() {
+			selectedBlockFace := viewport.SelectedBlockFace()
+			if selectedBlockFace != nil {
+				if self.interactingBlock == nil || self.interactingBlock.blockFace.pos != selectedBlockFace.pos {
+					self.interactingBlock = new(InteractingBlockFace)
+					self.interactingBlock.blockFace = selectedBlockFace
+					self.interactingBlock.hitCount = 0
+				}
+				self.Interact(self.interactingBlock)
+			}
+			// println("Click:", re.X, re.Y, re.State, re.Button, re.Which)
+		}
+	}
 
 }
 

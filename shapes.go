@@ -385,7 +385,7 @@ func TerrainCube(vertexBuffer *VertexBuffer, pos Vectori, neighbours [18]uint16,
 	switch blockid {
 	case BLOCK_CAMPFIRE:
 		Pile(vertexBuffer, x, y, z, ORIENT_EAST, block, visible, shadeLevels, selectedFace)
-	case BLOCK_LOG_SLAB, BLOCK_PLANK_SLAB:
+	case BLOCK_LOG_SLAB, BLOCK_PLANK_SLAB, BLOCK_STONEBRICK_SLAB:
 		if neighbours[NORTH_FACE] != BLOCK_AIR {
 			if neighbours[EAST_FACE] != BLOCK_AIR {
 				if neighbours[SOUTH_FACE] != BLOCK_AIR {
@@ -453,7 +453,7 @@ func TerrainCube(vertexBuffer *VertexBuffer, pos Vectori, neighbours [18]uint16,
 			SlabSingle(vertexBuffer, x, y, z, ORIENT_EAST, block, visible, shadeLevels, selectedFace)
 		}
 
-	case BLOCK_LOG_WALL, BLOCK_PLANK_WALL:
+	case BLOCK_LOG_WALL, BLOCK_PLANK_WALL, BLOCK_STONEBRICK_WALL:
 		if neighbours[NORTH_FACE] != BLOCK_AIR {
 			if neighbours[EAST_FACE] != BLOCK_AIR {
 				if neighbours[SOUTH_FACE] != BLOCK_AIR {
