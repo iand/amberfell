@@ -152,7 +152,7 @@ func initGame() {
 	inventoryItemFont = NewFont("res/Jura-DemiBold.ttf", 14, color.RGBA{240, 240, 240, 0})
 
 	textures[TEXTURE_PICKER] = loadTexture("res/dial.png")
-	terrainTexture = loadTexture("tiles.png")
+	terrainTexture = loadTexture("res/tiles.png")
 	itemsTexture = loadTexture("res/items.png")
 
 	gVertexBuffer = NewVertexBuffer(10000, terrainTexture)
