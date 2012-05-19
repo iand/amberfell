@@ -182,7 +182,7 @@ func quit() {
 func loop() {
 
 	ticksim := time.Tick(50 * time.Millisecond)
-	tickEnvironment := time.Tick(150 * time.Millisecond)
+	tickEnvironment := time.Tick(250 * time.Millisecond)
 	tickUI := time.Tick(500 * time.Millisecond)
 	tickHousekeeping := time.Tick(2 * time.Second)
 
@@ -203,10 +203,10 @@ func loop() {
 				TheWorld.Simulate()
 
 			case <-tickEnvironment:
-				PreloadChunks(30)
+				MouseRepeat()
+				PreloadChunks(100)
 
 			case <-tickUI:
-				MouseRepeat()
 				console.Update()
 				UpdateTimeOfDay(false)
 				PreloadChunks(220)

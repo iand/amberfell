@@ -182,6 +182,26 @@ var handmadeRecipes = []Recipe{
 		components: []ItemQuantity{
 			{BLOCK_STONEBRICK_SLAB, 1},
 		}},
+
+	{product: ItemQuantity{BLOCK_FORGE, 1},
+		components: []ItemQuantity{
+			{ITEM_STONE_BRICK, 6},
+		}},
+
+	{product: ItemQuantity{BLOCK_FURNACE, 1},
+		components: []ItemQuantity{
+			{ITEM_STONE_BRICK, 6},
+		}},
+
+	{product: ItemQuantity{ITEM_RUBBLE, 8},
+		components: []ItemQuantity{
+			{BLOCK_FORGE, 1},
+		}},
+
+	{product: ItemQuantity{ITEM_RUBBLE, 8},
+		components: []ItemQuantity{
+			{BLOCK_FURNACE, 1},
+		}},
 }
 
 type CampFire struct {
@@ -208,6 +228,18 @@ func (self *CampFire) Update(dt float64) (completed bool) {
 	}
 
 	return completed
+}
+
+func (self *CampFire) TargetType() uint8 {
+	return TARGET_CAMPFIRE
+}
+
+func (self *CampFire) Position() Vectorf {
+	return self.pos.Vectorf()
+}
+
+func (self *CampFire) Velocity() Vectorf {
+	return Vectorf{}
 }
 
 type AmberfellPump struct {

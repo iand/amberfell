@@ -57,10 +57,9 @@ type MobBehaviour struct {
 	last        bool
 }
 
-type Target struct {
-	targetType uint8
-	position   Vectorf
-	velocity   Vectorf
+type Target interface {
+	Position() Vectorf
+	Velocity() Vectorf
 }
 
 const SUNLIGHT_LEVELS_LOWER_MASK = 0xF0
@@ -218,6 +217,24 @@ func (self *MobData) Act(dt float64) {
 				weight = 1
 			}
 
+			var targets []Target
+			switch behaviour.targetType {
+			case TARGET_PLAYER:
+				targets = append(targets, ThePlayer)
+			case TARGET_WOLF:
+				for _, mob := range TheWorld.mobs {
+					if mob.TargetType() == TARGET_WOLF {
+						targets = append(targets, mob)
+					}
+				}
+			case TARGET_CAMPFIRE:
+				for _, cf := range TheWorld.campfires {
+					targets = append(targets, cf)
+				}
+			}
+
+			triggered := false
+
 			switch behaviour.behaviour {
 			case BEHAVIOUR_WANDER:
 				offset := self.walkingSpeed / 2
@@ -235,42 +252,49 @@ func (self *MobData) Act(dt float64) {
 
 			case BEHAVIOUR_PURSUE:
 				if previousBehaviour == BEHAVIOUR_PURSUE && self.energy > 5 || self.energy > 15 {
-					offset := ThePlayer.Position().Minus(self.position)
-					separation := offset.Magnitude()
-					direction := offset.Normalize()
-					angle := normal.AngleNormalized(direction) * 180 / math.Pi
+					for _, target := range targets {
 
-					if (angle >= 360-float64(behaviour.targetAngle) || angle <= float64(behaviour.targetAngle)) && separation <= float64(behaviour.targetRange) {
-						pos := ThePlayer.position.Add(ThePlayer.velocity.Scale(separation * 0.01))
-						desiredVelocity := self.position.Minus(pos).Normalize().Scale(self.sprintSpeed)
-						force = force.Add(self.velocity.Minus(desiredVelocity).Scale(weight))
-						self.dominantBehaviour = BEHAVIOUR_PURSUE
-						if behaviour.last {
-							break
+						offset := target.Position().Minus(self.position)
+						separation := offset.Magnitude()
+						direction := offset.Normalize()
+						angle := normal.AngleNormalized(direction) * 180 / math.Pi
+
+						if (angle >= 360-float64(behaviour.targetAngle) || angle <= float64(behaviour.targetAngle)) && separation <= float64(behaviour.targetRange) {
+							pos := target.Position().Add(target.Velocity().Scale(separation * 0.01))
+							desiredVelocity := self.position.Minus(pos).Normalize().Scale(self.sprintSpeed)
+							force = force.Add(self.velocity.Minus(desiredVelocity).Scale(weight))
+							self.dominantBehaviour = BEHAVIOUR_PURSUE
+							if behaviour.last {
+								triggered = true
+							}
 						}
 					}
 				}
 
 			case BEHAVIOUR_EVADE:
 				if previousBehaviour == BEHAVIOUR_EVADE && self.energy > 5 || self.energy > 15 {
-					offset := ThePlayer.Position().Minus(self.position)
-					separation := offset.Magnitude()
-					direction := offset.Normalize()
-					angle := normal.AngleNormalized(direction) * 180 / math.Pi
-					if (angle >= 360-float64(behaviour.targetAngle) || angle <= float64(behaviour.targetAngle)) && separation <= float64(behaviour.targetRange) {
-						pos := ThePlayer.position.Add(ThePlayer.velocity.Scale(separation * 0.01))
-						desiredVelocity := pos.Minus(self.position).Normalize().Scale(-self.sprintSpeed)
-						force = force.Add(desiredVelocity.Minus(self.velocity).Scale(weight))
-						self.dominantBehaviour = BEHAVIOUR_EVADE
-						if behaviour.last {
-							break
+					for _, target := range targets {
+
+						offset := target.Position().Minus(self.position)
+						separation := offset.Magnitude()
+						direction := offset.Normalize()
+						angle := normal.AngleNormalized(direction) * 180 / math.Pi
+						if (angle >= 360-float64(behaviour.targetAngle) || angle <= float64(behaviour.targetAngle)) && separation <= float64(behaviour.targetRange) {
+							pos := target.Position().Add(target.Velocity().Scale(separation * 0.01))
+							desiredVelocity := pos.Minus(self.position).Normalize().Scale(-self.sprintSpeed)
+							force = force.Add(desiredVelocity.Minus(self.velocity).Scale(weight))
+							self.dominantBehaviour = BEHAVIOUR_EVADE
+							if behaviour.last {
+								triggered = true
+							}
 						}
 					}
+
 				}
 
 			case BEHAVIOUR_SEPARATE:
-				for _, mob := range TheWorld.mobs {
-					offset := mob.Position().Minus(self.position)
+				for _, target := range targets {
+					offset := target.Position().Minus(self.position)
 					separation := offset.Magnitude()
 					direction := offset.Normalize()
 					angle := normal.AngleNormalized(direction) * 180 / math.Pi
@@ -278,25 +302,24 @@ func (self *MobData) Act(dt float64) {
 						force = force.Add(direction.Scale(-self.walkingSpeed / separation).Scale(weight))
 					}
 					if behaviour.last {
-						break
+						triggered = true
 					}
+
 				}
 
 			case BEHAVIOUR_GATHER:
 				x, z, count := 0.0, 0.0, 0.0
 
-				for _, mob := range TheWorld.mobs {
-					if mob.TargetType() == behaviour.targetType {
-						pos := mob.Position()
-						offset := pos.Minus(self.position)
-						separation := offset.Magnitude()
-						direction := offset.Normalize()
-						angle := normal.AngleNormalized(direction) * 180 / math.Pi
-						if (angle >= 360-float64(behaviour.targetAngle) || angle <= float64(behaviour.targetAngle)) && separation <= float64(behaviour.targetRange) {
-							x += pos[XAXIS]
-							z += pos[ZAXIS]
-							count++
-						}
+				for _, target := range targets {
+					pos := target.Position()
+					offset := pos.Minus(self.position)
+					separation := offset.Magnitude()
+					direction := offset.Normalize()
+					angle := normal.AngleNormalized(direction) * 180 / math.Pi
+					if (angle >= 360-float64(behaviour.targetAngle) || angle <= float64(behaviour.targetAngle)) && separation <= float64(behaviour.targetRange) {
+						x += pos[XAXIS]
+						z += pos[ZAXIS]
+						count++
 					}
 				}
 
@@ -306,25 +329,23 @@ func (self *MobData) Act(dt float64) {
 					direction := Vectorf{x, 0, z}.Minus(self.position).Normalize()
 					force = force.Add(direction.Scale(self.walkingSpeed).Scale(weight))
 					if behaviour.last {
-						break
+						triggered = true
 					}
 				}
 
 			case BEHAVIOUR_ALIGN:
 				x, z, count := 0.0, 0.0, 0.0
 
-				for _, mob := range TheWorld.mobs {
-					if mob.TargetType() == behaviour.targetType {
-						pos := mob.Position()
-						offset := pos.Minus(self.position)
-						separation := offset.Magnitude()
-						direction := offset.Normalize()
-						angle := normal.AngleNormalized(direction) * 180 / math.Pi
-						if (angle >= 360-float64(behaviour.targetAngle) || angle <= float64(behaviour.targetAngle)) && separation <= float64(behaviour.targetRange) {
-							x += mob.Velocity()[XAXIS]
-							z += mob.Velocity()[ZAXIS]
-							count++
-						}
+				for _, target := range targets {
+					pos := target.Position()
+					offset := pos.Minus(self.position)
+					separation := offset.Magnitude()
+					direction := offset.Normalize()
+					angle := normal.AngleNormalized(direction) * 180 / math.Pi
+					if (angle >= 360-float64(behaviour.targetAngle) || angle <= float64(behaviour.targetAngle)) && separation <= float64(behaviour.targetRange) {
+						x += target.Velocity()[XAXIS]
+						z += target.Velocity()[ZAXIS]
+						count++
 					}
 				}
 
@@ -333,11 +354,16 @@ func (self *MobData) Act(dt float64) {
 					z /= count
 					force = force.Add(Vectorf{x, 0, z}.Minus(self.velocity).Scale(weight))
 					if behaviour.last {
-						break
+						triggered = true
 					}
 				}
 
 			}
+
+			if triggered {
+				break
+			}
+
 		}
 
 	}

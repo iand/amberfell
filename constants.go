@@ -338,11 +338,11 @@ const (
 	TEXTURE_PICKER = 5000
 
 	// Strength of materials
-	STRENGTH_STONE       = 20
+	STRENGTH_STONE       = 10
 	STRENGTH_DIRT        = 3
 	STRENGTH_WOOD        = 5
 	STRENGTH_LEAVES      = 1
-	STRENGTH_IRON        = 50
+	STRENGTH_IRON        = 30
 	STRENGTH_UNBREAKABLE = 255
 )
 

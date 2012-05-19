@@ -302,8 +302,10 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 
 				switch blockid {
 				case BLOCK_CAMPFIRE:
+					delete(TheWorld.campfires, selectedBlockFace.pos)
 					delete(TheWorld.lightSources, selectedBlockFace.pos)
 					delete(TheWorld.timedObjects, selectedBlockFace.pos)
+
 					TheWorld.InvalidateRadius(selectedBlockFace.pos[XAXIS], selectedBlockFace.pos[ZAXIS], uint16(CAMPFIRE_INTENSITY))
 
 				case BLOCK_AMBERFELL_PUMP:
@@ -363,6 +365,7 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 					campfire := NewCampFire(selectedBlockFace.pos)
 					TheWorld.lightSources[selectedBlockFace.pos] = campfire
 					TheWorld.timedObjects[selectedBlockFace.pos] = campfire
+					TheWorld.campfires[selectedBlockFace.pos] = campfire
 
 					TheWorld.InvalidateRadius(selectedBlockFace.pos[XAXIS], selectedBlockFace.pos[ZAXIS], uint16(CAMPFIRE_INTENSITY))
 

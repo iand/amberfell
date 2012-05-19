@@ -26,6 +26,17 @@ func NewWolf(heading float64, x, y, z uint16) *Wolf {
 	wolf.energy = wolf.stamina
 	wolf.mass = 5
 	wolf.behaviours = []MobBehaviour{
+
+		MobBehaviour{
+			behaviour:   BEHAVIOUR_EVADE,
+			targetType:  TARGET_CAMPFIRE,
+			targetRange: 14,
+			targetAngle: 180,
+			sunlight:    SUNLIGHT_LEVELS_ANY,
+			weight:      2,
+			last:        false,
+		},
+
 		MobBehaviour{
 			behaviour:   BEHAVIOUR_PURSUE,
 			targetType:  TARGET_PLAYER,

@@ -24,6 +24,7 @@ type World struct {
 	generatorObjects map[Vectori]GeneratorObject
 	genseed          int64
 	lastSimulated    int64
+	campfires        map[Vectori]*CampFire
 }
 
 type Chunk struct {
@@ -88,6 +89,7 @@ func NewWorld() *World {
 	world.containerObjects = make(map[Vectori]ContainerObject)
 	world.lightSources = make(map[Vectori]LightSource)
 	world.generatorObjects = make(map[Vectori]GeneratorObject)
+	world.campfires = make(map[Vectori]*CampFire)
 	world.lastSimulated = time.Now().UnixNano()
 	xc, yc, zc := chunkCoordsFromWorld(PLAYER_START_X, world.GroundLevel(PLAYER_START_X, PLAYER_START_Z), PLAYER_START_Z)
 
@@ -816,6 +818,7 @@ func (self *World) Simulate() {
 		mob.Update(dt)
 	}
 
+	// Despawn
 	for i := len(self.mobs) - 1; i >= 0; i-- {
 		if ThePlayer.position.Minus(self.mobs[i].Position()).Magnitude() > float64(viewRadius)*3 {
 			self.mobs = append(self.mobs[:i], self.mobs[i+1:]...)
