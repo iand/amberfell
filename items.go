@@ -69,7 +69,7 @@ func NewItem(id uint16, name string, texture1 uint16, texture2 uint16, hitsNeede
 func InitItems() {
 	items = make(map[uint16]Item)
 	items[BLOCK_AIR] = NewItem(BLOCK_AIR, "Air", TEXTURE_NONE, TEXTURE_NONE, STRENGTH_STONE, true, false, false, nil)
-	items[BLOCK_STONE] = NewItem(BLOCK_STONE, "Stone", TEXTURE_STONE, TEXTURE_STONE, STRENGTH_STONE, false, true, true, &ItemQuantity{BLOCK_STONE, 1})
+	items[BLOCK_STONE] = NewItem(BLOCK_STONE, "Stone", TEXTURE_STONE, TEXTURE_STONE, STRENGTH_STONE, false, true, true, &ItemQuantity{ITEM_RUBBLE, 6})
 	items[BLOCK_DIRT] = NewItem(BLOCK_DIRT, "Dirt", TEXTURE_DIRT, TEXTURE_DIRT_TOP, STRENGTH_DIRT, false, true, true, &ItemQuantity{BLOCK_DIRT, 1})
 	items[BLOCK_BURNT_GRASS] = NewItem(BLOCK_BURNT_GRASS, "Dirt", TEXTURE_DIRT, TEXTURE_BURNT_GRASS, STRENGTH_DIRT, false, true, true, &ItemQuantity{BLOCK_DIRT, 1})
 	items[BLOCK_TRUNK] = NewItem(BLOCK_TRUNK, "Tree trunk", TEXTURE_TRUNK, TEXTURE_TRUNK, STRENGTH_WOOD, false, true, true, &ItemQuantity{BLOCK_TRUNK, 1})
@@ -96,17 +96,23 @@ func InitItems() {
 	items[BLOCK_STEAM_GENERATOR] = NewItem(BLOCK_STEAM_GENERATOR, "Steam Generator", TEXTURE_IRON_MACH_SIDE, TEXTURE_IRON_MACH_TOP, STRENGTH_IRON, false, true, true, &ItemQuantity{BLOCK_STEAM_GENERATOR, 1})
 	items[BLOCK_CARPENTERS_BENCH] = NewItem(BLOCK_CARPENTERS_BENCH, "Carpenter's Bench", TEXTURE_PLANK_WALL, TEXTURE_CARPENTERS_BENCH_TOP, STRENGTH_WOOD, false, true, true, &ItemQuantity{ITEM_FIREWOOD, 5})
 	items[BLOCK_AMBERFELL_CONDENSER] = NewItem(BLOCK_AMBERFELL_CONDENSER, "Amberfell Condenser", TEXTURE_PLANK_WALL, TEXTURE_CARPENTERS_BENCH_TOP, STRENGTH_WOOD, false, true, true, &ItemQuantity{ITEM_FIREWOOD, 5})
+	items[BLOCK_FURNACE] = NewItem(BLOCK_FURNACE, "Furnace", TEXTURE_STONE_BRICK, TEXTURE_FURNACE_TOP, STRENGTH_STONE, false, true, true, &ItemQuantity{ITEM_RUBBLE, 4})
+	items[BLOCK_FORGE] = NewItem(BLOCK_FORGE, "Forge", TEXTURE_STONE_BRICK, TEXTURE_FORGE_TOP, STRENGTH_STONE, false, true, true, &ItemQuantity{ITEM_RUBBLE, 4})
 
 	items[ITEM_FIREWOOD] = NewItem(ITEM_FIREWOOD, "Firewood", TEXTURE_ITEM_FIREWOOD, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
-	items[ITEM_RUBBLE] = NewItem(ITEM_RUBBLE, "Rubble", TEXTURE_ITEM_FIREWOOD, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
+	items[ITEM_RUBBLE] = NewItem(ITEM_RUBBLE, "Rubble", TEXTURE_ITEM_RUBBLE, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
+	items[ITEM_STONE_BRICK] = NewItem(ITEM_STONE_BRICK, "Stone Brick", TEXTURE_ITEM_STONE_BRICK, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
 	items[ITEM_PLANK] = NewItem(ITEM_PLANK, "Plank", TEXTURE_ITEM_PLANK, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
 	items[ITEM_COAL] = NewItem(ITEM_COAL, "Coal", TEXTURE_ITEM_COAL, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
 	items[ITEM_IRON_ORE] = NewItem(ITEM_IRON_ORE, "Haematite", TEXTURE_ITEM_IRON_ORE, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
 	items[ITEM_MAGNETITE_ORE] = NewItem(ITEM_MAGNETITE_ORE, "Magnetite", TEXTURE_ITEM_IRON_ORE, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
 	items[ITEM_COPPER_ORE] = NewItem(ITEM_COPPER_ORE, "Malachite", TEXTURE_ITEM_COPPER_ORE, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
 	items[ITEM_AMBERFELL] = NewItem(ITEM_AMBERFELL, "Amberfell", TEXTURE_ITEM_AMBERFELL, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
-	items[ITEM_LODESTONE] = NewItem(ITEM_LODESTONE, "Lodestone", TEXTURE_ITEM_LODESTONE, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
 	items[ITEM_AMBERFELL_CRYSTAL] = NewItem(ITEM_AMBERFELL_CRYSTAL, "Amberfell Crystal", TEXTURE_ITEM_AMBERFELL_CRYSTAL, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
+
+	items[ITEM_IRON_INGOT] = NewItem(ITEM_IRON_INGOT, "Iron Ingot", TEXTURE_ITEM_IRON_INGOT, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
+	items[ITEM_COPPER_INGOT] = NewItem(ITEM_COPPER_INGOT, "Copper Ingot", TEXTURE_ITEM_COPPER_INGOT, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
+	items[ITEM_LODESTONE] = NewItem(ITEM_LODESTONE, "Lodestone", TEXTURE_ITEM_LODESTONE, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
 
 }
 
@@ -139,6 +145,35 @@ var handmadeRecipes = []Recipe{
 	{product: ItemQuantity{BLOCK_CAMPFIRE, 1},
 		components: []ItemQuantity{
 			{ITEM_FIREWOOD, 3},
+		}},
+
+	{product: ItemQuantity{ITEM_STONE_BRICK, 1},
+		components: []ItemQuantity{
+			{ITEM_RUBBLE, 2},
+		}},
+
+	{product: ItemQuantity{BLOCK_STONEBRICK_WALL, 1},
+		components: []ItemQuantity{
+			{ITEM_STONE_BRICK, 3},
+		}},
+
+	{product: ItemQuantity{BLOCK_STONEBRICK_SLAB, 1},
+		components: []ItemQuantity{
+			{ITEM_STONE_BRICK, 3},
+		}},
+
+	{product: ItemQuantity{ITEM_RUBBLE, 1},
+		components: []ItemQuantity{
+			{ITEM_STONE_BRICK, 1},
+		}},
+	{product: ItemQuantity{ITEM_RUBBLE, 2},
+		components: []ItemQuantity{
+			{BLOCK_STONEBRICK_WALL, 1},
+		}},
+
+	{product: ItemQuantity{ITEM_RUBBLE, 2},
+		components: []ItemQuantity{
+			{BLOCK_STONEBRICK_SLAB, 1},
 		}},
 }
 
@@ -472,4 +507,154 @@ func (self *AmberfellCondenser) CanPlace(itemid uint16) bool {
 		return true
 	}
 	return false
+}
+
+type Forge struct {
+	pos Vectori
+}
+
+func NewForge(pos Vectori) *Forge {
+	obj := Forge{pos: pos}
+	return &obj
+}
+
+func (self *Forge) Label() string {
+	return "Forge"
+}
+
+func (self *Forge) Recipes() []Recipe {
+	return forgeRecipes
+}
+
+var forgeRecipes = []Recipe{}
+
+type Furnace struct {
+	pos           Vectori
+	coal          uint16
+	ore           *ItemQuantity
+	metal         *ItemQuantity
+	timeRemaining float64
+}
+
+func NewFurnace(pos Vectori) *Furnace {
+	f := Furnace{pos: pos}
+	f.ore = &ItemQuantity{}
+	f.metal = &ItemQuantity{}
+	return &f
+}
+
+func (self *Furnace) Update(dt float64) (completed bool) {
+	if self.timeRemaining > 0 {
+		self.timeRemaining -= 1 * dt
+		if self.timeRemaining <= 0 {
+			if self.metal.quantity == 0 {
+				self.metal.quantity = 1
+				switch self.ore.item {
+				case ITEM_IRON_ORE:
+					self.metal.item = ITEM_IRON_INGOT
+				case ITEM_MAGNETITE_ORE:
+					self.metal.item = ITEM_LODESTONE
+				case ITEM_COPPER_ORE:
+					self.metal.item = ITEM_COPPER_INGOT
+
+				}
+			} else {
+				self.metal.quantity++
+			}
+		}
+	}
+
+	if self.timeRemaining <= 0 {
+		if self.ore.quantity > 0 && self.coal > 0 &&
+			(self.metal.quantity == 0 || ((self.ore.item == ITEM_IRON_ORE && self.metal.item == ITEM_IRON_INGOT) ||
+				(self.ore.item == ITEM_MAGNETITE_ORE && self.metal.item == ITEM_LODESTONE) ||
+				(self.ore.item == ITEM_COPPER_ORE && self.metal.item == ITEM_COPPER_INGOT))) {
+
+			self.ore.quantity -= 1
+			self.coal -= 1
+			self.timeRemaining = 15
+		} else {
+			self.timeRemaining = 0
+		}
+	}
+	return false
+}
+
+func (self *Furnace) Label() string {
+	if self.timeRemaining > 0 {
+		return "Furnace (active)"
+	}
+
+	return "Furnace (inactive)"
+}
+
+func (self *Furnace) Slots() int {
+	return 3
+}
+
+func (self *Furnace) Item(slot int) ItemQuantity {
+	if slot == 0 && self.coal > 0 {
+		return ItemQuantity{ITEM_COAL, self.coal}
+	} else if slot == 1 && self.ore.quantity > 0 {
+		return *self.ore
+	} else if slot == 2 && self.metal.quantity > 0 {
+		return *self.metal
+	}
+
+	return ItemQuantity{}
+}
+
+func (self *Furnace) Take(slot int, quantity uint16) {
+	switch slot {
+	case 0:
+		self.coal -= quantity
+		if self.coal < 0 {
+			self.coal = 0
+		}
+	case 1:
+		self.ore.quantity -= quantity
+		if self.ore.quantity < 0 {
+			self.ore.quantity = 0
+		}
+	case 2:
+		self.metal.quantity -= quantity
+		if self.metal.quantity < 0 {
+			self.metal.quantity = 0
+		}
+	}
+}
+
+func (self *Furnace) Place(slot int, iq *ItemQuantity) {
+	if (slot == 0 && self.coal != 0 && iq.item != ITEM_COAL) ||
+		(slot == 1 && self.ore.quantity != 0 && iq.item != self.ore.item) ||
+		(slot == 2 && self.metal.quantity != 0 && iq.item != self.metal.item) {
+		return
+	}
+
+	switch iq.item {
+	case ITEM_COAL:
+		self.coal += iq.quantity
+	case ITEM_IRON_ORE, ITEM_COPPER_ORE, ITEM_MAGNETITE_ORE:
+		self.ore.quantity += iq.quantity
+		self.ore.item = iq.item
+	case ITEM_IRON_INGOT, ITEM_COPPER_INGOT, ITEM_LODESTONE:
+		self.metal.quantity += iq.quantity
+		self.metal.item = iq.item
+	}
+}
+
+func (self *Furnace) CanTake() bool {
+	return true
+}
+
+func (self *Furnace) CanPlace(itemid uint16) bool {
+
+	switch itemid {
+
+	case ITEM_COAL, ITEM_IRON_ORE, ITEM_COPPER_ORE, ITEM_MAGNETITE_ORE, ITEM_IRON_INGOT, ITEM_COPPER_INGOT, ITEM_LODESTONE:
+		return true
+	}
+
+	return false
+
 }

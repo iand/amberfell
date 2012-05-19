@@ -203,10 +203,10 @@ func loop() {
 				TheWorld.Simulate()
 
 			case <-tickEnvironment:
-				MouseRepeat()
 				PreloadChunks(30)
 
 			case <-tickUI:
+				MouseRepeat()
 				console.Update()
 				UpdateTimeOfDay(false)
 				PreloadChunks(220)

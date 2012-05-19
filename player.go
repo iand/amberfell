@@ -282,12 +282,14 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 	case ACTION_HAND:
 		blockid := TheWorld.Atv(selectedBlockFace.pos)
 		switch blockid {
-		case BLOCK_AMBERFELL_PUMP, BLOCK_STEAM_GENERATOR, BLOCK_AMBERFELL_CONDENSER:
+		case BLOCK_AMBERFELL_PUMP, BLOCK_STEAM_GENERATOR, BLOCK_AMBERFELL_CONDENSER, BLOCK_FURNACE:
 			if obj, ok := TheWorld.containerObjects[selectedBlockFace.pos]; ok {
 				inventory.Show(obj, nil)
 			}
 		case BLOCK_CARPENTERS_BENCH:
 			inventory.Show(nil, NewCarpentersBench(selectedBlockFace.pos))
+		case BLOCK_FORGE:
+			inventory.Show(nil, NewForge(selectedBlockFace.pos))
 
 		}
 
@@ -314,6 +316,10 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 					delete(TheWorld.generatorObjects, selectedBlockFace.pos)
 
 				case BLOCK_AMBERFELL_CONDENSER:
+					delete(TheWorld.timedObjects, selectedBlockFace.pos)
+					delete(TheWorld.containerObjects, selectedBlockFace.pos)
+
+				case BLOCK_FURNACE:
 					delete(TheWorld.timedObjects, selectedBlockFace.pos)
 					delete(TheWorld.containerObjects, selectedBlockFace.pos)
 
@@ -380,8 +386,11 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 					obj := NewAmberfellCondenser(selectedBlockFace.pos)
 					TheWorld.timedObjects[selectedBlockFace.pos] = obj
 					TheWorld.containerObjects[selectedBlockFace.pos] = obj
-					TheWorld.containerObjects[selectedBlockFace.pos] = obj
 
+				case BLOCK_FURNACE:
+					obj := NewFurnace(selectedBlockFace.pos)
+					TheWorld.timedObjects[selectedBlockFace.pos] = obj
+					TheWorld.containerObjects[selectedBlockFace.pos] = obj
 				}
 
 				TheWorld.Setv(selectedBlockFace.pos, blockid)
