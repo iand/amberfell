@@ -585,6 +585,11 @@ var forgeRecipes = []Recipe{
 		components: []ItemQuantity{
 			{ITEM_BRASS_PLATE, 1},
 		}},
+
+	{product: ItemQuantity{ITEM_SCRAP_ZINC, 2},
+		components: []ItemQuantity{
+			{ITEM_ZINC_INGOT, 1},
+		}},
 }
 
 type Furnace struct {
