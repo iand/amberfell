@@ -84,10 +84,11 @@ func InitItems() {
 	items[BLOCK_PLANK_WALL] = NewItem(BLOCK_PLANK_WALL, "Wooden wall", TEXTURE_PLANK_WALL, TEXTURE_PLANK_WALL, STRENGTH_WOOD, true, true, true, &ItemQuantity{ITEM_PLANK, 1})
 	items[BLOCK_PLANK_SLAB] = NewItem(BLOCK_PLANK_SLAB, "Wooden slab", TEXTURE_PLANK_WALL, TEXTURE_PLANK_WALL, STRENGTH_WOOD, true, true, true, &ItemQuantity{ITEM_PLANK, 1})
 
-	items[BLOCK_COAL_SEAM] = NewItem(BLOCK_COAL_SEAM, "Coal Seam", TEXTURE_COAL, TEXTURE_COAL, STRENGTH_STONE, false, false, false, &ItemQuantity{ITEM_COAL, 1})
-	items[BLOCK_IRON_SEAM] = NewItem(BLOCK_IRON_SEAM, "Haematite Seam", TEXTURE_IRON, TEXTURE_IRON, STRENGTH_STONE, false, false, false, &ItemQuantity{ITEM_IRON_ORE, 1})
-	items[BLOCK_COPPER_SEAM] = NewItem(BLOCK_COPPER_SEAM, "Malachite Seam", TEXTURE_COPPER, TEXTURE_COPPER, STRENGTH_STONE, false, false, false, &ItemQuantity{ITEM_COPPER_ORE, 1})
-	items[BLOCK_MAGNETITE_SEAM] = NewItem(BLOCK_MAGNETITE_SEAM, "Magnetite Seam", TEXTURE_COPPER, TEXTURE_COPPER, STRENGTH_STONE, false, false, false, &ItemQuantity{ITEM_MAGNETITE_ORE, 1})
+	items[BLOCK_COAL_SEAM] = NewItem(BLOCK_COAL_SEAM, "Coal Seam", TEXTURE_COAL, TEXTURE_COAL, STRENGTH_STONE, false, false, false, &ItemQuantity{ITEM_COAL, 2})
+	items[BLOCK_IRON_SEAM] = NewItem(BLOCK_IRON_SEAM, "Haematite Seam", TEXTURE_IRON, TEXTURE_IRON, STRENGTH_STONE, false, false, false, &ItemQuantity{ITEM_IRON_ORE, 2})
+	items[BLOCK_COPPER_SEAM] = NewItem(BLOCK_COPPER_SEAM, "Malachite Seam", TEXTURE_COPPER, TEXTURE_COPPER, STRENGTH_STONE, false, false, false, &ItemQuantity{ITEM_COPPER_ORE, 2})
+	items[BLOCK_MAGNETITE_SEAM] = NewItem(BLOCK_MAGNETITE_SEAM, "Magnetite Seam", TEXTURE_COPPER, TEXTURE_COPPER, STRENGTH_STONE, false, false, false, &ItemQuantity{ITEM_MAGNETITE_ORE, 2})
+	items[BLOCK_ZINC_SEAM] = NewItem(BLOCK_ZINC_SEAM, "Zinc Seam", TEXTURE_ZINC, TEXTURE_ZINC, STRENGTH_STONE, false, false, false, &ItemQuantity{ITEM_ZINC_ORE, 2})
 	items[BLOCK_AMBERFELL_SOURCE] = NewItem(BLOCK_AMBERFELL_SOURCE, "Amberfell Source", TEXTURE_AMBERFELL_SOURCE, TEXTURE_AMBERFELL_SOURCE_TOP, STRENGTH_UNBREAKABLE, false, true, true, nil)
 	items[BLOCK_CARVED_STONE] = NewItem(BLOCK_CARVED_STONE, "Carved stone", TEXTURE_CARVED_STONE, TEXTURE_STONE, STRENGTH_STONE, false, true, true, &ItemQuantity{BLOCK_STONE, 1})
 	items[BLOCK_CAMPFIRE] = NewItem(BLOCK_CAMPFIRE, "Campfire", TEXTURE_LOG_WALL, TEXTURE_FIRE, STRENGTH_LEAVES, true, true, true, &ItemQuantity{ITEM_FIREWOOD, 1})
@@ -107,12 +108,18 @@ func InitItems() {
 	items[ITEM_IRON_ORE] = NewItem(ITEM_IRON_ORE, "Haematite", TEXTURE_ITEM_IRON_ORE, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
 	items[ITEM_MAGNETITE_ORE] = NewItem(ITEM_MAGNETITE_ORE, "Magnetite", TEXTURE_ITEM_IRON_ORE, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
 	items[ITEM_COPPER_ORE] = NewItem(ITEM_COPPER_ORE, "Malachite", TEXTURE_ITEM_COPPER_ORE, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
+	items[ITEM_ZINC_ORE] = NewItem(ITEM_ZINC_ORE, "Sphalerite", TEXTURE_ITEM_ZINC_ORE, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
 	items[ITEM_AMBERFELL] = NewItem(ITEM_AMBERFELL, "Amberfell", TEXTURE_ITEM_AMBERFELL, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
 	items[ITEM_AMBERFELL_CRYSTAL] = NewItem(ITEM_AMBERFELL_CRYSTAL, "Amberfell Crystal", TEXTURE_ITEM_AMBERFELL_CRYSTAL, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
 
 	items[ITEM_IRON_INGOT] = NewItem(ITEM_IRON_INGOT, "Iron Ingot", TEXTURE_ITEM_IRON_INGOT, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
 	items[ITEM_COPPER_INGOT] = NewItem(ITEM_COPPER_INGOT, "Copper Ingot", TEXTURE_ITEM_COPPER_INGOT, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
 	items[ITEM_LODESTONE] = NewItem(ITEM_LODESTONE, "Lodestone", TEXTURE_ITEM_LODESTONE, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
+
+	items[ITEM_BRASS_INGOT] = NewItem(ITEM_BRASS_INGOT, "Brass Ingot", TEXTURE_ITEM_BRASS_INGOT, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
+	items[ITEM_COPPER_PLATE] = NewItem(ITEM_COPPER_PLATE, "Copper Plate", TEXTURE_ITEM_COPPER_PLATE, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
+	items[ITEM_BRASS_PLATE] = NewItem(ITEM_BRASS_PLATE, "Brass Plate", TEXTURE_ITEM_BRASS_PLATE, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
+	items[ITEM_IRON_PLATE] = NewItem(ITEM_IRON_PLATE, "Iron Plate", TEXTURE_ITEM_IRON_PLATE, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
 
 }
 
@@ -526,7 +533,59 @@ func (self *Forge) Recipes() []Recipe {
 	return forgeRecipes
 }
 
-var forgeRecipes = []Recipe{}
+var forgeRecipes = []Recipe{
+
+	{product: ItemQuantity{ITEM_BRASS_INGOT, 4},
+		components: []ItemQuantity{
+			{ITEM_COPPER_INGOT, 3},
+			{ITEM_ZINC_INGOT, 1},
+		}},
+
+	{product: ItemQuantity{ITEM_COPPER_PLATE, 1},
+		components: []ItemQuantity{
+			{ITEM_COPPER_INGOT, 2},
+		}},
+
+	{product: ItemQuantity{ITEM_BRASS_PLATE, 1},
+		components: []ItemQuantity{
+			{ITEM_BRASS_INGOT, 2},
+		}},
+
+	{product: ItemQuantity{ITEM_IRON_PLATE, 1},
+		components: []ItemQuantity{
+			{ITEM_IRON_INGOT, 2},
+		}},
+
+	{product: ItemQuantity{ITEM_SCRAP_IRON, 2},
+		components: []ItemQuantity{
+			{ITEM_IRON_INGOT, 1},
+		}},
+
+	{product: ItemQuantity{ITEM_SCRAP_IRON, 4},
+		components: []ItemQuantity{
+			{ITEM_IRON_PLATE, 1},
+		}},
+
+	{product: ItemQuantity{ITEM_SCRAP_COPPER, 2},
+		components: []ItemQuantity{
+			{ITEM_COPPER_INGOT, 1},
+		}},
+
+	{product: ItemQuantity{ITEM_SCRAP_COPPER, 4},
+		components: []ItemQuantity{
+			{ITEM_COPPER_PLATE, 1},
+		}},
+
+	{product: ItemQuantity{ITEM_SCRAP_BRASS, 2},
+		components: []ItemQuantity{
+			{ITEM_BRASS_INGOT, 1},
+		}},
+
+	{product: ItemQuantity{ITEM_SCRAP_BRASS, 4},
+		components: []ItemQuantity{
+			{ITEM_BRASS_PLATE, 1},
+		}},
+}
 
 type Furnace struct {
 	pos           Vectori
@@ -548,7 +607,7 @@ func (self *Furnace) Update(dt float64) (completed bool) {
 		self.timeRemaining -= 1 * dt
 		if self.timeRemaining <= 0 {
 			if self.metal.quantity == 0 {
-				self.metal.quantity = 1
+				self.metal.quantity = 2
 				switch self.ore.item {
 				case ITEM_IRON_ORE:
 					self.metal.item = ITEM_IRON_INGOT
@@ -556,10 +615,12 @@ func (self *Furnace) Update(dt float64) (completed bool) {
 					self.metal.item = ITEM_LODESTONE
 				case ITEM_COPPER_ORE:
 					self.metal.item = ITEM_COPPER_INGOT
+				case ITEM_ZINC_ORE:
+					self.metal.item = ITEM_ZINC_INGOT
 
 				}
 			} else {
-				self.metal.quantity++
+				self.metal.quantity += 2
 			}
 		}
 	}
@@ -568,7 +629,8 @@ func (self *Furnace) Update(dt float64) (completed bool) {
 		if self.ore.quantity > 0 && self.coal > 0 &&
 			(self.metal.quantity == 0 || ((self.ore.item == ITEM_IRON_ORE && self.metal.item == ITEM_IRON_INGOT) ||
 				(self.ore.item == ITEM_MAGNETITE_ORE && self.metal.item == ITEM_LODESTONE) ||
-				(self.ore.item == ITEM_COPPER_ORE && self.metal.item == ITEM_COPPER_INGOT))) {
+				(self.ore.item == ITEM_COPPER_ORE && self.metal.item == ITEM_COPPER_INGOT) ||
+				(self.ore.item == ITEM_ZINC_ORE && self.metal.item == ITEM_ZINC_INGOT))) {
 
 			self.ore.quantity -= 1
 			self.coal -= 1
@@ -634,10 +696,10 @@ func (self *Furnace) Place(slot int, iq *ItemQuantity) {
 	switch iq.item {
 	case ITEM_COAL:
 		self.coal += iq.quantity
-	case ITEM_IRON_ORE, ITEM_COPPER_ORE, ITEM_MAGNETITE_ORE:
+	case ITEM_IRON_ORE, ITEM_COPPER_ORE, ITEM_MAGNETITE_ORE, ITEM_ZINC_ORE:
 		self.ore.quantity += iq.quantity
 		self.ore.item = iq.item
-	case ITEM_IRON_INGOT, ITEM_COPPER_INGOT, ITEM_LODESTONE:
+	case ITEM_IRON_INGOT, ITEM_COPPER_INGOT, ITEM_LODESTONE, ITEM_ZINC_INGOT:
 		self.metal.quantity += iq.quantity
 		self.metal.item = iq.item
 	}
@@ -651,7 +713,7 @@ func (self *Furnace) CanPlace(itemid uint16) bool {
 
 	switch itemid {
 
-	case ITEM_COAL, ITEM_IRON_ORE, ITEM_COPPER_ORE, ITEM_MAGNETITE_ORE, ITEM_IRON_INGOT, ITEM_COPPER_INGOT, ITEM_LODESTONE:
+	case ITEM_COAL, ITEM_IRON_ORE, ITEM_COPPER_ORE, ITEM_MAGNETITE_ORE, ITEM_IRON_INGOT, ITEM_COPPER_INGOT, ITEM_LODESTONE, ITEM_ZINC_ORE, ITEM_ZINC_INGOT:
 		return true
 	}
 
