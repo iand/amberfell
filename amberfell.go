@@ -162,9 +162,6 @@ func initGame() {
 
 	TheWorld = NewWorld()
 
-	cx, cy, cz := chunkCoordsFromWorld(PLAYER_START_X, TheWorld.GroundLevel(PLAYER_START_X, PLAYER_START_Z), PLAYER_START_Z)
-	_ = TheWorld.GetChunk(cx, cy, cz)
-
 	ThePlayer = new(Player)
 	ThePlayer.Init(0, PLAYER_START_X, PLAYER_START_Z)
 
@@ -433,7 +430,7 @@ func UpdateTimeOfDay(reverse bool) {
 func PreloadChunks(maxtime int64) {
 	startTicks := time.Now().UnixNano()
 	center := ThePlayer.Position()
-	px, _, pz := chunkCoordsFromWorld(uint16(center[XAXIS]), uint16(center[YAXIS]), uint16(center[ZAXIS]))
+	px, pz := chunkCoordsFromWorld(uint16(center[XAXIS]), uint16(center[ZAXIS]))
 
 	r := 1
 	rmax := int(viewRadius/CHUNK_WIDTH) + 2
@@ -442,8 +439,8 @@ func PreloadChunks(maxtime int64) {
 	z := -r
 
 	for time.Now().UnixNano()-startTicks < maxtime*1e6 && r < rmax {
-		TheWorld.GetChunk(uint16(int(px)+x), 0, uint16(int(pz)+z)).PreRender(nil)
-		TheWorld.GetChunk(uint16(int(px)-x), 0, uint16(int(pz)-z)).PreRender(nil)
+		TheWorld.GetChunk(uint16(int(px)+x), uint16(int(pz)+z)).PreRender(nil)
+		TheWorld.GetChunk(uint16(int(px)-x), uint16(int(pz)-z)).PreRender(nil)
 		if z == r {
 			if x == r {
 				r++
@@ -460,8 +457,8 @@ func PreloadChunks(maxtime int64) {
 }
 func CullChunks() {
 	center := ThePlayer.Position()
-	pxmin, _, pzmin := chunkCoordsFromWorld(uint16(center[XAXIS]-float64(viewRadius)), uint16(center[YAXIS]), uint16(center[ZAXIS]-float64(viewRadius)))
-	pxmax, _, pzmax := chunkCoordsFromWorld(uint16(center[XAXIS]+float64(viewRadius)), uint16(center[YAXIS]), uint16(center[ZAXIS]+float64(viewRadius)))
+	pxmin, pzmin := chunkCoordsFromWorld(uint16(center[XAXIS]-float64(viewRadius)), uint16(center[ZAXIS]-float64(viewRadius)))
+	pxmax, pzmax := chunkCoordsFromWorld(uint16(center[XAXIS]+float64(viewRadius)), uint16(center[ZAXIS]+float64(viewRadius)))
 
 	// Cull chunks more than 10 chunks away from view radius
 	for chunkIndex, chunk := range TheWorld.chunks {

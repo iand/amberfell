@@ -6,8 +6,11 @@
 package main
 
 import (
+	"math"
 	"time"
 )
+
+type chunkindex uint32
 
 type Chunk struct {
 	x, z              uint16
@@ -18,10 +21,37 @@ type Chunk struct {
 	featuresLoaded    bool
 }
 
-func NewChunk(cx uint16, cy uint16, cz uint16, hasAmberfell bool, amberfellCoords [2]uint16) *Chunk {
+func chunkCoordsFromWorld(x uint16, z uint16) (cx uint16, cz uint16) {
+	cx = uint16(math.Floor(float64(x) / CHUNK_WIDTH))
+	cz = uint16(math.Floor(float64(z) / CHUNK_WIDTH))
+
+	return
+}
+
+func chunkIndexFromWorld(x uint16, z uint16) chunkindex {
+	cx, cz := chunkCoordsFromWorld(x, z)
+	return chunkIndex(cx, cz)
+}
+
+func chunkIndex(cx uint16, cz uint16) chunkindex {
+	return chunkindex(cz)<<16 | chunkindex(cx)
+}
+
+func chunkCoordsFromindex(index chunkindex) (cx uint16, cz uint16) {
+	cx = uint16(index)
+	cz = uint16(index >> 16)
+
+	return
+}
+
+func blockIndex(x uint16, y uint16, z uint16) uint16 {
+	return CHUNK_WIDTH*CHUNK_WIDTH*y + CHUNK_WIDTH*x + z
+}
+
+func NewChunk(cx uint16, cz uint16, hasAmberfell bool, amberfellCoords [2]uint16) *Chunk {
 	startTicks := time.Now().UnixNano()
 	var chunk Chunk
-	chunk.Init(cx, cy, cz)
+	chunk.Init(cx, cz)
 
 	xw := cx * CHUNK_WIDTH
 	zw := cz * CHUNK_WIDTH
@@ -81,7 +111,7 @@ func NewChunk(cx uint16, cy uint16, cz uint16, hasAmberfell bool, amberfellCoord
 
 	console.chunkGenerationTime = time.Now().UnixNano() - startTicks
 	if console.visible {
-		println("Generating chunk at x:", cx, " y:", cy, " z:", cz, " in ", console.chunkGenerationTime/1e6)
+		println("Generating chunk at x:", cx, " z:", cz, " in ", console.chunkGenerationTime/1e6)
 	}
 	return &chunk
 }
@@ -93,7 +123,7 @@ func (c Chunk) WorldCoords(x uint16, y uint16, z uint16) (xw uint16, yw uint16, 
 	return
 }
 
-func (chunk *Chunk) Init(x uint16, y uint16, z uint16) {
+func (chunk *Chunk) Init(x uint16, z uint16) {
 	chunk.x = x
 	// chunk.y = y
 	chunk.z = z
