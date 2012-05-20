@@ -114,6 +114,12 @@ var carpenterRecipes = []Recipe{
 			{ITEM_COPPER_PLATE, 2},
 			{ITEM_STONE_BRICK, 8},
 		}},
+
+	{product: ItemQuantity{BLOCK_AMBERFELL_CONDENSER, 1},
+		components: []ItemQuantity{
+			{ITEM_PLANK, 2},
+			{ITEM_GLASS, 6},
+		}},
 }
 
 var forgeRecipes = []Recipe{

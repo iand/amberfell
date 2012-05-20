@@ -148,17 +148,17 @@ func (self *World) Rocks(x uint16, z uint16) uint16 {
 	return uint16(noise)
 }
 
-func (self *World) Ore(x uint16, z uint16, blockid byte) uint16 {
+func (self *World) Ore(x uint16, z uint16, blockid byte, occcurrence float64) uint16 {
 	xloc := (float64(x) + MAP_DIAM*float64(blockid)) / (NOISE_SCALE / 2)
 	zloc := (float64(z) + MAP_DIAM*float64(blockid)) / (NOISE_SCALE / 2)
 	noise := perlin.Noise2D(xloc, zloc, worldSeed, 2.4, 1.8, 4)
 	if noise > 1.0 {
 		noise = 1.0
 	}
-	if noise < ORE_DISTRIBUTIONS[blockid] {
+	if noise < occcurrence {
 		noise = 0
 	} else {
-		noise = 5 * (noise - ORE_DISTRIBUTIONS[blockid]) / (1 - ORE_DISTRIBUTIONS[blockid])
+		noise = 5 * (noise - occcurrence) / (1 - occcurrence)
 	}
 	return uint16(noise)
 }
@@ -272,17 +272,17 @@ func (self *World) GenerateChunk(cx uint16, cy uint16, cz uint16) *Chunk {
 
 				}
 
-				for ore, occurrence := range ORE_DISTRIBUTIONS {
+				for _, occurrence := range ORE_DISTRIBUTIONS {
 					surface := upper - 1
-					size := self.Ore(x+xw, z+zw, ore)
+					size := self.Ore(x+xw, z+zw, occurrence.itemid, occurrence.occurrence)
 					if size > 0 {
 						if size > 2 {
 							surface++
 						}
 						for y := surface; y > surface-size && y > 0; y-- {
-							chunk.Set(x, y, z, ore)
+							chunk.Set(x, y, z, occurrence.itemid)
 						}
-						chunk.standingStoneProb += 0.000001 * occurrence
+						chunk.standingStoneProb += 0.000001 * occurrence.occurrence
 						break
 					}
 				}
