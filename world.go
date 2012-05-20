@@ -82,10 +82,8 @@ func NewWorld() *World {
 	world.generatorObjects = make(map[Vectori]GeneratorObject)
 	world.campfires = make(map[Vectori]*CampFire)
 	world.lastSimulated = time.Now().UnixNano()
-	xc, yc, zc := chunkCoordsFromWorld(PLAYER_START_X, world.GroundLevel(PLAYER_START_X, PLAYER_START_Z), PLAYER_START_Z)
 
 	world.GenerateAmberfell()
-	world.GenerateChunk(xc, yc, zc)
 	return world
 }
 
@@ -216,80 +214,6 @@ func (self *World) Feature2(x uint16, z uint16) float64 {
 		noise = -1.0
 	}
 	return noise
-}
-
-func (self *World) GenerateChunk(cx uint16, cy uint16, cz uint16) *Chunk {
-	startTicks := time.Now().UnixNano()
-	var chunk Chunk
-	chunk.Init(cx, cy, cz)
-	index := chunkIndex(cx, cy, cz)
-
-	self.chunks[index] = &chunk
-
-	amberfellCoords, hasAmberfell := self.amberfell[index]
-
-	xw := cx * CHUNK_WIDTH
-	zw := cz * CHUNK_WIDTH
-
-	chunk.standingStoneProb = 0.0
-	for x := uint16(0); x < CHUNK_WIDTH; x++ {
-		for z := uint16(0); z < CHUNK_WIDTH; z++ {
-			ground := self.GroundLevel(x+xw, z+zw)
-
-			soil := ground + uint16(float64(self.SoilThickness(x+xw, z+zw))*(1-((float64(ground)-CHUNK_HEIGHT/2)/(CHUNK_HEIGHT/2))))
-			rocks := ground // + self.Rocks(x+xw, z+zw)
-
-			upper := ground
-
-			if rocks > upper {
-				upper = rocks
-			}
-
-			if soil > upper {
-				upper = soil
-			}
-
-			if hasAmberfell && amberfellCoords[0] == x && amberfellCoords[1] == z {
-				for y := uint16(0); y < upper; y++ {
-					chunk.Set(x, y, z, BLOCK_AMBERFELL_SOURCE)
-				}
-			} else {
-				for y := uint16(0); y < upper; y++ {
-					if y >= rocks && y <= soil {
-						chunk.Set(x, y, z, BLOCK_DIRT)
-					} else {
-						chunk.Set(x, y, z, BLOCK_STONE)
-					}
-
-				}
-
-				for _, occurrence := range ORE_DISTRIBUTIONS {
-					surface := upper - 1
-					size := self.Ore(x+xw, z+zw, occurrence.itemid, occurrence.occurrence)
-					if size > 0 {
-						if size > 2 {
-							surface++
-						}
-						for y := surface; y > surface-size && y > 0; y-- {
-							chunk.Set(x, y, z, occurrence.itemid)
-						}
-						chunk.standingStoneProb += 0.000001 * occurrence.occurrence
-						break
-					}
-				}
-
-			}
-		}
-	}
-
-	self.GenerateChunkFeatures(&chunk)
-
-	console.chunkGenerationTime = time.Now().UnixNano() - startTicks
-	if console.visible {
-		println("Generating chunk at x:", cx, " y:", cy, " z:", cz, " in ", console.chunkGenerationTime/1e6)
-	}
-	return &chunk
-
 }
 
 func (self *World) GenerateChunkFeatures(chunk *Chunk) {
@@ -433,9 +357,12 @@ func (self *World) GetChunkForBlock(x uint16, y uint16, z uint16) (*Chunk, uint1
 // Gets the chunk for a given x/z block coordinate
 // x = 0, z = 0 is in the top left of the home chunk
 func (self *World) GetChunk(cx uint16, cy uint16, cz uint16) *Chunk {
-	chunk, ok := self.chunks[chunkIndex(cx, cy, cz)]
+	index := chunkIndex(cx, cy, cz)
+	chunk, ok := self.chunks[index]
 	if !ok {
-		chunk = self.GenerateChunk(cx, cy, cz)
+		amberfellCoords, hasAmberfell := self.amberfell[index]
+		chunk = NewChunk(cx, cy, cz, hasAmberfell, amberfellCoords)
+		self.chunks[index] = chunk
 	}
 	return chunk
 

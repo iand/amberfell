@@ -162,6 +162,9 @@ func initGame() {
 
 	TheWorld = NewWorld()
 
+	cx, cy, cz := chunkCoordsFromWorld(PLAYER_START_X, TheWorld.GroundLevel(PLAYER_START_X, PLAYER_START_Z), PLAYER_START_Z)
+	_ = TheWorld.GetChunk(cx, cy, cz)
+
 	ThePlayer = new(Player)
 	ThePlayer.Init(0, PLAYER_START_X, PLAYER_START_Z)
 
