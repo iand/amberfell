@@ -282,7 +282,7 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 	case ACTION_HAND:
 		blockid := TheWorld.Atv(selectedBlockFace.pos)
 		switch blockid {
-		case BLOCK_AMBERFELL_PUMP, BLOCK_STEAM_GENERATOR, BLOCK_AMBERFELL_CONDENSER, BLOCK_FURNACE:
+		case BLOCK_AMBERFELL_PUMP, BLOCK_STEAM_GENERATOR, BLOCK_AMBERFELL_CONDENSER, BLOCK_FURNACE, BLOCK_BEESNEST:
 			if obj, ok := TheWorld.containerObjects[selectedBlockFace.pos]; ok {
 				inventory.Show(obj, nil)
 			}
@@ -322,6 +322,10 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 					delete(TheWorld.containerObjects, selectedBlockFace.pos)
 
 				case BLOCK_FURNACE:
+					delete(TheWorld.timedObjects, selectedBlockFace.pos)
+					delete(TheWorld.containerObjects, selectedBlockFace.pos)
+
+				case BLOCK_BEESNEST:
 					delete(TheWorld.timedObjects, selectedBlockFace.pos)
 					delete(TheWorld.containerObjects, selectedBlockFace.pos)
 

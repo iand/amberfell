@@ -800,7 +800,17 @@ func (self *World) GrowBranch(x uint16, y uint16, z uint16, face uint8, chance i
 			}
 		}
 	} else {
-		self.Set(newx, newy, newz, BLOCK_LEAVES)
+		if rand.Float64()*100 < BEESNEST_DENSITY_PCT {
+			pos := Vectori{newx, newy, newz}
+			nest := NewBeesNest(pos)
+			TheWorld.timedObjects[pos] = nest
+			TheWorld.containerObjects[pos] = nest
+
+			self.Set(newx, newy, newz, BLOCK_BEESNEST)
+		} else {
+			self.Set(newx, newy, newz, BLOCK_LEAVES)
+
+		}
 
 	}
 }

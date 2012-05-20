@@ -89,9 +89,11 @@ func InitItems() {
 	items[BLOCK_COPPER_SEAM] = NewItem(BLOCK_COPPER_SEAM, "Malachite Seam", TEXTURE_COPPER, TEXTURE_COPPER, STRENGTH_STONE, false, false, false, &ItemQuantity{ITEM_COPPER_ORE, 2})
 	items[BLOCK_MAGNETITE_SEAM] = NewItem(BLOCK_MAGNETITE_SEAM, "Magnetite Seam", TEXTURE_COPPER, TEXTURE_COPPER, STRENGTH_STONE, false, false, false, &ItemQuantity{ITEM_MAGNETITE_ORE, 2})
 	items[BLOCK_ZINC_SEAM] = NewItem(BLOCK_ZINC_SEAM, "Zinc Seam", TEXTURE_ZINC, TEXTURE_ZINC, STRENGTH_STONE, false, false, false, &ItemQuantity{ITEM_ZINC_ORE, 2})
+	items[BLOCK_QUARTZ_SEAM] = NewItem(BLOCK_QUARTZ_SEAM, "Quartz Seam", TEXTURE_QUARTZ_SEAM, TEXTURE_QUARTZ_SEAM, STRENGTH_WOOD, false, false, false, &ItemQuantity{ITEM_ZINC_ORE, 2})
 	items[BLOCK_AMBERFELL_SOURCE] = NewItem(BLOCK_AMBERFELL_SOURCE, "Amberfell Source", TEXTURE_AMBERFELL_SOURCE, TEXTURE_AMBERFELL_SOURCE_TOP, STRENGTH_UNBREAKABLE, false, true, true, nil)
 	items[BLOCK_CARVED_STONE] = NewItem(BLOCK_CARVED_STONE, "Carved stone", TEXTURE_CARVED_STONE, TEXTURE_STONE, STRENGTH_STONE, false, true, true, &ItemQuantity{BLOCK_STONE, 1})
 	items[BLOCK_CAMPFIRE] = NewItem(BLOCK_CAMPFIRE, "Campfire", TEXTURE_LOG_WALL, TEXTURE_FIRE, STRENGTH_LEAVES, true, true, true, &ItemQuantity{ITEM_FIREWOOD, 1})
+	items[BLOCK_BEESNEST] = NewItem(BLOCK_BEESNEST, "Bees Nest", TEXTURE_BEESNEST, TEXTURE_BEESNEST_TOP, STRENGTH_LEAVES, true, true, true, &ItemQuantity{ITEM_BEESWAX, 2})
 
 	items[BLOCK_AMBERFELL_PUMP] = NewItem(BLOCK_AMBERFELL_PUMP, "Amberfell Pump", TEXTURE_COPPER_MACH_SIDE, TEXTURE_COPPER_MACH_TOP, STRENGTH_IRON, false, true, true, &ItemQuantity{BLOCK_AMBERFELL_PUMP, 1})
 	items[BLOCK_STEAM_GENERATOR] = NewItem(BLOCK_STEAM_GENERATOR, "Steam Generator", TEXTURE_IRON_MACH_SIDE, TEXTURE_IRON_MACH_TOP, STRENGTH_IRON, false, true, true, &ItemQuantity{BLOCK_STEAM_GENERATOR, 1})
@@ -121,87 +123,12 @@ func InitItems() {
 	items[ITEM_BRASS_PLATE] = NewItem(ITEM_BRASS_PLATE, "Brass Plate", TEXTURE_ITEM_BRASS_PLATE, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
 	items[ITEM_IRON_PLATE] = NewItem(ITEM_IRON_PLATE, "Iron Plate", TEXTURE_ITEM_IRON_PLATE, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
 
-}
+	items[ITEM_LEATHER] = NewItem(ITEM_LEATHER, "Leather", TEXTURE_ITEM_LEATHER, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
+	items[ITEM_BEESWAX] = NewItem(ITEM_BEESWAX, "Beeswax", TEXTURE_ITEM_BEESWAX, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
 
-var handmadeRecipes = []Recipe{
-	{product: ItemQuantity{BLOCK_LOG_WALL, 1},
-		components: []ItemQuantity{
-			{BLOCK_TRUNK, 1},
-		}},
+	items[ITEM_QUARTZ] = NewItem(ITEM_QUARTZ, "Quartz", TEXTURE_ITEM_QUARTZ, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
+	items[ITEM_GLASS] = NewItem(ITEM_GLASS, "Glass", TEXTURE_ITEM_GLASS, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
 
-	{product: ItemQuantity{BLOCK_LOG_SLAB, 1},
-		components: []ItemQuantity{
-			{BLOCK_TRUNK, 1},
-		}},
-
-	{product: ItemQuantity{ITEM_FIREWOOD, 2},
-		components: []ItemQuantity{
-			{BLOCK_TRUNK, 1},
-		}},
-
-	{product: ItemQuantity{ITEM_FIREWOOD, 2},
-		components: []ItemQuantity{
-			{BLOCK_LOG_WALL, 1},
-		}},
-
-	{product: ItemQuantity{ITEM_FIREWOOD, 2},
-		components: []ItemQuantity{
-			{BLOCK_LOG_SLAB, 1},
-		}},
-
-	{product: ItemQuantity{BLOCK_CAMPFIRE, 1},
-		components: []ItemQuantity{
-			{ITEM_FIREWOOD, 3},
-		}},
-
-	{product: ItemQuantity{ITEM_STONE_BRICK, 1},
-		components: []ItemQuantity{
-			{ITEM_RUBBLE, 2},
-		}},
-
-	{product: ItemQuantity{BLOCK_STONEBRICK_WALL, 1},
-		components: []ItemQuantity{
-			{ITEM_STONE_BRICK, 3},
-		}},
-
-	{product: ItemQuantity{BLOCK_STONEBRICK_SLAB, 1},
-		components: []ItemQuantity{
-			{ITEM_STONE_BRICK, 3},
-		}},
-
-	{product: ItemQuantity{ITEM_RUBBLE, 1},
-		components: []ItemQuantity{
-			{ITEM_STONE_BRICK, 1},
-		}},
-	{product: ItemQuantity{ITEM_RUBBLE, 2},
-		components: []ItemQuantity{
-			{BLOCK_STONEBRICK_WALL, 1},
-		}},
-
-	{product: ItemQuantity{ITEM_RUBBLE, 2},
-		components: []ItemQuantity{
-			{BLOCK_STONEBRICK_SLAB, 1},
-		}},
-
-	{product: ItemQuantity{BLOCK_FORGE, 1},
-		components: []ItemQuantity{
-			{ITEM_STONE_BRICK, 6},
-		}},
-
-	{product: ItemQuantity{BLOCK_FURNACE, 1},
-		components: []ItemQuantity{
-			{ITEM_STONE_BRICK, 6},
-		}},
-
-	{product: ItemQuantity{ITEM_RUBBLE, 8},
-		components: []ItemQuantity{
-			{BLOCK_FORGE, 1},
-		}},
-
-	{product: ItemQuantity{ITEM_RUBBLE, 8},
-		components: []ItemQuantity{
-			{BLOCK_FURNACE, 1},
-		}},
 }
 
 type CampFire struct {
@@ -307,7 +234,7 @@ func (self *AmberfellPump) Slots() int {
 }
 
 func (self *AmberfellPump) Item(slot int) ItemQuantity {
-	if slot == 0 && self.unitsHeld > 1 {
+	if slot == 0 && self.unitsHeld >= 1 {
 		return ItemQuantity{ITEM_AMBERFELL, uint16(self.unitsHeld)}
 	}
 
@@ -426,21 +353,6 @@ func (self *CarpentersBench) Label() string {
 
 func (self *CarpentersBench) Recipes() []Recipe {
 	return carpenterRecipes
-}
-
-var carpenterRecipes = []Recipe{
-	{product: ItemQuantity{ITEM_PLANK, 4},
-		components: []ItemQuantity{
-			{BLOCK_TRUNK, 1},
-		}},
-	{product: ItemQuantity{BLOCK_PLANK_WALL, 1},
-		components: []ItemQuantity{
-			{ITEM_PLANK, 3},
-		}},
-	{product: ItemQuantity{BLOCK_PLANK_SLAB, 1},
-		components: []ItemQuantity{
-			{ITEM_PLANK, 3},
-		}},
 }
 
 type AmberfellCondenser struct {
@@ -565,70 +477,12 @@ func (self *Forge) Recipes() []Recipe {
 	return forgeRecipes
 }
 
-var forgeRecipes = []Recipe{
-
-	{product: ItemQuantity{ITEM_BRASS_INGOT, 4},
-		components: []ItemQuantity{
-			{ITEM_COPPER_INGOT, 3},
-			{ITEM_ZINC_INGOT, 1},
-		}},
-
-	{product: ItemQuantity{ITEM_COPPER_PLATE, 1},
-		components: []ItemQuantity{
-			{ITEM_COPPER_INGOT, 2},
-		}},
-
-	{product: ItemQuantity{ITEM_BRASS_PLATE, 1},
-		components: []ItemQuantity{
-			{ITEM_BRASS_INGOT, 2},
-		}},
-
-	{product: ItemQuantity{ITEM_IRON_PLATE, 1},
-		components: []ItemQuantity{
-			{ITEM_IRON_INGOT, 2},
-		}},
-
-	{product: ItemQuantity{ITEM_SCRAP_IRON, 2},
-		components: []ItemQuantity{
-			{ITEM_IRON_INGOT, 1},
-		}},
-
-	{product: ItemQuantity{ITEM_SCRAP_IRON, 4},
-		components: []ItemQuantity{
-			{ITEM_IRON_PLATE, 1},
-		}},
-
-	{product: ItemQuantity{ITEM_SCRAP_COPPER, 2},
-		components: []ItemQuantity{
-			{ITEM_COPPER_INGOT, 1},
-		}},
-
-	{product: ItemQuantity{ITEM_SCRAP_COPPER, 4},
-		components: []ItemQuantity{
-			{ITEM_COPPER_PLATE, 1},
-		}},
-
-	{product: ItemQuantity{ITEM_SCRAP_BRASS, 2},
-		components: []ItemQuantity{
-			{ITEM_BRASS_INGOT, 1},
-		}},
-
-	{product: ItemQuantity{ITEM_SCRAP_BRASS, 4},
-		components: []ItemQuantity{
-			{ITEM_BRASS_PLATE, 1},
-		}},
-
-	{product: ItemQuantity{ITEM_SCRAP_ZINC, 2},
-		components: []ItemQuantity{
-			{ITEM_ZINC_INGOT, 1},
-		}},
-}
-
 type Furnace struct {
 	pos           Vectori
 	coal          uint16
 	ore           *ItemQuantity
 	metal         *ItemQuantity
+	productUnit   *ItemQuantity
 	timeRemaining float64
 }
 
@@ -642,38 +496,41 @@ func NewFurnace(pos Vectori) *Furnace {
 func (self *Furnace) Update(dt float64) (completed bool) {
 	if self.timeRemaining > 0 {
 		self.timeRemaining -= 1 * dt
-		if self.timeRemaining <= 0 {
+		if self.timeRemaining <= 0 && self.productUnit != nil {
 			if self.metal.quantity == 0 {
-				self.metal.quantity = 2
-				switch self.ore.item {
-				case ITEM_IRON_ORE:
-					self.metal.item = ITEM_IRON_INGOT
-				case ITEM_MAGNETITE_ORE:
-					self.metal.item = ITEM_LODESTONE
-				case ITEM_COPPER_ORE:
-					self.metal.item = ITEM_COPPER_INGOT
-				case ITEM_ZINC_ORE:
-					self.metal.item = ITEM_ZINC_INGOT
-
-				}
-			} else {
-				self.metal.quantity += 2
+				self.metal.item = self.productUnit.item
 			}
+			self.metal.quantity += self.productUnit.quantity
 		}
 	}
 
 	if self.timeRemaining <= 0 {
-		if self.ore.quantity > 0 && self.coal > 0 &&
-			(self.metal.quantity == 0 || ((self.ore.item == ITEM_IRON_ORE && self.metal.item == ITEM_IRON_INGOT) ||
-				(self.ore.item == ITEM_MAGNETITE_ORE && self.metal.item == ITEM_LODESTONE) ||
-				(self.ore.item == ITEM_COPPER_ORE && self.metal.item == ITEM_COPPER_INGOT) ||
-				(self.ore.item == ITEM_ZINC_ORE && self.metal.item == ITEM_ZINC_INGOT))) {
+		self.timeRemaining = 0
+		if self.ore.quantity > 0 && self.coal > 0 {
+			// Could produce some more metal
 
-			self.ore.quantity -= 1
-			self.coal -= 1
-			self.timeRemaining = 15
-		} else {
-			self.timeRemaining = 0
+			oreMatchesProduct := false
+			if self.metal.quantity > 0 {
+				// Does ore match the metal currently in the furnace?
+				for _, recipe := range furnaceRecipes {
+					if recipe.product.item == self.metal.item {
+						for _, component := range recipe.components {
+							if self.ore.item == component.item {
+								oreMatchesProduct = true
+							}
+						}
+					}
+				}
+			} else {
+				oreMatchesProduct = true
+			}
+
+			if oreMatchesProduct {
+				// get started
+				self.ore.quantity -= 1
+				self.coal -= 1
+				self.timeRemaining = 15
+			}
 		}
 	}
 	return false
@@ -712,8 +569,10 @@ func (self *Furnace) Take(slot int, quantity uint16) {
 		}
 	case 1:
 		self.ore.quantity -= quantity
-		if self.ore.quantity < 0 {
+		if self.ore.quantity <= 0 {
 			self.ore.quantity = 0
+			self.productUnit = nil
+
 		}
 	case 2:
 		self.metal.quantity -= quantity
@@ -730,15 +589,28 @@ func (self *Furnace) Place(slot int, iq *ItemQuantity) {
 		return
 	}
 
-	switch iq.item {
-	case ITEM_COAL:
+	// TODO bounds check
+	if iq.item == ITEM_COAL {
 		self.coal += iq.quantity
-	case ITEM_IRON_ORE, ITEM_COPPER_ORE, ITEM_MAGNETITE_ORE, ITEM_ZINC_ORE:
-		self.ore.quantity += iq.quantity
-		self.ore.item = iq.item
-	case ITEM_IRON_INGOT, ITEM_COPPER_INGOT, ITEM_LODESTONE, ITEM_ZINC_INGOT:
-		self.metal.quantity += iq.quantity
-		self.metal.item = iq.item
+	} else {
+		for _, recipe := range furnaceRecipes {
+			if iq.item == recipe.product.item {
+				self.metal.quantity += iq.quantity
+				self.metal.item = iq.item
+				self.productUnit = &ItemQuantity{item: recipe.product.item, quantity: recipe.product.quantity}
+				return
+			}
+
+			for _, component := range recipe.components {
+				if iq.item == component.item {
+					self.ore.quantity += iq.quantity
+					self.ore.item = iq.item
+					self.productUnit = &ItemQuantity{item: recipe.product.item, quantity: recipe.product.quantity}
+					return
+				}
+			}
+
+		}
 	}
 }
 
@@ -748,12 +620,79 @@ func (self *Furnace) CanTake() bool {
 
 func (self *Furnace) CanPlace(itemid uint16) bool {
 
-	switch itemid {
-
-	case ITEM_COAL, ITEM_IRON_ORE, ITEM_COPPER_ORE, ITEM_MAGNETITE_ORE, ITEM_IRON_INGOT, ITEM_COPPER_INGOT, ITEM_LODESTONE, ITEM_ZINC_ORE, ITEM_ZINC_INGOT:
+	if itemid == ITEM_COAL {
 		return true
+	} else {
+		for _, recipe := range furnaceRecipes {
+			if itemid == recipe.product.item {
+				return true
+			}
+
+			for _, component := range recipe.components {
+				if itemid == component.item {
+					return true
+				}
+			}
+
+		}
 	}
 
 	return false
 
+}
+
+type BeesNest struct {
+	pos       Vectori
+	unitsHeld float64
+}
+
+func NewBeesNest(pos Vectori) *BeesNest {
+	nest := BeesNest{pos: pos}
+	return &nest
+}
+
+func (self *BeesNest) Update(dt float64) (completed bool) {
+	self.unitsHeld += BEESNEST_UNITS_PER_SECOND * dt
+	if self.unitsHeld > BEESNEST_CAPACITY {
+		self.unitsHeld = BEESNEST_CAPACITY
+	}
+
+	return false
+}
+
+func (self *BeesNest) Label() string {
+	return items[BLOCK_BEESNEST].name
+}
+
+func (self *BeesNest) Slots() int {
+	return 1
+}
+
+func (self *BeesNest) Item(slot int) ItemQuantity {
+	if slot == 0 && self.unitsHeld >= 1 {
+		return ItemQuantity{ITEM_BEESWAX, uint16(self.unitsHeld)}
+	}
+
+	return ItemQuantity{}
+}
+func (self *BeesNest) Take(slot int, quantity uint16) {
+	if slot == 0 {
+		self.unitsHeld -= float64(quantity)
+	}
+
+	if self.unitsHeld < 0 {
+		self.unitsHeld = 0
+	}
+}
+
+func (self *BeesNest) Place(slot int, iq *ItemQuantity) {
+	// NOOP
+}
+
+func (self *BeesNest) CanTake() bool {
+	return true
+}
+
+func (self *BeesNest) CanPlace(itemid uint16) bool {
+	return false
 }

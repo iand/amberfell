@@ -186,15 +186,12 @@ func loop() {
 	tickUI := time.Tick(500 * time.Millisecond)
 	tickHousekeeping := time.Tick(2 * time.Second)
 
-	startTime := time.Now().UnixNano()
 	for {
 		if HandleUserInput() {
 			return
 		}
 
-		delta := time.Now().UnixNano() - startTime
-		Draw(delta)
-		startTime = time.Now().UnixNano()
+		Draw(time.Now().UnixNano())
 
 		if !pause.visible {
 			select {
