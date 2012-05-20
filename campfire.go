@@ -5,6 +5,11 @@
 */
 package main
 
+const (
+	CAMPFIRE_INTENSITY = 6
+	CAMPFIRE_DURATION  = 10
+)
+
 type CampFire struct {
 	pos  Vectori
 	life float64

@@ -5,6 +5,12 @@
 */
 package main
 
+const (
+	BEESNEST_DENSITY_PCT      = 0.1
+	BEESNEST_UNITS_PER_SECOND = 0.05
+	BEESNEST_CAPACITY         = 4
+)
+
 type BeesNest struct {
 	pos       Vectori
 	unitsHeld float64

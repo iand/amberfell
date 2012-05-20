@@ -5,6 +5,12 @@
 */
 package main
 
+const (
+	AMBERFELL_UNITS_PER_SECOND_UNPOWERED = 0.01
+	AMBERFELL_UNITS_PER_SECOND_POWERED   = 0.2
+	AMBERFELL_PUMP_CAPACITY              = 5
+)
+
 type AmberfellPump struct {
 	pos            Vectori
 	sourced        bool
