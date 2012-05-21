@@ -37,7 +37,7 @@ func (self *Player) Init(heading float64, x uint16, z uint16) {
 	self.stamina = 30
 	self.energy = self.stamina
 
-	self.walkingSpeed = 14
+	self.walkingSpeed = 18
 	self.sprintSpeed = 22
 	self.currentAction = ACTION_HAND
 	self.currentItem = ITEM_NONE
@@ -410,7 +410,10 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 					TheWorld.containerObjects[selectedBlockFace.pos] = obj
 				}
 
-				TheWorld.Setv(selectedBlockFace.pos, blockid)
+				orientation := HeadingToOrientation(self.heading)
+				block := NewBlock(blockid, false, orientation)
+
+				TheWorld.SetBv(selectedBlockFace.pos, block)
 				self.inventory[self.currentItem]--
 
 			}

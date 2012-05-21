@@ -75,6 +75,19 @@ func HeadingToCompass(heading float64) string {
 		return "S"
 	}
 
-	return "NW"
+	return "SE"
+
+}
+
+// orientation is opposite to direction (for block placement)
+func HeadingToOrientation(heading float64) uint8 {
+	if heading > 45 && heading <= 135 {
+		return ORIENT_SOUTH
+	} else if heading > 135 && heading <= 225 {
+		return ORIENT_EAST
+	} else if heading > 225 && heading <= 315 {
+		return ORIENT_NORTH
+	}
+	return ORIENT_WEST
 
 }

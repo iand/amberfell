@@ -37,8 +37,7 @@ func NewBlock(id byte, damaged bool, orientation uint8) Block {
 		data |= 0x1
 	}
 
-	orientation &= 0x6
-	data |= orientation
+	data |= (orientation << 1)
 	return Block{id, data}
 }
 
@@ -58,7 +57,7 @@ func (self *Block) SetDamaged(damaged bool) {
 }
 
 func (self *Block) Orientation() uint8 {
-	return (self.data & 0x6)
+	return (self.data & 0x6) >> 1
 }
 
 func chunkCoordsFromWorld(x uint16, z uint16) (cx uint16, cz uint16) {

@@ -408,66 +408,66 @@ func TerrainCube(vertexBuffer *VertexBuffer, pos Vectori, neighbours [18]uint16,
 				if neighbours[SOUTH_FACE] != BLOCK_AIR {
 					if neighbours[WEST_FACE] != BLOCK_AIR {
 						// Blocks to all four sides
-						SlabCross(vertexBuffer, x, y, z, ORIENT_EAST, block, blocktype, visible, shadeLevels, selectedFace)
+						SlabCross(vertexBuffer, x, y, z, ORIENT_NORTH, block, blocktype, visible, shadeLevels, selectedFace)
 					} else {
 						// Blocks to north, east, south
-						SlabTee(vertexBuffer, x, y, z, ORIENT_SOUTH, block, blocktype, visible, shadeLevels, selectedFace)
+						SlabTee(vertexBuffer, x, y, z, ORIENT_EAST, block, blocktype, visible, shadeLevels, selectedFace)
 					}
 				} else if neighbours[WEST_FACE] != BLOCK_AIR {
 					// Blocks to north, east, west
-					SlabTee(vertexBuffer, x, y, z, ORIENT_EAST, block, blocktype, visible, shadeLevels, selectedFace)
+					SlabTee(vertexBuffer, x, y, z, ORIENT_NORTH, block, blocktype, visible, shadeLevels, selectedFace)
 				} else {
 					// Blocks to north, east
-					SlabCorner(vertexBuffer, x, y, z, ORIENT_EAST, block, blocktype, visible, shadeLevels, selectedFace)
+					SlabCorner(vertexBuffer, x, y, z, ORIENT_NORTH, block, blocktype, visible, shadeLevels, selectedFace)
 				}
 
 			} else if neighbours[SOUTH_FACE] != BLOCK_AIR {
 				if neighbours[WEST_FACE] != BLOCK_AIR {
 					// Blocks to north, south, west
-					SlabTee(vertexBuffer, x, y, z, ORIENT_NORTH, block, blocktype, visible, shadeLevels, selectedFace)
+					SlabTee(vertexBuffer, x, y, z, ORIENT_WEST, block, blocktype, visible, shadeLevels, selectedFace)
 				} else {
 					// Blocks to north, south
-					SlabLine(vertexBuffer, x, y, z, ORIENT_NORTH, block, blocktype, visible, shadeLevels, selectedFace)
+					SlabLine(vertexBuffer, x, y, z, ORIENT_WEST, block, blocktype, visible, shadeLevels, selectedFace)
 				}
 			} else if neighbours[WEST_FACE] != BLOCK_AIR {
 				// Blocks to the north and west
-				SlabCorner(vertexBuffer, x, y, z, ORIENT_NORTH, block, blocktype, visible, shadeLevels, selectedFace)
+				SlabCorner(vertexBuffer, x, y, z, ORIENT_WEST, block, blocktype, visible, shadeLevels, selectedFace)
 
 			} else {
 				// Just a block to the north
-				SlabLine(vertexBuffer, x, y, z, ORIENT_NORTH, block, blocktype, visible, shadeLevels, selectedFace)
+				SlabLine(vertexBuffer, x, y, z, ORIENT_WEST, block, blocktype, visible, shadeLevels, selectedFace)
 			}
 
 		} else if neighbours[EAST_FACE] != BLOCK_AIR {
 			if neighbours[SOUTH_FACE] != BLOCK_AIR {
 				if neighbours[WEST_FACE] != BLOCK_AIR {
 					// Blocks to east, south, west
-					SlabTee(vertexBuffer, x, y, z, ORIENT_WEST, block, blocktype, visible, shadeLevels, selectedFace)
+					SlabTee(vertexBuffer, x, y, z, ORIENT_SOUTH, block, blocktype, visible, shadeLevels, selectedFace)
 				} else {
 					// Blocks to east, south
-					SlabCorner(vertexBuffer, x, y, z, ORIENT_SOUTH, block, blocktype, visible, shadeLevels, selectedFace)
+					SlabCorner(vertexBuffer, x, y, z, ORIENT_EAST, block, blocktype, visible, shadeLevels, selectedFace)
 				}
 			} else if neighbours[WEST_FACE] != BLOCK_AIR {
 				// Blocks to east, west
-				SlabLine(vertexBuffer, x, y, z, ORIENT_EAST, block, blocktype, visible, shadeLevels, selectedFace)
+				SlabLine(vertexBuffer, x, y, z, ORIENT_NORTH, block, blocktype, visible, shadeLevels, selectedFace)
 			} else {
 				// Just a block to the east
-				SlabLine(vertexBuffer, x, y, z, ORIENT_EAST, block, blocktype, visible, shadeLevels, selectedFace)
+				SlabLine(vertexBuffer, x, y, z, ORIENT_NORTH, block, blocktype, visible, shadeLevels, selectedFace)
 			}
 		} else if neighbours[SOUTH_FACE] != BLOCK_AIR {
 			if neighbours[WEST_FACE] != BLOCK_AIR {
 				// Blocks to south, west
-				SlabCorner(vertexBuffer, x, y, z, ORIENT_WEST, block, blocktype, visible, shadeLevels, selectedFace)
+				SlabCorner(vertexBuffer, x, y, z, ORIENT_SOUTH, block, blocktype, visible, shadeLevels, selectedFace)
 			} else {
 				// Just a block to the south
-				SlabLine(vertexBuffer, x, y, z, ORIENT_NORTH, block, blocktype, visible, shadeLevels, selectedFace)
+				SlabLine(vertexBuffer, x, y, z, ORIENT_WEST, block, blocktype, visible, shadeLevels, selectedFace)
 			}
 		} else if neighbours[WEST_FACE] != BLOCK_AIR {
 			// Just a block to the west
-			SlabLine(vertexBuffer, x, y, z, ORIENT_WEST, block, blocktype, visible, shadeLevels, selectedFace)
+			SlabLine(vertexBuffer, x, y, z, ORIENT_SOUTH, block, blocktype, visible, shadeLevels, selectedFace)
 		} else {
 			// Lone block
-			SlabSingle(vertexBuffer, x, y, z, ORIENT_EAST, block, blocktype, visible, shadeLevels, selectedFace)
+			SlabSingle(vertexBuffer, x, y, z, block.Orientation(), block, blocktype, visible, shadeLevels, selectedFace)
 		}
 
 	case SHAPE_WALL:
@@ -476,66 +476,66 @@ func TerrainCube(vertexBuffer *VertexBuffer, pos Vectori, neighbours [18]uint16,
 				if neighbours[SOUTH_FACE] != BLOCK_AIR {
 					if neighbours[WEST_FACE] != BLOCK_AIR {
 						// Blocks to all four sides
-						WallCross(vertexBuffer, x, y, z, ORIENT_EAST, block, blocktype, visible, shadeLevels, selectedFace)
+						WallCross(vertexBuffer, x, y, z, ORIENT_NORTH, block, blocktype, visible, shadeLevels, selectedFace)
 					} else {
 						// Blocks to north, east, south
-						WallTee(vertexBuffer, x, y, z, ORIENT_SOUTH, block, blocktype, visible, shadeLevels, selectedFace)
+						WallTee(vertexBuffer, x, y, z, ORIENT_EAST, block, blocktype, visible, shadeLevels, selectedFace)
 					}
 				} else if neighbours[WEST_FACE] != BLOCK_AIR {
 					// Blocks to north, east, west
-					WallTee(vertexBuffer, x, y, z, ORIENT_EAST, block, blocktype, visible, shadeLevels, selectedFace)
+					WallTee(vertexBuffer, x, y, z, ORIENT_NORTH, block, blocktype, visible, shadeLevels, selectedFace)
 				} else {
 					// Blocks to north, east
-					WallCorner(vertexBuffer, x, y, z, ORIENT_EAST, block, blocktype, visible, shadeLevels, selectedFace)
+					WallCorner(vertexBuffer, x, y, z, ORIENT_NORTH, block, blocktype, visible, shadeLevels, selectedFace)
 				}
 
 			} else if neighbours[SOUTH_FACE] != BLOCK_AIR {
 				if neighbours[WEST_FACE] != BLOCK_AIR {
 					// Blocks to north, south, west
-					WallTee(vertexBuffer, x, y, z, ORIENT_NORTH, block, blocktype, visible, shadeLevels, selectedFace)
+					WallTee(vertexBuffer, x, y, z, ORIENT_WEST, block, blocktype, visible, shadeLevels, selectedFace)
 				} else {
 					// Blocks to north, south
-					WallSingle(vertexBuffer, x, y, z, ORIENT_NORTH, block, blocktype, visible, shadeLevels, selectedFace)
+					WallSingle(vertexBuffer, x, y, z, ORIENT_WEST, block, blocktype, visible, shadeLevels, selectedFace)
 				}
 			} else if neighbours[WEST_FACE] != BLOCK_AIR {
 				// Blocks to the north and west
-				WallCorner(vertexBuffer, x, y, z, ORIENT_NORTH, block, blocktype, visible, shadeLevels, selectedFace)
+				WallCorner(vertexBuffer, x, y, z, ORIENT_WEST, block, blocktype, visible, shadeLevels, selectedFace)
 
 			} else {
 				// Just a block to the north
-				WallSingle(vertexBuffer, x, y, z, ORIENT_NORTH, block, blocktype, visible, shadeLevels, selectedFace)
+				WallSingle(vertexBuffer, x, y, z, ORIENT_WEST, block, blocktype, visible, shadeLevels, selectedFace)
 			}
 
 		} else if neighbours[EAST_FACE] != BLOCK_AIR {
 			if neighbours[SOUTH_FACE] != BLOCK_AIR {
 				if neighbours[WEST_FACE] != BLOCK_AIR {
 					// Blocks to east, south, west
-					WallTee(vertexBuffer, x, y, z, ORIENT_WEST, block, blocktype, visible, shadeLevels, selectedFace)
+					WallTee(vertexBuffer, x, y, z, ORIENT_SOUTH, block, blocktype, visible, shadeLevels, selectedFace)
 				} else {
 					// Blocks to east, south
-					WallCorner(vertexBuffer, x, y, z, ORIENT_SOUTH, block, blocktype, visible, shadeLevels, selectedFace)
+					WallCorner(vertexBuffer, x, y, z, ORIENT_EAST, block, blocktype, visible, shadeLevels, selectedFace)
 				}
 			} else if neighbours[WEST_FACE] != BLOCK_AIR {
 				// Blocks to east, west
-				WallSingle(vertexBuffer, x, y, z, ORIENT_EAST, block, blocktype, visible, shadeLevels, selectedFace)
+				WallSingle(vertexBuffer, x, y, z, ORIENT_NORTH, block, blocktype, visible, shadeLevels, selectedFace)
 			} else {
 				// Just a block to the east
-				WallSingle(vertexBuffer, x, y, z, ORIENT_EAST, block, blocktype, visible, shadeLevels, selectedFace)
+				WallSingle(vertexBuffer, x, y, z, ORIENT_NORTH, block, blocktype, visible, shadeLevels, selectedFace)
 			}
 		} else if neighbours[SOUTH_FACE] != BLOCK_AIR {
 			if neighbours[WEST_FACE] != BLOCK_AIR {
 				// Blocks to south, west
-				WallCorner(vertexBuffer, x, y, z, ORIENT_WEST, block, blocktype, visible, shadeLevels, selectedFace)
+				WallCorner(vertexBuffer, x, y, z, ORIENT_SOUTH, block, blocktype, visible, shadeLevels, selectedFace)
 			} else {
 				// Just a block to the south
-				WallSingle(vertexBuffer, x, y, z, ORIENT_NORTH, block, blocktype, visible, shadeLevels, selectedFace)
+				WallSingle(vertexBuffer, x, y, z, ORIENT_WEST, block, blocktype, visible, shadeLevels, selectedFace)
 			}
 		} else if neighbours[WEST_FACE] != BLOCK_AIR {
 			// Just a block to the west
-			WallSingle(vertexBuffer, x, y, z, ORIENT_EAST, block, blocktype, visible, shadeLevels, selectedFace)
+			WallSingle(vertexBuffer, x, y, z, ORIENT_NORTH, block, blocktype, visible, shadeLevels, selectedFace)
 		} else {
 			// Lone block
-			WallSingle(vertexBuffer, x, y, z, ORIENT_EAST, block, blocktype, visible, shadeLevels, selectedFace)
+			WallSingle(vertexBuffer, x, y, z, block.Orientation(), block, blocktype, visible, shadeLevels, selectedFace)
 		}
 
 	default:
@@ -576,44 +576,66 @@ func Cuboid2(vertexBuffer *VertexBuffer, x float32, y float32, z float32, bw flo
 
 	// East face
 	if visible[EAST_FACE] {
+		texture := blocktype.texture1
+		if blocktype.shape == SHAPE_ORIENTED_CUBE && block.Orientation() == ORIENT_EAST {
+			texture = blocktype.texture2
+		}
 
-		vertexBuffer.AddFace(EAST_FACE, blocktype.texture1, selectedFace == EAST_FACE, shadeLevels[EAST_FACE],
+		vertexBuffer.AddFace(EAST_FACE, texture, selectedFace == EAST_FACE, shadeLevels[EAST_FACE],
 			block.Damaged(),
-			x+d, y+h, z-w, 1.0, 1.0,
-			x+d, y-h, z+w, 0.0, 0.0)
+			x+d, y+h, z-w, 0.0, 0.0,
+			x+d, y-h, z+w, 1.0, 1.0)
 
 	}
 
 	// West Face
 	if visible[WEST_FACE] {
+		texture := blocktype.texture1
+		if blocktype.shape == SHAPE_ORIENTED_CUBE && block.Orientation() == ORIENT_WEST {
+			texture = blocktype.texture2
+		}
 
-		vertexBuffer.AddFace(WEST_FACE, blocktype.texture1, selectedFace == WEST_FACE, shadeLevels[WEST_FACE],
+		vertexBuffer.AddFace(WEST_FACE, texture, selectedFace == WEST_FACE, shadeLevels[WEST_FACE],
 			block.Damaged(),
-			x-d, y+h, z-w, 1.0, 1.0,
-			x-d, y-h, z+w, 0.0, 0.0)
+			x-d, y+h, z-w, 0.0, 0.0,
+			x-d, y-h, z+w, 1.0, 1.0)
 	}
 
 	// North Face
 	if visible[NORTH_FACE] {
-		vertexBuffer.AddFace(NORTH_FACE, blocktype.texture1, selectedFace == NORTH_FACE, shadeLevels[NORTH_FACE],
+		texture := blocktype.texture1
+		if blocktype.shape == SHAPE_ORIENTED_CUBE && block.Orientation() == ORIENT_NORTH {
+			texture = blocktype.texture2
+		}
+
+		vertexBuffer.AddFace(NORTH_FACE, texture, selectedFace == NORTH_FACE, shadeLevels[NORTH_FACE],
 			block.Damaged(),
-			x+d, y+h, z-w, 1.0, 1.0,
-			x-d, y-h, z-w, 0.0, 0.0)
+			x+d, y+h, z-w, 0.0, 0.0,
+			x-d, y-h, z-w, 1.0, 1.0)
 	}
 
 	// South Face
 	if visible[SOUTH_FACE] {
-		vertexBuffer.AddFace(SOUTH_FACE, blocktype.texture1, selectedFace == SOUTH_FACE, shadeLevels[SOUTH_FACE],
+		texture := blocktype.texture1
+		if blocktype.shape == SHAPE_ORIENTED_CUBE && block.Orientation() == ORIENT_SOUTH {
+			texture = blocktype.texture2
+		}
+
+		vertexBuffer.AddFace(SOUTH_FACE, texture, selectedFace == SOUTH_FACE, shadeLevels[SOUTH_FACE],
 			block.Damaged(),
-			x+d, y+h, z+w, 1.0, 1.0,
-			x-d, y-h, z+w, 0.0, 0.0)
+			x+d, y+h, z+w, 0.0, 0.0,
+			x-d, y-h, z+w, 1.0, 1.0)
 
 	}
 
 	// Up Face
 	if visible[UP_FACE] {
+		texture := blocktype.texture2
+		if blocktype.shape == SHAPE_ORIENTED_CUBE {
+			texture = blocktype.texture1
+		}
 
-		vertexBuffer.AddFace(UP_FACE, blocktype.texture2, selectedFace == UP_FACE, shadeLevels[UP_FACE],
+		vertexBuffer.AddFace(UP_FACE, texture, selectedFace == UP_FACE, shadeLevels[UP_FACE],
 			block.Damaged(),
 			x+d, y+h, z-w, 1.0, 1.0,
 			x-d, y+h, z+w, 0.0, 0.0)
@@ -622,7 +644,12 @@ func Cuboid2(vertexBuffer *VertexBuffer, x float32, y float32, z float32, bw flo
 
 	// Down Face
 	if visible[DOWN_FACE] {
-		vertexBuffer.AddFace(DOWN_FACE, blocktype.texture1, selectedFace == DOWN_FACE, shadeLevels[DOWN_FACE],
+		texture := blocktype.texture2
+		if blocktype.shape == SHAPE_ORIENTED_CUBE {
+			texture = blocktype.texture1
+		}
+
+		vertexBuffer.AddFace(DOWN_FACE, texture, selectedFace == DOWN_FACE, shadeLevels[DOWN_FACE],
 			block.Damaged(),
 			x+d, y-h, z-w, 1.0, 1.0,
 			x-d, y-h, z+w, 0.0, 0.0)
@@ -839,72 +866,72 @@ func Line(v Vectorf) {
 func WallSingle(vertexBuffer *VertexBuffer, x float32, y float32, z float32, orient byte, block Block, blocktype Item, visible [6]bool, shadeLevels [6]int, selectedFace uint8) {
 	var p1, p2, p3, p4 float32 = -1.0 / 2, -1.0 / 6, 1.0 / 6, 1.0 / 2
 
-	if visible[EAST_FACE] && (orient == ORIENT_EAST || orient == ORIENT_WEST) {
+	if visible[EAST_FACE] && (orient == ORIENT_NORTH || orient == ORIENT_SOUTH) {
 		vertexBuffer.AddFace(EAST_FACE, blocktype.texture1, selectedFace == EAST_FACE, shadeLevels[EAST_FACE],
 			block.Damaged(),
 			x+p4, y+p1, z+p2, 2.0/3, 1.0,
 			x+p4, y+p4, z+p3, 1.0/3, 0.0)
-	} else if orient == ORIENT_NORTH || orient == ORIENT_SOUTH {
+	} else if orient == ORIENT_EAST || orient == ORIENT_WEST {
 		vertexBuffer.AddFace(EAST_FACE, blocktype.texture1, selectedFace == EAST_FACE, shadeLevels[EAST_FACE],
 			block.Damaged(),
 			x+p3, y+p1, z+p1, 1.0, 1.0,
 			x+p3, y+p4, z+p4, 0.0, 0.0)
 	}
 
-	if visible[WEST_FACE] && (orient == ORIENT_EAST || orient == ORIENT_WEST) {
+	if visible[WEST_FACE] && (orient == ORIENT_NORTH || orient == ORIENT_SOUTH) {
 		vertexBuffer.AddFace(WEST_FACE, blocktype.texture1, selectedFace == WEST_FACE, shadeLevels[WEST_FACE],
 			block.Damaged(),
 			x+p1, y+p1, z+p2, 2.0/3, 1.0,
 			x+p1, y+p4, z+p3, 1.0/3, 0.0)
-	} else if orient == ORIENT_NORTH || orient == ORIENT_SOUTH {
+	} else if orient == ORIENT_EAST || orient == ORIENT_WEST {
 		vertexBuffer.AddFace(WEST_FACE, blocktype.texture1, selectedFace == WEST_FACE, shadeLevels[WEST_FACE],
 			block.Damaged(),
 			x+p2, y+p1, z+p1, 1.0, 1.0,
 			x+p2, y+p4, z+p4, 0.0, 0.0)
 	}
 
-	if visible[NORTH_FACE] && (orient == ORIENT_EAST || orient == ORIENT_WEST) {
+	if visible[NORTH_FACE] && (orient == ORIENT_NORTH || orient == ORIENT_SOUTH) {
 		vertexBuffer.AddFace(NORTH_FACE, blocktype.texture1, selectedFace == NORTH_FACE, shadeLevels[NORTH_FACE],
 			block.Damaged(),
 			x+p1, y+p1, z+p2, 1.0, 1.0,
 			x+p4, y+p4, z+p2, 0.0, 0.0)
-	} else if orient == ORIENT_NORTH || orient == ORIENT_SOUTH {
+	} else if orient == ORIENT_EAST || orient == ORIENT_WEST {
 		vertexBuffer.AddFace(NORTH_FACE, blocktype.texture1, selectedFace == NORTH_FACE, shadeLevels[NORTH_FACE],
 			block.Damaged(),
 			x+p2, y+p1, z+p1, 2.0/3, 1.0,
 			x+p3, y+p4, z+p1, 1.0/3, 0.0)
 	}
 
-	if visible[SOUTH_FACE] && (orient == ORIENT_EAST || orient == ORIENT_WEST) {
+	if visible[SOUTH_FACE] && (orient == ORIENT_NORTH || orient == ORIENT_SOUTH) {
 		vertexBuffer.AddFace(SOUTH_FACE, blocktype.texture1, selectedFace == SOUTH_FACE, shadeLevels[SOUTH_FACE],
 			block.Damaged(),
 			x+p1, y+p1, z+p3, 1.0, 1.0,
 			x+p4, y+p4, z+p3, 0.0, 0.0)
-	} else if orient == ORIENT_NORTH || orient == ORIENT_SOUTH {
+	} else if orient == ORIENT_EAST || orient == ORIENT_WEST {
 		vertexBuffer.AddFace(SOUTH_FACE, blocktype.texture1, selectedFace == SOUTH_FACE, shadeLevels[SOUTH_FACE],
 			block.Damaged(),
 			x+p2, y+p1, z+p4, 2.0/3, 1.0,
 			x+p3, y+p4, z+p4, 1.0/3, 0.0)
 	}
 
-	if visible[UP_FACE] && (orient == ORIENT_EAST || orient == ORIENT_WEST) {
+	if visible[UP_FACE] && (orient == ORIENT_NORTH || orient == ORIENT_SOUTH) {
 		vertexBuffer.AddFace(UP_FACE, blocktype.texture2, selectedFace == UP_FACE, shadeLevels[UP_FACE],
 			block.Damaged(),
 			x+p1, y+p4, z+p2, 1.0, 2.0/3,
 			x+p4, y+p4, z+p3, 0.0, 1.0/3)
-	} else if orient == ORIENT_NORTH || orient == ORIENT_SOUTH {
+	} else if orient == ORIENT_EAST || orient == ORIENT_WEST {
 		vertexBuffer.AddFace(UP_FACE, blocktype.texture2, selectedFace == UP_FACE, shadeLevels[UP_FACE],
 			block.Damaged(),
 			x+p2, y+p4, z+p1, 2.0/3, 1.0,
 			x+p3, y+p4, z+p4, 1.0/3, 0.0)
 	}
 
-	if visible[DOWN_FACE] && (orient == ORIENT_EAST || orient == ORIENT_WEST) {
+	if visible[DOWN_FACE] && (orient == ORIENT_NORTH || orient == ORIENT_SOUTH) {
 		vertexBuffer.AddFace(DOWN_FACE, blocktype.texture1, selectedFace == DOWN_FACE, shadeLevels[DOWN_FACE],
 			block.Damaged(),
 			x+p1, y+p1, z+p2, 1.0, 2.0/3,
 			x+p4, y+p1, z+p3, 0.0, 1.0/3)
-	} else if orient == ORIENT_NORTH || orient == ORIENT_SOUTH {
+	} else if orient == ORIENT_EAST || orient == ORIENT_WEST {
 		vertexBuffer.AddFace(DOWN_FACE, blocktype.texture1, selectedFace == DOWN_FACE, shadeLevels[DOWN_FACE],
 			block.Damaged(),
 			x+p2, y+p1, z+p1, 2.0/3, 1.0,
@@ -918,7 +945,7 @@ func WallTee(vertexBuffer *VertexBuffer, x float32, y float32, z float32, orient
 
 	WallSingle(vertexBuffer, x, y, z, orient, block, blocktype, visible, shadeLevels, selectedFace)
 
-	if orient == ORIENT_EAST {
+	if orient == ORIENT_NORTH {
 		//   X
 		//  XXX 
 		//   
@@ -945,7 +972,7 @@ func WallTee(vertexBuffer *VertexBuffer, x float32, y float32, z float32, orient
 				x+p2, y+p1, z+p1, 2.0/3, 2.0/3,
 				x+p3, y+p1, z+p2, 1.0/3, 1.0/3)
 		}
-	} else if orient == ORIENT_NORTH {
+	} else if orient == ORIENT_WEST {
 		//   X
 		//  XX 
 		//   X  
@@ -972,7 +999,7 @@ func WallTee(vertexBuffer *VertexBuffer, x float32, y float32, z float32, orient
 				x+p1, y+p1, z+p3, 2.0/3, 2.0/3,
 				x+p2, y+p1, z+p3, 1.0/3, 1.0/3)
 		}
-	} else if orient == ORIENT_WEST {
+	} else if orient == ORIENT_SOUTH {
 		//
 		//  XXX 
 		//   X
@@ -999,7 +1026,7 @@ func WallTee(vertexBuffer *VertexBuffer, x float32, y float32, z float32, orient
 				x+p2, y+p1, z+p3, 2.0/3, 2.0/3,
 				x+p3, y+p1, z+p4, 1.0/3, 1.0/3)
 		}
-	} else if orient == ORIENT_SOUTH {
+	} else if orient == ORIENT_EAST {
 		//   X
 		//   XX 
 		//   X  
@@ -1033,7 +1060,7 @@ func WallTee(vertexBuffer *VertexBuffer, x float32, y float32, z float32, orient
 func WallCorner(vertexBuffer *VertexBuffer, x float32, y float32, z float32, orient byte, block Block, blocktype Item, visible [6]bool, shadeLevels [6]int, selectedFace uint8) {
 	var p1, p2, p3, p4 float32 = -1.0 / 2, -1.0 / 6, 1.0 / 6, 1.0 / 2
 
-	if orient == ORIENT_EAST {
+	if orient == ORIENT_NORTH {
 		//   X
 		//   XX 
 		//   
@@ -1080,7 +1107,7 @@ func WallCorner(vertexBuffer *VertexBuffer, x float32, y float32, z float32, ori
 				x+p2, y+p1, z+p1, 2.0/3, 2.0/3,
 				x+p3, y+p1, z+p2, 1.0/3, 1.0/3)
 		}
-	} else if orient == ORIENT_NORTH {
+	} else if orient == ORIENT_WEST {
 		//   X
 		//  XX 
 		//   
@@ -1128,7 +1155,7 @@ func WallCorner(vertexBuffer *VertexBuffer, x float32, y float32, z float32, ori
 				x+p3, y+p1, z+p2, 1.0/3, 1.0/3)
 		}
 
-	} else if orient == ORIENT_WEST {
+	} else if orient == ORIENT_SOUTH {
 		//   
 		//  XX 
 		//   X
@@ -1175,7 +1202,7 @@ func WallCorner(vertexBuffer *VertexBuffer, x float32, y float32, z float32, ori
 				x+p2, y+p1, z+p3, 2.0/3, 2.0/3,
 				x+p3, y+p1, z+p4, 1.0/3, 1.0/3)
 		}
-	} else if orient == ORIENT_SOUTH {
+	} else if orient == ORIENT_EAST {
 		//   
 		//   XX 
 		//   X
@@ -1375,60 +1402,60 @@ func SlabLine(vertexBuffer *VertexBuffer, x float32, y float32, z float32, orien
 
 	SlabCross(vertexBuffer, x, y, z, ORIENT_EAST, block, blocktype, visible, shadeLevels, selectedFace)
 
-	if visible[EAST_FACE] && (orient == ORIENT_EAST || orient == ORIENT_WEST) {
+	if visible[EAST_FACE] && (orient == ORIENT_NORTH || orient == ORIENT_SOUTH) {
 		vertexBuffer.AddFace(EAST_FACE, blocktype.texture1, selectedFace == EAST_FACE, shadeLevels[EAST_FACE],
 			block.Damaged(),
 			x+p4, y+p1, z+p2, 2.0/3, 2.0/3,
 			x+p4, y+p3, z+p3, 1.0/3, 0.0)
-	} else if orient == ORIENT_NORTH || orient == ORIENT_SOUTH {
+	} else if orient == ORIENT_EAST || orient == ORIENT_WEST {
 		vertexBuffer.AddFace(EAST_FACE, blocktype.texture1, selectedFace == EAST_FACE, shadeLevels[EAST_FACE],
 			block.Damaged(),
 			x+p3, y+p1, z+p1, 1.0, 2.0/3,
 			x+p3, y+p3, z+p4, 0.0, 0.0)
 	}
 
-	if visible[WEST_FACE] && (orient == ORIENT_EAST || orient == ORIENT_WEST) {
+	if visible[WEST_FACE] && (orient == ORIENT_NORTH || orient == ORIENT_SOUTH) {
 		vertexBuffer.AddFace(WEST_FACE, blocktype.texture1, selectedFace == WEST_FACE, shadeLevels[WEST_FACE],
 			block.Damaged(),
 			x+p1, y+p1, z+p2, 2.0/3, 2.0/3,
 			x+p1, y+p3, z+p3, 1.0/3, 0.0)
-	} else if orient == ORIENT_NORTH || orient == ORIENT_SOUTH {
+	} else if orient == ORIENT_EAST || orient == ORIENT_WEST {
 		vertexBuffer.AddFace(WEST_FACE, blocktype.texture1, selectedFace == WEST_FACE, shadeLevels[WEST_FACE],
 			block.Damaged(),
 			x+p2, y+p1, z+p1, 1.0, 2.0/3,
 			x+p2, y+p3, z+p4, 0.0, 0.0)
 	}
 
-	if visible[NORTH_FACE] && (orient == ORIENT_EAST || orient == ORIENT_WEST) {
+	if visible[NORTH_FACE] && (orient == ORIENT_NORTH || orient == ORIENT_SOUTH) {
 		vertexBuffer.AddFace(NORTH_FACE, blocktype.texture1, selectedFace == NORTH_FACE, shadeLevels[NORTH_FACE],
 			block.Damaged(),
 			x+p1, y+p1, z+p2, 1.0, 2.0/3,
 			x+p4, y+p3, z+p2, 0.0, 0.0)
-	} else if orient == ORIENT_NORTH || orient == ORIENT_SOUTH {
+	} else if orient == ORIENT_EAST || orient == ORIENT_WEST {
 		vertexBuffer.AddFace(NORTH_FACE, blocktype.texture1, selectedFace == NORTH_FACE, shadeLevels[NORTH_FACE],
 			block.Damaged(),
 			x+p2, y+p1, z+p1, 2.0/3, 2.0/3,
 			x+p3, y+p3, z+p1, 1.0/3, 0.0)
 	}
 
-	if visible[SOUTH_FACE] && (orient == ORIENT_EAST || orient == ORIENT_WEST) {
+	if visible[SOUTH_FACE] && (orient == ORIENT_NORTH || orient == ORIENT_SOUTH) {
 		vertexBuffer.AddFace(SOUTH_FACE, blocktype.texture1, selectedFace == SOUTH_FACE, shadeLevels[SOUTH_FACE],
 			block.Damaged(),
 			x+p1, y+p1, z+p3, 1.0, 2.0/3,
 			x+p4, y+p3, z+p3, 0.0, 0.0)
-	} else if orient == ORIENT_NORTH || orient == ORIENT_SOUTH {
+	} else if orient == ORIENT_EAST || orient == ORIENT_WEST {
 		vertexBuffer.AddFace(SOUTH_FACE, blocktype.texture1, selectedFace == SOUTH_FACE, shadeLevels[SOUTH_FACE],
 			block.Damaged(),
 			x+p2, y+p1, z+p4, 2.0/3, 2.0/3,
 			x+p3, y+p3, z+p4, 1.0/3, 0.0)
 	}
 
-	if visible[DOWN_FACE] && (orient == ORIENT_EAST || orient == ORIENT_WEST) {
+	if visible[DOWN_FACE] && (orient == ORIENT_NORTH || orient == ORIENT_SOUTH) {
 		vertexBuffer.AddFace(DOWN_FACE, blocktype.texture1, selectedFace == DOWN_FACE, shadeLevels[DOWN_FACE],
 			block.Damaged(),
 			x+p1, y+p1, z+p2, 1.0, 2.0/3,
 			x+p4, y+p1, z+p3, 0.0, 1.0/3)
-	} else if orient == ORIENT_NORTH || orient == ORIENT_SOUTH {
+	} else if orient == ORIENT_EAST || orient == ORIENT_WEST {
 		vertexBuffer.AddFace(DOWN_FACE, blocktype.texture1, selectedFace == DOWN_FACE, shadeLevels[DOWN_FACE],
 			block.Damaged(),
 			x+p2, y+p1, z+p1, 2.0/3, 1.0,
@@ -1490,7 +1517,7 @@ func SlabCorner(vertexBuffer *VertexBuffer, x float32, y float32, z float32, ori
 
 	SlabCross(vertexBuffer, x, y, z, ORIENT_EAST, block, blocktype, visible, shadeLevels, selectedFace)
 
-	if orient == ORIENT_EAST {
+	if orient == ORIENT_NORTH {
 		//   X
 		//   XX 
 		//   
@@ -1525,7 +1552,7 @@ func SlabCorner(vertexBuffer *VertexBuffer, x float32, y float32, z float32, ori
 				x+p2, y+p1, z+p1, 2.0/3, 2.0/3,
 				x+p3, y+p1, z+p2, 1.0/3, 1.0/3)
 		}
-	} else if orient == ORIENT_NORTH {
+	} else if orient == ORIENT_WEST {
 		//   X
 		//  XX 
 		//   
@@ -1561,7 +1588,7 @@ func SlabCorner(vertexBuffer *VertexBuffer, x float32, y float32, z float32, ori
 				x+p3, y+p1, z+p2, 1.0/3, 1.0/3)
 		}
 
-	} else if orient == ORIENT_WEST {
+	} else if orient == ORIENT_SOUTH {
 		//   
 		//  XX 
 		//   X
@@ -1596,7 +1623,7 @@ func SlabCorner(vertexBuffer *VertexBuffer, x float32, y float32, z float32, ori
 				x+p2, y+p1, z+p3, 2.0/3, 2.0/3,
 				x+p3, y+p1, z+p4, 1.0/3, 1.0/3)
 		}
-	} else if orient == ORIENT_SOUTH {
+	} else if orient == ORIENT_EAST {
 		//   
 		//   XX 
 		//   X
@@ -1639,7 +1666,7 @@ func SlabTee(vertexBuffer *VertexBuffer, x float32, y float32, z float32, orient
 
 	SlabLine(vertexBuffer, x, y, z, orient, block, blocktype, visible, shadeLevels, selectedFace)
 
-	if orient == ORIENT_EAST {
+	if orient == ORIENT_NORTH {
 		//   X
 		//  XXX 
 		//   
@@ -1659,7 +1686,7 @@ func SlabTee(vertexBuffer *VertexBuffer, x float32, y float32, z float32, orient
 				x+p2, y+p1, z+p1, 2.0/3, 2.0/3,
 				x+p3, y+p1, z+p2, 1.0/3, 1.0/3)
 		}
-	} else if orient == ORIENT_NORTH {
+	} else if orient == ORIENT_WEST {
 		//   X
 		//  XX 
 		//   X  
@@ -1679,7 +1706,7 @@ func SlabTee(vertexBuffer *VertexBuffer, x float32, y float32, z float32, orient
 				x+p1, y+p1, z+p3, 2.0/3, 2.0/3,
 				x+p2, y+p1, z+p3, 1.0/3, 1.0/3)
 		}
-	} else if orient == ORIENT_WEST {
+	} else if orient == ORIENT_SOUTH {
 		//
 		//  XXX 
 		//   X
@@ -1699,7 +1726,7 @@ func SlabTee(vertexBuffer *VertexBuffer, x float32, y float32, z float32, orient
 				x+p2, y+p1, z+p3, 2.0/3, 2.0/3,
 				x+p3, y+p1, z+p4, 1.0/3, 1.0/3)
 		}
-	} else if orient == ORIENT_SOUTH {
+	} else if orient == ORIENT_EAST {
 		//   X
 		//   XX 
 		//   X  

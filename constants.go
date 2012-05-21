@@ -84,6 +84,7 @@ const (
 
 const (
 	SHAPE_CUBE = iota
+	SHAPE_ORIENTED_CUBE
 	SHAPE_WALL
 	SHAPE_SLAB
 	SHAPE_PILE
