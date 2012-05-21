@@ -83,6 +83,13 @@ const (
 )
 
 const (
+	SHAPE_CUBE = iota
+	SHAPE_WALL
+	SHAPE_SLAB
+	SHAPE_PILE
+)
+
+const (
 	BLOCK_AIR = iota
 	BLOCK_STONE
 	BLOCK_DIRT
