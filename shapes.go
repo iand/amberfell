@@ -232,6 +232,42 @@ func LoadPlayerTextures() {
 
 }
 
+func LoadWolfTextures() {
+
+	var file, err = os.Open("res/wolf.png")
+	var img image.Image
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+	if img, _, err = image.Decode(file); err != nil {
+		panic(err)
+	}
+
+	unit := 12
+	hatFront := image.NewRGBA(image.Rect(0, 0, unit, unit))
+	for x := 0; x < unit; x++ {
+		for y := 0; y < unit; y++ {
+			hatFront.Set(x, y, img.At(x, y))
+		}
+	}
+
+	textures[TEXTURE_WOLF_HEAD_BACK] = imageSectionToTexture(img, image.Rect(0, 0, 11, 11))
+	textures[TEXTURE_WOLF_HEAD_FRONT] = imageSectionToTexture(img, image.Rect(0, 12, 12, 23))
+	textures[TEXTURE_WOLF_HEAD_TOP] = imageSectionToTexture(img, image.Rect(unit+1, 0, 3*unit, unit))
+	textures[TEXTURE_WOLF_HEAD_SIDE] = imageSectionToTexture(img, image.Rect(unit+1, unit+1, 3*unit, 2*unit))
+	textures[TEXTURE_WOLF_HEAD_BOTTOM] = imageSectionToTexture(img, image.Rect(unit+1, 2*unit+1, 3*unit, 3*unit))
+
+	textures[TEXTURE_WOLF_TORSO_BACK] = imageSectionToTexture(img, image.Rect(0, 3*unit+1, 1*unit+unit/2, 4*unit+unit/2))
+	textures[TEXTURE_WOLF_TORSO_FRONT] = imageSectionToTexture(img, image.Rect(0, 4*unit+unit/2+1, 1*unit+unit/2, 6*unit))
+	textures[TEXTURE_WOLF_TORSO_TOP] = imageSectionToTexture(img, image.Rect(1*unit+unit/2+1, 3*unit+1, 6*unit+unit/2, 4*unit+unit/2))
+	textures[TEXTURE_WOLF_TORSO_SIDE] = imageSectionToTexture(img, image.Rect(1*unit+unit/2+1, 4*unit+unit/2+1, 6*unit+unit/2, 6*unit))
+	textures[TEXTURE_WOLF_TORSO_BOTTOM] = imageSectionToTexture(img, image.Rect(1*unit+unit/2+1, 6*unit+1, 6*unit+unit/2, 7*unit+unit/2))
+
+	textures[TEXTURE_WOLF_LEG] = imageSectionToTexture(img, image.Rect(6*unit+unit/2+1, 0, 6*unit+unit/2+8, 39))
+
+}
+
 func imageSectionToTexture(img image.Image, r image.Rectangle) *gl.Texture {
 	rgba := image.NewRGBA(image.Rect(0, 0, r.Max.X-r.Min.X, r.Max.Y-r.Min.Y))
 	for x := r.Min.X; x < r.Max.X+1; x++ {
@@ -734,10 +770,10 @@ func Cuboid(pos Vectorf, bw float64, bh float64, bd float64, etexture *gl.Textur
 
 		e := LightLevel(pos, NORMALS[SOUTH_FACE])
 		v := []Vertex{
-			{p: [3]float32{-d, -h, w}, t: [2]float32{0.0, 1.0}, n: NORMALS[SOUTH_FACE], c: c, e: e},
-			{p: [3]float32{d, -h, w}, t: [2]float32{1.0, 1.0}, n: NORMALS[SOUTH_FACE], c: c, e: e},
-			{p: [3]float32{d, h, w}, t: [2]float32{1.0, 0.0}, n: NORMALS[SOUTH_FACE], c: c, e: e},
-			{p: [3]float32{-d, h, w}, t: [2]float32{0.0, 0.0}, n: NORMALS[SOUTH_FACE], c: c, e: e},
+			{p: [3]float32{-d, -h, w}, t: [2]float32{1.0, 1.0}, n: NORMALS[SOUTH_FACE], c: c, e: e},
+			{p: [3]float32{d, -h, w}, t: [2]float32{0.0, 1.0}, n: NORMALS[SOUTH_FACE], c: c, e: e},
+			{p: [3]float32{d, h, w}, t: [2]float32{0.0, 0.0}, n: NORMALS[SOUTH_FACE], c: c, e: e},
+			{p: [3]float32{-d, h, w}, t: [2]float32{1.0, 0.0}, n: NORMALS[SOUTH_FACE], c: c, e: e},
 		}
 
 		stexture.Bind(gl.TEXTURE_2D)
@@ -754,46 +790,11 @@ func Cuboid(pos Vectorf, bw float64, bh float64, bd float64, etexture *gl.Textur
 		}
 		e := LightLevel(pos, NORMALS[UP_FACE])
 
-		//  -d/-w   -d/0   -d/+w
-		//
-		//  0/-w     0/0     0/+w
-		//
-		//  +d/-w   +d/0   +d/+w
-
-		// +d/-w     0/-w   -d/-w
-		// +d/0      0/0    -d/0
-		// +d/+w     0/+w   -d/+w
-
-		// Texture
-		// 0.0/1.0    0.0/0.5   0.0/0.0
-		// 0.5/1.0    0.5/0.5   0.5/0.0
-		// 1.0/1.0    1.0/0.5   1.0/0.0
-
 		v := []Vertex{
 			{p: [3]float32{-d, h, -w}, t: [2]float32{1.0, 1.0}, n: NORMALS[UP_FACE], c: c, e: e},
-			{p: [3]float32{d, h, -w}, t: [2]float32{0.0, 1.0}, n: NORMALS[UP_FACE], c: c, e: e},
+			{p: [3]float32{d, h, -w}, t: [2]float32{1.0, 0.0}, n: NORMALS[UP_FACE], c: c, e: e},
 			{p: [3]float32{d, h, w}, t: [2]float32{0.0, 0.0}, n: NORMALS[UP_FACE], c: c, e: e},
-			{p: [3]float32{-d, h, w}, t: [2]float32{1.0, 0.0}, n: NORMALS[UP_FACE], c: c, e: e},
-
-			// Vertex{p: [3]float32{d, h, -w}, t: [2]float32{0.0, 1.0}, n: NORMALS[UP_FACE], c: c, e: e},
-			// Vertex{p: [3]float32{0, h, -w}, t: [2]float32{0.0, 0.5}, n: NORMALS[UP_FACE], c: c, e: e},
-			// Vertex{p: [3]float32{0, h, 0}, t: [2]float32{0.5, 0.5}, n: NORMALS[UP_FACE], c: c, e: e},
-			// Vertex{p: [3]float32{d, h, 0}, t: [2]float32{0.5, 1.0}, n: NORMALS[UP_FACE], c: c, e: e},
-
-			// Vertex{p: [3]float32{d, h, 0}, t: [2]float32{0.5, 1.0}, n: NORMALS[UP_FACE], c: c, e: e},
-			// Vertex{p: [3]float32{0, h, 0}, t: [2]float32{0.5, 0.5}, n: NORMALS[UP_FACE], c: c, e: e},
-			// Vertex{p: [3]float32{0, h, w}, t: [2]float32{1.0, 0.5}, n: NORMALS[UP_FACE], c: c, e: e},
-			// Vertex{p: [3]float32{d, h, w}, t: [2]float32{1.0, 1.0}, n: NORMALS[UP_FACE], c: c, e: e},
-
-			// Vertex{p: [3]float32{0, h, 0}, t: [2]float32{0.5, 0.5}, n: NORMALS[UP_FACE], c: c, e: e},
-			// Vertex{p: [3]float32{-d, h, 0}, t: [2]float32{0.5, 0.0}, n: NORMALS[UP_FACE], c: c, e: e},
-			// Vertex{p: [3]float32{-d, h, w}, t: [2]float32{1.0, 0.0}, n: NORMALS[UP_FACE], c: c, e: e},
-			// Vertex{p: [3]float32{0, h, w}, t: [2]float32{1.0, 0.5}, n: NORMALS[UP_FACE], c: c, e: e},
-
-			// Vertex{p: [3]float32{0, h, -w}, t: [2]float32{0.0, 0.5}, n: NORMALS[UP_FACE], c: c, e: e},
-			// Vertex{p: [3]float32{-d, h, -w}, t: [2]float32{0.0, 0.0}, n: NORMALS[UP_FACE], c: c, e: e},
-			// Vertex{p: [3]float32{-d, h, 0}, t: [2]float32{0.5, 0.0}, n: NORMALS[UP_FACE], c: c, e: e},
-			// Vertex{p: [3]float32{0, h, 0}, t: [2]float32{0.5, 0.5}, n: NORMALS[UP_FACE], c: c, e: e},
+			{p: [3]float32{-d, h, w}, t: [2]float32{0.0, 1.0}, n: NORMALS[UP_FACE], c: c, e: e},
 		}
 
 		utexture.Bind(gl.TEXTURE_2D)

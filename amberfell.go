@@ -145,6 +145,7 @@ func initGame() {
 	gl.Enable(gl.TEXTURE_2D)
 	//	LoadMapTextures()
 	LoadPlayerTextures()
+	LoadWolfTextures()
 	InitItems()
 
 	pauseFont = NewFont("res/Jura-DemiBold.ttf", 48, color.RGBA{255, 255, 255, 0})

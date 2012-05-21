@@ -44,7 +44,7 @@ func NewWolf(heading float64, x, y, z uint16) *Wolf {
 			targetAngle: 180,
 			sunlight:    SUNLIGHT_LEVELS_ANY,
 			weight:      2,
-			last:        true,
+			last:        false,
 		},
 		MobBehaviour{
 			behaviour:   BEHAVIOUR_PURSUE,
@@ -61,7 +61,7 @@ func NewWolf(heading float64, x, y, z uint16) *Wolf {
 			targetRange: 10,
 			targetAngle: 120,
 			sunlight:    SUNLIGHT_LEVELS_ANY,
-			weight:      1,
+			weight:      2,
 			last:        false,
 		},
 		MobBehaviour{
@@ -134,22 +134,6 @@ func (self *Wolf) Act2(dt float64) {
 }
 
 func (self *Wolf) Draw(center Vectorf, selectedBlockFace *BlockFace) {
-	// println("drawing at ", self.position[XAXIS], self.position[ZAXIS])
-	// pos := Vectorf{self.position[XAXIS], self.position[YAXIS], self.position[ZAXIS]}
-	// gl.PushMatrix()
-
-	// gl.Translated(self.position[XAXIS], self.position[YAXIS], self.position[ZAXIS])
-	// gl.Rotated(self.Heading(), 0.0, 1.0, 0.0)
-
-	// WolfModel.GLDraw()
-
-	// // // Translate to top of ground block
-	// // gl.Translatef(0.0, -0.5, 0.0)
-	// // pos[YAXIS] += -0.5
-
-	// // Cuboid(pos, 1, 0.5, 1, textures[TEXTURE_LEG], textures[TEXTURE_LEG], textures[TEXTURE_LEG_SIDE], textures[TEXTURE_LEG_SIDE], textures[32], textures[32], FACE_NONE)
-	// gl.PopMatrix()
-
 	pos := Vectorf{self.position[XAXIS], self.position[YAXIS], self.position[ZAXIS]}
 	gl.PushMatrix()
 
@@ -160,8 +144,7 @@ func (self *Wolf) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 	gl.Translatef(0.0, -0.5, 0.0)
 	pos[YAXIS] += -0.5
 
-	// From http://www.realcolorwheel.com/human.htm
-	headHeight := float64(0.25)
+	headHeight := 0.25
 	headWidth := headHeight
 	headDepth := headHeight * 2.0
 	neckHeight := 0.0
@@ -201,7 +184,7 @@ func (self *Wolf) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 	pos[XAXIS] += legDepthOffset
 	pos[YAXIS] += legHeightOffset
 	pos[ZAXIS] += legWidthOffset
-	Cuboid(pos, legWidth, legHeight, legDepth, textures[TEXTURE_LEG], textures[TEXTURE_LEG], textures[TEXTURE_LEG_SIDE], textures[TEXTURE_LEG_SIDE], textures[32], textures[32], FACE_NONE)
+	Cuboid(pos, legWidth, legHeight, legDepth, textures[TEXTURE_WOLF_LEG], textures[TEXTURE_WOLF_LEG], textures[TEXTURE_WOLF_LEG], textures[TEXTURE_WOLF_LEG], textures[TEXTURE_WOLF_LEG], textures[TEXTURE_WOLF_LEG], FACE_NONE)
 	pos[XAXIS] -= legDepthOffset
 	pos[YAXIS] -= legHeightOffset
 	pos[ZAXIS] -= legWidthOffset
@@ -220,7 +203,7 @@ func (self *Wolf) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 	pos[XAXIS] += legDepthOffset
 	pos[YAXIS] += legHeightOffset
 	pos[ZAXIS] += legWidthOffset
-	Cuboid(pos, legWidth, legHeight, legDepth, textures[TEXTURE_LEG], textures[TEXTURE_LEG], textures[TEXTURE_LEG_SIDE], textures[TEXTURE_LEG_SIDE], textures[32], textures[32], FACE_NONE)
+	Cuboid(pos, legWidth, legHeight, legDepth, textures[TEXTURE_WOLF_LEG], textures[TEXTURE_WOLF_LEG], textures[TEXTURE_WOLF_LEG], textures[TEXTURE_WOLF_LEG], textures[TEXTURE_WOLF_LEG], textures[TEXTURE_WOLF_LEG], FACE_NONE)
 	pos[XAXIS] -= legDepthOffset
 	pos[YAXIS] -= legHeightOffset
 	pos[ZAXIS] -= legWidthOffset
@@ -241,7 +224,7 @@ func (self *Wolf) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 	pos[XAXIS] += legDepthOffset
 	pos[YAXIS] += legHeightOffset
 	pos[ZAXIS] += legWidthOffset
-	Cuboid(pos, legWidth, legHeight, legDepth, textures[TEXTURE_LEG], textures[TEXTURE_LEG], textures[TEXTURE_LEG_SIDE], textures[TEXTURE_LEG_SIDE], textures[32], textures[32], FACE_NONE)
+	Cuboid(pos, legWidth, legHeight, legDepth, textures[TEXTURE_WOLF_LEG], textures[TEXTURE_WOLF_LEG], textures[TEXTURE_WOLF_LEG], textures[TEXTURE_WOLF_LEG], textures[TEXTURE_WOLF_LEG], textures[TEXTURE_WOLF_LEG], FACE_NONE)
 	pos[XAXIS] -= legDepthOffset
 	pos[YAXIS] -= legHeightOffset
 	pos[ZAXIS] -= legWidthOffset
@@ -260,7 +243,7 @@ func (self *Wolf) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 	pos[XAXIS] += legDepthOffset
 	pos[YAXIS] += legHeightOffset
 	pos[ZAXIS] += legWidthOffset
-	Cuboid(pos, legWidth, legHeight, legDepth, textures[TEXTURE_LEG], textures[TEXTURE_LEG], textures[TEXTURE_LEG_SIDE], textures[TEXTURE_LEG_SIDE], textures[32], textures[32], FACE_NONE)
+	Cuboid(pos, legWidth, legHeight, legDepth, textures[TEXTURE_WOLF_LEG], textures[TEXTURE_WOLF_LEG], textures[TEXTURE_WOLF_LEG], textures[TEXTURE_WOLF_LEG], textures[TEXTURE_WOLF_LEG], textures[TEXTURE_WOLF_LEG], FACE_NONE)
 	pos[XAXIS] -= legDepthOffset
 	pos[YAXIS] -= legHeightOffset
 	pos[ZAXIS] -= legWidthOffset
@@ -272,7 +255,7 @@ func (self *Wolf) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 	// Translate to centre of torso
 	gl.Translated(0.0, torsoHeight/2, 0.0)
 	pos[YAXIS] += torsoHeight / 2
-	Cuboid(pos, torsoWidth, torsoHeight, torsoDepth, textures[TEXTURE_TORSO_FRONT], textures[TEXTURE_TORSO_BACK], textures[TEXTURE_TORSO_LEFT], textures[TEXTURE_TORSO_RIGHT], textures[TEXTURE_TORSO_TOP], textures[TEXTURE_TORSO_TOP], FACE_NONE)
+	Cuboid(pos, torsoWidth, torsoHeight, torsoDepth, textures[TEXTURE_WOLF_TORSO_FRONT], textures[TEXTURE_WOLF_TORSO_BACK], textures[TEXTURE_WOLF_TORSO_SIDE], textures[TEXTURE_WOLF_TORSO_SIDE], textures[TEXTURE_WOLF_TORSO_TOP], textures[TEXTURE_WOLF_TORSO_TOP], FACE_NONE)
 
 	// Translate to shoulders
 	gl.Translated(0.0, torsoHeight/2, 0.0)
@@ -284,7 +267,7 @@ func (self *Wolf) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 	pos[YAXIS] += 0.0
 
 	gl.Rotated(-headAngle, 0.0, 0.0, 1.0)
-	Cuboid(pos, headWidth, headHeight, headDepth, textures[TEXTURE_HEAD_FRONT], textures[TEXTURE_HEAD_BACK], textures[TEXTURE_HEAD_LEFT], textures[TEXTURE_HEAD_RIGHT], nil, textures[TEXTURE_HEAD_BOTTOM], FACE_NONE)
+	Cuboid(pos, headWidth, headHeight, headDepth, textures[TEXTURE_WOLF_HEAD_FRONT], textures[TEXTURE_WOLF_HEAD_BACK], textures[TEXTURE_WOLF_HEAD_SIDE], textures[TEXTURE_WOLF_HEAD_SIDE], textures[TEXTURE_WOLF_HEAD_TOP], textures[TEXTURE_WOLF_HEAD_BOTTOM], FACE_NONE)
 
 	gl.PopMatrix()
 
