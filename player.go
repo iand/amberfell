@@ -61,6 +61,7 @@ func (self *Player) Act(dt float64) {
 }
 
 func (self *Player) Draw(center Vectorf, selectedBlockFace *BlockFace) {
+
 	pos := Vectorf{self.position[XAXIS], self.position[YAXIS], self.position[ZAXIS]}
 	gl.PushMatrix()
 
@@ -500,4 +501,161 @@ func (self *Player) Update(dt float64) (completed bool) {
 
 func (self *Player) TargetType() uint8 {
 	return TARGET_PLAYER
+}
+
+func (self *Player) DrawWolf(center Vectorf, selectedBlockFace *BlockFace) {
+	// println("drawing at ", self.position[XAXIS], self.position[ZAXIS])
+	// pos := Vectorf{self.position[XAXIS], self.position[YAXIS], self.position[ZAXIS]}
+	// gl.PushMatrix()
+
+	// gl.Translated(self.position[XAXIS], self.position[YAXIS], self.position[ZAXIS])
+	// gl.Rotated(self.Heading(), 0.0, 1.0, 0.0)
+
+	// WolfModel.GLDraw()
+
+	// // // Translate to top of ground block
+	// // gl.Translatef(0.0, -0.5, 0.0)
+	// // pos[YAXIS] += -0.5
+
+	// // Cuboid(pos, 1, 0.5, 1, textures[TEXTURE_LEG], textures[TEXTURE_LEG], textures[TEXTURE_LEG_SIDE], textures[TEXTURE_LEG_SIDE], textures[32], textures[32], FACE_NONE)
+	// gl.PopMatrix()
+
+	pos := Vectorf{self.position[XAXIS], self.position[YAXIS], self.position[ZAXIS]}
+	gl.PushMatrix()
+
+	gl.Translated(self.position[XAXIS], self.position[YAXIS], self.position[ZAXIS])
+	gl.Rotated(self.Heading(), 0.0, 1.0, 0.0)
+
+	// Translate to top of ground block
+	gl.Translatef(0.0, -0.5, 0.0)
+	pos[YAXIS] += -0.5
+
+	// From http://www.realcolorwheel.com/human.htm
+	headHeight := float64(0.25)
+	headWidth := headHeight
+	headDepth := headHeight * 2.0
+	neckHeight := 0.0
+	torsoWidth := 1.5 * headHeight
+	torsoHeight := 1.5 * headHeight
+	torsoDepth := 5 * headHeight
+	legHeight := 5*headHeight - torsoHeight - neckHeight - headHeight
+	legWidth := (torsoWidth - 0.25*headHeight) / 2
+	legDepth := legWidth
+	// lowerArmHeight := 1.25 * headHeight
+	// handHeight := 0.75 * headHeight
+
+	var legAngle, step float64
+
+	horzSpeed := self.velocity[XAXIS]*self.velocity[XAXIS] + self.velocity[ZAXIS]*self.velocity[ZAXIS]
+	legAngle = math.Sin(self.walkSequence) * (15 + 55*horzSpeed/(self.sprintSpeed*self.sprintSpeed))
+	headAngle := 30.0
+	// torsoAngle = -math.Abs(legAngle / 6)
+	step = headHeight * 0.3 * math.Pow(math.Sin(self.walkSequence), 2)
+
+	gl.Translated(0.0, step, 0)
+	pos[YAXIS] += step
+
+	// Translate to top of leg
+	// Translate to centre of front left leg
+	gl.Translated(0.0, legHeight, 0)
+	pos[YAXIS] += legHeight
+
+	legDepthOffset := torsoDepth/2 - legWidth/2
+	legHeightOffset := -legHeight / 2
+	legWidthOffset := (legWidth + 0.25*headHeight) / 2
+
+	// Translate to centre of front left leg
+	gl.Translated(legDepthOffset, 0, legWidthOffset)
+	gl.Rotated(legAngle, 0.0, 0.0, 1.0)
+	gl.Translated(0, legHeightOffset, 0)
+	pos[XAXIS] += legDepthOffset
+	pos[YAXIS] += legHeightOffset
+	pos[ZAXIS] += legWidthOffset
+	Cuboid(pos, legWidth, legHeight, legDepth, textures[TEXTURE_LEG], textures[TEXTURE_LEG], textures[TEXTURE_LEG_SIDE], textures[TEXTURE_LEG_SIDE], textures[32], textures[32], FACE_NONE)
+	pos[XAXIS] -= legDepthOffset
+	pos[YAXIS] -= legHeightOffset
+	pos[ZAXIS] -= legWidthOffset
+	gl.Translated(0, -legHeightOffset, 0)
+	gl.Rotated(-legAngle, 0.0, 0.0, 1.0)
+	gl.Translated(-legDepthOffset, 0, -legWidthOffset)
+
+	legWidthOffset = -legWidthOffset
+	if horzSpeed <= self.walkingSpeed*self.walkingSpeed {
+		legAngle = -legAngle
+	}
+
+	gl.Translated(legDepthOffset, 0, legWidthOffset)
+	gl.Rotated(legAngle, 0.0, 0.0, 1.0)
+	gl.Translated(0, legHeightOffset, 0)
+	pos[XAXIS] += legDepthOffset
+	pos[YAXIS] += legHeightOffset
+	pos[ZAXIS] += legWidthOffset
+	Cuboid(pos, legWidth, legHeight, legDepth, textures[TEXTURE_LEG], textures[TEXTURE_LEG], textures[TEXTURE_LEG_SIDE], textures[TEXTURE_LEG_SIDE], textures[32], textures[32], FACE_NONE)
+	pos[XAXIS] -= legDepthOffset
+	pos[YAXIS] -= legHeightOffset
+	pos[ZAXIS] -= legWidthOffset
+	gl.Translated(0, -legHeightOffset, 0)
+	gl.Rotated(-legAngle, 0.0, 0.0, 1.0)
+	gl.Translated(-legDepthOffset, 0, -legWidthOffset)
+
+	legDepthOffset = -legDepthOffset
+	legWidthOffset = -legWidthOffset
+
+	if horzSpeed > self.walkingSpeed*self.walkingSpeed {
+		legAngle = -legAngle
+	}
+
+	gl.Translated(legDepthOffset, 0, legWidthOffset)
+	gl.Rotated(legAngle, 0.0, 0.0, 1.0)
+	gl.Translated(0, legHeightOffset, 0)
+	pos[XAXIS] += legDepthOffset
+	pos[YAXIS] += legHeightOffset
+	pos[ZAXIS] += legWidthOffset
+	Cuboid(pos, legWidth, legHeight, legDepth, textures[TEXTURE_LEG], textures[TEXTURE_LEG], textures[TEXTURE_LEG_SIDE], textures[TEXTURE_LEG_SIDE], textures[32], textures[32], FACE_NONE)
+	pos[XAXIS] -= legDepthOffset
+	pos[YAXIS] -= legHeightOffset
+	pos[ZAXIS] -= legWidthOffset
+	gl.Translated(0, -legHeightOffset, 0)
+	gl.Rotated(-legAngle, 0.0, 0.0, 1.0)
+	gl.Translated(-legDepthOffset, 0, -legWidthOffset)
+
+	legWidthOffset = -legWidthOffset
+	if horzSpeed <= self.walkingSpeed*self.walkingSpeed {
+		legAngle = -legAngle
+	}
+
+	gl.Translated(legDepthOffset, 0, legWidthOffset)
+	gl.Rotated(legAngle, 0.0, 0.0, 1.0)
+	gl.Translated(0, legHeightOffset, 0)
+	pos[XAXIS] += legDepthOffset
+	pos[YAXIS] += legHeightOffset
+	pos[ZAXIS] += legWidthOffset
+	Cuboid(pos, legWidth, legHeight, legDepth, textures[TEXTURE_LEG], textures[TEXTURE_LEG], textures[TEXTURE_LEG_SIDE], textures[TEXTURE_LEG_SIDE], textures[32], textures[32], FACE_NONE)
+	pos[XAXIS] -= legDepthOffset
+	pos[YAXIS] -= legHeightOffset
+	pos[ZAXIS] -= legWidthOffset
+	gl.Translated(0, -legHeightOffset, 0)
+	gl.Rotated(-legAngle, 0.0, 0.0, 1.0)
+	gl.Translated(-legDepthOffset, 0, -legWidthOffset)
+
+	//gl.Rotated(torsoAngle, 0.0, 0.0, 1.0)
+	// Translate to centre of torso
+	gl.Translated(0.0, torsoHeight/2, 0.0)
+	pos[YAXIS] += torsoHeight / 2
+	Cuboid(pos, torsoWidth, torsoHeight, torsoDepth, textures[TEXTURE_TORSO_FRONT], textures[TEXTURE_TORSO_BACK], textures[TEXTURE_TORSO_LEFT], textures[TEXTURE_TORSO_RIGHT], textures[TEXTURE_TORSO_TOP], textures[TEXTURE_TORSO_TOP], FACE_NONE)
+
+	// Translate to shoulders
+	gl.Translated(0.0, torsoHeight/2, 0.0)
+	pos[YAXIS] += torsoHeight / 2
+
+	// Translate to centre of head
+	gl.Translated(torsoDepth/2+headDepth*0.5, 0.0, 0.0)
+	pos[XAXIS] += torsoDepth/2 + headDepth*0.5
+	pos[YAXIS] += 0.0
+
+	gl.Rotated(-headAngle, 0.0, 0.0, 1.0)
+	Cuboid(pos, headWidth, headHeight, headDepth, textures[TEXTURE_HEAD_FRONT], textures[TEXTURE_HEAD_BACK], textures[TEXTURE_HEAD_LEFT], textures[TEXTURE_HEAD_RIGHT], nil, textures[TEXTURE_HEAD_BOTTOM], FACE_NONE)
+
+	gl.PopMatrix()
+
 }

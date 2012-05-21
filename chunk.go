@@ -170,6 +170,9 @@ func (chunk *Chunk) Init(x uint16, z uint16) {
 }
 
 func (chunk *Chunk) At(x uint16, y uint16, z uint16) byte {
+	if y < 0 {
+		y = 0
+	}
 	return chunk.Blocks[blockIndex(x, y, z)].id
 }
 

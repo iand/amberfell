@@ -202,7 +202,7 @@ func (self *MobData) Act(dt float64) {
 	previousBehaviour := self.dominantBehaviour
 	self.dominantBehaviour = BEHAVIOUR_WANDER
 
-	const MAX_FORCE = 100 // to be calibrated
+	const MAX_FORCE = 1000 // to be calibrated
 	force := Vectorf{}
 
 	normal := self.Normal()
@@ -383,7 +383,7 @@ func (self *MobData) Act(dt float64) {
 		self.velocity = self.velocity.Add(accel)
 		velocity_magnitude := self.velocity.Magnitude()
 		if velocity_magnitude > self.sprintSpeed {
-			self.velocity = self.velocity.Normalize().Scale(self.sprintSpeed * dt)
+			self.velocity = self.velocity.Normalize().Scale(self.sprintSpeed)
 		}
 	}
 
