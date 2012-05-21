@@ -87,7 +87,7 @@ func (self *Picker) DrawPlayerItems(t int64, drawQuantities bool) {
 			gl.Scalef(blockscale, blockscale, blockscale)
 			gGuiBuffer.Reset()
 			if itemid < 256 {
-				TerrainCube(gGuiBuffer, Vectori{}, [18]uint16{BLOCK_DIRT, BLOCK_DIRT, BLOCK_DIRT, BLOCK_DIRT, BLOCK_AIR, BLOCK_DIRT, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR}, itemid, FACE_NONE)
+				TerrainCube(gGuiBuffer, Vectori{}, [18]uint16{BLOCK_DIRT, BLOCK_DIRT, BLOCK_DIRT, BLOCK_DIRT, BLOCK_AIR, BLOCK_DIRT, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR}, NewBlockDefault(byte(itemid)), FACE_NONE)
 			} else {
 				RenderItemFlat(gGuiBuffer, Vectori{}, itemid)
 			}

@@ -10,15 +10,55 @@ import (
 	"time"
 )
 
+const (
+	BLOCK_TYPE_MASK = 0x0F
+)
+
 type chunkindex uint32
 
 type Chunk struct {
 	x, z              uint16
-	Blocks            [CHUNK_WIDTH * CHUNK_WIDTH * CHUNK_HEIGHT]byte
+	Blocks            [CHUNK_WIDTH * CHUNK_WIDTH * CHUNK_HEIGHT]Block
 	vertexBuffer      *VertexBuffer
 	clean             bool
 	standingStoneProb float64
 	featuresLoaded    bool
+}
+
+type Block struct {
+	id   byte
+	data uint8
+}
+
+func NewBlock(id byte, damaged bool, orientation uint8) Block {
+	var data uint8
+
+	if damaged {
+		data |= 0x1
+	}
+
+	orientation &= 0x6
+	data |= orientation
+	return Block{id, data}
+}
+
+func NewBlockDefault(id byte) Block {
+	return Block{id, 0}
+}
+
+func (self *Block) Damaged() bool {
+	return (self.data & 0x1) == 0x1
+}
+
+func (self *Block) SetDamaged(damaged bool) {
+	self.data &= 0xE
+	if damaged {
+		self.data |= 0x1
+	}
+}
+
+func (self *Block) Orientation() uint8 {
+	return (self.data & 0x6)
 }
 
 func chunkCoordsFromWorld(x uint16, z uint16) (cx uint16, cz uint16) {
@@ -131,11 +171,20 @@ func (chunk *Chunk) Init(x uint16, z uint16) {
 }
 
 func (chunk *Chunk) At(x uint16, y uint16, z uint16) byte {
+	return chunk.Blocks[blockIndex(x, y, z)].id
+}
+
+func (chunk *Chunk) AtB(x uint16, y uint16, z uint16) Block {
 	return chunk.Blocks[blockIndex(x, y, z)]
 }
 
 func (chunk *Chunk) Set(x uint16, y uint16, z uint16, b byte) {
-	chunk.Blocks[blockIndex(x, y, z)] = b
+	chunk.SetB(x, y, z, NewBlock(b, false, ORIENT_EAST))
+	chunk.clean = false
+}
+
+func (chunk *Chunk) SetB(x uint16, y uint16, z uint16, block Block) {
+	chunk.Blocks[blockIndex(x, y, z)] = block
 	chunk.clean = false
 }
 
@@ -154,9 +203,8 @@ func (self *Chunk) PreRender(selectedBlockFace *BlockFace) {
 		for x = 0; x < CHUNK_WIDTH; x++ {
 			for z = 0; z < CHUNK_WIDTH; z++ {
 				for y = 0; y < CHUNK_HEIGHT; y++ {
-
-					var blockid uint16 = uint16(self.Blocks[blockIndex(x, y, z)])
-					if blockid != 0 {
+					block := self.Blocks[blockIndex(x, y, z)]
+					if block.id != 0 {
 
 						pos := Vectori{self.x*CHUNK_WIDTH + x, y, self.z*CHUNK_WIDTH + z}
 						neighbours := TheWorld.Neighbours(pos)
@@ -168,7 +216,7 @@ func (self *Chunk) PreRender(selectedBlockFace *BlockFace) {
 								selectedFace = selectedBlockFace.face
 							}
 
-							TerrainCube(self.vertexBuffer, pos, neighbours, blockid, selectedFace)
+							TerrainCube(self.vertexBuffer, pos, neighbours, block, selectedFace)
 						}
 					}
 				}

@@ -238,7 +238,7 @@ func (self *Inventory) DrawItem(t int64, quantity uint16, itemid uint16, x float
 	self.drawBuffer.Reset()
 
 	if itemid < 256 {
-		TerrainCube(self.drawBuffer, Vectori{}, [18]uint16{BLOCK_DIRT, BLOCK_DIRT, BLOCK_DIRT, BLOCK_DIRT, BLOCK_AIR, BLOCK_DIRT, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR}, itemid, FACE_NONE)
+		TerrainCube(self.drawBuffer, Vectori{}, [18]uint16{BLOCK_DIRT, BLOCK_DIRT, BLOCK_DIRT, BLOCK_DIRT, BLOCK_AIR, BLOCK_DIRT, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR}, NewBlockDefault(byte(itemid)), FACE_NONE)
 	} else {
 		RenderItemFlat(self.drawBuffer, Vectori{}, itemid)
 	}

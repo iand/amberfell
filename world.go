@@ -343,8 +343,17 @@ func (self *World) At(x uint16, y uint16, z uint16) byte {
 	return chunk.At(ox, oy, oz)
 }
 
+func (self *World) AtB(x uint16, y uint16, z uint16) Block {
+	chunk, ox, oy, oz := self.GetChunkForBlock(x, y, z)
+	return chunk.AtB(ox, oy, oz)
+}
+
 func (self *World) Atv(v [3]uint16) byte {
 	return self.At(v[XAXIS], v[YAXIS], v[ZAXIS])
+}
+
+func (self *World) AtBv(v [3]uint16) Block {
+	return self.AtB(v[XAXIS], v[YAXIS], v[ZAXIS])
 }
 
 func (self *World) Set(x uint16, y uint16, z uint16, b byte) {
@@ -355,6 +364,16 @@ func (self *World) Set(x uint16, y uint16, z uint16, b byte) {
 func (self *World) Setv(v Vectori, b byte) {
 	chunk, ox, oy, oz := self.GetChunkForBlock(v[XAXIS], v[YAXIS], v[ZAXIS])
 	chunk.Set(ox, oy, oz, b)
+}
+
+func (self *World) SetB(x uint16, y uint16, z uint16, block Block) {
+	chunk, ox, oy, oz := self.GetChunkForBlock(x, y, z)
+	chunk.SetB(ox, oy, oz, block)
+}
+
+func (self *World) SetBv(v Vectori, block Block) {
+	chunk, ox, oy, oz := self.GetChunkForBlock(v[XAXIS], v[YAXIS], v[ZAXIS])
+	chunk.SetB(ox, oy, oz, block)
 }
 
 func (self *World) RandomSquare(x1 uint16, z1 uint16, radius uint16) (x uint16, z uint16) {
@@ -474,10 +493,6 @@ func (self *World) ApplyForces(mob Mob, dt float64) {
 	mp := mob.Position()
 	ip := IntPosition(mp)
 
-	// mobx := ip[XAXIS]
-	// moby := ip[YAXIS]
-	// mobz := ip[ZAXIS]
-
 	// Gravity
 	if mob.IsFalling() {
 		// println("is falling")
@@ -491,13 +506,11 @@ func (self *World) ApplyForces(mob Mob, dt float64) {
 
 	playerRect := Rect{x: float64(mp[XAXIS]) + mob.Velocity()[XAXIS]*dt, y: float64(mp[ZAXIS]) + mob.Velocity()[ZAXIS]*dt, sizex: mob.W(), sizey: mob.D()}
 
-	// collisionCandidates := make([]Side, 0)
-
 	if self.Atv(ip.North()) != BLOCK_AIR {
 		if mob.Velocity()[ZAXIS] < 0 && ip.North().HRect().Intersects(playerRect) {
 			mob.Snapz(float64(ip.North()[ZAXIS])+0.5+playerRect.sizey/2, 0)
 
-			if self.Atv(ip.North().Up()) == BLOCK_AIR {
+			if items[uint16(self.Atv(ip.North()))].autojump && self.Atv(ip.North().Up()) == BLOCK_AIR {
 				mob.Setvy(4)
 			}
 		}
@@ -506,7 +519,7 @@ func (self *World) ApplyForces(mob Mob, dt float64) {
 	if self.Atv(ip.South()) != BLOCK_AIR {
 		if mob.Velocity()[ZAXIS] > 0 && ip.South().HRect().Intersects(playerRect) {
 			mob.Snapz(float64(ip.South()[ZAXIS])-0.5-playerRect.sizey/2, 0)
-			if self.Atv(ip.South().Up()) == BLOCK_AIR {
+			if items[uint16(self.Atv(ip.South()))].autojump && self.Atv(ip.South().Up()) == BLOCK_AIR {
 				mob.Setvy(4)
 			}
 		}
@@ -515,7 +528,7 @@ func (self *World) ApplyForces(mob Mob, dt float64) {
 	if self.Atv(ip.East()) != BLOCK_AIR {
 		if mob.Velocity()[XAXIS] > 0 && ip.East().HRect().Intersects(playerRect) {
 			mob.Snapx(float64(ip.East()[XAXIS])-0.5-playerRect.sizex/2, 0)
-			if self.Atv(ip.East().Up()) == BLOCK_AIR {
+			if items[uint16(self.Atv(ip.East()))].autojump && self.Atv(ip.East().Up()) == BLOCK_AIR {
 				mob.Setvy(4)
 			}
 		}
@@ -524,7 +537,7 @@ func (self *World) ApplyForces(mob Mob, dt float64) {
 	if self.Atv(ip.West()) != BLOCK_AIR {
 		if mob.Velocity()[XAXIS] < 0 && ip.West().HRect().Intersects(playerRect) {
 			mob.Snapx(float64(ip.West()[XAXIS])+0.5+playerRect.sizex/2, 0)
-			if self.Atv(ip.West().Up()) == BLOCK_AIR {
+			if items[uint16(self.Atv(ip.West()))].autojump && self.Atv(ip.West().Up()) == BLOCK_AIR {
 				mob.Setvy(4)
 			}
 		}

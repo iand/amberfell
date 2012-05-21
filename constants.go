@@ -202,8 +202,8 @@ const (
 	TEXTURE_ZINC
 	TEXTURE_BEESNEST
 	TEXTURE_BEESNEST_TOP
+	TEXTURE_CRACKS
 	TEXTURE_QUARTZ_SEAM
-	_ // 15
 
 	// Row 2  (16-31)
 	TEXTURE_CARVED_STONE
@@ -400,8 +400,9 @@ var (
 		[4]float32{0.84, 0.84, 0.84, 1.0},
 		[4]float32{0.92, 0.92, 0.92, 1.0},
 	}
-	COLOUR_WHITE = [4]float32{1.0, 1.0, 1.0, 1.0}
-	COLOURS      = [5][4]float32{
+	COLOUR_WHITE  = [4]float32{1.0, 1.0, 1.0, 1.0}
+	COLOUR_CRACKS = [4]float32{1.0, 1.0, 1.0, 0.4}
+	COLOURS       = [5][4]float32{
 		{1.0, 1.0, 1.0, 1.0},
 		{0.7, 0.7, 0.7, 1.0},
 		{0.55, 0.55, 0.55, 1.0},

@@ -294,53 +294,63 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 		}
 
 	case ACTION_BREAK:
-		blockid := TheWorld.Atv(selectedBlockFace.pos)
+		block := TheWorld.AtBv(selectedBlockFace.pos)
+		blocktype := items[uint16(block.id)]
+		blockid := block.id
 		if blockid != BLOCK_AIR {
 			interactingBlockFace.hitCount++
-			if items[uint16(blockid)].hitsNeeded != STRENGTH_UNBREAKABLE && interactingBlockFace.hitCount >= items[uint16(blockid)].hitsNeeded {
-				TheWorld.Setv(selectedBlockFace.pos, BLOCK_AIR)
+			if blocktype.hitsNeeded != STRENGTH_UNBREAKABLE && interactingBlockFace.hitCount >= blocktype.hitsNeeded/2 {
 
-				switch blockid {
-				case BLOCK_CAMPFIRE:
-					delete(TheWorld.campfires, selectedBlockFace.pos)
-					delete(TheWorld.lightSources, selectedBlockFace.pos)
-					delete(TheWorld.timedObjects, selectedBlockFace.pos)
+				if interactingBlockFace.hitCount >= blocktype.hitsNeeded {
+					TheWorld.Setv(selectedBlockFace.pos, BLOCK_AIR)
+					TheWorld.InvalidateRadius(selectedBlockFace.pos[XAXIS], selectedBlockFace.pos[ZAXIS], 1)
 
-					TheWorld.InvalidateRadius(selectedBlockFace.pos[XAXIS], selectedBlockFace.pos[ZAXIS], uint16(CAMPFIRE_INTENSITY))
+					switch blockid {
+					case BLOCK_CAMPFIRE:
+						delete(TheWorld.campfires, selectedBlockFace.pos)
+						delete(TheWorld.lightSources, selectedBlockFace.pos)
+						delete(TheWorld.timedObjects, selectedBlockFace.pos)
 
-				case BLOCK_AMBERFELL_PUMP:
-					delete(TheWorld.timedObjects, selectedBlockFace.pos)
-					delete(TheWorld.containerObjects, selectedBlockFace.pos)
+						TheWorld.InvalidateRadius(selectedBlockFace.pos[XAXIS], selectedBlockFace.pos[ZAXIS], uint16(CAMPFIRE_INTENSITY))
 
-				case BLOCK_STEAM_GENERATOR:
-					delete(TheWorld.timedObjects, selectedBlockFace.pos)
-					delete(TheWorld.containerObjects, selectedBlockFace.pos)
-					delete(TheWorld.generatorObjects, selectedBlockFace.pos)
+					case BLOCK_AMBERFELL_PUMP:
+						delete(TheWorld.timedObjects, selectedBlockFace.pos)
+						delete(TheWorld.containerObjects, selectedBlockFace.pos)
 
-				case BLOCK_AMBERFELL_CONDENSER:
-					delete(TheWorld.timedObjects, selectedBlockFace.pos)
-					delete(TheWorld.containerObjects, selectedBlockFace.pos)
+					case BLOCK_STEAM_GENERATOR:
+						delete(TheWorld.timedObjects, selectedBlockFace.pos)
+						delete(TheWorld.containerObjects, selectedBlockFace.pos)
+						delete(TheWorld.generatorObjects, selectedBlockFace.pos)
 
-				case BLOCK_FURNACE:
-					delete(TheWorld.timedObjects, selectedBlockFace.pos)
-					delete(TheWorld.containerObjects, selectedBlockFace.pos)
+					case BLOCK_AMBERFELL_CONDENSER:
+						delete(TheWorld.timedObjects, selectedBlockFace.pos)
+						delete(TheWorld.containerObjects, selectedBlockFace.pos)
 
-				case BLOCK_BEESNEST:
-					delete(TheWorld.timedObjects, selectedBlockFace.pos)
-					delete(TheWorld.containerObjects, selectedBlockFace.pos)
+					case BLOCK_FURNACE:
+						delete(TheWorld.timedObjects, selectedBlockFace.pos)
+						delete(TheWorld.containerObjects, selectedBlockFace.pos)
 
-				}
+					case BLOCK_BEESNEST:
+						delete(TheWorld.timedObjects, selectedBlockFace.pos)
+						delete(TheWorld.containerObjects, selectedBlockFace.pos)
 
-				if items[uint16(blockid)].drops != nil {
-					droppedItem := items[uint16(blockid)].drops.item
-					if self.inventory[droppedItem] < MAX_ITEMS_IN_INVENTORY {
-						self.inventory[droppedItem]++
-						if items[uint16(droppedItem)].placeable {
-							self.EquipItem(uint16(droppedItem))
+					}
+
+					if blocktype.drops != nil {
+						droppedItem := blocktype.drops.item
+						if self.inventory[droppedItem] < MAX_ITEMS_IN_INVENTORY {
+							self.inventory[droppedItem]++
+							if items[uint16(droppedItem)].placeable {
+								self.EquipItem(uint16(droppedItem))
+							}
 						}
 					}
+					interactingBlockFace.hitCount = 0
+				} else if !block.Damaged() {
+					block.SetDamaged(true)
+					TheWorld.SetBv(selectedBlockFace.pos, block)
+
 				}
-				interactingBlockFace.hitCount = 0
 			}
 
 		}
