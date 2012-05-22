@@ -74,7 +74,7 @@ func (self *SteamGenerator) CanTake() bool {
 	return true
 }
 
-func (self *SteamGenerator) CanPlace(itemid uint16) bool {
+func (self *SteamGenerator) CanPlace(itemid ItemId) bool {
 	if itemid == ITEM_COAL {
 		return true
 	}

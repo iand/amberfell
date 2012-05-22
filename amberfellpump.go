@@ -100,6 +100,6 @@ func (self *AmberfellPump) CanTake() bool {
 	return true
 }
 
-func (self *AmberfellPump) CanPlace(itemid uint16) bool {
+func (self *AmberfellPump) CanPlace(itemid ItemId) bool {
 	return false
 }

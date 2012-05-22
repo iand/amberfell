@@ -26,11 +26,11 @@ type Chunk struct {
 }
 
 type Block struct {
-	id   byte
+	id   BlockId
 	data uint8
 }
 
-func NewBlock(id byte, damaged bool, orientation uint8) Block {
+func NewBlock(id BlockId, damaged bool, orientation uint8) Block {
 	var data uint8
 
 	if damaged {
@@ -41,7 +41,7 @@ func NewBlock(id byte, damaged bool, orientation uint8) Block {
 	return Block{id, data}
 }
 
-func NewBlockDefault(id byte) Block {
+func NewBlockDefault(id BlockId) Block {
 	return Block{id, 0}
 }
 
@@ -132,13 +132,13 @@ func NewChunk(cx uint16, cz uint16, hasAmberfell bool, amberfellCoords [2]uint16
 
 				for _, occurrence := range ORE_DISTRIBUTIONS {
 					surface := upper - 1
-					size := TheWorld.Ore(x+xw, z+zw, occurrence.itemid, occurrence.occurrence)
+					size := TheWorld.Ore(x+xw, z+zw, BlockId(occurrence.itemid), occurrence.occurrence)
 					if size > 0 {
 						if size > 2 {
 							surface++
 						}
 						for y := surface; y > surface-size && y > 0; y-- {
-							chunk.Set(x, y, z, occurrence.itemid)
+							chunk.Set(x, y, z, BlockId(occurrence.itemid))
 						}
 						chunk.standingStoneProb += 0.000001 * occurrence.occurrence
 						break
@@ -169,7 +169,7 @@ func (chunk *Chunk) Init(x uint16, z uint16) {
 	chunk.vertexBuffer = NewVertexBuffer(VERTEX_BUFFER_CAPACITY, terrainTexture)
 }
 
-func (chunk *Chunk) At(x uint16, y uint16, z uint16) byte {
+func (chunk *Chunk) At(x uint16, y uint16, z uint16) BlockId {
 	if y < 0 {
 		y = 0
 	}
@@ -180,7 +180,7 @@ func (chunk *Chunk) AtB(x uint16, y uint16, z uint16) Block {
 	return chunk.Blocks[blockIndex(x, y, z)]
 }
 
-func (chunk *Chunk) Set(x uint16, y uint16, z uint16, b byte) {
+func (chunk *Chunk) Set(x uint16, y uint16, z uint16, b BlockId) {
 	chunk.SetB(x, y, z, NewBlock(b, false, ORIENT_EAST))
 	chunk.clean = false
 }

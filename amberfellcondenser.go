@@ -103,7 +103,7 @@ func (self *AmberfellCondenser) CanTake() bool {
 	return true
 }
 
-func (self *AmberfellCondenser) CanPlace(itemid uint16) bool {
+func (self *AmberfellCondenser) CanPlace(itemid ItemId) bool {
 	if itemid == ITEM_FIREWOOD || itemid == ITEM_AMBERFELL || itemid == ITEM_AMBERFELL_CRYSTAL {
 		return true
 	}

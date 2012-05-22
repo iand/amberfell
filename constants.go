@@ -382,7 +382,7 @@ const (
 )
 
 type OreOccurrence struct {
-	itemid     byte
+	itemid     ItemId
 	occurrence float64
 }
 

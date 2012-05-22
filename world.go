@@ -108,7 +108,7 @@ func (self *World) Rocks(x uint16, z uint16) uint16 {
 	return uint16(noise)
 }
 
-func (self *World) Ore(x uint16, z uint16, blockid byte, occcurrence float64) uint16 {
+func (self *World) Ore(x uint16, z uint16, blockid BlockId, occcurrence float64) uint16 {
 	xloc := (float64(x) + MAP_DIAM*float64(blockid)) / (NOISE_SCALE / 2)
 	zloc := (float64(z) + MAP_DIAM*float64(blockid)) / (NOISE_SCALE / 2)
 	noise := perlin.Noise2D(xloc, zloc, worldSeed, 2.4, 1.8, 4)
@@ -338,7 +338,7 @@ func (self *World) GetChunk(cx uint16, cz uint16) *Chunk {
 
 }
 
-func (self *World) At(x uint16, y uint16, z uint16) byte {
+func (self *World) At(x uint16, y uint16, z uint16) BlockId {
 	chunk, ox, oy, oz := self.GetChunkForBlock(x, y, z)
 	return chunk.At(ox, oy, oz)
 }
@@ -348,7 +348,7 @@ func (self *World) AtB(x uint16, y uint16, z uint16) Block {
 	return chunk.AtB(ox, oy, oz)
 }
 
-func (self *World) Atv(v [3]uint16) byte {
+func (self *World) Atv(v [3]uint16) BlockId {
 	return self.At(v[XAXIS], v[YAXIS], v[ZAXIS])
 }
 
@@ -356,12 +356,12 @@ func (self *World) AtBv(v [3]uint16) Block {
 	return self.AtB(v[XAXIS], v[YAXIS], v[ZAXIS])
 }
 
-func (self *World) Set(x uint16, y uint16, z uint16, b byte) {
+func (self *World) Set(x uint16, y uint16, z uint16, b BlockId) {
 	chunk, ox, oy, oz := self.GetChunkForBlock(x, y, z)
 	chunk.Set(ox, oy, oz, b)
 }
 
-func (self *World) Setv(v Vectori, b byte) {
+func (self *World) Setv(v Vectori, b BlockId) {
 	chunk, ox, oy, oz := self.GetChunkForBlock(v[XAXIS], v[YAXIS], v[ZAXIS])
 	chunk.Set(ox, oy, oz, b)
 }
@@ -393,8 +393,7 @@ func (self *World) InvalidateRadius(x uint16, z uint16, r uint16) {
 	}
 
 	for i := range chunks {
-		chunk, ok := self.chunks[i]
-		if ok {
+		if chunk, ok := self.chunks[i]; ok {
 			chunk.clean = false
 		}
 	}
@@ -405,7 +404,7 @@ func (self *World) InvalidateRadius(x uint16, z uint16, r uint16) {
 // east/west = +/- x
 // up/down = +/- y
 
-func (self *World) Grow(x uint16, y uint16, z uint16, n int, s int, w int, e int, u int, d int, texture byte) {
+func (self *World) Grow(x uint16, y uint16, z uint16, n int, s int, w int, e int, u int, d int, texture BlockId) {
 	if y > 0 && x < MAP_DIAM && self.At(x+1, y-1, z) != 0 && rand.Intn(100) < e {
 		self.Set(x+1, y, z, texture)
 		self.Grow(x+1, y, z, n, s, 0, e-2, u, d, texture)
@@ -432,10 +431,10 @@ func (self *World) Grow(x uint16, y uint16, z uint16, n int, s int, w int, e int
 	}
 }
 
-func (self *World) HasVisibleFaces(neighbours [18]uint16) bool {
+func (self *World) HasVisibleFaces(neighbours [18]BlockId) bool {
 
 	for i := 0; i < 6; i++ {
-		if items[neighbours[i]].transparent {
+		if items[ItemId(neighbours[i])].transparent {
 			return true
 		}
 	}
@@ -443,7 +442,7 @@ func (self *World) HasVisibleFaces(neighbours [18]uint16) bool {
 	return false
 }
 
-func (self *World) ApproxBlockAt(x uint16, y uint16, z uint16) uint16 {
+func (self *World) ApproxBlockAt(x uint16, y uint16, z uint16) BlockId {
 	if y < 0 {
 		return BLOCK_AIR
 	} else if y > CHUNK_HEIGHT {
@@ -451,14 +450,14 @@ func (self *World) ApproxBlockAt(x uint16, y uint16, z uint16) uint16 {
 	}
 
 	if self.ChunkLoadedFor(x, y, z) {
-		return uint16(self.At(x, y, z))
+		return BlockId(self.At(x, y, z))
 	} else if self.GroundLevel(x, z) > y {
 		return BLOCK_DIRT
 	}
 	return BLOCK_AIR
 }
 
-func (self *World) Neighbours(pos Vectori) (neighbours [18]uint16) {
+func (self *World) Neighbours(pos Vectori) (neighbours [18]BlockId) {
 	x := pos[XAXIS]
 	y := pos[YAXIS]
 	z := pos[ZAXIS]
@@ -473,7 +472,7 @@ func (self *World) Neighbours(pos Vectori) (neighbours [18]uint16) {
 	return
 }
 
-func (self *World) AllNeighbours(pos Vectori) (neighbours [18]uint16) {
+func (self *World) AllNeighbours(pos Vectori) (neighbours [18]BlockId) {
 	x := pos[XAXIS]
 	y := pos[YAXIS]
 	z := pos[ZAXIS]
@@ -544,7 +543,7 @@ func (self *World) ApplyForces(mob Mob, dt float64) {
 	if neighbours[NORTH_FACE] != BLOCK_AIR {
 		if mob.Velocity()[ZAXIS] < 0 && (ip.North().HRect().Intersects(mobRect1) || ip.North().HRect().Intersects(mobRect2)) {
 			mob.Snapz(float64(ip.North()[ZAXIS])+0.5+mobRect2.sizey/2, 0)
-			if items[neighbours[NORTH_FACE]].autojump && neighbours[DIR_UN] == BLOCK_AIR {
+			if items[ItemId(neighbours[NORTH_FACE])].autojump && neighbours[DIR_UN] == BLOCK_AIR {
 				mob.Setvy(4)
 			}
 		}
@@ -553,7 +552,7 @@ func (self *World) ApplyForces(mob Mob, dt float64) {
 	if neighbours[SOUTH_FACE] != BLOCK_AIR {
 		if mob.Velocity()[ZAXIS] > 0 && (ip.South().HRect().Intersects(mobRect1) || ip.South().HRect().Intersects(mobRect2)) {
 			mob.Snapz(float64(ip.South()[ZAXIS])-0.5-mobRect2.sizey/2, 0)
-			if items[neighbours[SOUTH_FACE]].autojump && neighbours[DIR_US] == BLOCK_AIR {
+			if items[ItemId(neighbours[SOUTH_FACE])].autojump && neighbours[DIR_US] == BLOCK_AIR {
 				mob.Setvy(4)
 			}
 		}
@@ -562,7 +561,7 @@ func (self *World) ApplyForces(mob Mob, dt float64) {
 	if neighbours[EAST_FACE] != BLOCK_AIR {
 		if mob.Velocity()[XAXIS] > 0 && (ip.East().HRect().Intersects(mobRect1) || ip.East().HRect().Intersects(mobRect2)) {
 			mob.Snapx(float64(ip.East()[XAXIS])-0.5-mobRect2.sizex/2, 0)
-			if items[neighbours[EAST_FACE]].autojump && neighbours[DIR_UE] == BLOCK_AIR {
+			if items[ItemId(neighbours[EAST_FACE])].autojump && neighbours[DIR_UE] == BLOCK_AIR {
 				mob.Setvy(4)
 			}
 		}
@@ -571,7 +570,7 @@ func (self *World) ApplyForces(mob Mob, dt float64) {
 	if neighbours[WEST_FACE] != BLOCK_AIR {
 		if mob.Velocity()[XAXIS] < 0 && (ip.West().HRect().Intersects(mobRect1) || ip.West().HRect().Intersects(mobRect2)) {
 			mob.Snapx(float64(ip.West()[XAXIS])+0.5+mobRect2.sizex/2, 0)
-			if items[neighbours[WEST_FACE]].autojump && neighbours[DIR_UW] == BLOCK_AIR {
+			if items[ItemId(neighbours[WEST_FACE])].autojump && neighbours[DIR_UW] == BLOCK_AIR {
 				mob.Setvy(4)
 			}
 		}

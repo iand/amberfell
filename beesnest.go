@@ -63,6 +63,6 @@ func (self *BeesNest) CanTake() bool {
 	return true
 }
 
-func (self *BeesNest) CanPlace(itemid uint16) bool {
+func (self *BeesNest) CanPlace(itemid ItemId) bool {
 	return false
 }
