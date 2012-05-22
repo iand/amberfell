@@ -327,38 +327,15 @@ func Draw(t int64) {
 	gl.Color4ub(192, 192, 192, 255)
 	gl.Enable(gl.TEXTURE_2D)
 	gl.Enable(gl.DEPTH_TEST)
-	//gl.Enable(gl.FOG)
 	gl.Enable(gl.LIGHTING)
 	gl.Enable(gl.LIGHT0)
 	gl.Enable(gl.COLOR_MATERIAL)
-
-	if timeOfDay < 5.3 || timeOfDay > 20.7 {
-		gl.Enable(gl.LIGHT1)
-	} else {
-		gl.Disable(gl.LIGHT1)
-	}
-
-	// CheckGLError()
 	gl.LoadIdentity()
 
 	center := ThePlayer.Position()
 
-	// glu.LookAt(			
-	// 				0,0,0,
-
-	// 				center[XAXIS], center[YAXIS], center[ZAXIS],
-	// 				0.0, 1.0, 0.0 )
-
-	// normal := ThePlayer.Normal()
-
-	// matrix := *viewport.matrix.Float32()
 	matrix := ModelMatrix().Float32()
 	gl.MultMatrixf(&matrix[0])
-
-	// normal := ThePlayer.Normal()
-	// gl.Translated(normal[XAXIS]*3, -12, normal[ZAXIS]*3)
-
-	//gl.Translatef(-float32(center[XAXIS]), -float32(center[YAXIS]), -float32(center[ZAXIS]))
 
 	// Sun
 	gl.Materialfv(gl.FRONT, gl.AMBIENT, []float32{0.1, 0.1, 0.1, 1})

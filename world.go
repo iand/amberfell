@@ -469,20 +469,35 @@ func (self *World) Neighbours(pos Vectori) (neighbours [18]BlockId) {
 	neighbours[DOWN_FACE] = self.ApproxBlockAt(x, y-1, z)
 	neighbours[UP_FACE] = self.ApproxBlockAt(x, y+1, z)
 
-	// neighbours[DIR_NE] = self.ApproxBlockAt(x+1, y, z-1)
-	// neighbours[DIR_SE] = self.ApproxBlockAt(x+1, y, z+1)
-	// neighbours[DIR_SW] = self.ApproxBlockAt(x-1, y, z+1)
-	// neighbours[DIR_NW] = self.ApproxBlockAt(x-1, y, z-1)
+	return
+}
 
-	// neighbours[DIR_UN]  = self.ApproxBlockAt(x  , y+1, z-1)
-	// neighbours[DIR_UE]  = self.ApproxBlockAt(x+1, y+1, z)
-	// neighbours[DIR_US]  = self.ApproxBlockAt(x  , y+1, z+1)
-	// neighbours[DIR_UW]  = self.ApproxBlockAt(x-1, y+1, z)
+func (self *World) AllNeighbours(pos Vectori) (neighbours [18]BlockId) {
+	x := pos[XAXIS]
+	y := pos[YAXIS]
+	z := pos[ZAXIS]
 
-	// neighbours[DIR_DN]  = self.ApproxBlockAt(x  , y-1, z-1)
-	// neighbours[DIR_DE]  = self.ApproxBlockAt(x+1, y-1, z)
-	// neighbours[DIR_DS]  = self.ApproxBlockAt(x  , y-1, z+1)
-	// neighbours[DIR_DW]  = self.ApproxBlockAt(x-1, y-1, z)
+	neighbours[WEST_FACE] = self.ApproxBlockAt(x-1, y, z)
+	neighbours[EAST_FACE] = self.ApproxBlockAt(x+1, y, z)
+	neighbours[NORTH_FACE] = self.ApproxBlockAt(x, y, z-1)
+	neighbours[SOUTH_FACE] = self.ApproxBlockAt(x, y, z+1)
+	neighbours[DOWN_FACE] = self.ApproxBlockAt(x, y-1, z)
+	neighbours[UP_FACE] = self.ApproxBlockAt(x, y+1, z)
+
+	neighbours[DIR_NE] = self.ApproxBlockAt(x+1, y, z-1)
+	neighbours[DIR_SE] = self.ApproxBlockAt(x+1, y, z+1)
+	neighbours[DIR_SW] = self.ApproxBlockAt(x-1, y, z+1)
+	neighbours[DIR_NW] = self.ApproxBlockAt(x-1, y, z-1)
+
+	neighbours[DIR_UN] = self.ApproxBlockAt(x, y+1, z-1)
+	neighbours[DIR_UE] = self.ApproxBlockAt(x+1, y+1, z)
+	neighbours[DIR_US] = self.ApproxBlockAt(x, y+1, z+1)
+	neighbours[DIR_UW] = self.ApproxBlockAt(x-1, y+1, z)
+
+	neighbours[DIR_DN] = self.ApproxBlockAt(x, y-1, z-1)
+	neighbours[DIR_DE] = self.ApproxBlockAt(x+1, y-1, z)
+	neighbours[DIR_DS] = self.ApproxBlockAt(x, y-1, z+1)
+	neighbours[DIR_DW] = self.ApproxBlockAt(x-1, y-1, z)
 
 	return
 }
@@ -503,41 +518,104 @@ func (self *World) ApplyForces(mob Mob, dt float64) {
 		mob.Setvz(mob.Velocity()[ZAXIS] / (1.0 + 12*dt))
 	}
 
-	playerRect := Rect{x: float64(mp[XAXIS]) + mob.Velocity()[XAXIS]*dt, y: float64(mp[ZAXIS]) + mob.Velocity()[ZAXIS]*dt, sizex: mob.W(), sizey: mob.D()}
+	dvx := mob.Velocity()[XAXIS] * dt
+	dvz := mob.Velocity()[ZAXIS] * dt
+	if dvx > 0.5 {
+		dvx = 0.5
+	} else if dvx < 0.5 {
+		dvx = -0.5
+	}
+	if dvz > 0.5 {
+		dvz = 0.5
+	} else if dvz < 0.5 {
+		dvz = -0.5
+	}
 
-	if self.Atv(ip.North()) != BLOCK_AIR {
-		if mob.Velocity()[ZAXIS] < 0 && ip.North().HRect().Intersects(playerRect) {
-			mob.Snapz(float64(ip.North()[ZAXIS])+0.5+playerRect.sizey/2, 0)
+	mobRect1 := Rect{x: float64(mp[XAXIS]), y: float64(mp[ZAXIS]), sizex: mob.W(), sizey: mob.D()}
+	mobRect2 := Rect{x: float64(mp[XAXIS]) + dvx, y: float64(mp[ZAXIS]) + dvz, sizex: mob.W(), sizey: mob.D()}
 
-			if items[ItemId(self.Atv(ip.North()))].autojump && self.Atv(ip.North().Up()) == BLOCK_AIR {
+	neighbours := self.AllNeighbours(ip)
+
+	if self.Atv(ip) != BLOCK_AIR {
+		mob.Snapy(float64(ip.Down()[YAXIS])+0.5+mob.H()/2, 0)
+	}
+
+	if neighbours[NORTH_FACE] != BLOCK_AIR {
+		if mob.Velocity()[ZAXIS] < 0 && (ip.North().HRect().Intersects(mobRect1) || ip.North().HRect().Intersects(mobRect2)) {
+			mob.Snapz(float64(ip.North()[ZAXIS])+0.5+mobRect2.sizey/2, 0)
+			if items[ItemId(neighbours[NORTH_FACE])].autojump && neighbours[DIR_UN] == BLOCK_AIR {
 				mob.Setvy(4)
 			}
 		}
 	}
 
-	if self.Atv(ip.South()) != BLOCK_AIR {
-		if mob.Velocity()[ZAXIS] > 0 && ip.South().HRect().Intersects(playerRect) {
-			mob.Snapz(float64(ip.South()[ZAXIS])-0.5-playerRect.sizey/2, 0)
-			if items[ItemId(self.Atv(ip.South()))].autojump && self.Atv(ip.South().Up()) == BLOCK_AIR {
+	if neighbours[SOUTH_FACE] != BLOCK_AIR {
+		if mob.Velocity()[ZAXIS] > 0 && (ip.South().HRect().Intersects(mobRect1) || ip.South().HRect().Intersects(mobRect2)) {
+			mob.Snapz(float64(ip.South()[ZAXIS])-0.5-mobRect2.sizey/2, 0)
+			if items[ItemId(neighbours[SOUTH_FACE])].autojump && neighbours[DIR_US] == BLOCK_AIR {
 				mob.Setvy(4)
 			}
 		}
 	}
 
-	if self.Atv(ip.East()) != BLOCK_AIR {
-		if mob.Velocity()[XAXIS] > 0 && ip.East().HRect().Intersects(playerRect) {
-			mob.Snapx(float64(ip.East()[XAXIS])-0.5-playerRect.sizex/2, 0)
-			if items[ItemId(self.Atv(ip.East()))].autojump && self.Atv(ip.East().Up()) == BLOCK_AIR {
+	if neighbours[EAST_FACE] != BLOCK_AIR {
+		if mob.Velocity()[XAXIS] > 0 && (ip.East().HRect().Intersects(mobRect1) || ip.East().HRect().Intersects(mobRect2)) {
+			mob.Snapx(float64(ip.East()[XAXIS])-0.5-mobRect2.sizex/2, 0)
+			if items[ItemId(neighbours[EAST_FACE])].autojump && neighbours[DIR_UE] == BLOCK_AIR {
 				mob.Setvy(4)
 			}
 		}
 	}
 
-	if self.Atv(ip.West()) != BLOCK_AIR {
-		if mob.Velocity()[XAXIS] < 0 && ip.West().HRect().Intersects(playerRect) {
-			mob.Snapx(float64(ip.West()[XAXIS])+0.5+playerRect.sizex/2, 0)
-			if items[ItemId(self.Atv(ip.West()))].autojump && self.Atv(ip.West().Up()) == BLOCK_AIR {
+	if neighbours[WEST_FACE] != BLOCK_AIR {
+		if mob.Velocity()[XAXIS] < 0 && (ip.West().HRect().Intersects(mobRect1) || ip.West().HRect().Intersects(mobRect2)) {
+			mob.Snapx(float64(ip.West()[XAXIS])+0.5+mobRect2.sizex/2, 0)
+			if items[ItemId(neighbours[WEST_FACE])].autojump && neighbours[DIR_UW] == BLOCK_AIR {
 				mob.Setvy(4)
+			}
+		}
+	}
+
+	if neighbours[DIR_NE] != BLOCK_AIR {
+		if ip.East().North().HRect().Intersects(mobRect1) || ip.East().North().HRect().Intersects(mobRect2) {
+			if mob.Velocity()[XAXIS] > 0 {
+				mob.Snapx(float64(ip.East()[XAXIS])-0.5-mobRect2.sizex/2, 0)
+			}
+			if mob.Velocity()[ZAXIS] < 0 {
+				mob.Snapz(float64(ip.North()[ZAXIS])+0.5+mobRect2.sizey/2, 0)
+			}
+		}
+	}
+
+	if neighbours[DIR_NW] != BLOCK_AIR {
+		if ip.West().North().HRect().Intersects(mobRect1) || ip.West().North().HRect().Intersects(mobRect2) {
+			if mob.Velocity()[XAXIS] < 0 {
+				mob.Snapx(float64(ip.West()[XAXIS])+0.5+mobRect2.sizex/2, 0)
+			}
+			if mob.Velocity()[ZAXIS] < 0 {
+				mob.Snapz(float64(ip.North()[ZAXIS])+0.5+mobRect2.sizey/2, 0)
+			}
+		}
+	}
+
+	if neighbours[DIR_SE] != BLOCK_AIR {
+		if ip.East().South().HRect().Intersects(mobRect1) || ip.East().South().HRect().Intersects(mobRect2) {
+			if mob.Velocity()[XAXIS] < 0 {
+				mob.Snapx(float64(ip.East()[XAXIS])-0.5-mobRect2.sizex/2, 0)
+			}
+			if mob.Velocity()[ZAXIS] > 0 {
+				mob.Snapz(float64(ip.South()[ZAXIS])-0.5-mobRect2.sizey/2, 0)
+			}
+		}
+	}
+
+	if neighbours[DIR_SW] != BLOCK_AIR {
+		if ip.West().South().HRect().Intersects(mobRect1) || ip.West().South().HRect().Intersects(mobRect2) {
+			if mob.Velocity()[XAXIS] > 0 {
+				mob.Snapx(float64(ip.West()[XAXIS])+0.5+mobRect2.sizex/2, 0)
+			}
+			if mob.Velocity()[ZAXIS] > 0 {
+				mob.Snapz(float64(ip.South()[ZAXIS])-0.5-mobRect2.sizey/2, 0)
 			}
 		}
 	}
@@ -550,28 +628,28 @@ func (self *World) ApplyForces(mob Mob, dt float64) {
 		}
 	} else {
 		if self.Atv(ip.Down().North()) != BLOCK_AIR {
-			if ip.Down().North().HRect().Intersects(playerRect) {
+			if ip.Down().North().HRect().Intersects(mobRect2) {
 				mob.Snapy(float64(ip.Down()[YAXIS])+1, 0)
 				mob.SetFalling(false)
 			}
 		}
 
 		if self.Atv(ip.Down().South()) != BLOCK_AIR {
-			if ip.Down().South().HRect().Intersects(playerRect) {
+			if ip.Down().South().HRect().Intersects(mobRect2) {
 				mob.Snapy(float64(ip.Down()[YAXIS])+1, 0)
 				mob.SetFalling(false)
 			}
 		}
 
 		if self.Atv(ip.Down().East()) != BLOCK_AIR {
-			if ip.Down().East().HRect().Intersects(playerRect) {
+			if ip.Down().East().HRect().Intersects(mobRect2) {
 				mob.Snapy(float64(ip.Down()[YAXIS])+1, 0)
 				mob.SetFalling(false)
 			}
 		}
 
 		if self.Atv(ip.Down().West()) != BLOCK_AIR {
-			if ip.Down().West().HRect().Intersects(playerRect) {
+			if ip.Down().West().HRect().Intersects(mobRect2) {
 				mob.Snapy(float64(ip.Down()[YAXIS])+1, 0)
 				mob.SetFalling(false)
 			}
