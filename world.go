@@ -1,4 +1,4 @@
-/*
+	/*
   To the extent possible under law, Ian Davis has waived all copyright
   and related or neighboring rights to this Amberfell Source Code file.
   This work is published from the United Kingdom. 
@@ -393,7 +393,8 @@ func (self *World) InvalidateRadius(x uint16, z uint16, r uint16) {
 	}
 
 	for i := range chunks {
-		if chunk, ok := self.chunks[i]; ok {
+		chunk, ok := self.chunks[i]
+		if ok {
 			chunk.clean = false
 		}
 	}
@@ -404,30 +405,30 @@ func (self *World) InvalidateRadius(x uint16, z uint16, r uint16) {
 // east/west = +/- x
 // up/down = +/- y
 
-func (self *World) Grow(x uint16, y uint16, z uint16, n int, s int, w int, e int, u int, d int, texture BlockId) {
+func (self *World) Grow(x uint16, y uint16, z uint16, n int, s int, w int, e int, u int, d int, blockid BlockId) {
 	if y > 0 && x < MAP_DIAM && self.At(x+1, y-1, z) != 0 && rand.Intn(100) < e {
-		self.Set(x+1, y, z, texture)
-		self.Grow(x+1, y, z, n, s, 0, e-2, u, d, texture)
+		self.Set(x+1, y, z, blockid)
+		self.Grow(x+1, y, z, n, s, 0, e-2, u, d, blockid)
 	}
 	if y > 0 && x > 0 && self.At(x-1, y-1, z) != 0 && rand.Intn(100) < w {
-		self.Set(x-1, y, z, texture)
-		self.Grow(x-1, y, z, n, s, w-2, 0, u, d, texture)
+		self.Set(x-1, y, z, blockid)
+		self.Grow(x-1, y, z, n, s, w-2, 0, u, d, blockid)
 	}
 	if y > 0 && z < MAP_DIAM && self.At(x, y-1, z+1) != 0 && rand.Intn(100) < s {
-		self.Set(x, y, z+1, texture)
-		self.Grow(x, y, z+1, 0, s-2, w, e, u, d, texture)
+		self.Set(x, y, z+1, blockid)
+		self.Grow(x, y, z+1, 0, s-2, w, e, u, d, blockid)
 	}
 	if y > 0 && z > 0 && self.At(x, y-1, z-1) != 0 && rand.Intn(100) < n {
-		self.Set(x, y, z-1, texture)
-		self.Grow(x, y, z-1, n-2, 0, w, e, u, d, texture)
+		self.Set(x, y, z-1, blockid)
+		self.Grow(x, y, z-1, n-2, 0, w, e, u, d, blockid)
 	}
 	if y < MAP_DIAM && rand.Intn(100) < u {
-		self.Set(x, y+1, z, texture)
-		self.Grow(x, y+1, z, n, s, w, e, u-2, 0, texture)
+		self.Set(x, y+1, z, blockid)
+		self.Grow(x, y+1, z, n, s, w, e, u-2, 0, blockid)
 	}
 	if y > 0 && rand.Intn(100) < d {
-		self.Set(x, y-1, z, texture)
-		self.Grow(x, y-1, z, n, s, w, e, 0, d-2, texture)
+		self.Set(x, y-1, z, blockid)
+		self.Grow(x, y-1, z, n, s, w, e, 0, d-2, blockid)
 	}
 }
 
