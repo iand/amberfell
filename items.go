@@ -31,7 +31,7 @@ type ContainerObject interface {
 	Label() string
 	Item(slot int) ItemQuantity
 	CanTake() bool
-	CanPlace(itemid uint16) bool
+	CanPlace(itemid ItemId) bool
 	Take(slot int, quantity uint16)
 	Place(slot int, iq *ItemQuantity)
 	Slots() int
@@ -47,7 +47,7 @@ type GeneratorObject interface {
 }
 
 type ItemQuantity struct {
-	item     uint16
+	item     ItemId
 	quantity uint16
 }
 
@@ -79,7 +79,7 @@ func NewItemType(id uint16, name string, texture1 uint16) Item {
 }
 
 func InitItems() {
-	items = make(map[uint16]Item)
+	items = make(map[ItemId]Item)
 	items[BLOCK_AIR] = NewBlockType(BLOCK_AIR, "Air", TEXTURE_NONE, TEXTURE_NONE, STRENGTH_STONE, SHAPE_CUBE, true, false, false, false, nil)
 	items[BLOCK_STONE] = NewBlockType(BLOCK_STONE, "Stone", TEXTURE_STONE, TEXTURE_STONE, STRENGTH_STONE, SHAPE_CUBE, false, true, true, true, &ItemQuantity{ITEM_RUBBLE, 6})
 	items[BLOCK_DIRT] = NewBlockType(BLOCK_DIRT, "Dirt", TEXTURE_DIRT, TEXTURE_DIRT_TOP, STRENGTH_DIRT, SHAPE_CUBE, false, true, true, true, &ItemQuantity{BLOCK_DIRT, 1})

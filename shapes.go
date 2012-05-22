@@ -322,24 +322,24 @@ func loadTexture(filename string) *gl.Texture {
 
 }
 
-func TerrainCube(vertexBuffer *VertexBuffer, pos Vectori, neighbours [18]uint16, block Block, selectedFace uint8) {
+func TerrainCube(vertexBuffer *VertexBuffer, pos Vectori, neighbours [18]BlockId, block Block, selectedFace uint8) {
 
 	x := float32(pos[XAXIS])
 	y := float32(pos[YAXIS])
 	z := float32(pos[ZAXIS])
 
-	blocktype := items[uint16(block.id)]
+	blocktype := items[ItemId(block.id)]
 	var visible [6]bool
 	var shadeLevels [6]int
 
 	for i := 0; i < 6; i++ {
-		if items[neighbours[i]].transparent {
+		if items[ItemId(neighbours[i])].transparent {
 			visible[i] = true
 		}
 	}
 
 	// Shading disabled for moment for performance reasons
-	if items[neighbours[EAST_FACE]].transparent {
+	if items[ItemId(neighbours[EAST_FACE])].transparent {
 		visible[EAST_FACE] = true
 		// if !items[neighbours[DIR_NE]].transparent {
 		// 	shadeLevels[EAST_FACE]++
@@ -355,7 +355,7 @@ func TerrainCube(vertexBuffer *VertexBuffer, pos Vectori, neighbours [18]uint16,
 		// }
 	}
 
-	if items[neighbours[WEST_FACE]].transparent {
+	if items[ItemId(neighbours[WEST_FACE])].transparent {
 		visible[WEST_FACE] = true
 		// if !items[neighbours[DIR_NW]].transparent {
 		// 	shadeLevels[WEST_FACE]++
@@ -371,7 +371,7 @@ func TerrainCube(vertexBuffer *VertexBuffer, pos Vectori, neighbours [18]uint16,
 		// }
 	}
 
-	if items[neighbours[NORTH_FACE]].transparent {
+	if items[ItemId(neighbours[NORTH_FACE])].transparent {
 		visible[NORTH_FACE] = true
 		// if !items[neighbours[DIR_NW]].transparent {
 		// 	shadeLevels[NORTH_FACE]++
@@ -387,7 +387,7 @@ func TerrainCube(vertexBuffer *VertexBuffer, pos Vectori, neighbours [18]uint16,
 		// }
 	}
 
-	if items[neighbours[SOUTH_FACE]].transparent {
+	if items[ItemId(neighbours[SOUTH_FACE])].transparent {
 		visible[SOUTH_FACE] = true
 		// if !items[neighbours[DIR_SW]].transparent {
 		// 	shadeLevels[SOUTH_FACE]++
@@ -403,7 +403,7 @@ func TerrainCube(vertexBuffer *VertexBuffer, pos Vectori, neighbours [18]uint16,
 		// }
 	}
 
-	if items[neighbours[UP_FACE]].transparent {
+	if items[ItemId(neighbours[UP_FACE])].transparent {
 		visible[UP_FACE] = true
 		// if !items[neighbours[DIR_UN]].transparent {
 		// 	shadeLevels[UP_FACE]++
@@ -419,7 +419,7 @@ func TerrainCube(vertexBuffer *VertexBuffer, pos Vectori, neighbours [18]uint16,
 		// }
 	}
 
-	if items[neighbours[DOWN_FACE]].transparent {
+	if items[ItemId(neighbours[DOWN_FACE])].transparent {
 		visible[DOWN_FACE] = true
 		// if !items[neighbours[DIR_UN]].transparent {
 		// 	shadeLevels[DOWN_FACE]++
@@ -581,12 +581,12 @@ func TerrainCube(vertexBuffer *VertexBuffer, pos Vectori, neighbours [18]uint16,
 
 }
 
-func RenderItemFlat(vertexBuffer *VertexBuffer, pos Vectori, blockid uint16) {
+func RenderItemFlat(vertexBuffer *VertexBuffer, pos Vectori, blockid BlockId) {
 	x := float32(pos[XAXIS])
 	y := float32(pos[YAXIS])
 	z := float32(pos[ZAXIS])
 
-	blocktype := items[uint16(blockid)]
+	blocktype := items[ItemId(blockid)]
 
 	vertexBuffer.AddFace(UP_FACE, blocktype.texture1, false, 0,
 		false,

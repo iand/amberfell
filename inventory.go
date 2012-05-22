@@ -217,12 +217,12 @@ func (self *Inventory) DrawItemSlot(t int64, r Rect) {
 	gl.PopMatrix()
 }
 
-func (self *Inventory) DrawItemInSlot(t int64, quantity uint16, itemid uint16, r Rect) {
+func (self *Inventory) DrawItemInSlot(t int64, quantity uint16, itemid ItemId, r Rect) {
 	self.DrawItem(t, quantity, itemid, r.x+r.sizex/2, r.y+r.sizey/2+4*PIXEL_SCALE)
 
 }
 
-func (self *Inventory) DrawItem(t int64, quantity uint16, itemid uint16, x float64, y float64) {
+func (self *Inventory) DrawItem(t int64, quantity uint16, itemid ItemId, x float64, y float64) {
 	gl.PushMatrix()
 	gl.LoadIdentity()
 
@@ -238,9 +238,9 @@ func (self *Inventory) DrawItem(t int64, quantity uint16, itemid uint16, x float
 	self.drawBuffer.Reset()
 
 	if itemid < 256 {
-		TerrainCube(self.drawBuffer, Vectori{}, [18]uint16{BLOCK_DIRT, BLOCK_DIRT, BLOCK_DIRT, BLOCK_DIRT, BLOCK_AIR, BLOCK_DIRT, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR}, NewBlockDefault(byte(itemid)), FACE_NONE)
+		TerrainCube(self.drawBuffer, Vectori{}, [18]BlockId{BLOCK_DIRT, BLOCK_DIRT, BLOCK_DIRT, BLOCK_DIRT, BLOCK_AIR, BLOCK_DIRT, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR}, NewBlockDefault(BlockId(itemid)), FACE_NONE)
 	} else {
-		RenderItemFlat(self.drawBuffer, Vectori{}, itemid)
+		RenderItemFlat(self.drawBuffer, Vectori{}, BlockId(itemid))
 	}
 	self.drawBuffer.RenderDirect(false)
 
@@ -735,7 +735,7 @@ func (self *Inventory) HandleMouseButton(re *sdl.MouseButtonEvent) {
 func (self *Inventory) HandleMouse(mousex int, mousey int, mousestate uint8) {
 
 	x, y := viewport.ScreenCoordsToWorld2D(uint16(mousex), uint16(mousey))
-	itemid := uint16(0)
+	itemid := ItemId(0)
 
 	for i, ir := range self.inventoryRects {
 		if ir.Contains(x, y) {
@@ -764,7 +764,7 @@ func (self *Inventory) HandleMouse(mousex int, mousey int, mousestate uint8) {
 	if itemid == 0 {
 
 		if hit, pos := picker.HitTest(x, y); hit && pos > 2 {
-			itemid = uint16(pos) - 3
+			itemid = ItemId(pos) - 3
 		}
 
 		for i := 0; i < 5; i++ {
@@ -867,7 +867,7 @@ func (self *Inventory) Show(container ContainerObject, crafting CraftingObject) 
 	slot := 0
 	for i := range ThePlayer.inventory {
 		if ThePlayer.inventory[i] > 0 {
-			self.inventorySlots[slot].item = uint16(i)
+			self.inventorySlots[slot].item = ItemId(i)
 			self.inventorySlots[slot].quantity = ThePlayer.inventory[i]
 			slot++
 		}

@@ -146,7 +146,7 @@ func (self *Furnace) CanTake() bool {
 	return true
 }
 
-func (self *Furnace) CanPlace(itemid uint16) bool {
+func (self *Furnace) CanPlace(itemid ItemId) bool {
 
 	if itemid == ITEM_COAL {
 		return true

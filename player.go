@@ -12,11 +12,15 @@ import (
 	// "fmt"
 )
 
+type Action uint8
+type BlockId uint16
+type ItemId BlockId
+
 type Player struct {
 	MobData
-	currentAction     uint8
-	currentItem       uint16
-	equippedItems     [7]uint16
+	currentAction     Action
+	currentItem       ItemId
+	equippedItems     [7]ItemId
 	inventory         [MAX_ITEMS]uint16
 	distanceTravelled float64
 	distanceFromStart uint16
@@ -296,7 +300,7 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 
 	case ACTION_BREAK:
 		block := TheWorld.AtBv(selectedBlockFace.pos)
-		blocktype := items[uint16(block.id)]
+		blocktype := items[ItemId(block.id)]
 		blockid := block.id
 		if blockid != BLOCK_AIR {
 			interactingBlockFace.hitCount++
@@ -341,8 +345,8 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 						droppedItem := blocktype.drops.item
 						if self.inventory[droppedItem] < MAX_ITEMS_IN_INVENTORY {
 							self.inventory[droppedItem]++
-							if items[uint16(droppedItem)].placeable {
-								self.EquipItem(uint16(droppedItem))
+							if items[droppedItem].placeable {
+								self.EquipItem(droppedItem)
 							}
 						}
 					}
@@ -371,7 +375,7 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 				selectedBlockFace.pos[XAXIS]--
 			}
 			if TheWorld.Atv(selectedBlockFace.pos) == BLOCK_AIR && self.currentItem < 256 {
-				blockid := byte(self.currentItem)
+				blockid := self.currentItem
 
 				switch blockid {
 				case BLOCK_CAMPFIRE:
@@ -412,7 +416,7 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 				}
 
 				orientation := HeadingToOrientation(self.heading)
-				block := NewBlock(blockid, false, orientation)
+				block := NewBlock(BlockId(blockid), false, orientation)
 
 				TheWorld.SetBv(selectedBlockFace.pos, block)
 				self.inventory[self.currentItem]--
@@ -474,7 +478,7 @@ func (self *Player) SelectAction(action int) {
 	}
 }
 
-func (self *Player) EquipItem(itemid uint16) {
+func (self *Player) EquipItem(itemid ItemId) {
 
 	// Check to see if this item is already equipped
 	for j := 0; j < 5; j++ {
