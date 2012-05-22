@@ -237,15 +237,18 @@ func (self *MobData) Act(dt float64) {
 
 			switch behaviour.behaviour {
 			case BEHAVIOUR_WANDER:
-				offset := self.walkingSpeed / 2
-				angle := rand.Float64() * 2 * math.Pi
-				angleDir := Vectorf{math.Cos(angle),
-					0,
-					-math.Sin(angle),
-				}
 
-				turnDir := normal.Scale(offset).Add(angleDir).Normalize()
-				force = force.Add(turnDir.Scale(self.walkingSpeed / 6).Scale(weight))
+				if rand.Float64() > 0.9 {
+					offset := self.walkingSpeed / 2
+					angle := rand.Float64() * 2 * math.Pi
+					angleDir := Vectorf{math.Cos(angle),
+						0,
+						-math.Sin(angle),
+					}
+
+					turnDir := normal.Scale(offset).Add(angleDir).Normalize()
+					force = force.Add(turnDir.Scale(self.walkingSpeed / 6).Scale(weight))
+				}
 				if behaviour.last {
 					break
 				}

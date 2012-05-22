@@ -89,6 +89,9 @@ func blockIndex(x uint16, y uint16, z uint16) uint16 {
 
 func NewChunk(cx uint16, cz uint16, hasAmberfell bool, amberfellCoords [2]uint16) *Chunk {
 	startTicks := time.Now().UnixNano()
+	if console.visible {
+		println("Generating chunk at x:", cx, " z:", cz)
+	}
 	var chunk Chunk
 	chunk.Init(cx, cz)
 
@@ -149,9 +152,6 @@ func NewChunk(cx uint16, cz uint16, hasAmberfell bool, amberfellCoords [2]uint16
 	TheWorld.GenerateChunkFeatures(&chunk)
 
 	console.chunkGenerationTime = time.Now().UnixNano() - startTicks
-	if console.visible {
-		println("Generating chunk at x:", cx, " z:", cz, " in ", console.chunkGenerationTime/1e6)
-	}
 	return &chunk
 }
 
