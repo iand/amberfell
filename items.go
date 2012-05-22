@@ -12,9 +12,11 @@ type Item struct {
 	texture1    uint16
 	texture2    uint16
 	hitsNeeded  byte
+	shape       byte
 	transparent bool
 	collectable bool
 	placeable   bool
+	autojump    bool
 	drops       *ItemQuantity
 }
 
@@ -54,418 +56,89 @@ type Recipe struct {
 	components []ItemQuantity
 }
 
-func NewItem(id uint16, name string, texture1 uint16, texture2 uint16, hitsNeeded byte, transparent bool, collectable bool, placeable bool, drops *ItemQuantity) Item {
+func NewBlockType(id uint16, name string, texture1 uint16, texture2 uint16, hitsNeeded byte, shape byte, transparent bool, collectable bool, placeable bool, autojump bool, drops *ItemQuantity) Item {
 	return Item{id: id, name: name,
 		texture1:    texture1,
 		texture2:    texture2,
 		hitsNeeded:  hitsNeeded,
+		shape:       shape,
 		transparent: transparent,
 		collectable: collectable,
 		placeable:   placeable,
+		autojump:    autojump,
 		drops:       drops,
+	}
+}
+
+func NewItemType(id uint16, name string, texture1 uint16) Item {
+	return Item{id: id, name: name,
+		texture1:    texture1,
+		texture2:    TEXTURE_NONE,
+		collectable: true,
 	}
 }
 
 func InitItems() {
 	items = make(map[ItemId]Item)
-	items[BLOCK_AIR] = NewItem(BLOCK_AIR, "Air", TEXTURE_NONE, TEXTURE_NONE, STRENGTH_STONE, true, false, false, nil)
-	items[BLOCK_STONE] = NewItem(BLOCK_STONE, "Stone", TEXTURE_STONE, TEXTURE_STONE, STRENGTH_STONE, false, true, true, &ItemQuantity{BLOCK_STONE, 1})
-	items[BLOCK_DIRT] = NewItem(BLOCK_DIRT, "Dirt", TEXTURE_DIRT, TEXTURE_DIRT_TOP, STRENGTH_DIRT, false, true, true, &ItemQuantity{BLOCK_DIRT, 1})
-	items[BLOCK_BURNT_GRASS] = NewItem(BLOCK_BURNT_GRASS, "Dirt", TEXTURE_DIRT, TEXTURE_BURNT_GRASS, STRENGTH_DIRT, false, true, true, &ItemQuantity{BLOCK_DIRT, 1})
-	items[BLOCK_TRUNK] = NewItem(BLOCK_TRUNK, "Tree trunk", TEXTURE_TRUNK, TEXTURE_TRUNK, STRENGTH_WOOD, false, true, true, &ItemQuantity{BLOCK_TRUNK, 1})
-	items[BLOCK_LEAVES] = NewItem(BLOCK_LEAVES, "Leaves", TEXTURE_LEAVES, TEXTURE_LEAVES, STRENGTH_LEAVES, false, false, false, &ItemQuantity{ITEM_FIREWOOD, 1})
-	items[BLOCK_BUSH] = NewItem(BLOCK_BUSH, "Bush", TEXTURE_LEAVES, TEXTURE_LEAVES, STRENGTH_LEAVES, false, false, false, &ItemQuantity{ITEM_FIREWOOD, 1})
-	items[BLOCK_LOG_WALL] = NewItem(BLOCK_LOG_WALL, "Log wall", TEXTURE_LOG_WALL, TEXTURE_LOG_WALL_TOP, STRENGTH_WOOD, true, true, true, &ItemQuantity{ITEM_FIREWOOD, 1})
-	items[BLOCK_LOG_SLAB] = NewItem(BLOCK_LOG_SLAB, "Log slab", TEXTURE_LOG_WALL, TEXTURE_LOG_WALL_TOP, STRENGTH_WOOD, true, true, true, &ItemQuantity{ITEM_FIREWOOD, 1})
+	items[BLOCK_AIR] = NewBlockType(BLOCK_AIR, "Air", TEXTURE_NONE, TEXTURE_NONE, STRENGTH_STONE, SHAPE_CUBE, true, false, false, false, nil)
+	items[BLOCK_STONE] = NewBlockType(BLOCK_STONE, "Stone", TEXTURE_STONE, TEXTURE_STONE, STRENGTH_STONE, SHAPE_CUBE, false, true, true, true, &ItemQuantity{ITEM_RUBBLE, 6})
+	items[BLOCK_DIRT] = NewBlockType(BLOCK_DIRT, "Dirt", TEXTURE_DIRT, TEXTURE_DIRT_TOP, STRENGTH_DIRT, SHAPE_CUBE, false, true, true, true, &ItemQuantity{BLOCK_DIRT, 1})
+	items[BLOCK_BURNT_GRASS] = NewBlockType(BLOCK_BURNT_GRASS, "Dirt", TEXTURE_DIRT, TEXTURE_BURNT_GRASS, STRENGTH_DIRT, SHAPE_CUBE, false, true, true, true, &ItemQuantity{BLOCK_DIRT, 1})
+	items[BLOCK_TRUNK] = NewBlockType(BLOCK_TRUNK, "Tree trunk", TEXTURE_TRUNK, TEXTURE_TRUNK, STRENGTH_WOOD, SHAPE_CUBE, false, true, true, true, &ItemQuantity{BLOCK_TRUNK, 1})
+	items[BLOCK_LEAVES] = NewBlockType(BLOCK_LEAVES, "Leaves", TEXTURE_LEAVES, TEXTURE_LEAVES, STRENGTH_LEAVES, SHAPE_CUBE, false, false, false, false, &ItemQuantity{ITEM_FIREWOOD, 1})
+	items[BLOCK_BUSH] = NewBlockType(BLOCK_BUSH, "Bush", TEXTURE_LEAVES, TEXTURE_LEAVES, STRENGTH_LEAVES, SHAPE_CUBE, false, false, false, false, &ItemQuantity{ITEM_FIREWOOD, 1})
+	items[BLOCK_LOG_WALL] = NewBlockType(BLOCK_LOG_WALL, "Log wall", TEXTURE_LOG_WALL, TEXTURE_LOG_WALL_TOP, STRENGTH_WOOD, SHAPE_WALL, true, true, true, false, &ItemQuantity{ITEM_FIREWOOD, 1})
+	items[BLOCK_LOG_SLAB] = NewBlockType(BLOCK_LOG_SLAB, "Log slab", TEXTURE_LOG_WALL, TEXTURE_LOG_WALL_TOP, STRENGTH_WOOD, SHAPE_SLAB, true, true, true, true, &ItemQuantity{ITEM_FIREWOOD, 1})
+
+	items[BLOCK_STONEBRICK_WALL] = NewBlockType(BLOCK_STONEBRICK_WALL, "Stone brick wall", TEXTURE_STONE_BRICK, TEXTURE_STONE_BRICK, STRENGTH_STONE, SHAPE_WALL, true, true, true, false, &ItemQuantity{ITEM_RUBBLE, 2})
+	items[BLOCK_STONEBRICK_SLAB] = NewBlockType(BLOCK_STONEBRICK_SLAB, "Stone brick slab", TEXTURE_STONE_BRICK, TEXTURE_STONE_BRICK, STRENGTH_STONE, SHAPE_SLAB, true, true, true, true, &ItemQuantity{ITEM_RUBBLE, 2})
+
+	items[BLOCK_PLANK_WALL] = NewBlockType(BLOCK_PLANK_WALL, "Wooden wall", TEXTURE_PLANK_WALL, TEXTURE_PLANK_WALL, STRENGTH_WOOD, SHAPE_WALL, true, true, true, false, &ItemQuantity{ITEM_PLANK, 1})
+	items[BLOCK_PLANK_SLAB] = NewBlockType(BLOCK_PLANK_SLAB, "Wooden slab", TEXTURE_PLANK_WALL, TEXTURE_PLANK_WALL, STRENGTH_WOOD, SHAPE_SLAB, true, true, true, true, &ItemQuantity{ITEM_PLANK, 1})
+
+	items[BLOCK_COAL_SEAM] = NewBlockType(BLOCK_COAL_SEAM, "Coal Seam", TEXTURE_COAL, TEXTURE_COAL, STRENGTH_STONE, SHAPE_CUBE, false, false, false, true, &ItemQuantity{ITEM_COAL, 2})
+	items[BLOCK_IRON_SEAM] = NewBlockType(BLOCK_IRON_SEAM, "Haematite Seam", TEXTURE_IRON, TEXTURE_IRON, STRENGTH_STONE, SHAPE_CUBE, false, false, false, true, &ItemQuantity{ITEM_IRON_ORE, 2})
+	items[BLOCK_COPPER_SEAM] = NewBlockType(BLOCK_COPPER_SEAM, "Malachite Seam", TEXTURE_COPPER, TEXTURE_COPPER, STRENGTH_STONE, SHAPE_CUBE, false, false, false, true, &ItemQuantity{ITEM_COPPER_ORE, 2})
+	items[BLOCK_MAGNETITE_SEAM] = NewBlockType(BLOCK_MAGNETITE_SEAM, "Magnetite Seam", TEXTURE_COPPER, TEXTURE_COPPER, STRENGTH_STONE, SHAPE_CUBE, false, false, false, true, &ItemQuantity{ITEM_MAGNETITE_ORE, 2})
+	items[BLOCK_ZINC_SEAM] = NewBlockType(BLOCK_ZINC_SEAM, "Zinc Seam", TEXTURE_ZINC, TEXTURE_ZINC, STRENGTH_STONE, SHAPE_CUBE, false, false, false, true, &ItemQuantity{ITEM_ZINC_ORE, 2})
+	items[BLOCK_QUARTZ_SEAM] = NewBlockType(BLOCK_QUARTZ_SEAM, "Quartz Seam", TEXTURE_QUARTZ_SEAM, TEXTURE_QUARTZ_SEAM, STRENGTH_WOOD, SHAPE_CUBE, false, false, false, true, &ItemQuantity{ITEM_ZINC_ORE, 2})
+	items[BLOCK_AMBERFELL_SOURCE] = NewBlockType(BLOCK_AMBERFELL_SOURCE, "Amberfell Source", TEXTURE_AMBERFELL_SOURCE, TEXTURE_AMBERFELL_SOURCE_TOP, STRENGTH_UNBREAKABLE, SHAPE_CUBE, false, true, true, true, nil)
+	items[BLOCK_CARVED_STONE] = NewBlockType(BLOCK_CARVED_STONE, "Carved stone", TEXTURE_CARVED_STONE, TEXTURE_STONE, STRENGTH_STONE, SHAPE_CUBE, false, true, true, true, &ItemQuantity{BLOCK_STONE, 1})
+	items[BLOCK_CAMPFIRE] = NewBlockType(BLOCK_CAMPFIRE, "Campfire", TEXTURE_LOG_WALL, TEXTURE_FIRE, STRENGTH_LEAVES, SHAPE_PILE, true, true, true, false, &ItemQuantity{ITEM_FIREWOOD, 1})
+	items[BLOCK_BEESNEST] = NewBlockType(BLOCK_BEESNEST, "Bees Nest", TEXTURE_BEESNEST, TEXTURE_BEESNEST_TOP, STRENGTH_LEAVES, SHAPE_CUBE, true, true, true, false, &ItemQuantity{ITEM_BEESWAX, 2})
+
+	items[BLOCK_AMBERFELL_PUMP] = NewBlockType(BLOCK_AMBERFELL_PUMP, "Amberfell Pump", TEXTURE_COPPER_MACH_SIDE, TEXTURE_COPPER_MACH_TOP, STRENGTH_IRON, SHAPE_ORIENTED_CUBE, false, true, true, true, &ItemQuantity{BLOCK_AMBERFELL_PUMP, 1})
+	items[BLOCK_STEAM_GENERATOR] = NewBlockType(BLOCK_STEAM_GENERATOR, "Steam Generator", TEXTURE_IRON_MACH_SIDE, TEXTURE_IRON_MACH_TOP, STRENGTH_IRON, SHAPE_ORIENTED_CUBE, false, true, true, true, &ItemQuantity{BLOCK_STEAM_GENERATOR, 1})
+	items[BLOCK_CARPENTERS_BENCH] = NewBlockType(BLOCK_CARPENTERS_BENCH, "Carpenter's Bench", TEXTURE_PLANK_WALL, TEXTURE_CARPENTERS_BENCH_TOP, STRENGTH_WOOD, SHAPE_ORIENTED_CUBE, false, true, true, true, &ItemQuantity{ITEM_FIREWOOD, 5})
+	items[BLOCK_AMBERFELL_CONDENSER] = NewBlockType(BLOCK_AMBERFELL_CONDENSER, "Amberfell Condenser", TEXTURE_PLANK_WALL, TEXTURE_CARPENTERS_BENCH_TOP, STRENGTH_WOOD, SHAPE_ORIENTED_CUBE, false, true, true, true, &ItemQuantity{ITEM_FIREWOOD, 5})
+	items[BLOCK_FURNACE] = NewBlockType(BLOCK_FURNACE, "Furnace", TEXTURE_STONE_BRICK, TEXTURE_FURNACE_TOP, STRENGTH_STONE, SHAPE_ORIENTED_CUBE, false, true, true, true, &ItemQuantity{ITEM_RUBBLE, 4})
+	items[BLOCK_FORGE] = NewBlockType(BLOCK_FORGE, "Forge", TEXTURE_STONE_BRICK, TEXTURE_FORGE_TOP, STRENGTH_STONE, SHAPE_ORIENTED_CUBE, false, true, true, true, &ItemQuantity{ITEM_RUBBLE, 4})
+
+	items[ITEM_FIREWOOD] = NewItemType(ITEM_FIREWOOD, "Firewood", TEXTURE_ITEM_FIREWOOD)
+	items[ITEM_RUBBLE] = NewItemType(ITEM_RUBBLE, "Rubble", TEXTURE_ITEM_RUBBLE)
+	items[ITEM_STONE_BRICK] = NewItemType(ITEM_STONE_BRICK, "Stone Brick", TEXTURE_ITEM_STONE_BRICK)
+	items[ITEM_PLANK] = NewItemType(ITEM_PLANK, "Plank", TEXTURE_ITEM_PLANK)
+	items[ITEM_COAL] = NewItemType(ITEM_COAL, "Coal", TEXTURE_ITEM_COAL)
+	items[ITEM_IRON_ORE] = NewItemType(ITEM_IRON_ORE, "Haematite", TEXTURE_ITEM_IRON_ORE)
+	items[ITEM_MAGNETITE_ORE] = NewItemType(ITEM_MAGNETITE_ORE, "Magnetite", TEXTURE_ITEM_IRON_ORE)
+	items[ITEM_COPPER_ORE] = NewItemType(ITEM_COPPER_ORE, "Malachite", TEXTURE_ITEM_COPPER_ORE)
+	items[ITEM_ZINC_ORE] = NewItemType(ITEM_ZINC_ORE, "Sphalerite", TEXTURE_ITEM_ZINC_ORE)
+	items[ITEM_AMBERFELL] = NewItemType(ITEM_AMBERFELL, "Amberfell", TEXTURE_ITEM_AMBERFELL)
+	items[ITEM_AMBERFELL_CRYSTAL] = NewItemType(ITEM_AMBERFELL_CRYSTAL, "Amberfell Crystal", TEXTURE_ITEM_AMBERFELL_CRYSTAL)
+
+	items[ITEM_IRON_INGOT] = NewItemType(ITEM_IRON_INGOT, "Iron Ingot", TEXTURE_ITEM_IRON_INGOT)
+	items[ITEM_COPPER_INGOT] = NewItemType(ITEM_COPPER_INGOT, "Copper Ingot", TEXTURE_ITEM_COPPER_INGOT)
+	items[ITEM_LODESTONE] = NewItemType(ITEM_LODESTONE, "Lodestone", TEXTURE_ITEM_LODESTONE)
+
+	items[ITEM_BRASS_INGOT] = NewItemType(ITEM_BRASS_INGOT, "Brass Ingot", TEXTURE_ITEM_BRASS_INGOT)
+	items[ITEM_COPPER_PLATE] = NewItemType(ITEM_COPPER_PLATE, "Copper Plate", TEXTURE_ITEM_COPPER_PLATE)
+	items[ITEM_BRASS_PLATE] = NewItemType(ITEM_BRASS_PLATE, "Brass Plate", TEXTURE_ITEM_BRASS_PLATE)
+	items[ITEM_IRON_PLATE] = NewItemType(ITEM_IRON_PLATE, "Iron Plate", TEXTURE_ITEM_IRON_PLATE)
+
+	items[ITEM_LEATHER] = NewItemType(ITEM_LEATHER, "Leather", TEXTURE_ITEM_LEATHER)
+	items[ITEM_BEESWAX] = NewItemType(ITEM_BEESWAX, "Beeswax", TEXTURE_ITEM_BEESWAX)
+
+	items[ITEM_QUARTZ] = NewItemType(ITEM_QUARTZ, "Quartz", TEXTURE_ITEM_QUARTZ)
+	items[ITEM_GLASS] = NewItemType(ITEM_GLASS, "Glass", TEXTURE_ITEM_GLASS)
 
-	items[BLOCK_PLANK_WALL] = NewItem(BLOCK_PLANK_WALL, "Wooden wall", TEXTURE_PLANK_WALL, TEXTURE_PLANK_WALL, STRENGTH_WOOD, true, true, true, &ItemQuantity{ITEM_PLANK, 1})
-	items[BLOCK_PLANK_SLAB] = NewItem(BLOCK_PLANK_SLAB, "Wooden slab", TEXTURE_PLANK_WALL, TEXTURE_PLANK_WALL, STRENGTH_WOOD, true, true, true, &ItemQuantity{ITEM_PLANK, 1})
-
-	items[BLOCK_COAL_SEAM] = NewItem(BLOCK_COAL_SEAM, "Coal Seam", TEXTURE_COAL, TEXTURE_COAL, STRENGTH_STONE, false, false, false, &ItemQuantity{ITEM_COAL, 1})
-	items[BLOCK_IRON_SEAM] = NewItem(BLOCK_IRON_SEAM, "Haematite Seam", TEXTURE_IRON, TEXTURE_IRON, STRENGTH_STONE, false, false, false, &ItemQuantity{ITEM_IRON_ORE, 1})
-	items[BLOCK_COPPER_SEAM] = NewItem(BLOCK_COPPER_SEAM, "Malachite Seam", TEXTURE_COPPER, TEXTURE_COPPER, STRENGTH_STONE, false, false, false, &ItemQuantity{ITEM_COPPER_ORE, 1})
-	items[BLOCK_MAGNETITE_SEAM] = NewItem(BLOCK_MAGNETITE_SEAM, "Magnetite Seam", TEXTURE_COPPER, TEXTURE_COPPER, STRENGTH_STONE, false, false, false, &ItemQuantity{ITEM_MAGNETITE_ORE, 1})
-	items[BLOCK_AMBERFELL_SOURCE] = NewItem(BLOCK_AMBERFELL_SOURCE, "Amberfell Source", TEXTURE_AMBERFELL_SOURCE, TEXTURE_AMBERFELL_SOURCE_TOP, STRENGTH_UNBREAKABLE, false, true, true, nil)
-	items[BLOCK_CARVED_STONE] = NewItem(BLOCK_CARVED_STONE, "Carved stone", TEXTURE_CARVED_STONE, TEXTURE_STONE, STRENGTH_STONE, false, true, true, &ItemQuantity{BLOCK_STONE, 1})
-	items[BLOCK_CAMPFIRE] = NewItem(BLOCK_CAMPFIRE, "Campfire", TEXTURE_LOG_WALL, TEXTURE_FIRE, STRENGTH_LEAVES, true, true, true, &ItemQuantity{ITEM_FIREWOOD, 1})
-
-	items[BLOCK_AMBERFELL_PUMP] = NewItem(BLOCK_AMBERFELL_PUMP, "Amberfell Pump", TEXTURE_COPPER_MACH_SIDE, TEXTURE_COPPER_MACH_TOP, STRENGTH_IRON, false, true, true, &ItemQuantity{BLOCK_AMBERFELL_PUMP, 1})
-	items[BLOCK_STEAM_GENERATOR] = NewItem(BLOCK_STEAM_GENERATOR, "Steam Generator", TEXTURE_IRON_MACH_SIDE, TEXTURE_IRON_MACH_TOP, STRENGTH_IRON, false, true, true, &ItemQuantity{BLOCK_STEAM_GENERATOR, 1})
-	items[BLOCK_CARPENTERS_BENCH] = NewItem(BLOCK_CARPENTERS_BENCH, "Carpenter's Bench", TEXTURE_PLANK_WALL, TEXTURE_CARPENTERS_BENCH_TOP, STRENGTH_WOOD, false, true, true, &ItemQuantity{ITEM_FIREWOOD, 5})
-	items[BLOCK_AMBERFELL_CONDENSER] = NewItem(BLOCK_AMBERFELL_CONDENSER, "Amberfell Condenser", TEXTURE_PLANK_WALL, TEXTURE_CARPENTERS_BENCH_TOP, STRENGTH_WOOD, false, true, true, &ItemQuantity{ITEM_FIREWOOD, 5})
-
-	items[ITEM_FIREWOOD] = NewItem(ITEM_FIREWOOD, "Firewood", TEXTURE_ITEM_FIREWOOD, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
-	items[ITEM_PLANK] = NewItem(ITEM_PLANK, "Plank", TEXTURE_ITEM_PLANK, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
-	items[ITEM_COAL] = NewItem(ITEM_COAL, "Coal", TEXTURE_ITEM_COAL, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
-	items[ITEM_IRON_ORE] = NewItem(ITEM_IRON_ORE, "Haematite", TEXTURE_ITEM_IRON_ORE, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
-	items[ITEM_MAGNETITE_ORE] = NewItem(ITEM_MAGNETITE_ORE, "Magnetite", TEXTURE_ITEM_IRON_ORE, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
-	items[ITEM_COPPER_ORE] = NewItem(ITEM_COPPER_ORE, "Malachite", TEXTURE_ITEM_COPPER_ORE, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
-	items[ITEM_AMBERFELL] = NewItem(ITEM_AMBERFELL, "Amberfell", TEXTURE_ITEM_AMBERFELL, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
-	items[ITEM_LODESTONE] = NewItem(ITEM_LODESTONE, "Lodestone", TEXTURE_ITEM_LODESTONE, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
-	items[ITEM_AMBERFELL_CRYSTAL] = NewItem(ITEM_AMBERFELL_CRYSTAL, "Amberfell Crystal", TEXTURE_ITEM_AMBERFELL_CRYSTAL, TEXTURE_NONE, STRENGTH_WOOD, false, true, false, nil)
-
-}
-
-var handmadeRecipes = []Recipe{
-	{product: ItemQuantity{BLOCK_LOG_WALL, 1},
-		components: []ItemQuantity{
-			{BLOCK_TRUNK, 1},
-		}},
-
-	{product: ItemQuantity{BLOCK_LOG_SLAB, 1},
-		components: []ItemQuantity{
-			{BLOCK_TRUNK, 1},
-		}},
-
-	{product: ItemQuantity{ITEM_FIREWOOD, 2},
-		components: []ItemQuantity{
-			{BLOCK_TRUNK, 1},
-		}},
-
-	{product: ItemQuantity{ITEM_FIREWOOD, 2},
-		components: []ItemQuantity{
-			{BLOCK_LOG_WALL, 1},
-		}},
-
-	{product: ItemQuantity{ITEM_FIREWOOD, 2},
-		components: []ItemQuantity{
-			{BLOCK_LOG_SLAB, 1},
-		}},
-
-	{product: ItemQuantity{BLOCK_CAMPFIRE, 1},
-		components: []ItemQuantity{
-			{ITEM_FIREWOOD, 3},
-		}},
-}
-
-type CampFire struct {
-	pos  Vectori
-	life float64
-}
-
-func NewCampFire(pos Vectori) *CampFire {
-	return &CampFire{pos: pos, life: CAMPFIRE_DURATION}
-}
-
-func (self *CampFire) Intensity() uint16 {
-	return CAMPFIRE_INTENSITY
-}
-
-func (self *CampFire) Update(dt float64) (completed bool) {
-	completed = false
-	self.life -= 0.02 * dt
-	if self.life <= 0 {
-		TheWorld.Setv(self.pos, BLOCK_AIR)
-		delete(TheWorld.lightSources, self.pos)
-		TheWorld.InvalidateRadius(self.pos[XAXIS], self.pos[ZAXIS], CAMPFIRE_INTENSITY)
-		completed = true
-	}
-
-	return completed
-}
-
-type AmberfellPump struct {
-	pos            Vectori
-	sourced        bool
-	unitsPerSecond float64
-	unitsHeld      float64
-}
-
-func NewAmberfellPump(pos Vectori, sourced bool, powered bool) *AmberfellPump {
-	pump := AmberfellPump{pos: pos, sourced: sourced}
-	return &pump
-}
-
-func (self *AmberfellPump) Update(dt float64) (completed bool) {
-	if self.sourced {
-		self.unitsPerSecond = AMBERFELL_UNITS_PER_SECOND_UNPOWERED
-		for face := 0; face < 6; face++ {
-			npos := Vectori{self.pos[XAXIS], self.pos[YAXIS], self.pos[ZAXIS]}
-			switch face {
-			case NORTH_FACE:
-				npos[ZAXIS]--
-			case SOUTH_FACE:
-				npos[ZAXIS]++
-			case EAST_FACE:
-				npos[XAXIS]++
-			case WEST_FACE:
-				npos[XAXIS]--
-			case UP_FACE:
-				npos[YAXIS]++
-			case DOWN_FACE:
-				npos[YAXIS]--
-			}
-
-			if gen, ok := TheWorld.generatorObjects[npos]; ok && gen.Active() {
-				self.unitsPerSecond = AMBERFELL_UNITS_PER_SECOND_POWERED
-				break
-			}
-		}
-
-		self.unitsHeld += self.unitsPerSecond * dt
-		if self.unitsHeld > AMBERFELL_PUMP_CAPACITY {
-			self.unitsHeld = AMBERFELL_PUMP_CAPACITY
-		}
-	}
-
-	return false
-}
-
-func (self *AmberfellPump) Label() string {
-	if self.sourced {
-		if self.unitsPerSecond == AMBERFELL_UNITS_PER_SECOND_POWERED {
-			return "Amberfell Pump (powered)"
-		} else {
-			return "Amberfell Pump (unpowered)"
-
-		}
-	}
-
-	return "Amberfell Pump (inactive)"
-}
-
-func (self *AmberfellPump) Slots() int {
-	return 1
-}
-
-func (self *AmberfellPump) Item(slot int) ItemQuantity {
-	if slot == 0 && self.unitsHeld > 1 {
-		return ItemQuantity{ITEM_AMBERFELL, uint16(self.unitsHeld)}
-	}
-
-	return ItemQuantity{}
-}
-func (self *AmberfellPump) Take(slot int, quantity uint16) {
-	if slot == 0 {
-		self.unitsHeld -= float64(quantity)
-	}
-
-	if self.unitsHeld < 0 {
-		self.unitsHeld = 0
-	}
-}
-
-func (self *AmberfellPump) Place(slot int, iq *ItemQuantity) {
-	// NOOP
-}
-
-func (self *AmberfellPump) CanTake() bool {
-	return true
-}
-
-func (self *AmberfellPump) CanPlace(itemid ItemId) bool {
-	return false
-}
-
-type SteamGenerator struct {
-	pos  Vectori
-	fuel uint16
-	life float64
-}
-
-func NewSteamGenerator(pos Vectori) *SteamGenerator {
-	gen := SteamGenerator{pos: pos}
-	return &gen
-}
-
-func (self *SteamGenerator) Update(dt float64) (completed bool) {
-	self.life -= 0.02 * dt
-	if self.life <= 0 {
-		if self.fuel > 0 {
-			self.fuel--
-			self.life = 1
-		} else {
-			self.life = 0
-		}
-	}
-
-	return false
-}
-
-func (self *SteamGenerator) Label() string {
-	if self.life > 0 {
-		return "Steam Generator (active)"
-	}
-
-	return "Steam Generator (inactive)"
-}
-
-func (self *SteamGenerator) Slots() int {
-	return 1
-}
-
-func (self *SteamGenerator) Item(slot int) ItemQuantity {
-	if slot == 0 && self.fuel >= 1 {
-		return ItemQuantity{ITEM_COAL, uint16(self.fuel)}
-	}
-
-	return ItemQuantity{}
-}
-
-func (self *SteamGenerator) Take(slot int, quantity uint16) {
-	if slot == 0 {
-		self.fuel -= quantity
-	}
-
-	if self.fuel < 0 {
-		self.fuel = 0
-	}
-}
-
-func (self *SteamGenerator) Place(slot int, iq *ItemQuantity) {
-	if slot == 0 && iq.item == ITEM_COAL {
-		self.fuel += iq.quantity
-	}
-}
-
-func (self *SteamGenerator) Active() bool {
-	return self.life > 0
-}
-
-func (self *SteamGenerator) CanTake() bool {
-	return true
-}
-
-func (self *SteamGenerator) CanPlace(itemid ItemId) bool {
-	if itemid == ITEM_COAL {
-		return true
-	}
-	return false
-}
-
-type CarpentersBench struct {
-	pos Vectori
-}
-
-func NewCarpentersBench(pos Vectori) *CarpentersBench {
-	obj := CarpentersBench{pos: pos}
-	return &obj
-}
-
-func (self *CarpentersBench) Label() string {
-	return "Carpenter's Bench"
-}
-
-func (self *CarpentersBench) Recipes() []Recipe {
-	return carpenterRecipes
-}
-
-var carpenterRecipes = []Recipe{
-	{product: ItemQuantity{ITEM_PLANK, 4},
-		components: []ItemQuantity{
-			{BLOCK_TRUNK, 1},
-		}},
-	{product: ItemQuantity{BLOCK_PLANK_WALL, 1},
-		components: []ItemQuantity{
-			{ITEM_PLANK, 3},
-		}},
-	{product: ItemQuantity{BLOCK_PLANK_SLAB, 1},
-		components: []ItemQuantity{
-			{ITEM_PLANK, 3},
-		}},
-}
-
-type AmberfellCondenser struct {
-	pos           Vectori
-	firewood      uint16
-	amberfell     uint16
-	crystals      uint16
-	timeRemaining float64
-}
-
-func NewAmberfellCondenser(pos Vectori) *AmberfellCondenser {
-	ac := AmberfellCondenser{pos: pos}
-	return &ac
-}
-
-func (self *AmberfellCondenser) Update(dt float64) (completed bool) {
-	if self.timeRemaining > 0 {
-		self.timeRemaining -= 1 * dt
-		if self.timeRemaining <= 0 {
-			self.crystals++
-		}
-	}
-
-	if self.timeRemaining <= 0 {
-		if self.amberfell > 20 && self.firewood > 5 {
-			self.amberfell -= 20
-			self.firewood -= 5
-			self.timeRemaining = 120
-		} else {
-			self.timeRemaining = 0
-		}
-	}
-	return false
-}
-
-func (self *AmberfellCondenser) Label() string {
-	if self.timeRemaining > 0 {
-		return "Amberfell Condenser (active)"
-	}
-
-	return "Amberfell Condenser (inactive)"
-}
-
-func (self *AmberfellCondenser) Slots() int {
-	return 3
-}
-
-func (self *AmberfellCondenser) Item(slot int) ItemQuantity {
-	if slot == 0 && self.firewood > 0 {
-		return ItemQuantity{ITEM_FIREWOOD, self.firewood}
-	} else if slot == 1 && self.amberfell > 0 {
-		return ItemQuantity{ITEM_AMBERFELL, self.amberfell}
-	} else if slot == 2 && self.crystals > 0 {
-		return ItemQuantity{ITEM_AMBERFELL_CRYSTAL, self.crystals}
-	}
-
-	return ItemQuantity{}
-}
-
-func (self *AmberfellCondenser) Take(slot int, quantity uint16) {
-	switch slot {
-	case 0:
-		self.firewood -= quantity
-		if self.firewood < 0 {
-			self.firewood = 0
-		}
-	case 1:
-		self.amberfell -= quantity
-		if self.amberfell < 0 {
-			self.amberfell = 0
-		}
-	case 2:
-		self.crystals -= quantity
-		if self.crystals < 0 {
-			self.crystals = 0
-		}
-	}
-}
-
-func (self *AmberfellCondenser) Place(slot int, iq *ItemQuantity) {
-	if (slot == 0 && self.firewood != 0 && iq.item != ITEM_FIREWOOD) ||
-		(slot == 1 && self.amberfell != 0 && iq.item != ITEM_AMBERFELL) ||
-		(slot == 2 && self.crystals != 0 && iq.item != ITEM_AMBERFELL_CRYSTAL) {
-		return
-	}
-
-	switch iq.item {
-	case ITEM_FIREWOOD:
-		self.firewood += iq.quantity
-	case ITEM_AMBERFELL:
-		self.amberfell += iq.quantity
-	case ITEM_AMBERFELL_CRYSTAL:
-		self.crystals += iq.quantity
-	}
-}
-
-func (self *AmberfellCondenser) CanTake() bool {
-	return true
-}
-
-func (self *AmberfellCondenser) CanPlace(itemid ItemId) bool {
-	if itemid == ITEM_FIREWOOD || itemid == ITEM_AMBERFELL || itemid == ITEM_AMBERFELL_CRYSTAL {
-		return true
-	}
-	return false
 }

@@ -18,15 +18,13 @@ type ItemId BlockId
 
 type Player struct {
 	MobData
-	Bounce float64
-	// position      Vectorf
-	// velocity      Vectorf
 	currentAction     Action
 	currentItem       ItemId
 	equippedItems     [7]ItemId
 	inventory         [MAX_ITEMS]uint16
 	distanceTravelled float64
 	distanceFromStart uint16
+	interactingBlock  *InteractingBlockFace
 }
 
 type BlockBreakRecord struct {
@@ -39,7 +37,12 @@ func (self *Player) Init(heading float64, x uint16, z uint16) {
 	self.position[XAXIS] = float64(x)
 	self.position[YAXIS] = float64(TheWorld.FindSurface(x, z))
 	self.position[ZAXIS] = float64(z)
-	self.walkingSpeed = 14
+	self.mass = 5
+	self.stamina = 30
+	self.energy = self.stamina
+
+	self.walkingSpeed = 18
+	self.sprintSpeed = 22
 	self.currentAction = ACTION_HAND
 	self.currentItem = ITEM_NONE
 
@@ -94,7 +97,10 @@ func (self *Player) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 
 	var legAngle, torsoAngle, leftArmAngle, rightArmAngle, step float64
 
-	legAngle = 40 * (math.Abs(self.velocity[XAXIS]) + math.Abs(self.velocity[ZAXIS])) / self.walkingSpeed * math.Sin(self.walkSequence)
+	horzSpeed := self.velocity[XAXIS]*self.velocity[XAXIS] + self.velocity[ZAXIS]*self.velocity[ZAXIS]
+	legAngle = math.Sin(self.walkSequence) * (20 + 45*horzSpeed/(self.sprintSpeed*self.sprintSpeed))
+
+	// legAngle = 55 * (math.Abs(self.velocity[XAXIS]) + math.Abs(self.velocity[ZAXIS])) / self.sprintSpeed * math.Sin(self.walkSequence)
 	torsoAngle = -math.Abs(legAngle / 6)
 	leftArmAngle = -legAngle * 1.2
 	rightArmAngle = legAngle * 1.2
@@ -198,8 +204,12 @@ func (self *Player) HandleKeys(keys []uint8) {
 			self.velocity[XAXIS] = math.Cos(self.Heading()*math.Pi/180) * self.walkingSpeed / 2
 			self.velocity[ZAXIS] = -math.Sin(self.Heading()*math.Pi/180) * self.walkingSpeed / 2
 		} else {
-			self.velocity[XAXIS] = math.Cos(self.Heading()*math.Pi/180) * self.walkingSpeed
-			self.velocity[ZAXIS] = -math.Sin(self.Heading()*math.Pi/180) * self.walkingSpeed
+			speed := self.walkingSpeed
+			if self.energy > 5 && (keys[sdl.K_LSHIFT] != 0 || keys[sdl.K_RSHIFT] != 0) {
+				speed = self.sprintSpeed
+			}
+			self.velocity[XAXIS] = math.Cos(self.Heading()*math.Pi/180) * speed
+			self.velocity[ZAXIS] = -math.Sin(self.Heading()*math.Pi/180) * speed
 		}
 
 	}
@@ -208,8 +218,12 @@ func (self *Player) HandleKeys(keys []uint8) {
 			self.velocity[XAXIS] = -math.Cos(self.Heading()*math.Pi/180) * self.walkingSpeed / 4
 			self.velocity[ZAXIS] = math.Sin(self.Heading()*math.Pi/180) * self.walkingSpeed / 4
 		} else {
-			self.velocity[XAXIS] = -math.Cos(self.Heading()*math.Pi/180) * self.walkingSpeed / 2
-			self.velocity[ZAXIS] = math.Sin(self.Heading()*math.Pi/180) * self.walkingSpeed / 2
+			speed := self.walkingSpeed
+			if self.energy > 5 && (keys[sdl.K_LSHIFT] != 0 || keys[sdl.K_RSHIFT] != 0) {
+				speed = self.sprintSpeed
+			}
+			self.velocity[XAXIS] = -math.Cos(self.Heading()*math.Pi/180) * speed / 2
+			self.velocity[ZAXIS] = math.Sin(self.Heading()*math.Pi/180) * speed / 2
 		}
 
 	}
@@ -273,53 +287,75 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 	case ACTION_HAND:
 		blockid := TheWorld.Atv(selectedBlockFace.pos)
 		switch blockid {
-		case BLOCK_AMBERFELL_PUMP, BLOCK_STEAM_GENERATOR, BLOCK_AMBERFELL_CONDENSER:
+		case BLOCK_AMBERFELL_PUMP, BLOCK_STEAM_GENERATOR, BLOCK_AMBERFELL_CONDENSER, BLOCK_FURNACE, BLOCK_BEESNEST:
 			if obj, ok := TheWorld.containerObjects[selectedBlockFace.pos]; ok {
 				inventory.Show(obj, nil)
 			}
 		case BLOCK_CARPENTERS_BENCH:
 			inventory.Show(nil, NewCarpentersBench(selectedBlockFace.pos))
+		case BLOCK_FORGE:
+			inventory.Show(nil, NewForge(selectedBlockFace.pos))
 
 		}
 
 	case ACTION_BREAK:
-		blockid := TheWorld.Atv(selectedBlockFace.pos)
+		block := TheWorld.AtBv(selectedBlockFace.pos)
+		blocktype := items[ItemId(block.id)]
+		blockid := block.id
 		if blockid != BLOCK_AIR {
 			interactingBlockFace.hitCount++
-			if items[ItemId(blockid)].hitsNeeded != STRENGTH_UNBREAKABLE && interactingBlockFace.hitCount >= items[ItemId(blockid)].hitsNeeded {
-				TheWorld.Setv(selectedBlockFace.pos, BLOCK_AIR)
+			if blocktype.hitsNeeded != STRENGTH_UNBREAKABLE && interactingBlockFace.hitCount >= blocktype.hitsNeeded/2 {
 
-				switch blockid {
-				case BLOCK_CAMPFIRE:
-					delete(TheWorld.lightSources, selectedBlockFace.pos)
-					delete(TheWorld.timedObjects, selectedBlockFace.pos)
-					TheWorld.InvalidateRadius(selectedBlockFace.pos[XAXIS], selectedBlockFace.pos[ZAXIS], uint16(CAMPFIRE_INTENSITY))
+				if interactingBlockFace.hitCount >= blocktype.hitsNeeded {
+					TheWorld.Setv(selectedBlockFace.pos, BLOCK_AIR)
+					TheWorld.InvalidateRadius(selectedBlockFace.pos[XAXIS], selectedBlockFace.pos[ZAXIS], 1)
 
-				case BLOCK_AMBERFELL_PUMP:
-					delete(TheWorld.timedObjects, selectedBlockFace.pos)
-					delete(TheWorld.containerObjects, selectedBlockFace.pos)
+					switch blockid {
+					case BLOCK_CAMPFIRE:
+						delete(TheWorld.campfires, selectedBlockFace.pos)
+						delete(TheWorld.lightSources, selectedBlockFace.pos)
+						delete(TheWorld.timedObjects, selectedBlockFace.pos)
 
-				case BLOCK_STEAM_GENERATOR:
-					delete(TheWorld.timedObjects, selectedBlockFace.pos)
-					delete(TheWorld.containerObjects, selectedBlockFace.pos)
-					delete(TheWorld.generatorObjects, selectedBlockFace.pos)
+						TheWorld.InvalidateRadius(selectedBlockFace.pos[XAXIS], selectedBlockFace.pos[ZAXIS], uint16(CAMPFIRE_INTENSITY))
 
-				case BLOCK_AMBERFELL_CONDENSER:
-					delete(TheWorld.timedObjects, selectedBlockFace.pos)
-					delete(TheWorld.containerObjects, selectedBlockFace.pos)
+					case BLOCK_AMBERFELL_PUMP:
+						delete(TheWorld.timedObjects, selectedBlockFace.pos)
+						delete(TheWorld.containerObjects, selectedBlockFace.pos)
 
-				}
+					case BLOCK_STEAM_GENERATOR:
+						delete(TheWorld.timedObjects, selectedBlockFace.pos)
+						delete(TheWorld.containerObjects, selectedBlockFace.pos)
+						delete(TheWorld.generatorObjects, selectedBlockFace.pos)
 
-				if items[ItemId(blockid)].drops != nil {
-					droppedItem := items[ItemId(blockid)].drops.item
-					if self.inventory[droppedItem] < MAX_ITEMS_IN_INVENTORY {
-						self.inventory[droppedItem]++
-						if items[droppedItem].placeable {
-							self.EquipItem(droppedItem)
+					case BLOCK_AMBERFELL_CONDENSER:
+						delete(TheWorld.timedObjects, selectedBlockFace.pos)
+						delete(TheWorld.containerObjects, selectedBlockFace.pos)
+
+					case BLOCK_FURNACE:
+						delete(TheWorld.timedObjects, selectedBlockFace.pos)
+						delete(TheWorld.containerObjects, selectedBlockFace.pos)
+
+					case BLOCK_BEESNEST:
+						delete(TheWorld.timedObjects, selectedBlockFace.pos)
+						delete(TheWorld.containerObjects, selectedBlockFace.pos)
+
+					}
+
+					if blocktype.drops != nil {
+						droppedItem := blocktype.drops.item
+						if self.inventory[droppedItem] < MAX_ITEMS_IN_INVENTORY {
+							self.inventory[droppedItem]++
+							if items[droppedItem].placeable {
+								self.EquipItem(droppedItem)
+							}
 						}
 					}
+					interactingBlockFace.hitCount = 0
+				} else if !block.Damaged() {
+					block.SetDamaged(true)
+					TheWorld.SetBv(selectedBlockFace.pos, block)
+
 				}
-				interactingBlockFace.hitCount = 0
 			}
 
 		}
@@ -339,7 +375,7 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 				selectedBlockFace.pos[XAXIS]--
 			}
 			if TheWorld.Atv(selectedBlockFace.pos) == BLOCK_AIR && self.currentItem < 256 {
-				blockid := byte(self.currentItem)
+				blockid := self.currentItem
 
 				switch blockid {
 				case BLOCK_CAMPFIRE:
@@ -348,6 +384,7 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 					campfire := NewCampFire(selectedBlockFace.pos)
 					TheWorld.lightSources[selectedBlockFace.pos] = campfire
 					TheWorld.timedObjects[selectedBlockFace.pos] = campfire
+					TheWorld.campfires[selectedBlockFace.pos] = campfire
 
 					TheWorld.InvalidateRadius(selectedBlockFace.pos[XAXIS], selectedBlockFace.pos[ZAXIS], uint16(CAMPFIRE_INTENSITY))
 
@@ -372,9 +409,16 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 					TheWorld.timedObjects[selectedBlockFace.pos] = obj
 					TheWorld.containerObjects[selectedBlockFace.pos] = obj
 
+				case BLOCK_FURNACE:
+					obj := NewFurnace(selectedBlockFace.pos)
+					TheWorld.timedObjects[selectedBlockFace.pos] = obj
+					TheWorld.containerObjects[selectedBlockFace.pos] = obj
 				}
 
-				TheWorld.Setv(selectedBlockFace.pos, blockid)
+				orientation := HeadingToOrientation(self.heading)
+				block := NewBlock(BlockId(blockid), false, orientation)
+
+				TheWorld.SetBv(selectedBlockFace.pos, block)
 				self.inventory[self.currentItem]--
 
 			}
@@ -384,6 +428,20 @@ func (self *Player) Interact(interactingBlockFace *InteractingBlockFace) {
 }
 
 func (self *Player) HandleMouseButton(re *sdl.MouseButtonEvent) {
+	if re.Button == 1 && re.State == 1 { // LEFT, DOWN
+		if self.CanInteract() {
+			selectedBlockFace := viewport.SelectedBlockFace()
+			if selectedBlockFace != nil {
+				if self.interactingBlock == nil || self.interactingBlock.blockFace.pos != selectedBlockFace.pos {
+					self.interactingBlock = new(InteractingBlockFace)
+					self.interactingBlock.blockFace = selectedBlockFace
+					self.interactingBlock.hitCount = 0
+				}
+				self.Interact(self.interactingBlock)
+			}
+			// println("Click:", re.X, re.Y, re.State, re.Button, re.Which)
+		}
+	}
 
 }
 
@@ -443,4 +501,147 @@ func (self *Player) Update(dt float64) (completed bool) {
 	self.distanceTravelled += dt * math.Sqrt(math.Pow(self.velocity[XAXIS], 2)+math.Pow(self.velocity[ZAXIS], 2))
 	self.MobData.Update(dt)
 	return false
+}
+
+func (self *Player) TargetType() uint8 {
+	return TARGET_PLAYER
+}
+
+func (self *Player) DrawWolf(center Vectorf, selectedBlockFace *BlockFace) {
+	pos := Vectorf{self.position[XAXIS], self.position[YAXIS], self.position[ZAXIS]}
+	gl.PushMatrix()
+
+	gl.Translated(self.position[XAXIS], self.position[YAXIS], self.position[ZAXIS])
+	gl.Rotated(self.Heading(), 0.0, 1.0, 0.0)
+
+	// Translate to top of ground block
+	gl.Translatef(0.0, -0.5, 0.0)
+	pos[YAXIS] += -0.5
+
+	headHeight := 0.25
+	headWidth := headHeight
+	headDepth := headHeight * 2.0
+	neckHeight := 0.0
+	torsoWidth := 1.5 * headHeight
+	torsoHeight := 1.5 * headHeight
+	torsoDepth := 5 * headHeight
+	legHeight := 5*headHeight - torsoHeight - neckHeight - headHeight
+	legWidth := (torsoWidth - 0.25*headHeight) / 2
+	legDepth := legWidth
+	// lowerArmHeight := 1.25 * headHeight
+	// handHeight := 0.75 * headHeight
+
+	var legAngle, step float64
+
+	horzSpeed := self.velocity[XAXIS]*self.velocity[XAXIS] + self.velocity[ZAXIS]*self.velocity[ZAXIS]
+	legAngle = math.Sin(self.walkSequence) * (15 + 55*horzSpeed/(self.sprintSpeed*self.sprintSpeed))
+	headAngle := 30.0
+	// torsoAngle = -math.Abs(legAngle / 6)
+	step = headHeight * 0.3 * math.Pow(math.Sin(self.walkSequence), 2)
+
+	gl.Translated(0.0, step, 0)
+	pos[YAXIS] += step
+
+	// Translate to top of leg
+	// Translate to centre of front left leg
+	gl.Translated(0.0, legHeight, 0)
+	pos[YAXIS] += legHeight
+
+	legDepthOffset := torsoDepth/2 - legWidth/2
+	legHeightOffset := -legHeight / 2
+	legWidthOffset := (legWidth + 0.25*headHeight) / 2
+
+	// Translate to centre of front left leg
+	gl.Translated(legDepthOffset, 0, legWidthOffset)
+	gl.Rotated(legAngle, 0.0, 0.0, 1.0)
+	gl.Translated(0, legHeightOffset, 0)
+	pos[XAXIS] += legDepthOffset
+	pos[YAXIS] += legHeightOffset
+	pos[ZAXIS] += legWidthOffset
+	Cuboid(pos, legWidth, legHeight, legDepth, textures[TEXTURE_WOLF_LEG], textures[TEXTURE_WOLF_LEG], textures[TEXTURE_WOLF_LEG], textures[TEXTURE_WOLF_LEG], textures[TEXTURE_WOLF_LEG], textures[TEXTURE_WOLF_LEG], FACE_NONE)
+	pos[XAXIS] -= legDepthOffset
+	pos[YAXIS] -= legHeightOffset
+	pos[ZAXIS] -= legWidthOffset
+	gl.Translated(0, -legHeightOffset, 0)
+	gl.Rotated(-legAngle, 0.0, 0.0, 1.0)
+	gl.Translated(-legDepthOffset, 0, -legWidthOffset)
+
+	legWidthOffset = -legWidthOffset
+	if horzSpeed <= self.walkingSpeed*self.walkingSpeed {
+		legAngle = -legAngle
+	}
+
+	gl.Translated(legDepthOffset, 0, legWidthOffset)
+	gl.Rotated(legAngle, 0.0, 0.0, 1.0)
+	gl.Translated(0, legHeightOffset, 0)
+	pos[XAXIS] += legDepthOffset
+	pos[YAXIS] += legHeightOffset
+	pos[ZAXIS] += legWidthOffset
+	Cuboid(pos, legWidth, legHeight, legDepth, textures[TEXTURE_WOLF_LEG], textures[TEXTURE_WOLF_LEG], textures[TEXTURE_WOLF_LEG], textures[TEXTURE_WOLF_LEG], textures[TEXTURE_WOLF_LEG], textures[TEXTURE_WOLF_LEG], FACE_NONE)
+	pos[XAXIS] -= legDepthOffset
+	pos[YAXIS] -= legHeightOffset
+	pos[ZAXIS] -= legWidthOffset
+	gl.Translated(0, -legHeightOffset, 0)
+	gl.Rotated(-legAngle, 0.0, 0.0, 1.0)
+	gl.Translated(-legDepthOffset, 0, -legWidthOffset)
+
+	legDepthOffset = -legDepthOffset
+	legWidthOffset = -legWidthOffset
+
+	if horzSpeed > self.walkingSpeed*self.walkingSpeed {
+		legAngle = -legAngle
+	}
+
+	gl.Translated(legDepthOffset, 0, legWidthOffset)
+	gl.Rotated(legAngle, 0.0, 0.0, 1.0)
+	gl.Translated(0, legHeightOffset, 0)
+	pos[XAXIS] += legDepthOffset
+	pos[YAXIS] += legHeightOffset
+	pos[ZAXIS] += legWidthOffset
+	Cuboid(pos, legWidth, legHeight, legDepth, textures[TEXTURE_WOLF_LEG], textures[TEXTURE_WOLF_LEG], textures[TEXTURE_WOLF_LEG], textures[TEXTURE_WOLF_LEG], textures[TEXTURE_WOLF_LEG], textures[TEXTURE_WOLF_LEG], FACE_NONE)
+	pos[XAXIS] -= legDepthOffset
+	pos[YAXIS] -= legHeightOffset
+	pos[ZAXIS] -= legWidthOffset
+	gl.Translated(0, -legHeightOffset, 0)
+	gl.Rotated(-legAngle, 0.0, 0.0, 1.0)
+	gl.Translated(-legDepthOffset, 0, -legWidthOffset)
+
+	legWidthOffset = -legWidthOffset
+	if horzSpeed <= self.walkingSpeed*self.walkingSpeed {
+		legAngle = -legAngle
+	}
+
+	gl.Translated(legDepthOffset, 0, legWidthOffset)
+	gl.Rotated(legAngle, 0.0, 0.0, 1.0)
+	gl.Translated(0, legHeightOffset, 0)
+	pos[XAXIS] += legDepthOffset
+	pos[YAXIS] += legHeightOffset
+	pos[ZAXIS] += legWidthOffset
+	Cuboid(pos, legWidth, legHeight, legDepth, textures[TEXTURE_WOLF_LEG], textures[TEXTURE_WOLF_LEG], textures[TEXTURE_WOLF_LEG], textures[TEXTURE_WOLF_LEG], textures[TEXTURE_WOLF_LEG], textures[TEXTURE_WOLF_LEG], FACE_NONE)
+	pos[XAXIS] -= legDepthOffset
+	pos[YAXIS] -= legHeightOffset
+	pos[ZAXIS] -= legWidthOffset
+	gl.Translated(0, -legHeightOffset, 0)
+	gl.Rotated(-legAngle, 0.0, 0.0, 1.0)
+	gl.Translated(-legDepthOffset, 0, -legWidthOffset)
+
+	//gl.Rotated(torsoAngle, 0.0, 0.0, 1.0)
+	// Translate to centre of torso
+	gl.Translated(0.0, torsoHeight/2, 0.0)
+	pos[YAXIS] += torsoHeight / 2
+	Cuboid(pos, torsoWidth, torsoHeight, torsoDepth, textures[TEXTURE_WOLF_TORSO_FRONT], textures[TEXTURE_WOLF_TORSO_BACK], textures[TEXTURE_WOLF_TORSO_SIDE], textures[TEXTURE_WOLF_TORSO_SIDE], textures[TEXTURE_WOLF_TORSO_TOP], textures[TEXTURE_WOLF_TORSO_TOP], FACE_NONE)
+
+	// Translate to shoulders
+	gl.Translated(0.0, torsoHeight/2, 0.0)
+	pos[YAXIS] += torsoHeight / 2
+
+	// Translate to centre of head
+	gl.Translated(torsoDepth/2+headDepth*0.5, 0.0, 0.0)
+	pos[XAXIS] += torsoDepth/2 + headDepth*0.5
+	pos[YAXIS] += 0.0
+
+	gl.Rotated(-headAngle, 0.0, 0.0, 1.0)
+	Cuboid(pos, headWidth, headHeight, headDepth, textures[TEXTURE_WOLF_HEAD_FRONT], textures[TEXTURE_WOLF_HEAD_BACK], textures[TEXTURE_WOLF_HEAD_SIDE], textures[TEXTURE_WOLF_HEAD_SIDE], textures[TEXTURE_WOLF_HEAD_TOP], textures[TEXTURE_WOLF_HEAD_BOTTOM], FACE_NONE)
+
+	gl.PopMatrix()
 }

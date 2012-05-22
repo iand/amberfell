@@ -29,7 +29,8 @@ var (
 	ThePlayer  *Player
 	viewport   Viewport
 
-	timeOfDay float32 = 9
+	timeOfDay     float32 = 9
+	sunlightLevel int     = 7
 
 	worldSeed = int64(20000)
 	treeLine  = uint16(math.Trunc(5.0 * float64(CHUNK_HEIGHT/6.0)))
@@ -74,7 +75,8 @@ func main() {
 	defer quit()
 
 	initGame()
-	gameLoop()
+	loop()
+	//	gameLoop()
 
 	if *flag_memprofile {
 		pfile, err := os.Create("amberfell.prof")
@@ -104,7 +106,8 @@ func initGame() {
 		panic("Could not initalize fonts")
 	}
 
-	screen := sdl.SetVideoMode(800, 600, 32, sdl.OPENGL|sdl.RESIZABLE)
+	sdl.GL_SetAttribute(sdl.GL_DOUBLEBUFFER, 1)
+	screen := sdl.SetVideoMode(1024, 600, 32, sdl.OPENGL|sdl.RESIZABLE)
 
 	if screen == nil {
 		sdl.Quit()
@@ -142,6 +145,7 @@ func initGame() {
 	gl.Enable(gl.TEXTURE_2D)
 	//	LoadMapTextures()
 	LoadPlayerTextures()
+	LoadWolfTextures()
 	InitItems()
 
 	pauseFont = NewFont("res/Jura-DemiBold.ttf", 48, color.RGBA{255, 255, 255, 0})
@@ -149,13 +153,13 @@ func initGame() {
 	inventoryItemFont = NewFont("res/Jura-DemiBold.ttf", 14, color.RGBA{240, 240, 240, 0})
 
 	textures[TEXTURE_PICKER] = loadTexture("res/dial.png")
-	terrainTexture = loadTexture("tiles.png")
+	terrainTexture = loadTexture("res/tiles.png")
 	itemsTexture = loadTexture("res/items.png")
 
 	gVertexBuffer = NewVertexBuffer(10000, terrainTexture)
 	gGuiBuffer = NewVertexBuffer(1000, terrainTexture)
 
-	//WolfModel = LoadModel("res/wolf.mm3d")
+	WolfModel = LoadModel("res/wolf.mm3d")
 
 	TheWorld = NewWorld()
 
@@ -165,7 +169,7 @@ func initGame() {
 	inventory = NewInventory()
 
 	viewport.Reshape(int(screen.W), int(screen.H))
-	PreloadChunks(1000)
+	PreloadChunks(400)
 
 }
 
@@ -176,191 +180,139 @@ func quit() {
 	println("Thanks for playing.")
 }
 
-func gameLoop() {
-	var startTime int64 = time.Now().UnixNano()
-	var currentTime, accumulator int64 = 0, 0
-	var t, dt int64 = 0, 1e9 / 40
-	var drawFrame, computeFrame int64 = 0, 0
+func loop() {
 
-	update500ms := new(Timer)
-	update500ms.interval = 500 * 1e6
-	update500ms.Start()
+	ticksim := time.Tick(50 * time.Millisecond)
+	tickEnvironment := time.Tick(250 * time.Millisecond)
+	tickUI := time.Tick(500 * time.Millisecond)
+	tickHousekeeping := time.Tick(2 * time.Second)
 
-	update150ms := new(Timer)
-	update150ms.interval = 50 * 1e6
-	update150ms.Start()
-
-	update2000ms := new(Timer)
-	update2000ms.interval = 2000 * 1e6
-	update2000ms.Start()
-
-	var interactingBlock *InteractingBlockFace
-
-	done := false
-	for !done {
-
-		for e := sdl.PollEvent(); e != nil; e = sdl.PollEvent() {
-			switch e.(type) {
-			case *sdl.QuitEvent:
-				done = true
-			case *sdl.ResizeEvent:
-				re := e.(*sdl.ResizeEvent)
-				screen := sdl.SetVideoMode(int(re.W), int(re.H), 16,
-					sdl.OPENGL|sdl.RESIZABLE)
-				if screen != nil {
-					viewport.Reshape(int(screen.W), int(screen.H))
-				} else {
-					panic("Could not set video mode")
-				}
-				break
-
-			case *sdl.MouseButtonEvent:
-				re := e.(*sdl.MouseButtonEvent)
-				if inventory.visible {
-					inventory.HandleMouseButton(re)
-				} else {
-					picker.HandleMouseButton(re)
-
-					if re.Button == 1 && re.State == 1 { // LEFT, DOWN
-						if ThePlayer.CanInteract() {
-							selectedBlockFace := viewport.SelectedBlockFace()
-							if selectedBlockFace != nil {
-								if interactingBlock == nil || interactingBlock.blockFace.pos != selectedBlockFace.pos {
-									interactingBlock = new(InteractingBlockFace)
-									interactingBlock.blockFace = selectedBlockFace
-									interactingBlock.hitCount = 0
-								}
-								ThePlayer.Interact(interactingBlock)
-							}
-							// println("Click:", re.X, re.Y, re.State, re.Button, re.Which)
-						}
-					}
-				}
-
-			case *sdl.KeyboardEvent:
-				re := e.(*sdl.KeyboardEvent)
-
-				if re.Keysym.Sym == sdl.K_ESCAPE && re.Type == sdl.KEYDOWN {
-					inventory.Hide()
-					if pause.visible {
-						pause.visible = false
-						update2000ms.Unpause()
-						update500ms.Unpause()
-						update150ms.Unpause()
-					} else {
-						pause.visible = true
-						update2000ms.Pause()
-						update500ms.Pause()
-						update150ms.Pause()
-					}
-				}
-
-				if re.Keysym.Sym == sdl.K_F3 && re.Type == sdl.KEYDOWN {
-					console.visible = !console.visible
-				}
-
-				if !pause.visible {
-					if re.Keysym.Sym == sdl.K_i && re.Type == sdl.KEYDOWN {
-						if inventory.visible {
-							inventory.Hide()
-						} else {
-							inventory.Show(nil, nil)
-						}
-					}
-
-					if inventory.visible {
-						inventory.HandleKeyboard(re)
-					}
-				}
-			}
+	for {
+		if HandleUserInput() {
+			return
 		}
 
-		keys := sdl.GetKeyState()
-
-		if console.visible {
-			console.HandleKeys(keys)
-		}
-
-		if pause.visible {
-			pause.HandleKeys(keys)
-		} else if inventory.visible {
-			inventory.HandleKeys(keys)
-		} else {
-			viewport.HandleKeys(keys)
-			ThePlayer.HandleKeys(keys)
-			picker.HandleKeys(keys)
-		}
-
-		if update150ms.PassedInterval() {
-
-			if !inventory.visible {
-				// If player is breaking a block then allow them to hold mouse down to continue action
-				if interactingBlock != nil && ThePlayer.currentAction == ACTION_BREAK {
-					if mouseState := sdl.GetMouseState(nil, nil); mouseState == 1 {
-						if ThePlayer.CanInteract() {
-							selectedBlockFace := viewport.SelectedBlockFace()
-							if selectedBlockFace != nil {
-								if interactingBlock == nil || !interactingBlock.blockFace.pos.Equals(&selectedBlockFace.pos) {
-									interactingBlock = new(InteractingBlockFace)
-									interactingBlock.blockFace = selectedBlockFace
-									interactingBlock.hitCount = 0
-								}
-								ThePlayer.Interact(interactingBlock)
-							}
-							// println("Click:", re.X, re.Y, re.State, re.Button, re.Which)
-						}
-					}
-				}
-			}
-
-			PreloadChunks(50)
-			update150ms.Start()
-		}
-
-		if update500ms.PassedInterval() {
-			console.fps = float64(drawFrame) / (float64(update500ms.GetTicks()) / float64(1e9))
-			console.Update()
-
-			UpdateTimeOfDay()
-			PreloadChunks(220)
-
-			drawFrame, computeFrame = 0, 0
-			update500ms.Start()
-
-		}
-
-		if update2000ms.PassedInterval() {
-			CullChunks()
-			UpdatePlayerStats()
-			update2000ms.Start()
-		}
+		Draw(time.Now().UnixNano())
 
 		if !pause.visible {
-			newTime := time.Now().UnixNano()
-			deltaTime := newTime - currentTime
-			currentTime = newTime
-			if deltaTime > 1e9/4 {
-				deltaTime = 1e9 / 4
-			}
+			select {
 
-			accumulator += deltaTime
+			case <-ticksim:
+				TheWorld.Simulate()
 
-			for accumulator > dt {
-				accumulator -= dt
+			case <-tickEnvironment:
+				MouseRepeat()
+				PreloadChunks(100)
 
-				TheWorld.ApplyForces(ThePlayer, float64(dt)/1e9)
+			case <-tickUI:
+				console.Update()
+				UpdateTimeOfDay(false)
+				PreloadChunks(220)
 
-				ThePlayer.Update(float64(dt) / 1e9)
-				TheWorld.Simulate(float64(dt) / 1e9)
+			case <-tickHousekeeping:
+				CullChunks()
+				UpdatePlayerStats()
 
-				computeFrame++
-				t += dt
+			default:
+				break
 			}
 		}
-		//interpolate(previous, current, accumulator/dt)
+	}
+}
 
-		Draw(currentTime - startTime)
-		drawFrame++
+func HandleUserInput() bool {
+	for e := sdl.PollEvent(); e != nil; e = sdl.PollEvent() {
+		switch e.(type) {
+		case *sdl.QuitEvent:
+			return true
+		case *sdl.ResizeEvent:
+			re := e.(*sdl.ResizeEvent)
+			screen := sdl.SetVideoMode(int(re.W), int(re.H), 16,
+				sdl.OPENGL|sdl.RESIZABLE)
+			if screen != nil {
+				viewport.Reshape(int(screen.W), int(screen.H))
+			} else {
+				panic("Could not set video mode")
+			}
+			break
+
+		case *sdl.MouseButtonEvent:
+			re := e.(*sdl.MouseButtonEvent)
+			HandleMouseButton(re)
+
+		case *sdl.KeyboardEvent:
+			re := e.(*sdl.KeyboardEvent)
+
+			if re.Keysym.Sym == sdl.K_ESCAPE && re.Type == sdl.KEYDOWN {
+				if inventory.visible {
+					inventory.Hide()
+				} else {
+					if pause.visible {
+						pause.visible = false
+					} else {
+						pause.visible = true
+					}
+				}
+			}
+
+			if re.Keysym.Sym == sdl.K_F3 && re.Type == sdl.KEYDOWN {
+				console.visible = !console.visible
+			}
+
+			if !pause.visible {
+				if re.Keysym.Sym == sdl.K_i && re.Type == sdl.KEYDOWN {
+					if inventory.visible {
+						inventory.Hide()
+					} else {
+						inventory.Show(nil, nil)
+					}
+				}
+
+				if inventory.visible {
+					inventory.HandleKeyboard(re)
+				}
+			}
+		}
+	}
+
+	keys := sdl.GetKeyState()
+
+	if console.visible {
+		console.HandleKeys(keys)
+	}
+
+	if pause.visible {
+		pause.HandleKeys(keys)
+	} else if inventory.visible {
+		inventory.HandleKeys(keys)
+	} else {
+		viewport.HandleKeys(keys)
+		ThePlayer.HandleKeys(keys)
+		picker.HandleKeys(keys)
+	}
+
+	return false
+}
+
+func HandleMouseButton(re *sdl.MouseButtonEvent) {
+	if inventory.visible {
+		inventory.HandleMouseButton(re)
+	} else {
+		picker.HandleMouseButton(re)
+		ThePlayer.HandleMouseButton(re)
+	}
+}
+
+func MouseRepeat() {
+	var x, y int
+	mouseState := sdl.GetMouseState(&x, &y)
+
+	if mouseState&MOUSE_BTN_LEFT == MOUSE_BTN_LEFT {
+		HandleMouseButton(&sdl.MouseButtonEvent{Type: sdl.MOUSEBUTTONDOWN, Button: sdl.BUTTON_LEFT, State: 1, X: uint16(x), Y: uint16(y)})
+	}
+	if mouseState&MOUSE_BTN_RIGHT == MOUSE_BTN_RIGHT {
+		HandleMouseButton(&sdl.MouseButtonEvent{Type: sdl.MOUSEBUTTONDOWN, Button: sdl.BUTTON_RIGHT, State: 1, X: uint16(x), Y: uint16(y)})
+
 	}
 
 }
@@ -368,7 +320,6 @@ func gameLoop() {
 func Draw(t int64) {
 	console.culledVertices = 0
 	console.vertices = 0
-
 	gVertexBuffer.Reset()
 
 	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT)
@@ -392,9 +343,21 @@ func Draw(t int64) {
 
 	center := ThePlayer.Position()
 
+	// glu.LookAt(			
+	// 				0,0,0,
+
+	// 				center[XAXIS], center[YAXIS], center[ZAXIS],
+	// 				0.0, 1.0, 0.0 )
+
+	// normal := ThePlayer.Normal()
+
 	// matrix := *viewport.matrix.Float32()
 	matrix := ModelMatrix().Float32()
 	gl.MultMatrixf(&matrix[0])
+
+	// normal := ThePlayer.Normal()
+	// gl.Translated(normal[XAXIS]*3, -12, normal[ZAXIS]*3)
+
 	//gl.Translatef(-float32(center[XAXIS]), -float32(center[YAXIS]), -float32(center[ZAXIS]))
 
 	// Sun
@@ -402,41 +365,15 @@ func Draw(t int64) {
 	gl.Materialfv(gl.FRONT, gl.DIFFUSE, []float32{0.1, 0.1, 0.1, 1})
 	gl.Materialfv(gl.FRONT, gl.SPECULAR, []float32{0.1, 0.1, 0.1, 1})
 	gl.Materialfv(gl.FRONT, gl.SHININESS, []float32{0.0, 0.0, 0.0, 1})
-	var daylightIntensity float32 = 0.45
-	var nighttimeIntensity float32 = 0.15
-	if timeOfDay < 5 || timeOfDay > 21 {
-		gl.LightModelfv(gl.LIGHT_MODEL_AMBIENT, []float32{0.2, 0.2, 0.2, 1})
-		daylightIntensity = 0.01
-	} else if timeOfDay < 6 {
-		daylightIntensity = nighttimeIntensity + daylightIntensity*(timeOfDay-5)
-	} else if timeOfDay > 20 {
-		daylightIntensity = nighttimeIntensity + daylightIntensity*(21-timeOfDay)
-	}
+
+	daylightIntensity := float32(SUNLIGHT_LEVELS[sunlightLevel])
 
 	gl.LightModelfv(gl.LIGHT_MODEL_AMBIENT, []float32{daylightIntensity / 2.5, daylightIntensity / 2.5, daylightIntensity / 2.5, 1})
 
 	gl.Lightfv(gl.LIGHT0, gl.POSITION, []float32{30 * float32(math.Sin(ThePlayer.Heading()*math.Pi/180)), 60, 30 * float32(math.Cos(ThePlayer.Heading()*math.Pi/180)), 0})
 	gl.Lightfv(gl.LIGHT0, gl.AMBIENT, []float32{daylightIntensity, daylightIntensity, daylightIntensity, 1})
-	// gl.Lightfv(gl.LIGHT0, gl.DIFFUSE, []float32{daylightIntensity, daylightIntensity, daylightIntensity,1})
-	// gl.Lightfv(gl.LIGHT0, gl.SPECULAR, []float32{daylightIntensity, daylightIntensity, daylightIntensity,1})
 	gl.Lightfv(gl.LIGHT0, gl.DIFFUSE, []float32{daylightIntensity * 2, daylightIntensity * 2, daylightIntensity * 2, 1})
 	gl.Lightfv(gl.LIGHT0, gl.SPECULAR, []float32{daylightIntensity, daylightIntensity, daylightIntensity, 1})
-
-	// Torch
-	// ambient := float32(0.6)
-	// specular := float32(0.6)
-	// diffuse := float32(1)
-
-	// gl.Lightfv(gl.LIGHT1, gl.POSITION, []float32{float32(ThePlayer.position[XAXIS]), float32(ThePlayer.position[YAXIS] + 1), float32(ThePlayer.position[ZAXIS]), 1})
-	// gl.Lightfv(gl.LIGHT1, gl.AMBIENT, []float32{ambient, ambient, ambient, 1})
-	// gl.Lightfv(gl.LIGHT1, gl.SPECULAR, []float32{specular, specular, specular, 1})
-	// gl.Lightfv(gl.LIGHT1, gl.DIFFUSE, []float32{diffuse, diffuse, diffuse, 1})
-	// gl.Lightf(gl.LIGHT1, gl.CONSTANT_ATTENUATION, 1.5)
-	// gl.Lightf(gl.LIGHT1, gl.LINEAR_ATTENUATION, 0.5)
-	// gl.Lightf(gl.LIGHT1, gl.QUADRATIC_ATTENUATION, 0.01)
-	// gl.Lightf(gl.LIGHT1, gl.SPOT_CUTOFF, 35)
-	// gl.Lightf(gl.LIGHT1, gl.SPOT_EXPONENT, 2.0)
-	// gl.Lightfv(gl.LIGHT1, gl.SPOT_DIRECTION, []float32{float32(math.Cos(ThePlayer.Heading() * math.Pi / 180)), float32(-0.7), -float32(math.Sin(ThePlayer.Heading() * math.Pi / 180))})
 
 	gl.RenderMode(gl.RENDER)
 
@@ -463,36 +400,38 @@ func Draw(t int64) {
 	gl.Finish()
 	gl.Flush()
 	sdl.GL_SwapBuffers()
-	// runtime.GC()
+	console.framesDrawn++
 }
 
-func UpdateTimeOfDay() {
-	timeOfDay += 0.02
-	if timeOfDay > 24 {
-		timeOfDay -= 24
+func UpdateTimeOfDay(reverse bool) {
+	if reverse {
+		timeOfDay -= 0.02
+		if timeOfDay < 0 {
+			timeOfDay += 24
+		}
+	} else {
+		timeOfDay += 0.02
+		if timeOfDay > 24 {
+			timeOfDay -= 24
+		}
 	}
+
+	if timeOfDay >= 21.5 || timeOfDay < 4.5 {
+		sunlightLevel = 0
+	} else if timeOfDay >= 4.5 && timeOfDay < 6 {
+		sunlightLevel = 1 + int(6*(timeOfDay-4.5)/1.5)
+	} else if timeOfDay >= 6 && timeOfDay < 20 {
+		sunlightLevel = 7
+	} else {
+		sunlightLevel = 7 - int(6*(timeOfDay-20)/1.5)
+	}
+
 }
 
 func PreloadChunks(maxtime int64) {
 	startTicks := time.Now().UnixNano()
 	center := ThePlayer.Position()
-	// pxmin, _, pzmin := chunkCoordsFromWorld(uint16(center[XAXIS]-float64(viewRadius)), uint16(center[YAXIS]), uint16(center[ZAXIS]-float64(viewRadius)))
-	// pxmax, _, pzmax := chunkCoordsFromWorld(uint16(center[XAXIS]+float64(viewRadius)), uint16(center[YAXIS]), uint16(center[ZAXIS]+float64(viewRadius)))
-
-	// for px := pxmin; px <= pxmax; px++ {
-	// 	for pz := pzmin; pz <= pzmax; pz++ {
-	// 		TheWorld.GetChunk(px, 0, pz).PreRender(nil)
-	// 		if time.Now().UnixNano()-startTicks > maxtime*1e6 {
-	// 			return
-	// 		}
-
-	// 	}
-	// }
-
-	//if !ThePlayer.IsMoving() {
-	// Load some chunks around where the player is headed
-	// center := ThePlayer.Position()
-	px, _, pz := chunkCoordsFromWorld(uint16(center[XAXIS]), uint16(center[YAXIS]), uint16(center[ZAXIS]))
+	px, pz := chunkCoordsFromWorld(uint16(center[XAXIS]), uint16(center[ZAXIS]))
 
 	r := 1
 	rmax := int(viewRadius/CHUNK_WIDTH) + 2
@@ -501,8 +440,8 @@ func PreloadChunks(maxtime int64) {
 	z := -r
 
 	for time.Now().UnixNano()-startTicks < maxtime*1e6 && r < rmax {
-		TheWorld.GetChunk(uint16(int(px)+x), 0, uint16(int(pz)+z)).PreRender(nil)
-		TheWorld.GetChunk(uint16(int(px)-x), 0, uint16(int(pz)-z)).PreRender(nil)
+		TheWorld.GetChunk(uint16(int(px)+x), uint16(int(pz)+z)).PreRender(nil)
+		TheWorld.GetChunk(uint16(int(px)-x), uint16(int(pz)-z)).PreRender(nil)
 		if z == r {
 			if x == r {
 				r++
@@ -516,12 +455,11 @@ func PreloadChunks(maxtime int64) {
 		}
 
 	}
-	//}
 }
 func CullChunks() {
 	center := ThePlayer.Position()
-	pxmin, _, pzmin := chunkCoordsFromWorld(uint16(center[XAXIS]-float64(viewRadius)), uint16(center[YAXIS]), uint16(center[ZAXIS]-float64(viewRadius)))
-	pxmax, _, pzmax := chunkCoordsFromWorld(uint16(center[XAXIS]+float64(viewRadius)), uint16(center[YAXIS]), uint16(center[ZAXIS]+float64(viewRadius)))
+	pxmin, pzmin := chunkCoordsFromWorld(uint16(center[XAXIS]-float64(viewRadius)), uint16(center[ZAXIS]-float64(viewRadius)))
+	pxmax, pzmax := chunkCoordsFromWorld(uint16(center[XAXIS]+float64(viewRadius)), uint16(center[ZAXIS]+float64(viewRadius)))
 
 	// Cull chunks more than 10 chunks away from view radius
 	for chunkIndex, chunk := range TheWorld.chunks {
