@@ -1,4 +1,4 @@
-	/*
+/*
   To the extent possible under law, Ian Davis has waived all copyright
   and related or neighboring rights to this Amberfell Source Code file.
   This work is published from the United Kingdom. 
@@ -187,26 +187,14 @@ func (self *World) Feature2(x uint16, z uint16) float64 {
 	return noise
 }
 
-func (self *World) GenerateChunkFeatures(chunk *Chunk) {
+func (self *World) GenerateChunkFeatures(chunk *Chunk, adjacents [4]*Chunk) {
 	if !chunk.featuresLoaded {
 		cx := chunk.x
 		cz := chunk.z
-		if _, ok := self.chunks[chunkIndex(cx+1, cz)]; !ok {
-			return
-		} else if _, ok := self.chunks[chunkIndex(cx-1, cz)]; !ok {
-			return
-		} else if _, ok := self.chunks[chunkIndex(cx, cz+1)]; !ok {
-			return
-		} else if _, ok := self.chunks[chunkIndex(cx, cz-1)]; !ok {
-			return
-		} else if _, ok := self.chunks[chunkIndex(cx+1, cz+1)]; !ok {
-			return
-		} else if _, ok := self.chunks[chunkIndex(cx+1, cz-1)]; !ok {
-			return
-		} else if _, ok := self.chunks[chunkIndex(cx-1, cz+1)]; !ok {
-			return
-		} else if _, ok := self.chunks[chunkIndex(cx-1, cz-1)]; !ok {
-			return
+		for _, ac := range adjacents {
+			if ac == nil {
+				return
+			}
 		}
 
 		xw := cx * CHUNK_WIDTH
@@ -269,12 +257,6 @@ func (self *World) GenerateAmberfell() {
 			pos := uint16(self.GenNext() >> 16)
 			xw := x + pos%256
 			zw := z + pos/256
-
-			if xw > PLAYER_START_X-250 && xw < PLAYER_START_X+250 &&
-				zw > PLAYER_START_Z-250 && zw < PLAYER_START_Z+250 {
-
-				println("Amberfell: ", xw, zw)
-			}
 
 			index := chunkIndexFromWorld(xw, zw)
 			cx, cz := chunkCoordsFromindex(index)
@@ -430,17 +412,6 @@ func (self *World) Grow(x uint16, y uint16, z uint16, n int, s int, w int, e int
 		self.Set(x, y-1, z, blockid)
 		self.Grow(x, y-1, z, n, s, w, e, 0, d-2, blockid)
 	}
-}
-
-func (self *World) HasVisibleFaces(neighbours [18]BlockId) bool {
-
-	for i := 0; i < 6; i++ {
-		if items[ItemId(neighbours[i])].transparent {
-			return true
-		}
-	}
-
-	return false
 }
 
 func (self *World) ApproxBlockAt(x uint16, y uint16, z uint16) BlockId {
@@ -675,13 +646,51 @@ func (self *World) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 	pxmin, pzmin := chunkCoordsFromWorld(uint16(center[XAXIS]-float64(viewRadius)), uint16(center[ZAXIS]-float64(viewRadius)))
 	pxmax, pzmax := chunkCoordsFromWorld(uint16(center[XAXIS]+float64(viewRadius)), uint16(center[ZAXIS]+float64(viewRadius)))
 
+	var adjacents [4]*Chunk
+
+	// maxChunks := (pxmax-pxmin) * (pzmax-pzmin)
+	// vb := make(chan *VertexBuffer, maxChunks) 
+
+	chunkCount := 0
 	for px := pxmin; px <= pxmax; px++ {
 		for pz := pzmin; pz <= pzmax; pz++ {
 			if chunk, ok := self.chunks[chunkIndex(px, pz)]; ok {
-				chunk.Render(selectedBlockFace)
+				if ac, ok := self.chunks[chunkIndex(px, pz-1)]; ok {
+					adjacents[NORTH_FACE] = ac
+				} else {
+					adjacents[NORTH_FACE] = nil
+				}
+				if ac, ok := self.chunks[chunkIndex(px, pz+1)]; ok {
+					adjacents[SOUTH_FACE] = ac
+				} else {
+					adjacents[SOUTH_FACE] = nil
+				}
+				if ac, ok := self.chunks[chunkIndex(px+1, pz)]; ok {
+					adjacents[EAST_FACE] = ac
+				} else {
+					adjacents[EAST_FACE] = nil
+				}
+				if ac, ok := self.chunks[chunkIndex(px-1, pz)]; ok {
+					adjacents[WEST_FACE] = ac
+				} else {
+					adjacents[WEST_FACE] = nil
+				}
+
+				chunkCount++
+				chunk.Render(adjacents, selectedBlockFace, nil)
+				chunk.vertexBuffer.RenderDirect(true)
 			}
 		}
 	}
+
+	// t := time.Tick(500 * time.Millisecond)
+	// for i := 0 ; i < chunkCount; i++ {
+	// 	select {
+	// 		case buffer := <-vb:
+	// 			buffer.RenderDirect(true)
+	// 		case <-t:
+	// 	}
+	// }
 
 }
 

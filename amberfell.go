@@ -16,6 +16,7 @@ import (
 	"math"
 	"math/rand"
 	"os"
+	"runtime"
 	"runtime/pprof"
 	"time"
 )
@@ -59,11 +60,14 @@ var (
 func main() {
 	flag.Parse()
 
+	println("Setting GOMAXPROCS to ", runtime.NumCPU())
+	runtime.GOMAXPROCS(runtime.NumCPU())
+
 	if *flag_cpuprofile {
 		pfile, err := os.Create("amberfell.prof")
 
 		if err != nil {
-			panic(fmt.Sprintf("Could not create amberfell.prof:", err))
+			panic(fmt.Sprintf("Could not create amberfell.prof: %s", err))
 		}
 
 		pprof.StartCPUProfile(pfile)
@@ -82,7 +86,7 @@ func main() {
 		pfile, err := os.Create("amberfell.prof")
 
 		if err != nil {
-			panic(fmt.Sprintf("Could not create amberfell.mprof:", err))
+			panic(fmt.Sprintf("Could not create amberfell.mprof:%s", err))
 		}
 
 		pprof.WriteHeapProfile(pfile)
@@ -416,9 +420,55 @@ func PreloadChunks(maxtime int64) {
 	x := -r
 	z := -r
 
+	var adjacents [4]*Chunk
 	for time.Now().UnixNano()-startTicks < maxtime*1e6 && r < rmax {
-		TheWorld.GetChunk(uint16(int(px)+x), uint16(int(pz)+z)).PreRender(nil)
-		TheWorld.GetChunk(uint16(int(px)-x), uint16(int(pz)-z)).PreRender(nil)
+
+		if ac, ok := TheWorld.chunks[chunkIndex(uint16(int(px)+x), uint16(int(pz)+z)-1)]; ok {
+			adjacents[NORTH_FACE] = ac
+		} else {
+			adjacents[NORTH_FACE] = nil
+		}
+		if ac, ok := TheWorld.chunks[chunkIndex(uint16(int(px)+x), uint16(int(pz)+z)+1)]; ok {
+			adjacents[SOUTH_FACE] = ac
+		} else {
+			adjacents[SOUTH_FACE] = nil
+		}
+		if ac, ok := TheWorld.chunks[chunkIndex(uint16(int(px)+x)+1, uint16(int(pz)+z))]; ok {
+			adjacents[EAST_FACE] = ac
+		} else {
+			adjacents[EAST_FACE] = nil
+		}
+		if ac, ok := TheWorld.chunks[chunkIndex(uint16(int(px)+x)-1, uint16(int(pz)+z))]; ok {
+			adjacents[WEST_FACE] = ac
+		} else {
+			adjacents[WEST_FACE] = nil
+		}
+
+		go TheWorld.GetChunk(uint16(int(px)+x), uint16(int(pz)+z)).Render(adjacents, nil, nil)
+
+		if ac, ok := TheWorld.chunks[chunkIndex(uint16(int(px)-x), uint16(int(pz)-z)-1)]; ok {
+			adjacents[NORTH_FACE] = ac
+		} else {
+			adjacents[NORTH_FACE] = nil
+		}
+		if ac, ok := TheWorld.chunks[chunkIndex(uint16(int(px)-x), uint16(int(pz)-z)+1)]; ok {
+			adjacents[SOUTH_FACE] = ac
+		} else {
+			adjacents[SOUTH_FACE] = nil
+		}
+		if ac, ok := TheWorld.chunks[chunkIndex(uint16(int(px)-x)+1, uint16(int(pz)-z))]; ok {
+			adjacents[EAST_FACE] = ac
+		} else {
+			adjacents[EAST_FACE] = nil
+		}
+		if ac, ok := TheWorld.chunks[chunkIndex(uint16(int(px)-x)-1, uint16(int(pz)-z))]; ok {
+			adjacents[WEST_FACE] = ac
+		} else {
+			adjacents[WEST_FACE] = nil
+		}
+
+		go TheWorld.GetChunk(uint16(int(px)-x), uint16(int(pz)-z)).Render(adjacents, nil, nil)
+
 		if z == r {
 			if x == r {
 				r++

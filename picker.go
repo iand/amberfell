@@ -126,7 +126,7 @@ func (self *Picker) HitTest(x, y float64) (bool, int) {
 func (self *Picker) HandleMouseButton(re *sdl.MouseButtonEvent) {
 	if re.Button == 1 && re.State == 1 { // LEFT, DOWN
 		x, y := viewport.ScreenCoordsToWorld2D(re.X, re.Y)
-		
+
 		if hit, pos := self.HitTest(x, y); hit {
 			ThePlayer.SelectAction(pos)
 		}

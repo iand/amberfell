@@ -149,7 +149,7 @@ func NewChunk(cx uint16, cz uint16, hasAmberfell bool, amberfellCoords [2]uint16
 		}
 	}
 
-	TheWorld.GenerateChunkFeatures(&chunk)
+	//TheWorld.GenerateChunkFeatures(&chunk)
 
 	console.chunkGenerationTime = time.Now().UnixNano() - startTicks
 	return &chunk
@@ -170,9 +170,6 @@ func (chunk *Chunk) Init(x uint16, z uint16) {
 }
 
 func (chunk *Chunk) At(x uint16, y uint16, z uint16) BlockId {
-	if y < 0 {
-		y = 0
-	}
 	return chunk.Blocks[blockIndex(x, y, z)].id
 }
 
@@ -190,16 +187,74 @@ func (chunk *Chunk) SetB(x uint16, y uint16, z uint16, block Block) {
 	chunk.clean = false
 }
 
-func (self *Chunk) PreRender(selectedBlockFace *BlockFace) {
+// func (self *Chunk) PreRender(selectedBlockFace *BlockFace) {
+// 	if !self.featuresLoaded {
+// 		// TheWorld.GenerateChunkFeatures(self)
+// 	}
+
+// 	if !self.clean || (selectedBlockFace != nil && selectedBlockFace.pos[XAXIS] >= self.x*CHUNK_WIDTH && selectedBlockFace.pos[XAXIS] < (self.x+1)*CHUNK_WIDTH &&
+// 		/*selectedBlockFace.pos[YAXIS] >= self.y*CHUNK_HEIGHT && selectedBlockFace.pos[YAXIS] < (self.y+1)*CHUNK_HEIGHT && */
+// 		selectedBlockFace.pos[ZAXIS] >= self.z*CHUNK_WIDTH && selectedBlockFace.pos[ZAXIS] < (self.z+1)*CHUNK_WIDTH) {
+// 		self.vertexBuffer.Reset()
+// 		var x, y, z uint16
+// 		for x = 0; x < CHUNK_WIDTH; x++ {
+// 			for z = 0; z < CHUNK_WIDTH; z++ {
+// 				for y = 0; y < CHUNK_HEIGHT; y++ {
+// 					block := self.Blocks[blockIndex(x, y, z)]
+// 					if block.id != 0 {
+
+// 						pos := Vectori{self.x*CHUNK_WIDTH + x, y, self.z*CHUNK_WIDTH + z}
+// 						neighbours := TheWorld.Neighbours(pos)
+
+// 						if HasVisibleFaces(neighbours) {
+
+// 							selectedFace := uint8(FACE_NONE)
+// 							if selectedBlockFace != nil && pos.Equals(&selectedBlockFace.pos) {
+// 								selectedFace = selectedBlockFace.face
+// 							}
+
+// 							TerrainCube(self.vertexBuffer, pos, neighbours, block, selectedFace)
+// 						}
+// 					}
+// 				}
+// 			}
+// 		}
+
+// 		self.clean = true
+// 	}
+
+// }
+
+// func (self *Chunk) Render(selectedBlockFace *BlockFace) {
+// 	// self.PreRender(selectedBlockFace)
+
+// 	self.vertexBuffer.RenderDirect(true)
+
+// 	// fmt.Printf("Chunk ticks: %4.0f\n", float64(t.GetTicks())/1e6)
+
+// }
+
+func (self *Chunk) Render(adjacents [4]*Chunk, selectedBlockFace *BlockFace, vb chan *VertexBuffer) {
 	if !self.featuresLoaded {
-		TheWorld.GenerateChunkFeatures(self)
+
+		allAdjacentsAvailable := true
+		for _, ac := range adjacents {
+			if ac == nil {
+				allAdjacentsAvailable = false
+			}
+		}
+
+		if allAdjacentsAvailable {
+			TheWorld.GenerateChunkFeatures(self, adjacents)
+		}
+
 	}
 
-	if !self.clean || (selectedBlockFace != nil && selectedBlockFace.pos[XAXIS] >= self.x*CHUNK_WIDTH && selectedBlockFace.pos[XAXIS] < (self.x+1)*CHUNK_WIDTH &&
-		/*selectedBlockFace.pos[YAXIS] >= self.y*CHUNK_HEIGHT && selectedBlockFace.pos[YAXIS] < (self.y+1)*CHUNK_HEIGHT && */
-		selectedBlockFace.pos[ZAXIS] >= self.z*CHUNK_WIDTH && selectedBlockFace.pos[ZAXIS] < (self.z+1)*CHUNK_WIDTH) {
-		t := Timer{}
-		t.Start()
+	selectionInThisChunk := selectedBlockFace != nil && selectedBlockFace.pos[XAXIS] >= self.x*CHUNK_WIDTH && selectedBlockFace.pos[XAXIS] < (self.x+1)*CHUNK_WIDTH &&
+		selectedBlockFace.pos[ZAXIS] >= self.z*CHUNK_WIDTH && selectedBlockFace.pos[ZAXIS] < (self.z+1)*CHUNK_WIDTH
+
+	if !self.clean || selectionInThisChunk {
+
 		self.vertexBuffer.Reset()
 		var x, y, z uint16
 		for x = 0; x < CHUNK_WIDTH; x++ {
@@ -209,9 +264,54 @@ func (self *Chunk) PreRender(selectedBlockFace *BlockFace) {
 					if block.id != 0 {
 
 						pos := Vectori{self.x*CHUNK_WIDTH + x, y, self.z*CHUNK_WIDTH + z}
-						neighbours := TheWorld.Neighbours(pos)
 
-						if TheWorld.HasVisibleFaces(neighbours) {
+						var neighbours [18]BlockId
+
+						if x > 0 {
+							neighbours[WEST_FACE] = self.At(x-1, y, z)
+						} else if adjacents[WEST_FACE] != nil {
+							neighbours[WEST_FACE] = adjacents[WEST_FACE].At(CHUNK_WIDTH-1, y, z)
+						} else {
+							neighbours[WEST_FACE] = BLOCK_STONE
+						}
+
+						if x < CHUNK_WIDTH-1 {
+							neighbours[EAST_FACE] = self.At(x+1, y, z)
+						} else if adjacents[EAST_FACE] != nil {
+							neighbours[EAST_FACE] = adjacents[EAST_FACE].At(0, y, z)
+						} else {
+							neighbours[EAST_FACE] = BLOCK_STONE
+						}
+
+						if z > 0 {
+							neighbours[NORTH_FACE] = self.At(x, y, z-1)
+						} else if adjacents[NORTH_FACE] != nil {
+							neighbours[NORTH_FACE] = adjacents[NORTH_FACE].At(x, y, CHUNK_WIDTH-1)
+						} else {
+							neighbours[NORTH_FACE] = BLOCK_STONE
+						}
+
+						if z < CHUNK_WIDTH-1 {
+							neighbours[SOUTH_FACE] = self.At(x, y, z+1)
+						} else if adjacents[SOUTH_FACE] != nil {
+							neighbours[SOUTH_FACE] = adjacents[SOUTH_FACE].At(x, y, 0)
+						} else {
+							neighbours[SOUTH_FACE] = BLOCK_STONE
+						}
+
+						if y > 0 {
+							neighbours[DOWN_FACE] = self.At(x, y-1, z)
+						} else {
+							neighbours[DOWN_FACE] = BLOCK_STONE
+						}
+
+						if y < CHUNK_HEIGHT-1 {
+							neighbours[UP_FACE] = self.At(x, y+1, z)
+						} else {
+							neighbours[UP_FACE] = BLOCK_AIR
+						}
+
+						if HasVisibleFaces(neighbours) {
 
 							selectedFace := uint8(FACE_NONE)
 							if selectedBlockFace != nil && pos.Equals(&selectedBlockFace.pos) {
@@ -228,13 +328,8 @@ func (self *Chunk) PreRender(selectedBlockFace *BlockFace) {
 		self.clean = true
 	}
 
-}
-
-func (self *Chunk) Render(selectedBlockFace *BlockFace) {
-	self.PreRender(selectedBlockFace)
-
-	self.vertexBuffer.RenderDirect(true)
-
-	// fmt.Printf("Chunk ticks: %4.0f\n", float64(t.GetTicks())/1e6)
+	if vb != nil {
+		vb <- self.vertexBuffer
+	}
 
 }

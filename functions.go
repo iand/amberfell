@@ -91,3 +91,12 @@ func HeadingToOrientation(heading float64) uint8 {
 	return ORIENT_WEST
 
 }
+
+func HasVisibleFaces(neighbours [18]BlockId) bool {
+	for i := 0; i < 6; i++ {
+		if items[ItemId(neighbours[i])].transparent {
+			return true
+		}
+	}
+	return false
+}
