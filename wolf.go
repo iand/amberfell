@@ -22,8 +22,14 @@ func NewWolf(heading float64, x, y, z uint16) *Wolf {
 	wolf.position[ZAXIS] = float64(z)
 	wolf.walkingSpeed = 12
 	wolf.sprintSpeed = 25
-	wolf.stamina = 30
-	wolf.energy = wolf.stamina
+
+	wolf.fullEnergy = 30
+	wolf.energy = wolf.fullEnergy
+	wolf.fullHealth = 100
+	wolf.health = wolf.fullHealth
+	wolf.healingRate = 1
+	wolf.attackStrength = 5
+
 	wolf.mass = 5
 	wolf.behaviours = []MobBehaviour{
 

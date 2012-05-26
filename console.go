@@ -63,7 +63,7 @@ func (self *Console) Draw(t int64) {
 	gl.LoadIdentity()
 	gl.Translatef(float32(viewport.lplane)+margin, float32(viewport.bplane)+consoleHeight+margin-2*h, 0)
 
-	consoleFont.Print(fmt.Sprintf("X: %5.2f Y: %4.2f Z: %5.2f H: %5.2f (%s) D: %0.1f (%d)", ThePlayer.position[XAXIS], ThePlayer.position[YAXIS], ThePlayer.position[ZAXIS], ThePlayer.heading, HeadingToCompass(ThePlayer.heading), ThePlayer.distanceTravelled, ThePlayer.distanceFromStart))
+	consoleFont.Print(fmt.Sprintf("X: %5.2f Y: %4.2f Z: %5.2f H: %5.2f (%s) V: %0.1f | D: %0.1f (%d) | Hl: %.1f En: %.1f", ThePlayer.position[XAXIS], ThePlayer.position[YAXIS], ThePlayer.position[ZAXIS], ThePlayer.heading, HeadingToCompass(ThePlayer.heading), ThePlayer.velocity.Magnitude(), ThePlayer.distanceTravelled, ThePlayer.distanceFromStart, ThePlayer.health, ThePlayer.energy))
 
 	gl.LoadIdentity()
 	gl.Translatef(float32(viewport.lplane)+margin, float32(viewport.bplane)+consoleHeight+margin-3*h, 0)

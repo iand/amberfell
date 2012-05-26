@@ -475,7 +475,6 @@ func (self *World) AllNeighbours(pos Vectori) (neighbours [18]BlockId) {
 }
 
 func (self *World) ApplyForces(mob Mob, dt float64) {
-	// mobBounds := mob.DesiredBoundingBox(dt)
 	mp := mob.Position()
 	ip := IntPosition(mp)
 
@@ -811,6 +810,7 @@ func (self *World) Simulate() {
 	dt := float64(time.Now().UnixNano()-self.lastSimulated) / 1.e9
 	self.lastSimulated = time.Now().UnixNano()
 
+	ThePlayer.Act(dt)
 	self.ApplyForces(ThePlayer, dt)
 	ThePlayer.Update(dt)
 
@@ -852,7 +852,6 @@ func (self *World) UpdateObjects(dt float64) {
 }
 
 func (self *World) SpawnWolfPack(x float64, z float64) {
-
 	size := rand.Intn(4) + rand.Intn(4)
 	for i := 0; i < size; i++ {
 		wx := uint16(x + rand.Float64()*8 - 4)

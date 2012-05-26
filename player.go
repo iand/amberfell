@@ -38,11 +38,16 @@ func (self *Player) Init(heading float64, x uint16, z uint16) {
 	self.position[YAXIS] = float64(TheWorld.FindSurface(x, z))
 	self.position[ZAXIS] = float64(z)
 	self.mass = 5
-	self.stamina = 30
-	self.energy = self.stamina
+
+	self.fullEnergy = 30
+	self.energy = self.fullEnergy
+	self.fullHealth = 100
+	self.health = self.fullHealth
+	self.healingRate = 1
+	self.attackStrength = 5
 
 	self.walkingSpeed = 18
-	self.sprintSpeed = 22
+	self.sprintSpeed = 26
 	self.currentAction = ACTION_HAND
 	self.currentItem = ITEM_NONE
 
@@ -61,7 +66,11 @@ func (self *Player) H() float64 { return 8*0.25 + 0.25 }        // body+hat
 func (self *Player) D() float64 { return 0.25 }                 // torso depth
 
 func (self *Player) Act(dt float64) {
-	// noop
+	if self.velocity.Magnitude() > self.walkingSpeed {
+		self.energy -= 3 * dt
+	} else {
+		self.energy += 1 * dt
+	}
 }
 
 func (self *Player) Draw(center Vectorf, selectedBlockFace *BlockFace) {
@@ -644,4 +653,14 @@ func (self *Player) DrawWolf(center Vectorf, selectedBlockFace *BlockFace) {
 	Cuboid(pos, headWidth, headHeight, headDepth, textures[TEXTURE_WOLF_HEAD_FRONT], textures[TEXTURE_WOLF_HEAD_BACK], textures[TEXTURE_WOLF_HEAD_SIDE], textures[TEXTURE_WOLF_HEAD_SIDE], textures[TEXTURE_WOLF_HEAD_TOP], textures[TEXTURE_WOLF_HEAD_BOTTOM], FACE_NONE)
 
 	gl.PopMatrix()
+}
+
+func (self *Player) Rotate(angle float64) {
+	self.heading += angle
+	if self.heading < 0 {
+		self.heading += 360
+	}
+	if self.heading > 360 {
+		self.heading -= 360
+	}
 }

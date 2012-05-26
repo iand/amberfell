@@ -25,11 +25,13 @@ type Mob interface {
 	Setvy(vy float64)
 	Setvz(vz float64)
 	SetFalling(b bool)
-	Rotate(angle float64)
 	Act(dt float64)
 	Draw(pos Vectorf, selectedBlockFace *BlockFace)
 	Update(dt float64) bool
 	TargetType() uint8
+
+	Health() float64
+	ApplyDamage(damage float64)
 }
 
 type MobData struct {
@@ -40,8 +42,12 @@ type MobData struct {
 	walkingSpeed      float64
 	sprintSpeed       float64
 	mass              float64
-	stamina           float64
 	energy            float64
+	fullEnergy        float64
+	health            float64
+	fullHealth        float64
+	healingRate       float64
+	attackStrength    float64
 	walkSequence      float64
 	behaviours        []MobBehaviour
 	dominantBehaviour uint8
@@ -75,6 +81,14 @@ func (self *MobData) Normal() *Vectorf {
 	return &Vectorf{math.Cos(self.heading * math.Pi / 180), 0, -math.Sin(self.heading * math.Pi / 180)}
 }
 
+func (self *MobData) Health() float64 { return self.health }
+func (self *MobData) ApplyDamage(damage float64) {
+	self.health -= damage
+	if self.health < 0 {
+		self.health = 0
+	}
+}
+
 func (self *MobData) Velocity() Vectorf { return self.velocity }
 func (self *MobData) Position() Vectorf { return self.position }
 
@@ -82,21 +96,6 @@ func (self *MobData) SetFalling(b bool) { self.falling = b }
 func (self *MobData) IsFalling() bool   { return self.falling }
 func (self *MobData) IsMoving() bool {
 	return self.velocity[XAXIS] != 0 || self.velocity[YAXIS] != 0 || self.velocity[ZAXIS] != 0
-}
-
-func (self *MobData) Rotate(angle float64) {
-	self.heading += angle
-	if self.heading < 0 {
-		self.heading += 360
-	}
-	if self.heading > 360 {
-		self.heading -= 360
-	}
-}
-
-func (self *MobData) Forward(v float64) {
-	self.velocity[XAXIS] = math.Cos(self.Heading() * math.Pi / 180)
-	self.velocity[ZAXIS] = -math.Sin(self.Heading() * math.Pi / 180)
 }
 
 func (self *MobData) Snapx(x float64, vx float64) {
@@ -163,16 +162,16 @@ func (self *MobData) DistanceTo(v Vectorf) float64 {
 }
 
 func (self *MobData) Update(dt float64) (completed bool) {
-	if self.velocity.Magnitude() > self.walkingSpeed {
-		self.energy -= 1 * dt
-	} else {
-		self.energy += 1 * dt
-	}
 
 	if self.energy <= 0 {
 		self.energy = 0
-	} else if self.energy > self.stamina {
-		self.energy = self.stamina
+	} else if self.energy > self.fullEnergy {
+		self.energy = self.fullEnergy
+	}
+
+	self.health += self.healingRate * dt
+	if self.health > self.fullHealth {
+		self.health = self.fullHealth
 	}
 
 	self.position[XAXIS] += self.velocity[XAXIS] * dt
@@ -238,23 +237,21 @@ func (self *MobData) Act(dt float64) {
 			switch behaviour.behaviour {
 			case BEHAVIOUR_WANDER:
 
-				if rand.Float64() > 0.9 {
-					offset := self.walkingSpeed / 2
-					angle := rand.Float64() * 2 * math.Pi
-					angleDir := Vectorf{math.Cos(angle),
-						0,
-						-math.Sin(angle),
-					}
-
-					turnDir := normal.Scale(offset).Add(angleDir).Normalize()
-					force = force.Add(turnDir.Scale(self.walkingSpeed / 6).Scale(weight))
+				offset := self.walkingSpeed / 2
+				angle := rand.Float64() * 2 * math.Pi
+				angleDir := Vectorf{math.Cos(angle),
+					0,
+					-math.Sin(angle),
 				}
+
+				turnDir := normal.Scale(offset).Add(angleDir).Normalize()
+				force = force.Add(turnDir.Scale(self.walkingSpeed / 6).Scale(weight))
 				if behaviour.last {
 					break
 				}
 
 			case BEHAVIOUR_PURSUE:
-				if previousBehaviour == BEHAVIOUR_PURSUE && self.energy > 5 || self.energy > 15 {
+				if (previousBehaviour == BEHAVIOUR_PURSUE && self.energy > 5) || self.energy > 15 {
 					for _, target := range targets {
 
 						offset := target.Position().Minus(self.position)
@@ -275,24 +272,21 @@ func (self *MobData) Act(dt float64) {
 				}
 
 			case BEHAVIOUR_EVADE:
-				if previousBehaviour == BEHAVIOUR_EVADE && self.energy > 5 || self.energy > 15 {
-					for _, target := range targets {
+				for _, target := range targets {
 
-						offset := target.Position().Minus(self.position)
-						separation := offset.Magnitude()
-						direction := offset.Normalize()
-						angle := normal.AngleNormalized(direction) * 180 / math.Pi
-						if (angle >= 360-float64(behaviour.targetAngle) || angle <= float64(behaviour.targetAngle)) && separation <= float64(behaviour.targetRange) {
-							pos := target.Position().Add(target.Velocity().Scale(separation * 0.01))
-							desiredVelocity := pos.Minus(self.position).Normalize().Scale(-self.sprintSpeed)
-							force = force.Add(desiredVelocity.Minus(self.velocity).Scale(weight))
-							self.dominantBehaviour = BEHAVIOUR_EVADE
-							if behaviour.last {
-								triggered = true
-							}
+					offset := target.Position().Minus(self.position)
+					separation := offset.Magnitude()
+					direction := offset.Normalize()
+					angle := normal.AngleNormalized(direction) * 180 / math.Pi
+					if (angle >= 360-float64(behaviour.targetAngle) || angle <= float64(behaviour.targetAngle)) && separation <= float64(behaviour.targetRange) {
+						pos := target.Position().Add(target.Velocity().Scale(separation * 0.01))
+						desiredVelocity := pos.Minus(self.position).Normalize().Scale(-self.sprintSpeed)
+						force = force.Add(desiredVelocity.Minus(self.velocity).Scale(weight))
+						self.dominantBehaviour = BEHAVIOUR_EVADE
+						if behaviour.last {
+							triggered = true
 						}
 					}
-
 				}
 
 			case BEHAVIOUR_SEPARATE:
@@ -388,6 +382,12 @@ func (self *MobData) Act(dt float64) {
 		if velocity_magnitude > self.sprintSpeed {
 			self.velocity = self.velocity.Normalize().Scale(self.sprintSpeed)
 		}
+	}
+
+	if self.velocity.Magnitude() > self.walkingSpeed {
+		self.energy -= 3 * dt
+	} else {
+		self.energy += 1 * dt
 	}
 
 	normalizedVel := self.velocity.Normalize()
