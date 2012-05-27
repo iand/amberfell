@@ -263,6 +263,7 @@ func (self *Chunk) Render(adjacents [4]*Chunk, selectedBlockFace *BlockFace, vb 
 	if !self.clean || differentAdjacents || selectionInThisChunk {
 
 		self.vertexBuffer.Reset()
+		self.clean = false
 		var x, y, z uint16
 		for x = 0; x < CHUNK_WIDTH; x++ {
 			for z = 0; z < CHUNK_WIDTH; z++ {
@@ -336,7 +337,10 @@ func (self *Chunk) Render(adjacents [4]*Chunk, selectedBlockFace *BlockFace, vb 
 				self.adjacentsRendered[i] = true
 			}
 		}
-		self.clean = true
+
+		if !selectionInThisChunk {
+			self.clean = true
+		}
 
 	}
 
