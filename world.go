@@ -44,6 +44,11 @@ type InteractingBlockFace struct {
 	hitCount  uint8
 }
 
+type NeighbourList uint32
+
+func (self NeighbourList) N() bool { return self&(1<<NORTH_FACE) != 0 }
+func (self *NeighbourList) SetN()  { *self |= (1 << NORTH_FACE) }
+
 func NewWorld() *World {
 	world := &World{}
 
@@ -393,33 +398,6 @@ func (self *World) InvalidateRadius(x uint16, z uint16, r uint16) {
 // east/west = +/- x
 // up/down = +/- y
 
-func (self *World) Grow(x uint16, y uint16, z uint16, n int, s int, w int, e int, u int, d int, blockid BlockId) {
-	if y > 0 && x < MAP_DIAM && self.At(x+1, y-1, z) != 0 && rand.Intn(100) < e {
-		self.Set(x+1, y, z, blockid)
-		self.Grow(x+1, y, z, n, s, 0, e-2, u, d, blockid)
-	}
-	if y > 0 && x > 0 && self.At(x-1, y-1, z) != 0 && rand.Intn(100) < w {
-		self.Set(x-1, y, z, blockid)
-		self.Grow(x-1, y, z, n, s, w-2, 0, u, d, blockid)
-	}
-	if y > 0 && z < MAP_DIAM && self.At(x, y-1, z+1) != 0 && rand.Intn(100) < s {
-		self.Set(x, y, z+1, blockid)
-		self.Grow(x, y, z+1, 0, s-2, w, e, u, d, blockid)
-	}
-	if y > 0 && z > 0 && self.At(x, y-1, z-1) != 0 && rand.Intn(100) < n {
-		self.Set(x, y, z-1, blockid)
-		self.Grow(x, y, z-1, n-2, 0, w, e, u, d, blockid)
-	}
-	if y < MAP_DIAM && rand.Intn(100) < u {
-		self.Set(x, y+1, z, blockid)
-		self.Grow(x, y+1, z, n, s, w, e, u-2, 0, blockid)
-	}
-	if y > 0 && rand.Intn(100) < d {
-		self.Set(x, y-1, z, blockid)
-		self.Grow(x, y-1, z, n, s, w, e, 0, d-2, blockid)
-	}
-}
-
 func (self *World) ApproxBlockAt(x uint16, y uint16, z uint16) BlockId {
 	if y < 0 {
 		return BLOCK_AIR
@@ -433,21 +411,6 @@ func (self *World) ApproxBlockAt(x uint16, y uint16, z uint16) BlockId {
 		return BLOCK_DIRT
 	}
 	return BLOCK_AIR
-}
-
-func (self *World) Neighbours(pos Vectori) (neighbours [18]BlockId) {
-	x := pos[XAXIS]
-	y := pos[YAXIS]
-	z := pos[ZAXIS]
-
-	neighbours[WEST_FACE] = self.ApproxBlockAt(x-1, y, z)
-	neighbours[EAST_FACE] = self.ApproxBlockAt(x+1, y, z)
-	neighbours[NORTH_FACE] = self.ApproxBlockAt(x, y, z-1)
-	neighbours[SOUTH_FACE] = self.ApproxBlockAt(x, y, z+1)
-	neighbours[DOWN_FACE] = self.ApproxBlockAt(x, y-1, z)
-	neighbours[UP_FACE] = self.ApproxBlockAt(x, y+1, z)
-
-	return
 }
 
 func (self *World) AllNeighbours(pos Vectori) (neighbours [18]BlockId) {
@@ -513,11 +476,16 @@ func (self *World) ApplyForces(mob Mob, dt float64) {
 
 	neighbours := self.AllNeighbours(ip)
 
+	var n NeighbourList
+	if neighbours[NORTH_FACE] != BLOCK_AIR {
+		n.SetN()
+	}
+
 	if self.Atv(ip) != BLOCK_AIR {
 		mob.Snapy(float64(ip.Down()[YAXIS])+0.5+mob.H()/2, 0)
 	}
 
-	if neighbours[NORTH_FACE] != BLOCK_AIR {
+	if n.N() {
 		if mob.Velocity()[ZAXIS] < 0 && (ip.North().HRect().Intersects(mobRect1) || ip.North().HRect().Intersects(mobRect2)) {
 			mob.Snapz(float64(ip.North()[ZAXIS])+0.5+mobRect2.sizey/2, 0)
 			if items[ItemId(neighbours[NORTH_FACE])].autojump && neighbours[DIR_UN] == BLOCK_AIR {
@@ -697,6 +665,33 @@ func (self *World) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 	// 	}
 	// }
 
+}
+
+func (self *World) Grow(x uint16, y uint16, z uint16, n int, s int, w int, e int, u int, d int, blockid BlockId) {
+	if y > 0 && x < MAP_DIAM && self.At(x+1, y-1, z) != 0 && rand.Intn(100) < e {
+		self.Set(x+1, y, z, blockid)
+		self.Grow(x+1, y, z, n, s, 0, e-2, u, d, blockid)
+	}
+	if y > 0 && x > 0 && self.At(x-1, y-1, z) != 0 && rand.Intn(100) < w {
+		self.Set(x-1, y, z, blockid)
+		self.Grow(x-1, y, z, n, s, w-2, 0, u, d, blockid)
+	}
+	if y > 0 && z < MAP_DIAM && self.At(x, y-1, z+1) != 0 && rand.Intn(100) < s {
+		self.Set(x, y, z+1, blockid)
+		self.Grow(x, y, z+1, 0, s-2, w, e, u, d, blockid)
+	}
+	if y > 0 && z > 0 && self.At(x, y-1, z-1) != 0 && rand.Intn(100) < n {
+		self.Set(x, y, z-1, blockid)
+		self.Grow(x, y, z-1, n-2, 0, w, e, u, d, blockid)
+	}
+	if y < MAP_DIAM && rand.Intn(100) < u {
+		self.Set(x, y+1, z, blockid)
+		self.Grow(x, y+1, z, n, s, w, e, u-2, 0, blockid)
+	}
+	if y > 0 && rand.Intn(100) < d {
+		self.Set(x, y-1, z, blockid)
+		self.Grow(x, y-1, z, n, s, w, e, 0, d-2, blockid)
+	}
 }
 
 func (self *World) GrowTree(x uint16, y uint16, z uint16) {

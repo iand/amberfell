@@ -6,28 +6,26 @@
 package main
 
 import (
-// "fmt"
-// "math"
-// "testing"
+	// "fmt"
+	// "math"
+	"testing"
 )
 
-// func BenchmarkDraw(b *testing.B) {
-// 	b.StopTimer()
-// 	TheWorld = NewWorld()
-// 	center := Vectorf{100, 100, 50}
-// 	pxmin, pzmin := chunkCoordsFromWorld(uint16(center[XAXIS]-float64(viewRadius)), uint16(center[ZAXIS]-float64(viewRadius)))
-// 	pxmax, pzmax := chunkCoordsFromWorld(uint16(center[XAXIS]+float64(viewRadius)), uint16(center[ZAXIS]+float64(viewRadius)))
-// 	for px := pxmin; px <= pxmax; px++ {
-// 		for pz := pzmin; pz <= pzmax; pz++ {
-// 			TheWorld.GetChunk(px, pz)
-// 		}
-// 	}
+func BenchmarkAllNeighbours(b *testing.B) {
+	b.StopTimer()
+	TheWorld = NewWorld()
 
-// 	b.StartTimer()
-// 	for i := 0; i < b.N; i++ {
-// 		for _,chunk := range TheWorld.chunks {
-// 			chunk.clean = false
-// 		}
-// 		TheWorld.Draw(center, nil)
-// 	}
-// }
+	x := uint16(2*CHUNK_WIDTH + CHUNK_WIDTH/2)
+	z := uint16(2*CHUNK_WIDTH + CHUNK_WIDTH/2)
+	y := TheWorld.GroundLevel(x, z)
+
+	center := Vectori{x, y, z}
+	px, pz := chunkCoordsFromWorld(x, z)
+	TheWorld.GetChunk(px, pz)
+
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		neighbours := TheWorld.AllNeighbours(center)
+		_ = neighbours[WEST_FACE]
+	}
+}

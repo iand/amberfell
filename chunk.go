@@ -23,6 +23,7 @@ type Chunk struct {
 	clean             bool
 	standingStoneProb float64
 	featuresLoaded    bool
+	adjacentsRendered [4]bool
 }
 
 type Block struct {
@@ -235,25 +236,31 @@ func (chunk *Chunk) SetB(x uint16, y uint16, z uint16, block Block) {
 // }
 
 func (self *Chunk) Render(adjacents [4]*Chunk, selectedBlockFace *BlockFace, vb chan *VertexBuffer) {
-	if !self.featuresLoaded {
-
-		allAdjacentsAvailable := true
-		for _, ac := range adjacents {
-			if ac == nil {
-				allAdjacentsAvailable = false
-			}
+	allAdjacentsAvailable := true
+	for _, ac := range adjacents {
+		if ac == nil {
+			allAdjacentsAvailable = false
+			break
 		}
+	}
+	if !self.featuresLoaded && allAdjacentsAvailable {
+		TheWorld.GenerateChunkFeatures(self, adjacents)
+	}
 
-		if allAdjacentsAvailable {
-			TheWorld.GenerateChunkFeatures(self, adjacents)
+	differentAdjacents := false
+	for i := 0; i < 4; i++ {
+		if adjacents[i] != nil && self.adjacentsRendered[i] == false ||
+			adjacents[i] == nil && self.adjacentsRendered[i] == true {
+
+			differentAdjacents = true
+			break
 		}
-
 	}
 
 	selectionInThisChunk := selectedBlockFace != nil && selectedBlockFace.pos[XAXIS] >= self.x*CHUNK_WIDTH && selectedBlockFace.pos[XAXIS] < (self.x+1)*CHUNK_WIDTH &&
 		selectedBlockFace.pos[ZAXIS] >= self.z*CHUNK_WIDTH && selectedBlockFace.pos[ZAXIS] < (self.z+1)*CHUNK_WIDTH
 
-	if !self.clean || selectionInThisChunk {
+	if !self.clean || differentAdjacents || selectionInThisChunk {
 
 		self.vertexBuffer.Reset()
 		var x, y, z uint16
@@ -324,8 +331,13 @@ func (self *Chunk) Render(adjacents [4]*Chunk, selectedBlockFace *BlockFace, vb 
 				}
 			}
 		}
-
+		for i := 0; i < 4; i++ {
+			if adjacents[i] != nil {
+				self.adjacentsRendered[i] = true
+			}
+		}
 		self.clean = true
+
 	}
 
 	if vb != nil {

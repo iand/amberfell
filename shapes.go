@@ -341,98 +341,98 @@ func TerrainCube(vertexBuffer *VertexBuffer, pos Vectori, neighbours [18]BlockId
 	// Shading disabled for moment for performance reasons
 	if items[ItemId(neighbours[EAST_FACE])].transparent {
 		visible[EAST_FACE] = true
-		// if !items[neighbours[DIR_NE]].transparent {
-		// 	shadeLevels[EAST_FACE]++
-		// }
-		// if !items[neighbours[DIR_SE]].transparent {
-		// 	shadeLevels[EAST_FACE]++
-		// }
-		// if !items[neighbours[DIR_UE]].transparent {
-		// 	shadeLevels[EAST_FACE]++
-		// }
-		// if !items[neighbours[DIR_DE]].transparent {
-		// 	shadeLevels[EAST_FACE]++
-		// }
+		if !items[ItemId(neighbours[DIR_NE])].transparent {
+			shadeLevels[EAST_FACE]++
+		}
+		if !items[ItemId(neighbours[DIR_SE])].transparent {
+			shadeLevels[EAST_FACE]++
+		}
+		if !items[ItemId(neighbours[DIR_UE])].transparent {
+			shadeLevels[EAST_FACE]++
+		}
+		if !items[ItemId(neighbours[DIR_DE])].transparent {
+			shadeLevels[EAST_FACE]++
+		}
 	}
 
 	if items[ItemId(neighbours[WEST_FACE])].transparent {
 		visible[WEST_FACE] = true
-		// if !items[neighbours[DIR_NW]].transparent {
-		// 	shadeLevels[WEST_FACE]++
-		// }
-		// if !items[neighbours[DIR_SW]].transparent {
-		// 	shadeLevels[WEST_FACE]++
-		// }
-		// if !items[neighbours[DIR_UW]].transparent {
-		// 	shadeLevels[WEST_FACE]++
-		// }
-		// if !items[neighbours[DIR_DW]].transparent {
-		// 	shadeLevels[WEST_FACE]++
-		// }
+		if !items[ItemId(neighbours[DIR_NW])].transparent {
+			shadeLevels[WEST_FACE]++
+		}
+		if !items[ItemId(neighbours[DIR_SW])].transparent {
+			shadeLevels[WEST_FACE]++
+		}
+		if !items[ItemId(neighbours[DIR_UW])].transparent {
+			shadeLevels[WEST_FACE]++
+		}
+		if !items[ItemId(neighbours[DIR_DW])].transparent {
+			shadeLevels[WEST_FACE]++
+		}
 	}
 
 	if items[ItemId(neighbours[NORTH_FACE])].transparent {
 		visible[NORTH_FACE] = true
-		// if !items[neighbours[DIR_NW]].transparent {
-		// 	shadeLevels[NORTH_FACE]++
-		// }
-		// if !items[neighbours[DIR_NE]].transparent {
-		// 	shadeLevels[NORTH_FACE]++
-		// }
-		// if !items[neighbours[DIR_UN]].transparent {
-		// 	shadeLevels[NORTH_FACE]++
-		// }
-		// if !items[neighbours[DIR_DN]].transparent {
-		// 	shadeLevels[NORTH_FACE]++
-		// }
+		if !items[ItemId(neighbours[DIR_NW])].transparent {
+			shadeLevels[NORTH_FACE]++
+		}
+		if !items[ItemId(neighbours[DIR_NE])].transparent {
+			shadeLevels[NORTH_FACE]++
+		}
+		if !items[ItemId(neighbours[DIR_UN])].transparent {
+			shadeLevels[NORTH_FACE]++
+		}
+		if !items[ItemId(neighbours[DIR_DN])].transparent {
+			shadeLevels[NORTH_FACE]++
+		}
 	}
 
 	if items[ItemId(neighbours[SOUTH_FACE])].transparent {
 		visible[SOUTH_FACE] = true
-		// if !items[neighbours[DIR_SW]].transparent {
-		// 	shadeLevels[SOUTH_FACE]++
-		// }
-		// if !items[neighbours[DIR_SE]].transparent {
-		// 	shadeLevels[SOUTH_FACE]++
-		// }
-		// if !items[neighbours[DIR_US]].transparent {
-		// 	shadeLevels[SOUTH_FACE]++
-		// }
-		// if !items[neighbours[DIR_DS]].transparent {
-		// 	shadeLevels[SOUTH_FACE]++
-		// }
+		if !items[ItemId(neighbours[DIR_SW])].transparent {
+			shadeLevels[SOUTH_FACE]++
+		}
+		if !items[ItemId(neighbours[DIR_SE])].transparent {
+			shadeLevels[SOUTH_FACE]++
+		}
+		if !items[ItemId(neighbours[DIR_US])].transparent {
+			shadeLevels[SOUTH_FACE]++
+		}
+		if !items[ItemId(neighbours[DIR_DS])].transparent {
+			shadeLevels[SOUTH_FACE]++
+		}
 	}
 
 	if items[ItemId(neighbours[UP_FACE])].transparent {
 		visible[UP_FACE] = true
-		// if !items[neighbours[DIR_UN]].transparent {
-		// 	shadeLevels[UP_FACE]++
-		// }
-		// if !items[neighbours[DIR_UE]].transparent {
-		// 	shadeLevels[UP_FACE]++
-		// }
-		// if !items[neighbours[DIR_US]].transparent {
-		// 	shadeLevels[UP_FACE]++
-		// }
-		// if !items[neighbours[DIR_UW]].transparent {
-		// 	shadeLevels[UP_FACE]++
-		// }
+		if !items[ItemId(neighbours[DIR_UN])].transparent {
+			shadeLevels[UP_FACE]++
+		}
+		if !items[ItemId(neighbours[DIR_UE])].transparent {
+			shadeLevels[UP_FACE]++
+		}
+		if !items[ItemId(neighbours[DIR_US])].transparent {
+			shadeLevels[UP_FACE]++
+		}
+		if !items[ItemId(neighbours[DIR_UW])].transparent {
+			shadeLevels[UP_FACE]++
+		}
 	}
 
 	if items[ItemId(neighbours[DOWN_FACE])].transparent {
 		visible[DOWN_FACE] = true
-		// if !items[neighbours[DIR_UN]].transparent {
-		// 	shadeLevels[DOWN_FACE]++
-		// }
-		// if !items[neighbours[DIR_UE]].transparent {
-		// 	shadeLevels[DOWN_FACE]++
-		// }
-		// if !items[neighbours[DIR_US]].transparent {
-		// 	shadeLevels[DOWN_FACE]++
-		// }
-		// if !items[neighbours[DIR_UW]].transparent {
-		// 	shadeLevels[DOWN_FACE]++
-		// }
+		if !items[ItemId(neighbours[DIR_UN])].transparent {
+			shadeLevels[DOWN_FACE]++
+		}
+		if !items[ItemId(neighbours[DIR_UE])].transparent {
+			shadeLevels[DOWN_FACE]++
+		}
+		if !items[ItemId(neighbours[DIR_US])].transparent {
+			shadeLevels[DOWN_FACE]++
+		}
+		if !items[ItemId(neighbours[DIR_UW])].transparent {
+			shadeLevels[DOWN_FACE]++
+		}
 	}
 
 	switch blocktype.shape {
