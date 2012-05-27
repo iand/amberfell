@@ -32,32 +32,36 @@ type BlockBreakRecord struct {
 	count int
 }
 
-func (self *Player) Init(heading float64, x uint16, z uint16) {
-	self.heading = heading
-	self.position[XAXIS] = float64(x)
-	self.position[YAXIS] = float64(TheWorld.FindSurface(x, z))
-	self.position[ZAXIS] = float64(z)
-	self.mass = 5
+func NewPlayer() *Player {
+	player := &Player{}
 
-	self.fullEnergy = 30
-	self.energy = self.fullEnergy
-	self.fullHealth = 100
-	self.health = self.fullHealth
-	self.healingRate = 1
-	self.attackStrength = 5
+	player.heading = 0
+	player.position[XAXIS] = float64(PLAYER_START_X)
+	player.position[ZAXIS] = float64(PLAYER_START_Z)
+	player.position[YAXIS] = float64(TheWorld.FindSurface(PLAYER_START_X, PLAYER_START_Z))
+	player.mass = 5
 
-	self.walkingSpeed = 18
-	self.sprintSpeed = 26
-	self.currentAction = ACTION_HAND
-	self.currentItem = ITEM_NONE
+	player.fullEnergy = 30
+	player.energy = player.fullEnergy
+	player.fullHealth = 100
+	player.health = player.fullHealth
+	player.healingRate = 1
+	player.attackStrength = 5
 
-	self.equippedItems[0] = ITEM_NONE
-	self.equippedItems[1] = ITEM_NONE
-	self.equippedItems[2] = ITEM_NONE
-	self.equippedItems[3] = ITEM_NONE
-	self.equippedItems[4] = ITEM_NONE
-	self.equippedItems[5] = ITEM_NONE
-	self.equippedItems[6] = ITEM_NONE
+	player.walkingSpeed = 18
+	player.sprintSpeed = 26
+	player.currentAction = ACTION_HAND
+	player.currentItem = ITEM_NONE
+
+	player.equippedItems[0] = ITEM_NONE
+	player.equippedItems[1] = ITEM_NONE
+	player.equippedItems[2] = ITEM_NONE
+	player.equippedItems[3] = ITEM_NONE
+	player.equippedItems[4] = ITEM_NONE
+	player.equippedItems[5] = ITEM_NONE
+	player.equippedItems[6] = ITEM_NONE
+
+	return player
 
 }
 

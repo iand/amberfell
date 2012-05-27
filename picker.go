@@ -19,8 +19,8 @@ type Picker struct {
 func NewPicker() *Picker {
 	var p Picker
 	p.radius = float32(90) * PIXEL_SCALE
-	p.actionItemRadius = p.radius - blockscale*1.5
-	p.selectionRadius = blockscale * 1.2
+	p.actionItemRadius = p.radius - BLOCK_SCALE*1.5
+	p.selectionRadius = BLOCK_SCALE * 1.2
 	return &p
 }
 
@@ -84,7 +84,7 @@ func (self *Picker) DrawPlayerItems(t int64, drawQuantities bool) {
 			gl.Rotated(90, 1.0, 0.0, 0.0)
 			gl.Rotated(30*math.Sin(float64(t)/1e9+float64(itemid)/2), 0.0, 1.0, 0.0)
 
-			gl.Scalef(blockscale, blockscale, blockscale)
+			gl.Scalef(BLOCK_SCALE, BLOCK_SCALE, BLOCK_SCALE)
 			gGuiBuffer.Reset()
 			if itemid < 256 {
 				TerrainCube(gGuiBuffer, Vectori{}, [18]BlockId{BLOCK_DIRT, BLOCK_DIRT, BLOCK_DIRT, BLOCK_DIRT, BLOCK_AIR, BLOCK_DIRT, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR, BLOCK_AIR}, NewBlockDefault(BlockId(itemid)), FACE_NONE)

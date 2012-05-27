@@ -62,8 +62,8 @@ func (self *Viewport) Reshape(width int, height int) {
 
 	gl.MatrixMode(gl.MODELVIEW)
 	gl.LoadIdentity()
-	picker.x = float32(viewport.rplane) - picker.radius + blockscale*0.5
-	picker.y = float32(viewport.bplane) + picker.radius - blockscale*0.5
+	picker.x = float32(viewport.rplane) - picker.radius + BLOCK_SCALE*0.5
+	picker.y = float32(viewport.bplane) + picker.radius - BLOCK_SCALE*0.5
 
 }
 

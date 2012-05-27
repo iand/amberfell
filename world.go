@@ -26,6 +26,8 @@ type World struct {
 	lastSimulated    int64
 	campfires        map[Vectori]*CampFire
 	seed             int64
+	timeOfDay        float32
+	sunlightLevel    int
 }
 
 type Side struct {
@@ -55,6 +57,8 @@ func NewWorld() *World {
 	world.generatorObjects = make(map[Vectori]GeneratorObject)
 	world.campfires = make(map[Vectori]*CampFire)
 	world.lastSimulated = time.Now().UnixNano()
+	world.timeOfDay = 9
+	world.sunlightLevel = 7
 
 	world.GenerateAmberfell()
 	return world
@@ -216,7 +220,7 @@ func (self *World) GenerateChunkFeatures(chunk *Chunk, adjacents [4]*Chunk) {
 
 				if self.Precipitation(x, z) > TREE_PRECIPITATION_MIN && rand.Intn(100) < TREE_DENSITY_PCT {
 
-					if y > 1 && y < treeLine && chunk.At(x-xw, y-1, z-zw) == BLOCK_DIRT {
+					if y > 1 && y < TREE_LINE && chunk.At(x-xw, y-1, z-zw) == BLOCK_DIRT {
 						self.GrowTree(x, y, z)
 
 					}
@@ -860,6 +864,31 @@ func (self *World) SpawnWolfPack(x float64, z float64) {
 		wz := uint16(z + rand.Float64()*14 - 7)
 		wolf := NewWolf(180, wx, self.FindSurface(wx, wz), wz)
 		self.mobs = append(self.mobs, wolf)
+	}
+
+}
+
+func (self *World) UpdateTimeOfDay(reverse bool) {
+	if reverse {
+		self.timeOfDay -= 0.02
+		if self.timeOfDay < 0 {
+			self.timeOfDay += 24
+		}
+	} else {
+		self.timeOfDay += 0.02
+		if self.timeOfDay > 24 {
+			self.timeOfDay -= 24
+		}
+	}
+
+	if self.timeOfDay >= 21.5 || self.timeOfDay < 4.5 {
+		self.sunlightLevel = 0
+	} else if self.timeOfDay >= 4.5 && self.timeOfDay < 6 {
+		self.sunlightLevel = 1 + int(6*(self.timeOfDay-4.5)/1.5)
+	} else if self.timeOfDay >= 6 && self.timeOfDay < 20 {
+		self.sunlightLevel = 7
+	} else {
+		self.sunlightLevel = 7 - int(6*(self.timeOfDay-20)/1.5)
 	}
 
 }

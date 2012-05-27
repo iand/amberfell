@@ -211,7 +211,7 @@ func (self *MobData) Act(dt float64) {
 		lowerLightLevel := int(behaviour.sunlight & SUNLIGHT_LEVELS_LOWER_MASK)
 		upperLightLevel := int(behaviour.sunlight & SUNLIGHT_LEVELS_UPPER_MASK)
 
-		if sunlightLevel >= lowerLightLevel && sunlightLevel < upperLightLevel {
+		if TheWorld.sunlightLevel >= lowerLightLevel && TheWorld.sunlightLevel < upperLightLevel {
 			weight := float64(behaviour.weight)
 			if weight == 0 {
 				weight = 1

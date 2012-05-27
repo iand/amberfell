@@ -28,10 +28,6 @@ var (
 	ThePlayer *Player
 	viewport  *Viewport
 
-	timeOfDay     float32 = 9
-	sunlightLevel int     = 7
-
-	treeLine          = uint16(math.Trunc(5.0 * float64(CHUNK_HEIGHT/6.0)))
 	consoleFont       *Font
 	inventoryItemFont *Font
 	pauseFont         *Font
@@ -45,11 +41,10 @@ var (
 	items map[ItemId]Item
 
 	// HUD elements
-	blockscale float32 = 0.4 // The scale at which to render blocks in the HUD
-	picker     *Picker
-	console    Console
-	inventory  *Inventory
-	pause      Pause
+	picker    *Picker
+	console   Console
+	inventory *Inventory
+	pause     Pause
 )
 
 func main() {
@@ -156,10 +151,7 @@ func initGame() {
 	gGuiBuffer = NewVertexBuffer(1000, terrainTexture)
 
 	TheWorld = NewWorld()
-
-	ThePlayer = new(Player)
-	ThePlayer.Init(0, PLAYER_START_X, PLAYER_START_Z)
-
+	ThePlayer = NewPlayer()
 	inventory = NewInventory()
 
 	viewport.Reshape(int(screen.W), int(screen.H))
@@ -200,7 +192,7 @@ func loop() {
 
 			case <-tickUI:
 				console.Update()
-				UpdateTimeOfDay(false)
+				TheWorld.UpdateTimeOfDay(false)
 				PreloadChunks(220)
 
 			case <-tickHousekeeping:
@@ -337,7 +329,7 @@ func Draw(t int64) {
 	gl.Materialfv(gl.FRONT, gl.SPECULAR, []float32{0.1, 0.1, 0.1, 1})
 	gl.Materialfv(gl.FRONT, gl.SHININESS, []float32{0.0, 0.0, 0.0, 1})
 
-	daylightIntensity := float32(SUNLIGHT_LEVELS[sunlightLevel])
+	daylightIntensity := float32(SUNLIGHT_LEVELS[TheWorld.sunlightLevel])
 
 	gl.LightModelfv(gl.LIGHT_MODEL_AMBIENT, []float32{daylightIntensity / 2.5, daylightIntensity / 2.5, daylightIntensity / 2.5, 1})
 
@@ -372,31 +364,6 @@ func Draw(t int64) {
 	gl.Flush()
 	sdl.GL_SwapBuffers()
 	console.framesDrawn++
-}
-
-func UpdateTimeOfDay(reverse bool) {
-	if reverse {
-		timeOfDay -= 0.02
-		if timeOfDay < 0 {
-			timeOfDay += 24
-		}
-	} else {
-		timeOfDay += 0.02
-		if timeOfDay > 24 {
-			timeOfDay -= 24
-		}
-	}
-
-	if timeOfDay >= 21.5 || timeOfDay < 4.5 {
-		sunlightLevel = 0
-	} else if timeOfDay >= 4.5 && timeOfDay < 6 {
-		sunlightLevel = 1 + int(6*(timeOfDay-4.5)/1.5)
-	} else if timeOfDay >= 6 && timeOfDay < 20 {
-		sunlightLevel = 7
-	} else {
-		sunlightLevel = 7 - int(6*(timeOfDay-20)/1.5)
-	}
-
 }
 
 func PreloadChunks(maxtime int64) {
