@@ -44,11 +44,6 @@ type InteractingBlockFace struct {
 	hitCount  uint8
 }
 
-type NeighbourList uint32
-
-func (self NeighbourList) N() bool { return self&(1<<NORTH_FACE) != 0 }
-func (self *NeighbourList) SetN()  { *self |= (1 << NORTH_FACE) }
-
 func NewWorld() *World {
 	world := &World{}
 
@@ -476,16 +471,11 @@ func (self *World) ApplyForces(mob Mob, dt float64) {
 
 	neighbours := self.AllNeighbours(ip)
 
-	var n NeighbourList
-	if neighbours[NORTH_FACE] != BLOCK_AIR {
-		n.SetN()
-	}
-
 	if self.Atv(ip) != BLOCK_AIR {
 		mob.Snapy(float64(ip.Down()[YAXIS])+0.5+mob.H()/2, 0)
 	}
 
-	if n.N() {
+	if neighbours[NORTH_FACE] != BLOCK_AIR {
 		if mob.Velocity()[ZAXIS] < 0 && (ip.North().HRect().Intersects(mobRect1) || ip.North().HRect().Intersects(mobRect2)) {
 			mob.Snapz(float64(ip.North()[ZAXIS])+0.5+mobRect2.sizey/2, 0)
 			if items[ItemId(neighbours[NORTH_FACE])].autojump && neighbours[DIR_UN] == BLOCK_AIR {
