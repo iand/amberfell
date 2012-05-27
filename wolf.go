@@ -44,6 +44,16 @@ func NewWolf(heading float64, x, y, z uint16) *Wolf {
 		},
 
 		MobBehaviour{
+			behaviour:   BEHAVIOUR_ATTACK,
+			targetType:  TARGET_PLAYER,
+			targetRange: 1,
+			targetAngle: 60,
+			sunlight:    SUNLIGHT_LEVELS_ANY,
+			weight:      2,
+			last:        false,
+		},
+
+		MobBehaviour{
 			behaviour:   BEHAVIOUR_PURSUE,
 			targetType:  TARGET_PLAYER,
 			targetRange: 12,
@@ -160,8 +170,6 @@ func (self *Wolf) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 	legHeight := 5*headHeight - torsoHeight - neckHeight - headHeight
 	legWidth := (torsoWidth - 0.25*headHeight) / 2
 	legDepth := legWidth
-	// lowerArmHeight := 1.25 * headHeight
-	// handHeight := 0.75 * headHeight
 
 	var legAngle, step float64
 

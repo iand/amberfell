@@ -854,8 +854,8 @@ func (self *World) UpdateObjects(dt float64) {
 func (self *World) SpawnWolfPack(x float64, z float64) {
 	size := rand.Intn(4) + rand.Intn(4)
 	for i := 0; i < size; i++ {
-		wx := uint16(x + rand.Float64()*8 - 4)
-		wz := uint16(z + rand.Float64()*8 - 4)
+		wx := uint16(x + rand.Float64()*14 - 7)
+		wz := uint16(z + rand.Float64()*14 - 7)
 		wolf := NewWolf(180, wx, self.FindSurface(wx, wz), wz)
 		self.mobs = append(self.mobs, wolf)
 	}

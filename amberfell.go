@@ -33,7 +33,7 @@ var (
 	timeOfDay     float32 = 9
 	sunlightLevel int     = 7
 
-	worldSeed = int64(20000)
+	worldSeed = int64(2)
 	treeLine  = uint16(math.Trunc(5.0 * float64(CHUNK_HEIGHT/6.0)))
 	WolfModel *mm3dmodel.Model
 

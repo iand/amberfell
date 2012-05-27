@@ -66,6 +66,7 @@ type MobBehaviour struct {
 type Target interface {
 	Position() Vectorf
 	Velocity() Vectorf
+	ApplyDamage(damage float64)
 }
 
 const SUNLIGHT_LEVELS_LOWER_MASK = 0xF0
@@ -250,6 +251,25 @@ func (self *MobData) Act(dt float64) {
 					break
 				}
 
+			case BEHAVIOUR_ATTACK:
+				if self.energy > 5 {
+					for _, target := range targets {
+
+						offset := target.Position().Minus(self.position)
+						separation := offset.Magnitude()
+						direction := offset.Normalize()
+						angle := normal.AngleNormalized(direction) * 180 / math.Pi
+
+						if (angle >= 360-float64(behaviour.targetAngle) || angle <= float64(behaviour.targetAngle)) && separation <= 1 {
+							target.ApplyDamage(self.attackStrength * rand.Float64() * rand.Float64())
+							self.dominantBehaviour = BEHAVIOUR_ATTACK
+							if behaviour.last {
+								triggered = true
+							}
+						}
+					}
+				}
+
 			case BEHAVIOUR_PURSUE:
 				if (previousBehaviour == BEHAVIOUR_PURSUE && self.energy > 5) || self.energy > 15 {
 					for _, target := range targets {
@@ -367,7 +387,7 @@ func (self *MobData) Act(dt float64) {
 
 	// Force into 2 dimensions
 	force[YAXIS] = 0
-
+	vy := self.velocity[YAXIS]
 	force_magnitude := force.Magnitude()
 
 	if force_magnitude > 0 {
@@ -382,7 +402,11 @@ func (self *MobData) Act(dt float64) {
 		if velocity_magnitude > self.sprintSpeed {
 			self.velocity = self.velocity.Normalize().Scale(self.sprintSpeed)
 		}
+	} else {
+		self.velocity = Vectorf{}
 	}
+
+	self.velocity[YAXIS] = vy
 
 	if self.velocity.Magnitude() > self.walkingSpeed {
 		self.energy -= 3 * dt
@@ -390,10 +414,12 @@ func (self *MobData) Act(dt float64) {
 		self.energy += 1 * dt
 	}
 
-	normalizedVel := self.velocity.Normalize()
-	self.heading = math.Atan2(-normalizedVel[ZAXIS], normalizedVel[XAXIS]) * 180 / math.Pi
-	if self.heading < 0 {
-		self.heading += 360
+	if self.velocity.Magnitude() > 0 {
+		normalizedVel := self.velocity.Normalize()
+		self.heading = math.Atan2(-normalizedVel[ZAXIS], normalizedVel[XAXIS]) * 180 / math.Pi
+		if self.heading < 0 {
+			self.heading += 360
+		}
 	}
 
 }

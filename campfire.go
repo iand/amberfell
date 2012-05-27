@@ -47,3 +47,7 @@ func (self *CampFire) Position() Vectorf {
 func (self *CampFire) Velocity() Vectorf {
 	return Vectorf{}
 }
+
+func (self *CampFire) ApplyDamage(damage float64) {
+	// NOOP
+}
