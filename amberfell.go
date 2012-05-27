@@ -11,7 +11,6 @@ import (
 	"github.com/banthar/Go-SDL/sdl"
 	"github.com/banthar/Go-SDL/ttf"
 	"github.com/banthar/gl"
-	"github.com/kierdavis/go/mm3dmodel"
 	"image/color"
 	"math"
 	"math/rand"
@@ -25,18 +24,14 @@ var (
 	flag_cpuprofile = flag.Bool("cpuprofile", false, "write cpu profile to file")
 	flag_memprofile = flag.Bool("memprofile", false, "write memory profile to file")
 
-	viewRadius int16 = 30
-	TheWorld   *World
-	ThePlayer  *Player
-	viewport   Viewport
+	TheWorld  *World
+	ThePlayer *Player
+	viewport  *Viewport
 
 	timeOfDay     float32 = 9
 	sunlightLevel int     = 7
 
-	worldSeed = int64(2)
-	treeLine  = uint16(math.Trunc(5.0 * float64(CHUNK_HEIGHT/6.0)))
-	WolfModel *mm3dmodel.Model
-
+	treeLine          = uint16(math.Trunc(5.0 * float64(CHUNK_HEIGHT/6.0)))
 	consoleFont       *Font
 	inventoryItemFont *Font
 	pauseFont         *Font
@@ -98,10 +93,7 @@ func main() {
 }
 
 func initGame() {
-
-	viewport.Zoomstd()
-	viewport.Rotx(25)
-	viewport.Roty(70)
+	viewport = NewViewport()
 
 	picker = NewPicker()
 
@@ -162,8 +154,6 @@ func initGame() {
 
 	gVertexBuffer = NewVertexBuffer(10000, terrainTexture)
 	gGuiBuffer = NewVertexBuffer(1000, terrainTexture)
-
-	WolfModel = LoadModel("res/wolf.mm3d")
 
 	TheWorld = NewWorld()
 
@@ -415,7 +405,7 @@ func PreloadChunks(maxtime int64) {
 	px, pz := chunkCoordsFromWorld(uint16(center[XAXIS]), uint16(center[ZAXIS]))
 
 	r := 1
-	rmax := int(viewRadius/CHUNK_WIDTH) + 2
+	rmax := int(viewport.viewRadius/CHUNK_WIDTH) + 2
 
 	x := -r
 	z := -r
@@ -485,8 +475,8 @@ func PreloadChunks(maxtime int64) {
 }
 func CullChunks() {
 	center := ThePlayer.Position()
-	pxmin, pzmin := chunkCoordsFromWorld(uint16(center[XAXIS]-float64(viewRadius)), uint16(center[ZAXIS]-float64(viewRadius)))
-	pxmax, pzmax := chunkCoordsFromWorld(uint16(center[XAXIS]+float64(viewRadius)), uint16(center[ZAXIS]+float64(viewRadius)))
+	pxmin, pzmin := chunkCoordsFromWorld(uint16(center[XAXIS]-float64(viewport.viewRadius)), uint16(center[ZAXIS]-float64(viewport.viewRadius)))
+	pxmax, pzmax := chunkCoordsFromWorld(uint16(center[XAXIS]+float64(viewport.viewRadius)), uint16(center[ZAXIS]+float64(viewport.viewRadius)))
 
 	// Cull chunks more than 10 chunks away from view radius
 	for chunkIndex, chunk := range TheWorld.chunks {

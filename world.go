@@ -25,6 +25,7 @@ type World struct {
 	genseed          int64
 	lastSimulated    int64
 	campfires        map[Vectori]*CampFire
+	seed             int64
 }
 
 type Side struct {
@@ -44,7 +45,8 @@ type InteractingBlockFace struct {
 func NewWorld() *World {
 	world := &World{}
 
-	world.genseed = worldSeed
+	world.seed = 2
+	world.genseed = world.seed
 	world.chunks = make(map[chunkindex]*Chunk)
 	world.amberfell = make(map[chunkindex][2]uint16)
 	world.timedObjects = make(map[Vectori]TimedObject)
@@ -59,7 +61,7 @@ func NewWorld() *World {
 }
 
 func (self *World) GroundLevel(x uint16, z uint16) uint16 {
-	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(4*NOISE_SCALE), float64(z-MAP_DIAM)/(4*NOISE_SCALE), worldSeed, 1.4, 1.2, 4)
+	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(4*NOISE_SCALE), float64(z-MAP_DIAM)/(4*NOISE_SCALE), self.seed, 1.4, 1.2, 4)
 	if noise > 1.0 {
 		noise = 1.0
 	}
@@ -75,7 +77,7 @@ func (self *World) GroundLevel(x uint16, z uint16) uint16 {
 }
 
 func (self *World) SoilThickness(x uint16, z uint16) uint16 {
-	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(2*NOISE_SCALE), float64(z-MAP_DIAM)/(2*NOISE_SCALE), worldSeed, 1.8, 1.6, 8)
+	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(2*NOISE_SCALE), float64(z-MAP_DIAM)/(2*NOISE_SCALE), self.seed, 1.8, 1.6, 8)
 	if noise > 1.0 {
 		noise = 1.0
 	}
@@ -87,15 +89,15 @@ func (self *World) SoilThickness(x uint16, z uint16) uint16 {
 }
 
 func (self *World) Precipitation(x uint16, z uint16) float64 {
-	return perlin.Noise2D(float64(x-MAP_DIAM)/(NOISE_SCALE), float64(z-MAP_DIAM)/(NOISE_SCALE), worldSeed, 2.0, 0.6, 1)
+	return perlin.Noise2D(float64(x-MAP_DIAM)/(NOISE_SCALE), float64(z-MAP_DIAM)/(NOISE_SCALE), self.seed, 2.0, 0.6, 1)
 }
 
 // func (self *World) Drainage(x uint16, z uint16) float64 {
-// 	return perlin.Noise2D(float64(x-MAP_DIAM)/(6*NOISE_SCALE), float64(z-MAP_DIAM)/(6*NOISE_SCALE), worldSeed, 0.4, 12)
+// 	return perlin.Noise2D(float64(x-MAP_DIAM)/(6*NOISE_SCALE), float64(z-MAP_DIAM)/(6*NOISE_SCALE), self.seed, 0.4, 12)
 // }
 
 func (self *World) Rocks(x uint16, z uint16) uint16 {
-	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(NOISE_SCALE/2), float64(z-MAP_DIAM)/(NOISE_SCALE/2), worldSeed, 1.5, 3.0, 12)
+	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(NOISE_SCALE/2), float64(z-MAP_DIAM)/(NOISE_SCALE/2), self.seed, 1.5, 3.0, 12)
 	if noise > 1.0 {
 		noise = 1.0
 	}
@@ -111,7 +113,7 @@ func (self *World) Rocks(x uint16, z uint16) uint16 {
 func (self *World) Ore(x uint16, z uint16, blockid BlockId, occcurrence float64) uint16 {
 	xloc := (float64(x) + MAP_DIAM*float64(blockid)) / (NOISE_SCALE / 2)
 	zloc := (float64(z) + MAP_DIAM*float64(blockid)) / (NOISE_SCALE / 2)
-	noise := perlin.Noise2D(xloc, zloc, worldSeed, 2.4, 1.8, 4)
+	noise := perlin.Noise2D(xloc, zloc, self.seed, 2.4, 1.8, 4)
 	if noise > 1.0 {
 		noise = 1.0
 	}
@@ -124,7 +126,7 @@ func (self *World) Ore(x uint16, z uint16, blockid BlockId, occcurrence float64)
 }
 
 func (self *World) Coal(x uint16, z uint16) uint16 {
-	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(NOISE_SCALE/2), float64(z-MAP_DIAM)/(NOISE_SCALE/2), worldSeed, 1.9, 1.2, 12)
+	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(NOISE_SCALE/2), float64(z-MAP_DIAM)/(NOISE_SCALE/2), self.seed, 1.9, 1.2, 12)
 	if noise > 1.0 {
 		noise = 1.0
 	}
@@ -138,7 +140,7 @@ func (self *World) Coal(x uint16, z uint16) uint16 {
 }
 
 func (self *World) Iron(x uint16, z uint16) uint16 {
-	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(NOISE_SCALE/2.2), float64(z-MAP_DIAM)/(NOISE_SCALE/2.2), worldSeed, 2.5, 1.9, 6)
+	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(NOISE_SCALE/2.2), float64(z-MAP_DIAM)/(NOISE_SCALE/2.2), self.seed, 2.5, 1.9, 6)
 	if noise > 1.0 {
 		noise = 1.0
 	}
@@ -152,7 +154,7 @@ func (self *World) Iron(x uint16, z uint16) uint16 {
 }
 
 func (self *World) Copper(x uint16, z uint16) uint16 {
-	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(NOISE_SCALE/2.5), float64(z-MAP_DIAM)/(NOISE_SCALE/2.5), worldSeed, 3.1, 2.0, 6)
+	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(NOISE_SCALE/2.5), float64(z-MAP_DIAM)/(NOISE_SCALE/2.5), self.seed, 3.1, 2.0, 6)
 	if noise > 1.0 {
 		noise = 1.0
 	}
@@ -166,7 +168,7 @@ func (self *World) Copper(x uint16, z uint16) uint16 {
 }
 
 func (self *World) Feature1(x uint16, z uint16) float64 {
-	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(NOISE_SCALE/4), float64(z-MAP_DIAM)/(NOISE_SCALE/4), worldSeed, 6, 8, 14)
+	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(NOISE_SCALE/4), float64(z-MAP_DIAM)/(NOISE_SCALE/4), self.seed, 6, 8, 14)
 	if noise > 1.0 {
 		noise = 1.0
 	}
@@ -177,7 +179,7 @@ func (self *World) Feature1(x uint16, z uint16) float64 {
 }
 
 func (self *World) Feature2(x uint16, z uint16) float64 {
-	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(NOISE_SCALE/4), float64(z-MAP_DIAM)/(NOISE_SCALE/4), worldSeed, 3, 5, 7)
+	noise := perlin.Noise2D(float64(x-MAP_DIAM)/(NOISE_SCALE/4), float64(z-MAP_DIAM)/(NOISE_SCALE/4), self.seed, 3, 5, 7)
 	if noise > 1.0 {
 		noise = 1.0
 	}
@@ -642,8 +644,8 @@ func (self *World) Draw(center Vectorf, selectedBlockFace *BlockFace) {
 		mob.Draw(center, selectedBlockFace)
 	}
 
-	pxmin, pzmin := chunkCoordsFromWorld(uint16(center[XAXIS]-float64(viewRadius)), uint16(center[ZAXIS]-float64(viewRadius)))
-	pxmax, pzmax := chunkCoordsFromWorld(uint16(center[XAXIS]+float64(viewRadius)), uint16(center[ZAXIS]+float64(viewRadius)))
+	pxmin, pzmin := chunkCoordsFromWorld(uint16(center[XAXIS]-float64(viewport.viewRadius)), uint16(center[ZAXIS]-float64(viewport.viewRadius)))
+	pxmax, pzmax := chunkCoordsFromWorld(uint16(center[XAXIS]+float64(viewport.viewRadius)), uint16(center[ZAXIS]+float64(viewport.viewRadius)))
 
 	var adjacents [4]*Chunk
 
@@ -822,7 +824,7 @@ func (self *World) Simulate() {
 
 	// Despawn
 	for i := len(self.mobs) - 1; i >= 0; i-- {
-		if ThePlayer.position.Minus(self.mobs[i].Position()).Magnitude() > float64(viewRadius)*3 {
+		if ThePlayer.position.Minus(self.mobs[i].Position()).Magnitude() > float64(viewport.viewRadius)*3 {
 			self.mobs = append(self.mobs[:i], self.mobs[i+1:]...)
 		}
 	}
@@ -830,7 +832,7 @@ func (self *World) Simulate() {
 	if len(self.mobs) < 10 {
 		if rand.Float64() < 0.1*dt {
 			angle := rand.Float64() * 2 * math.Pi
-			distance := (1 + rand.Float64()) * float64(viewRadius)
+			distance := (1 + rand.Float64()) * float64(viewport.viewRadius)
 
 			x := ThePlayer.position[XAXIS] + math.Cos(angle)*distance
 			z := ThePlayer.position[ZAXIS] + -math.Sin(angle)*distance

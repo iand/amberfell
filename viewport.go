@@ -26,6 +26,16 @@ type Viewport struct {
 	lplane, rplane    float64
 	bplane, tplane    float64
 	near, far         float64
+	viewRadius        int16
+}
+
+func NewViewport() *Viewport {
+	vp := &Viewport{}
+	vp.viewRadius = 30
+	vp.Zoomstd()
+	vp.Rotx(25)
+	vp.Roty(70)
+	return vp
 }
 
 /* new window size or exposure */
@@ -242,9 +252,9 @@ func (self *Viewport) HandleKeys(keys []uint8) {
 	}
 	if keys[sdl.K_LEFT] != 0 {
 		if keys[sdl.K_LCTRL] != 0 || keys[sdl.K_RCTRL] != 0 {
-			viewRadius -= 4
-			if viewRadius < 8 {
-				viewRadius = 8
+			self.viewRadius -= 4
+			if self.viewRadius < 8 {
+				self.viewRadius = 8
 			}
 		} else {
 			self.Roty(9)
@@ -252,7 +262,7 @@ func (self *Viewport) HandleKeys(keys []uint8) {
 	}
 	if keys[sdl.K_RIGHT] != 0 {
 		if keys[sdl.K_LCTRL] != 0 || keys[sdl.K_RCTRL] != 0 {
-			viewRadius += 4
+			self.viewRadius += 4
 
 		} else {
 			self.Roty(-9)
